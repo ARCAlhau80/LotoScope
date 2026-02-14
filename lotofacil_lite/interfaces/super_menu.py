@@ -11890,16 +11890,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   │          SOMA DINÂMICA | PARES: 6-9 | PRIMOS: 4-7               │")
         print("   │          SEQ máx: 5 | REP: 4-11 | + COMP. + MAPA               │")
         print("   ├─────────────────────────────────────────────────────────────────┤")
-        print("   │ NÍVEL 5: AGRESSIVO (ROI OTIMIZADO)                              │")
-        print("   │          SOMA DINÂMICA | PARES: 7-8 | PRIMOS: 5-6               │")
-        print("   │          SEQ máx: 5 | REP: 5-10 | NÚCLEO ≥9                    │")
-        print("   │          + COMPENSAÇÃO + MAPA TÉRMICO                           │")
+        print("   │ NÍVEL 5: AGRESSIVO (ROI OTIMIZADO) 📈                           │")
+        print("   │          SOMA: 180-210 | PARES: 6-9 | PRIMOS: 3-7               │")
+        print("   │          SEQ máx: 5 | REP: 4-11 | NÚCLEO ≥8                    │")
+        print("   │          Otimizado para maximizar 14 acertos                    │")
         print("   ├─────────────────────────────────────────────────────────────────┤")
-        print("   │ NÍVEL 6: ULTRA-AGRESSIVO (MÍNIMO CUSTO)                         │")
-        print("   │          SOMA ULTRA-DINÂMICA (faixa curta baseada em reversão) │")
-        print("   │          PARES: 7-8 | PRIMOS: 5-6 | SEQ máx: 4                 │")
-        print("   │          REP: 6-9 | NÚCLEO ≥10 | FAV ≥5                        │")
-        print("   │          + COMP. POS. + MAPA TÉRMICO POSICIONAL                │")
+        print("   │ NÍVEL 6: ULTRA (CONSISTÊNCIA) 🎯                                │")
+        print("   │          SOMA: 185-205 | PARES: 6-9 | PRIMOS: 4-7               │")
+        print("   │          SEQ máx: 5 | REP: 5-10 | NÚCLEO ≥8 | FAV ≥4           │")
+        print("   │          Foco em acertos 12-14 (não depende de jackpot)         │")
         print("   └─────────────────────────────────────────────────────────────────┘")
         
         if compensacao_ativa:
@@ -11955,13 +11954,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'debito_min_matches': 3,  # Mais exigente
             },
             5: {
-                # NÍVEL 5: AGRESSIVO - adiciona repetição + núcleo (meta: ~30k, 6%)
-                'soma_min': 195, 'soma_max': 215,
+                # NÍVEL 5: AGRESSIVO - OTIMIZADO PARA ROI (meta: ~30k, 6%)
+                # AJUSTE: Soma ampliada baseado em análise de 14 acertos (176-205)
+                # Combinações com 14+ acertos têm soma média de 189.9
+                'soma_min': 180, 'soma_max': 210,  # Antes: 195-215 (muito apertado!)
                 'pares_min': 6, 'pares_max': 9,
-                'primos_min': 4, 'primos_max': 7,
+                'primos_min': 3, 'primos_max': 7,  # Ampliado: jackpot tinha 4
                 'seq_max': 5,
                 'rep_min': 4, 'rep_max': 11,
-                'nucleo_min': 9,
+                'nucleo_min': 8,  # Reduzido: jackpot tinha 9
                 'usar_compensacao': True,
                 'usar_reversao_soma': True,
                 'usar_improbabilidade_posicional': True,
@@ -11969,19 +11970,21 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'debito_min_matches': 3,
             },
             6: {
-                # NÍVEL 6: ULTRA - todos os filtros apertados (meta: ~5k, 1%)
-                'soma_min': 200, 'soma_max': 210,
-                'pares_min': 7, 'pares_max': 8,
-                'primos_min': 5, 'primos_max': 6,
-                'seq_max': 4,
-                'rep_min': 6, 'rep_max': 9,
-                'nucleo_min': 10,
-                'favorecidos_min': 5,
+                # NÍVEL 6: ULTRA - FOCO EM CONSISTÊNCIA (meta: ~15k, 3%)
+                # ESTRATÉGIA: Menos combinações, mas com maior taxa de 14 acertos
+                # AJUSTE: Soma baseada em análise (combos com 13-14 acertos: 176-208)
+                'soma_min': 185, 'soma_max': 205,  # Antes: 200-210 (eliminava jackpots!)
+                'pares_min': 6, 'pares_max': 9,    # Ampliado: 7-8 era muito restritivo
+                'primos_min': 4, 'primos_max': 7,  # Ampliado: jackpot tinha 4
+                'seq_max': 5,                       # Ampliado: mais flexível
+                'rep_min': 5, 'rep_max': 10,
+                'nucleo_min': 8,                    # Reduzido: jackpot tinha 9
+                'favorecidos_min': 4,               # Reduzido
                 'usar_compensacao': True,
                 'usar_reversao_soma_ultra': True,
                 'usar_improbabilidade_posicional': True,
                 'usar_debito_posicional': True,
-                'debito_min_matches': 4,  # Muito exigente
+                'debito_min_matches': 3,  # Menos exigente
             },
         }
         
