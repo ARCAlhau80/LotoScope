@@ -11728,11 +11728,14 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"      Faixa neutra: 190-200 - comportamento aleatório")
         
         # ═══════════════════════════════════════════════════════════════════
-        # PASSO 2: IDENTIFICAR OS 2 NÚMEROS A EXCLUIR (ESTRATÉGIA HÍBRIDA)
+        # PASSO 2: IDENTIFICAR OS 2 NÚMEROS A EXCLUIR (ESTRATÉGIA SUPERÁVIT v2.0)
         # ═══════════════════════════════════════════════════════════════════
+        # NOVA LÓGICA: Excluir números em SUPERÁVIT (curta > longa)
+        # Descoberta: Números em DÉBITO (curta < longa) tendem a VOLTAR!
+        # Validado no concurso 3613: 77.8% dos números em débito saíram
         # ═══════════════════════════════════════════════════════════════════
         print("\n" + "─"*78)
-        print("🧠 PASSO 2: Calculando os 2 números a EXCLUIR (Estratégia Híbrida)")
+        print("🧠 PASSO 2: Calculando os 2 números a EXCLUIR (Estratégia SUPERÁVIT v2.0)")
         print("─"*78)
         
         # Janelas de frequência
@@ -11754,46 +11757,53 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             fm = freq_15[n]
             fl = freq_50[n]
             
-            # Tendência descendente
+            # NOVO: Índice de Débito/Superávit
+            # Débito = Longa% - Curta% (positivo = está devendo, vai voltar)
+            # Superávit = negativo (está adiantado, pode ficar fora)
+            indice_debito = fl - fc
+            
+            # Tendência descendente (para exibição)
             queda_forte = fc < fm < fl
             tendencia_queda = (fc < fm) or (fm < fl)
             
-            # Não é extremo (entre 35% e 85%)
-            nao_extremo = 35 < fl < 85
-            
-            # Abaixo da média no curto prazo
-            abaixo_curto = fc < FREQ_ESPERADA
-            
-            # Score de exclusão (maior = melhor candidato a excluir)
+            # NOVA LÓGICA: Score baseado em SUPERÁVIT (não débito!)
+            # Queremos excluir números em SUPERÁVIT (aparecem MAIS que deveriam)
             score = 0
             
-            if queda_forte:
-                score += 3
-            elif tendencia_queda:
-                score += 1
+            # Superávit forte (curta MUITO maior que longa) = bom candidato a excluir
+            if indice_debito < -30:
+                score += 5  # Superávit muito alto
+                status = '💰 SUPERÁVIT ALTO'
+            elif indice_debito < -15:
+                score += 4  # Superávit significativo
+                status = '💰 SUPERÁVIT'
+            elif indice_debito < 0:
+                score += 2  # Leve superávit
+                status = 'superávit leve'
+            elif indice_debito < 15:
+                score += 0  # Equilibrado ou débito leve - NÃO EXCLUIR
+                status = 'equilibrado'
+            else:
+                score -= 3  # DÉBITO ALTO - NUNCA excluir! Vai voltar!
+                status = '⚠️ DÉBITO ALTO'
             
-            if nao_extremo:
+            # Bônus para curta muito alta (está "quente demais")
+            if fc >= 100:
+                score += 3
+            elif fc >= 80:
                 score += 2
             
-            if abaixo_curto:
-                score += 1
-            
-            distancia_media = abs(fl - FREQ_ESPERADA)
-            score += max(0, (30 - distancia_media) / 10)
-            
-            # Penalizar números muito quentes (vão sair)
-            if fc > 70:
-                score *= 0.3
-            
-            # Penalizar números muito frios (podem voltar)
-            if fc < 20:
-                score *= 0.5
+            # Penalizar fortemente números em débito (curta baixa + longa alta)
+            if fc <= 40 and fl >= 55:
+                score -= 4  # Está devendo, vai voltar!
             
             candidatos.append({
                 'num': n,
                 'freq_curta': fc,
                 'freq_media': fm,
                 'freq_longa': fl,
+                'indice_debito': indice_debito,
+                'status': status,
                 'tendencia': 'QUEDA FORTE' if queda_forte else ('queda' if tendencia_queda else 'alta'),
                 'score': score
             })
@@ -11801,14 +11811,20 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Ordenar por score (maior = excluir)
         candidatos.sort(key=lambda x: -x['score'])
         
-        # Mostrar ranking
-        print("\n   📊 RANKING DE CANDIDATOS À EXCLUSÃO:")
-        print(f"   {'Num':<4} {'Curta%':>8} {'Média%':>8} {'Longa%':>8} {'Tendência':>12} {'Score':>8}")
-        print("   " + "-"*60)
+        # Mostrar ranking com nova métrica
+        print("\n   📊 RANKING DE CANDIDATOS À EXCLUSÃO (Estratégia SUPERÁVIT v2.0):")
+        print("   ╔════════════════════════════════════════════════════════════════════════╗")
+        print("   ║ 💡 LÓGICA: Excluir números em SUPERÁVIT (curta > longa)               ║")
+        print("   ║    Números em DÉBITO (curta < longa) tendem a VOLTAR!                 ║")
+        print("   ╚════════════════════════════════════════════════════════════════════════╝")
+        print()
+        print(f"   {'':2} {'Num':<4} {'Curta%':>8} {'Longa%':>8} {'Déb/Sup':>9} {'Status':>18} {'Score':>7}")
+        print("   " + "-"*70)
         
         for i, c in enumerate(candidatos):
             marker = "❌" if i < 2 else "  "
-            print(f"   {marker} {c['num']:2d} {c['freq_curta']:>8.1f} {c['freq_media']:>8.1f} {c['freq_longa']:>8.1f} {c['tendencia']:>12} {c['score']:>8.2f}")
+            deb_str = f"{c['indice_debito']:+.1f}"
+            print(f"   {marker} {c['num']:2d} {c['freq_curta']:>8.1f} {c['freq_longa']:>8.1f} {deb_str:>9} {c['status']:>18} {c['score']:>7.2f}")
         
         # Os 2 a excluir
         excluir = [candidatos[0]['num'], candidatos[1]['num']]
