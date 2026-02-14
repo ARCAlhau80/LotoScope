@@ -13232,7 +13232,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("🧠 PASSO 2: Definir números a EXCLUIR")
         print("─"*78)
         
-        # Calcular candidatos usando a mesma lógica da Opção 31
+        # Calcular candidatos usando ESTRATÉGIA SUPERÁVIT v2.0 (mesma da Opção 31)
+        # NOVA LÓGICA: Excluir números em SUPERÁVIT (curta > longa)
+        # Descoberta: Números em DÉBITO (curta < longa) tendem a VOLTAR!
         def freq_janela(tamanho):
             freq = Counter()
             for r in resultados[:min(tamanho, len(resultados))]:
@@ -13251,36 +13253,44 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             fm = freq_15[n]
             fl = freq_50[n]
             
-            queda_forte = fc < fm < fl
-            tendencia_queda = (fc < fm) or (fm < fl)
-            nao_extremo = 35 < fl < 85
-            abaixo_curto = fc < FREQ_ESPERADA
+            # NOVO: Índice de Débito/Superávit
+            # Débito = Longa% - Curta% (positivo = está devendo, vai voltar)
+            # Superávit = negativo (está adiantado, pode ficar fora)
+            indice_debito = fl - fc
             
+            # NOVA LÓGICA: Score baseado em SUPERÁVIT (não débito!)
             score = 0
-            if queda_forte:
+            
+            # Superávit forte (curta MUITO maior que longa) = bom candidato a excluir
+            if indice_debito < -30:
+                score += 5  # Superávit muito alto
+            elif indice_debito < -15:
+                score += 4  # Superávit significativo
+            elif indice_debito < 0:
+                score += 2  # Leve superávit
+            elif indice_debito < 15:
+                score += 0  # Equilibrado ou débito leve
+            else:
+                score -= 3  # DÉBITO ALTO - NUNCA excluir! Vai voltar!
+            
+            # Bônus para curta muito alta (está "quente demais")
+            if fc >= 100:
                 score += 3
-            elif tendencia_queda:
-                score += 1
-            if nao_extremo:
+            elif fc >= 80:
                 score += 2
-            if abaixo_curto:
-                score += 1
             
-            distancia_media = abs(fl - FREQ_ESPERADA)
-            score += max(0, (30 - distancia_media) / 10)
+            # Penalizar fortemente números em débito (curta baixa + longa alta)
+            if fc <= 40 and fl >= 55:
+                score -= 4  # Está devendo, vai voltar!
             
-            if fc > 70:
-                score *= 0.3
-            if fc < 20:
-                score *= 0.5
-            
-            candidatos.append({'num': n, 'score': score})
+            candidatos.append({'num': n, 'score': score, 'indice_debito': indice_debito})
         
         candidatos.sort(key=lambda x: -x['score'])
         excluir_padrao = [candidatos[0]['num'], candidatos[1]['num']]
         
-        print(f"\n   📊 SUGESTÃO AUTOMÁTICA (Estratégia Híbrida):")
+        print(f"\n   📊 SUGESTÃO AUTOMÁTICA (Estratégia SUPERÁVIT v2.0):")
         print(f"   🚫 Excluir: {sorted(excluir_padrao)}")
+        print(f"   💡 Índices de débito: {candidatos[0]['num']}={candidatos[0]['indice_debito']:.1f}, {candidatos[1]['num']}={candidatos[1]['indice_debito']:.1f}")
         
         # Perguntar se quer ajustar
         ajustar = input("\n   ⚙️ Deseja ajustar os números a excluir? [S/N]: ").strip().upper()
@@ -13443,13 +13453,14 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'debito_min_matches': 3,
             },
             5: {
-                # NÍVEL 5: AGRESSIVO - adiciona repetição + núcleo (meta: ~30k, 6%)
-                'soma_min': 195, 'soma_max': 215,
+                # NÍVEL 5: AGRESSIVO - OTIMIZADO PARA ROI (meta: ~30k, 6%)
+                # AJUSTE: Soma ampliada baseado em análise de 14 acertos (176-205)
+                'soma_min': 180, 'soma_max': 210,  # Antes: 195-215
                 'pares_min': 6, 'pares_max': 9,
-                'primos_min': 4, 'primos_max': 7,
+                'primos_min': 3, 'primos_max': 7,  # Ampliado
                 'seq_max': 5,
                 'rep_min': 4, 'rep_max': 11,
-                'nucleo_min': 9,
+                'nucleo_min': 8,  # Reduzido
                 'usar_compensacao': True,
                 'usar_reversao_soma': True,
                 'usar_improbabilidade_posicional': True,
@@ -13457,19 +13468,20 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'debito_min_matches': 3,
             },
             6: {
-                # NÍVEL 6: ULTRA - todos os filtros apertados (meta: ~5k, 1%)
-                'soma_min': 200, 'soma_max': 210,
-                'pares_min': 7, 'pares_max': 8,
-                'primos_min': 5, 'primos_max': 6,
-                'seq_max': 4,
-                'rep_min': 6, 'rep_max': 9,
-                'nucleo_min': 10,
-                'favorecidos_min': 5,
+                # NÍVEL 6: ULTRA - FOCO EM CONSISTÊNCIA (meta: ~15k, 3%)
+                # AJUSTE: Baseado em análise de combos com 13-14 acertos
+                'soma_min': 185, 'soma_max': 205,  # Antes: 200-210
+                'pares_min': 6, 'pares_max': 9,    # Ampliado
+                'primos_min': 4, 'primos_max': 7,  # Ampliado
+                'seq_max': 5,                       # Ampliado
+                'rep_min': 5, 'rep_max': 10,
+                'nucleo_min': 8,                    # Reduzido
+                'favorecidos_min': 4,               # Reduzido
                 'usar_compensacao': True,
                 'usar_reversao_soma_ultra': True,
                 'usar_improbabilidade_posicional': True,
                 'usar_debito_posicional': True,
-                'debito_min_matches': 4,
+                'debito_min_matches': 3,  # Menos exigente
             },
         }
         
