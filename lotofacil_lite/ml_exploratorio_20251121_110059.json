@@ -1,0 +1,9 @@
+{
+  "timestamp": "20251121_110059",
+  "descobertas_ml": [
+    {
+      "tipo": "anomalias_detectadas",
+      "quantidade": 60,
+      "porcentagem": 5.0,
+      "concursos_exemplo": [
+        

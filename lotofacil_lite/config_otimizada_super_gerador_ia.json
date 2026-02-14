@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-09-25T09:00:21.244418",
+  "parametros": {
+    "peso_ia": 0.5,
+    "peso_academico": 0.3,
+    "peso_heuristico": 0.2,
+    "diversidade_minima": 8
+  },
+  "acoes_sugeridas": [
+    "Rebalancear componentes IA vs Acadêmico",
+    "Aumentar diversidade se volatilidade alta",
+    "Otimizar integração entre módulos"
+  ],
+  "tipo_otimizacao": "super_integrado",
+  "aplicado": false,
+  "versao": 1
+}

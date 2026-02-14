@@ -1,0 +1,38 @@
+🎯 RELATÓRIO DE VALIDAÇÃO - SUPER-COMBINAÇÕES IA
+=================================================================
+Validado em: 2025-08-20 18:28:44
+Arquivo origem: combin_ia/super_combinacoes\super_combinacoes_20250820_182844.json
+
+📊 PERFORMANCE GERAL:
+------------------------------
+Melhor acerto geral: 12 números
+Média dos máximos: 11.7
+Média geral: 10.1
+Consistência: 0.09
+
+🏆 SUPER-COMBINAÇÃO DESTAQUE:
+-----------------------------------
+Combinação: 1,2,3,5,6,7,13,14,16,17,18,19,21,23,25
+Melhor acerto: 12
+Média: 10.2
+Performance prevista: 50.0
+Confiança IA: 50.0%
+
+💡 RECOMENDAÇÕES:
+--------------------
+1. Performance satisfatória. Continuar monitoramento.
+
+📋 RESULTADOS DETALHADOS:
+------------------------------
+Super-combinação 1:
+  Máximo: 12 | Médio: 10.2 | Mínimo: 8
+  Performances: BOA(2) REGULAR(2) BAIXA(1) 
+
+Super-combinação 2:
+  Máximo: 12 | Médio: 10.2 | Mínimo: 8
+  Performances: BOA(2) REGULAR(2) BAIXA(1) 
+
+Super-combinação 3:
+  Máximo: 11 | Médio: 10.0 | Mínimo: 9
+  Performances: REGULAR(4) BOA(1) 
+

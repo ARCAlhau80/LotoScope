@@ -1,0 +1,92 @@
+{
+  "timestamp": "2025-10-07T11:12:36.386064",
+  "cenario_detectado": {
+    "tipo": "reset_extremo",
+    "confianca": 0.85,
+    "descricao": "Sistema em iminência de RESET EXTREMO - padrão validado (7,5,3) → (11,0,4)",
+    "parametros": {
+      "menor_esperado": 11,
+      "soma_esperada": 170,
+      "repeticoes_esperadas": 1
+    },
+    "estrategia": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_numeros_baixos": 0.85,
+      "evitar_repeticoes_posicao": true,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "priorizar_faixa_1_10": true,
+      "limite_superior": 15
+    }
+  },
+  "geradores_calibrados": {
+    "gerador_academico_dinamico.py": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "super_gerador_ia.py": {
+      "modo_adaptativo": true,
+      "cenario_detectado": "reset_extremo",
+      "confianca_cenario": 0.85,
+      "parametros_especiais": {
+        "menor_esperado": 11,
+        "soma_esperada": 170,
+        "repeticoes_esperadas": 1
+      }
+    },
+    "gerador_complementacao_inteligente.py": {
+      "base_20_foco": [
+        1,
+        12
+      ],
+      "forca_extremos": true,
+      "peso_distribuicao": 4.0,
+      "soma_alvo": [
+        160,
+        180
+      ]
+    },
+    "sistema_desdobramento_complementar.py": {
+      "cenario": "reset_extremo",
+      "estrategia": {
+        "zona_foco": [
+          1,
+          12
+        ],
+        "peso_numeros_baixos": 0.85,
+        "evitar_repeticoes_posicao": true,
+        "soma_alvo": [
+          160,
+          180
+        ],
+        "priorizar_faixa_1_10": true,
+        "limite_superior": 15
+      },
+      "parametros": {
+        "menor_esperado": 11,
+        "soma_esperada": 170,
+        "repeticoes_esperadas": 1
+      }
+    },
+    "gerador_zona_conforto.py": {
+      "zona_conforto_inicio": 1,
+      "zona_conforto_fim": 12,
+      "peso_zona": 0.85,
+      "permitir_sequencias": false
+    }
+  },
+  "proxima_validacao": "21:00 (resultado do concurso)"
+}

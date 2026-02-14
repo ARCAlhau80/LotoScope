@@ -1,0 +1,501 @@
+{
+  "metadata": {
+    "concurso_previsto": 3480,
+    "data_geracao": "2025-09-07T18:45:25.236851",
+    "algoritmo": "Gerador Isolado com Correção Temporal",
+    "base_concurso": 3479,
+    "ciclo_base": 737,
+    "padroes_utilizados": {
+      "numeros_quentes": [
+        1,
+        5,
+        6,
+        8,
+        12,
+        15,
+        18,
+        20,
+        23,
+        25
+      ],
+      "numeros_frios": [
+        7,
+        11,
+        14,
+        17,
+        21,
+        22
+      ],
+      "tendencia_baixos": 0.5,
+      "sequencias_dominantes": [
+        1,
+        5,
+        12,
+        15,
+        18
+      ],
+      "instabilidade": 0.6
+    }
+  },
+  "combinacoes": {
+    "15_nums": [
+      {
+        "jogo": 1,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          12,
+          14,
+          15,
+          16,
+          18,
+          21,
+          23,
+          25
+        ],
+        "formato": "15 números",
+        "custo_estimado": 2.5
+      },
+      {
+        "jogo": 2,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          12,
+          14,
+          15,
+          16,
+          18,
+          21,
+          23,
+          25
+        ],
+        "formato": "15 números",
+        "custo_estimado": 2.5
+      },
+      {
+        "jogo": 3,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          12,
+          14,
+          15,
+          16,
+          18,
+          21,
+          23,
+          25
+        ],
+        "formato": "15 números",
+        "custo_estimado": 2.5
+      }
+    ],
+    "16_nums": [
+      {
+        "jogo": 1,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          7,
+          8,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          21,
+          22,
+          23,
+          25
+        ],
+        "formato": "16 números",
+        "custo_estimado": 40.0
+      },
+      {
+        "jogo": 2,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          7,
+          8,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          21,
+          22,
+          23,
+          25
+        ],
+        "formato": "16 números",
+        "custo_estimado": 40.0
+      },
+      {
+        "jogo": 3,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          7,
+          8,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          21,
+          22,
+          23,
+          25
+        ],
+        "formato": "16 números",
+        "custo_estimado": 40.0
+      }
+    ],
+    "17_nums": [
+      {
+        "jogo": 1,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          11,
+          12,
+          14,
+          15,
+          16,
+          18,
+          20,
+          21,
+          23,
+          25
+        ],
+        "formato": "17 números",
+        "custo_estimado": 340.0
+      },
+      {
+        "jogo": 2,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          11,
+          12,
+          14,
+          15,
+          16,
+          18,
+          20,
+          21,
+          23,
+          25
+        ],
+        "formato": "17 números",
+        "custo_estimado": 340.0
+      },
+      {
+        "jogo": 3,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          11,
+          12,
+          14,
+          15,
+          16,
+          18,
+          20,
+          21,
+          23,
+          25
+        ],
+        "formato": "17 números",
+        "custo_estimado": 340.0
+      }
+    ],
+    "18_nums": [
+      {
+        "jogo": 1,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          11,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "formato": "18 números",
+        "custo_estimado": 2040.0
+      },
+      {
+        "jogo": 2,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          11,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "formato": "18 números",
+        "custo_estimado": 2040.0
+      },
+      {
+        "jogo": 3,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          11,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "formato": "18 números",
+        "custo_estimado": 2040.0
+      }
+    ],
+    "19_nums": [
+      {
+        "jogo": 1,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          10,
+          11,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "formato": "19 números",
+        "custo_estimado": 9690.0
+      },
+      {
+        "jogo": 2,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          10,
+          11,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "formato": "19 números",
+        "custo_estimado": 9690.0
+      },
+      {
+        "jogo": 3,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          10,
+          11,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "formato": "19 números",
+        "custo_estimado": 9690.0
+      }
+    ],
+    "20_nums": [
+      {
+        "jogo": 1,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          17,
+          18,
+          19,
+          21,
+          22,
+          23,
+          25
+        ],
+        "formato": "20 números",
+        "custo_estimado": 38760.0
+      },
+      {
+        "jogo": 2,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          17,
+          18,
+          19,
+          21,
+          22,
+          23,
+          25
+        ],
+        "formato": "20 números",
+        "custo_estimado": 38760.0
+      },
+      {
+        "jogo": 3,
+        "numeros": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          17,
+          18,
+          19,
+          21,
+          22,
+          23,
+          25
+        ],
+        "formato": "20 números",
+        "custo_estimado": 38760.0
+      }
+    ]
+  },
+  "resumo": {
+    "total_jogos": 18,
+    "formatos_gerados": 6,
+    "custo_total_minimo": 45.0,
+    "custo_total_maximo": 697680.0
+  }
+}

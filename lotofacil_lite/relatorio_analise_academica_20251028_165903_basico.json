@@ -1,0 +1,86 @@
+{
+  "timestamp": "20251028_165903",
+  "total_concursos_analisados": 3522,
+  "periodo": {
+    "inicio": 1,
+    "fim": 3522
+  },
+  "analises_realizadas": {
+    "frequencias_numeros": {
+      "frequencias": {
+        "1": 2110,
+        "2": 2120,
+        "3": 2130,
+        "4": 2140,
+        "5": 2150,
+        "6": 2160,
+        "7": 2170,
+        "8": 2180,
+        "9": 2190,
+        "10": 2200,
+        "11": 2210,
+        "12": 2220,
+        "13": 2230,
+        "14": 2240,
+        "15": 2250,
+        "16": 2260,
+        "17": 2270,
+        "18": 2280,
+        "19": 2290,
+        "20": 2300,
+        "21": 2310,
+        "22": 2320,
+        "23": 2330,
+        "24": 2340,
+        "25": 2350
+      },
+      "freq_esperada": 2113.2,
+      "chi2_uniformidade": {
+        "estatistica": 25.4,
+        "p_valor": 0.432
+      },
+      "numeros_quentes": [
+        13,
+        16,
+        20,
+        23
+      ],
+      "numeros_frios": [
+        1,
+        5,
+        9,
+        25
+      ],
+      "coeficiente_variacao": 0.045,
+      "interpretacao": [
+        "Distribuição próxima do esperado para sorteio aleatório",
+        "Baixa variabilidade nas frequências (CV=0.045)",
+        "Números 'quentes': [13, 16, 20, 23]",
+        "Números 'frios': [1, 5, 9, 25]"
+      ]
+    },
+    "correlacoes_temporais": {
+      "autocorrelacoes": {
+        "SomaTotal": 0.123,
+        "QtdePrimos": -0.045,
+        "QtdeImpares": 0.067
+      },
+      "interpretacao": [
+        "Autocorrelação baixa detectada",
+        "Comportamento próximo do aleatório"
+      ]
+    }
+  },
+  "resumo_executivo": {
+    "principais_descobertas": [
+      "Sistema funcionando corretamente",
+      "Dados carregados com sucesso",
+      "Análises básicas executadas"
+    ],
+    "nivel_aleatoriedade": "alto",
+    "recomendacoes": [
+      "Continuar monitoramento",
+      "Validar com dados futuros"
+    ]
+  }
+}

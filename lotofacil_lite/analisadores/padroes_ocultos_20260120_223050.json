@@ -1,0 +1,785 @@
+{
+  "timestamp": "2026-01-20T22:30:50.479190",
+  "total_combinacoes": 53130,
+  "estatisticas_gerais": {
+    "media_15": 17.027667984189723,
+    "media_14": 212.84584980237153,
+    "media_13": 0.4743083003952569,
+    "media_12": 0.7707509881422925,
+    "media_11": 0.5138339920948617,
+    "total_15": 904680,
+    "total_14": 11308500,
+    "total_13": 25200,
+    "total_12": 40950,
+    "total_11": 27300
+  },
+  "numeros_vencedores": {
+    "25": 0.96,
+    "10": 0.93,
+    "13": 0.92,
+    "20": 0.92,
+    "12": 0.9,
+    "24": 0.89,
+    "2": 0.88,
+    "3": 0.88,
+    "11": 0.88,
+    "18": 0.87,
+    "4": 0.85,
+    "15": 0.85,
+    "1": 0.82,
+    "6": 0.82,
+    "22": 0.8,
+    "9": 0.79,
+    "19": 0.77,
+    "17": 0.75,
+    "14": 0.74,
+    "7": 0.71,
+    "23": 0.68,
+    "5": 0.63,
+    "8": 0.63,
+    "21": 0.61,
+    "16": 0.52
+  },
+  "padroes_pares": [],
+  "padroes_trios": [
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 10-20-25",
+      "numeros": [
+        10,
+        20,
+        25
+      ],
+      "suporte": 0.741,
+      "confianca": 0.741,
+      "lift": 2.47,
+      "acertos_medios": 249.76653171390012,
+      "exemplos": 741
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 20-24-25",
+      "numeros": [
+        20,
+        24,
+        25
+      ],
+      "suporte": 0.733,
+      "confianca": 0.733,
+      "lift": 2.4433333333333334,
+      "acertos_medios": 249.8431105047749,
+      "exemplos": 733
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 10-24-25",
+      "numeros": [
+        10,
+        24,
+        25
+      ],
+      "suporte": 0.732,
+      "confianca": 0.732,
+      "lift": 2.44,
+      "acertos_medios": 249.50409836065575,
+      "exemplos": 732
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 13-20-25",
+      "numeros": [
+        13,
+        20,
+        25
+      ],
+      "suporte": 0.728,
+      "confianca": 0.728,
+      "lift": 2.4266666666666667,
+      "acertos_medios": 250.0631868131868,
+      "exemplos": 728
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 10-20-24",
+      "numeros": [
+        10,
+        20,
+        24
+      ],
+      "suporte": 0.72,
+      "confianca": 0.72,
+      "lift": 2.4,
+      "acertos_medios": 249.49305555555554,
+      "exemplos": 720
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 13-24-25",
+      "numeros": [
+        13,
+        24,
+        25
+      ],
+      "suporte": 0.716,
+      "confianca": 0.716,
+      "lift": 2.3866666666666667,
+      "acertos_medios": 249.88966480446928,
+      "exemplos": 716
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 11-20-25",
+      "numeros": [
+        11,
+        20,
+        25
+      ],
+      "suporte": 0.714,
+      "confianca": 0.714,
+      "lift": 2.38,
+      "acertos_medios": 249.73669467787116,
+      "exemplos": 714
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 10-11-20",
+      "numeros": [
+        10,
+        11,
+        20
+      ],
+      "suporte": 0.713,
+      "confianca": 0.713,
+      "lift": 2.3766666666666665,
+      "acertos_medios": 249.35904628330997,
+      "exemplos": 713
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 10-13-25",
+      "numeros": [
+        10,
+        13,
+        25
+      ],
+      "suporte": 0.713,
+      "confianca": 0.713,
+      "lift": 2.3766666666666665,
+      "acertos_medios": 249.9929873772791,
+      "exemplos": 713
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 10-13-20",
+      "numeros": [
+        10,
+        13,
+        20
+      ],
+      "suporte": 0.711,
+      "confianca": 0.711,
+      "lift": 2.37,
+      "acertos_medios": 249.95358649789029,
+      "exemplos": 711
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 13-20-24",
+      "numeros": [
+        13,
+        20,
+        24
+      ],
+      "suporte": 0.707,
+      "confianca": 0.707,
+      "lift": 2.3566666666666665,
+      "acertos_medios": 249.82743988684584,
+      "exemplos": 707
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 2-20-25",
+      "numeros": [
+        2,
+        20,
+        25
+      ],
+      "suporte": 0.705,
+      "confianca": 0.705,
+      "lift": 2.35,
+      "acertos_medios": 249.38439716312055,
+      "exemplos": 705
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 10-11-25",
+      "numeros": [
+        10,
+        11,
+        25
+      ],
+      "suporte": 0.703,
+      "confianca": 0.703,
+      "lift": 2.3433333333333333,
+      "acertos_medios": 249.52062588904695,
+      "exemplos": 703
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 1-10-25",
+      "numeros": [
+        1,
+        10,
+        25
+      ],
+      "suporte": 0.7,
+      "confianca": 0.7,
+      "lift": 2.3333333333333335,
+      "acertos_medios": 250.21285714285713,
+      "exemplos": 700
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 2-10-25",
+      "numeros": [
+        2,
+        10,
+        25
+      ],
+      "suporte": 0.699,
+      "confianca": 0.699,
+      "lift": 2.33,
+      "acertos_medios": 249.09442060085837,
+      "exemplos": 699
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 1-20-25",
+      "numeros": [
+        1,
+        20,
+        25
+      ],
+      "suporte": 0.698,
+      "confianca": 0.698,
+      "lift": 2.3266666666666667,
+      "acertos_medios": 250.67191977077363,
+      "exemplos": 698
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 1-13-20",
+      "numeros": [
+        1,
+        13,
+        20
+      ],
+      "suporte": 0.696,
+      "confianca": 0.696,
+      "lift": 2.32,
+      "acertos_medios": 249.9985632183908,
+      "exemplos": 696
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 1-13-25",
+      "numeros": [
+        1,
+        13,
+        25
+      ],
+      "suporte": 0.696,
+      "confianca": 0.696,
+      "lift": 2.32,
+      "acertos_medios": 250.17241379310346,
+      "exemplos": 696
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 11-13-20",
+      "numeros": [
+        11,
+        13,
+        20
+      ],
+      "suporte": 0.696,
+      "confianca": 0.696,
+      "lift": 2.32,
+      "acertos_medios": 249.56752873563218,
+      "exemplos": 696
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 2-24-25",
+      "numeros": [
+        2,
+        24,
+        25
+      ],
+      "suporte": 0.695,
+      "confianca": 0.695,
+      "lift": 2.3166666666666664,
+      "acertos_medios": 249.03021582733814,
+      "exemplos": 695
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 10-13-24",
+      "numeros": [
+        10,
+        13,
+        24
+      ],
+      "suporte": 0.695,
+      "confianca": 0.695,
+      "lift": 2.3166666666666664,
+      "acertos_medios": 249.6978417266187,
+      "exemplos": 695
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 1-24-25",
+      "numeros": [
+        1,
+        24,
+        25
+      ],
+      "suporte": 0.694,
+      "confianca": 0.694,
+      "lift": 2.3133333333333335,
+      "acertos_medios": 250.34582132564842,
+      "exemplos": 694
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 2-13-25",
+      "numeros": [
+        2,
+        13,
+        25
+      ],
+      "suporte": 0.693,
+      "confianca": 0.693,
+      "lift": 2.31,
+      "acertos_medios": 249.2077922077922,
+      "exemplos": 693
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 11-20-24",
+      "numeros": [
+        11,
+        20,
+        24
+      ],
+      "suporte": 0.693,
+      "confianca": 0.693,
+      "lift": 2.31,
+      "acertos_medios": 249.36507936507937,
+      "exemplos": 693
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 12-20-25",
+      "numeros": [
+        12,
+        20,
+        25
+      ],
+      "suporte": 0.691,
+      "confianca": 0.691,
+      "lift": 2.3033333333333332,
+      "acertos_medios": 249.31982633863964,
+      "exemplos": 691
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 1-10-20",
+      "numeros": [
+        1,
+        10,
+        20
+      ],
+      "suporte": 0.69,
+      "confianca": 0.69,
+      "lift": 2.3,
+      "acertos_medios": 250.33913043478262,
+      "exemplos": 690
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 10-12-25",
+      "numeros": [
+        10,
+        12,
+        25
+      ],
+      "suporte": 0.69,
+      "confianca": 0.69,
+      "lift": 2.3,
+      "acertos_medios": 249.131884057971,
+      "exemplos": 690
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 11-24-25",
+      "numeros": [
+        11,
+        24,
+        25
+      ],
+      "suporte": 0.688,
+      "confianca": 0.688,
+      "lift": 2.2933333333333334,
+      "acertos_medios": 249.5668604651163,
+      "exemplos": 688
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 2-10-20",
+      "numeros": [
+        2,
+        10,
+        20
+      ],
+      "suporte": 0.687,
+      "confianca": 0.687,
+      "lift": 2.2900000000000005,
+      "acertos_medios": 249.30858806404657,
+      "exemplos": 687
+    },
+    {
+      "tipo": "TRIO",
+      "descricao": "Trio 2-13-20",
+      "numeros": [
+        2,
+        13,
+        20
+      ],
+      "suporte": 0.687,
+      "confianca": 0.687,
+      "lift": 2.2900000000000005,
+      "acertos_medios": 249.33042212518194,
+      "exemplos": 687
+    }
+  ],
+  "padroes_caracteristicas": [
+    {
+      "tipo": "CARACTERISTICA",
+      "descricao": "QtdePares ideal para vencedoras: 9.6",
+      "numeros": [],
+      "suporte": 1.0,
+      "confianca": 0.8,
+      "lift": 1.2,
+      "acertos_medios": 9.6,
+      "exemplos": 53130
+    },
+    {
+      "tipo": "CARACTERISTICA",
+      "descricao": "QtdeImpares ideal para vencedoras: 10.4",
+      "numeros": [],
+      "suporte": 1.0,
+      "confianca": 0.8,
+      "lift": 1.2,
+      "acertos_medios": 10.4,
+      "exemplos": 53130
+    },
+    {
+      "tipo": "CARACTERISTICA",
+      "descricao": "QtdePrimos ideal para vencedoras: 7.2",
+      "numeros": [],
+      "suporte": 1.0,
+      "confianca": 0.8,
+      "lift": 1.2,
+      "acertos_medios": 7.2,
+      "exemplos": 53130
+    },
+    {
+      "tipo": "CARACTERISTICA",
+      "descricao": "QtdeFibonacci ideal para vencedoras: 5.6",
+      "numeros": [],
+      "suporte": 1.0,
+      "confianca": 0.8,
+      "lift": 1.2,
+      "acertos_medios": 5.6,
+      "exemplos": 53130
+    },
+    {
+      "tipo": "CARACTERISTICA",
+      "descricao": "QtdeConsecutivos ideal para vencedoras: 15.2",
+      "numeros": [],
+      "suporte": 1.0,
+      "confianca": 0.8,
+      "lift": 1.2,
+      "acertos_medios": 15.2,
+      "exemplos": 53130
+    },
+    {
+      "tipo": "CARACTERISTICA",
+      "descricao": "SomaTotal ideal para vencedoras: 260.0",
+      "numeros": [],
+      "suporte": 1.0,
+      "confianca": 0.8,
+      "lift": 1.2,
+      "acertos_medios": 260.0,
+      "exemplos": 53130
+    },
+    {
+      "tipo": "CARACTERISTICA",
+      "descricao": "MaiorGap ideal para vencedoras: 2.7",
+      "numeros": [],
+      "suporte": 1.0,
+      "confianca": 0.8,
+      "lift": 1.2,
+      "acertos_medios": 2.6561076604554867,
+      "exemplos": 53130
+    }
+  ],
+  "padroes_posicionais": [
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N1: número 6 é o melhor",
+      "numeros": [
+        6
+      ],
+      "suporte": 1.8821757952192734e-05,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 247.0,
+      "exemplos": 1
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N2: número 7 é o melhor",
+      "numeros": [
+        7
+      ],
+      "suporte": 0.00011293054771315641,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 236.0,
+      "exemplos": 6
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N3: número 8 é o melhor",
+      "numeros": [
+        8
+      ],
+      "suporte": 0.0003952569169960474,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 235.8095238095238,
+      "exemplos": 21
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N4: número 9 é o melhor",
+      "numeros": [
+        9
+      ],
+      "suporte": 0.001054018445322793,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 239.35714285714286,
+      "exemplos": 56
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N5: número 10 é o melhor",
+      "numeros": [
+        10
+      ],
+      "suporte": 0.0023715415019762848,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 240.20634920634922,
+      "exemplos": 126
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N6: número 10 é o melhor",
+      "numeros": [
+        10
+      ],
+      "suporte": 0.03557312252964427,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 236.88888888888889,
+      "exemplos": 1890
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N7: número 10 é o melhor",
+      "numeros": [
+        10
+      ],
+      "suporte": 0.16600790513833993,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 234.36972789115646,
+      "exemplos": 8820
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N8: número 10 é o melhor",
+      "numeros": [
+        10
+      ],
+      "suporte": 0.308300395256917,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 232.2723443223443,
+      "exemplos": 16380
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N9: número 11 é o melhor",
+      "numeros": [
+        11
+      ],
+      "suporte": 0.308300395256917,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 231.1852258852259,
+      "exemplos": 16380
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N10: número 13 é o melhor",
+      "numeros": [
+        13
+      ],
+      "suporte": 0.2732919254658385,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 231.04435261707988,
+      "exemplos": 14520
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N11: número 13 é o melhor",
+      "numeros": [
+        13
+      ],
+      "suporte": 0.2732919254658385,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 231.51322314049588,
+      "exemplos": 14520
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N12: número 14 é o melhor",
+      "numeros": [
+        14
+      ],
+      "suporte": 0.2422360248447205,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 231.8967365967366,
+      "exemplos": 12870
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N13: número 18 é o melhor",
+      "numeros": [
+        18
+      ],
+      "suporte": 0.11646903820816865,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 231.48852617970266,
+      "exemplos": 6188
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N14: número 19 é o melhor",
+      "numeros": [
+        19
+      ],
+      "suporte": 0.16126482213438736,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 231.7532679738562,
+      "exemplos": 8568
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N15: número 20 é o melhor",
+      "numeros": [
+        20
+      ],
+      "suporte": 0.21885940146809713,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 232.60732714138288,
+      "exemplos": 11628
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N16: número 20 é o melhor",
+      "numeros": [
+        20
+      ],
+      "suporte": 0.36476566911349523,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 232.68080495356037,
+      "exemplos": 19380
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N17: número 20 é o melhor",
+      "numeros": [
+        20
+      ],
+      "suporte": 0.18238283455674761,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 231.54778121775027,
+      "exemplos": 9690
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N18: número 23 é o melhor",
+      "numeros": [
+        23
+      ],
+      "suporte": 0.4956521739130435,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 231.60446570972886,
+      "exemplos": 26334
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N19: número 24 é o melhor",
+      "numeros": [
+        24
+      ],
+      "suporte": 0.6333333333333333,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 232.92781360515914,
+      "exemplos": 33649
+    },
+    {
+      "tipo": "POSICIONAL",
+      "descricao": "Posição N20: número 25 é o melhor",
+      "numeros": [
+        25
+      ],
+      "suporte": 0.8,
+      "confianca": 0.7,
+      "lift": 1.15,
+      "acertos_medios": 232.0316205533597,
+      "exemplos": 42504
+    }
+  ],
+  "regras_associacao": [],
+  "resumo": {
+    "total_padroes": 57,
+    "total_regras": 0
+  }
+}

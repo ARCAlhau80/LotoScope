@@ -1,0 +1,48 @@
+🎯 RELATÓRIO FINAL - TREINAMENTO AUTOMATIZADO 4 HORAS
+======================================================================
+Período: 22/09/2025 15:20:10 - 22/09/2025 17:21:08
+Duração real: 2:00:58.097127
+
+📊 ESTATÍSTICAS GERAIS:
+----------------------------------------
+• Total de modelos testados: 21
+• Melhor precisão alcançada: 76.9%
+• Total de experimentos: 21
+
+🧠 PERFORMANCE POR ALGORITMO:
+----------------------------------------
+• Ensemble Básico:
+  - Testado 6 vezes
+  - Precisão média: 65.6%
+  - Melhor resultado: 69.3%
+
+• Neural Evolutivo:
+  - Testado 5 vezes
+  - Precisão média: 62.1%
+  - Melhor resultado: 64.2%
+
+• Algoritmo Genético:
+  - Testado 5 vezes
+  - Precisão média: 67.9%
+  - Melhor resultado: 70.0%
+
+• Temporal Avançado:
+  - Testado 5 vezes
+  - Precisão média: 74.1%
+  - Melhor resultado: 76.9%
+
+🏆 TOP 5 MELHORES RESULTADOS:
+----------------------------------------
+1º. Temporal Avançado: 76.9% (Ciclo 3)
+2º. Temporal Avançado: 74.2% (Ciclo 4)
+3º. Temporal Avançado: 74.1% (Ciclo 1)
+4º. Temporal Avançado: 73.6% (Ciclo 5)
+5º. Temporal Avançado: 71.8% (Ciclo 2)
+
+💾 ARQUIVOS GERADOS:
+----------------------------------------
+• Logs: ia_repetidos/experimentos_2h/treinamento_detalhado.log
+• Progresso: ia_repetidos/experimentos_4h/progresso_tempo_real.json
+• Melhores modelos: ia_repetidos/experimentos_2h/melhores_modelos/
+
+🎉 TREINAMENTO AUTOMATIZADO CONCLUÍDO COM SUCESSO!

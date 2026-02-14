@@ -1,0 +1,114 @@
+Quarentena criada em: 2025-12-28 13:27:53.664212
+============================================================
+
+Arquivo: geradores\gerador_academico_dinamico_megasena.py
+Erro: invalid syntax. Perhaps you forgot a comma? (<unknown>, line 39)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\gerador_academico_dinamico_megasena.py
+
+Arquivo: geradores\gerador_academico_megasena.py
+Erro: closing parenthesis ')' does not match opening parenthesis '{' on line 119 (<unknown>, line 120)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\gerador_academico_megasena.py
+
+Arquivo: geradores\gerador_aprendizado_academico.py
+Erro: invalid syntax (<unknown>, line 213)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\gerador_aprendizado_academico.py
+
+Arquivo: geradores\gerador_dataset_historico.py
+Erro: closing parenthesis ']' does not match opening parenthesis '(' (<unknown>, line 96)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\gerador_dataset_historico.py
+
+Arquivo: geradores\gerador_dinamico_megasena.py
+Erro: invalid syntax (<unknown>, line 109)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\gerador_dinamico_megasena.py
+
+Arquivo: geradores\gerador_estrutura_completa.py
+Erro: closing parenthesis ']' does not match opening parenthesis '(' on line 249 (<unknown>, line 250)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\gerador_estrutura_completa.py
+
+Arquivo: geradores\gerador_filtros_dinamicos.py
+Erro: invalid syntax (<unknown>, line 10)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\gerador_filtros_dinamicos.py
+
+Arquivo: geradores\gerador_hibrido_completo.py
+Erro: invalid syntax (<unknown>, line 637)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\gerador_hibrido_completo.py
+
+Arquivo: geradores\gerador_inteligente_ciclos_ajustado.py
+Erro: closing parenthesis ']' does not match opening parenthesis '(' (<unknown>, line 117)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\gerador_inteligente_ciclos_ajustado.py
+
+Arquivo: geradores\gerador_posicional.py
+Erro: closing parenthesis ')' does not match opening parenthesis '{' on line 56 (<unknown>, line 57)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\gerador_posicional.py
+
+Arquivo: geradores\gerador_posicional_n12.py
+Erro: closing parenthesis ')' does not match opening parenthesis '{' on line 70 (<unknown>, line 71)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\gerador_posicional_n12.py
+
+Arquivo: geradores\piramide_invertida_dinamica_n12.py
+Erro: closing parenthesis ']' does not match opening parenthesis '(' (<unknown>, line 366)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\piramide_invertida_dinamica_n12.py
+
+Arquivo: geradores\super_combinacao_concurso_especifico.py
+Erro: invalid syntax (<unknown>, line 260)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\super_combinacao_concurso_especifico.py
+
+Arquivo: geradores\super_combinacao_ia.py
+Erro: closing parenthesis ']' does not match opening parenthesis '(' (<unknown>, line 118)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\super_combinacao_ia.py
+
+Arquivo: geradores\super_combinacao_ia_n12.py
+Erro: closing parenthesis ']' does not match opening parenthesis '(' (<unknown>, line 135)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\geradores\super_combinacao_ia_n12.py
+
+Arquivo: analisadores\analisador_academico_padroes.py
+Erro: unexpected indent (<unknown>, line 29)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\analisadores\analisador_academico_padroes.py
+
+Arquivo: analisadores\analisador_preditivo_avancado.py
+Erro: closing parenthesis ']' does not match opening parenthesis '(' on line 222 (<unknown>, line 223)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\analisadores\analisador_preditivo_avancado.py
+
+Arquivo: analisadores\analise_janelas_deslizantes_novo.py
+Erro: closing parenthesis ']' does not match opening parenthesis '(' (<unknown>, line 65)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\analisadores\analise_janelas_deslizantes_novo.py
+
+Arquivo: analisadores\analise_janela_treinamento.py
+Erro: closing parenthesis ']' does not match opening parenthesis '(' (<unknown>, line 177)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\analisadores\analise_janela_treinamento.py
+
+Arquivo: analisadores\comparacao_dinamico_vs_piramide.py
+Erro: invalid syntax. Perhaps you forgot a comma? (<unknown>, line 103)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\analisadores\comparacao_dinamico_vs_piramide.py
+
+Arquivo: sistemas\sistema_inteligencia_preditiva.py
+Erro: closing parenthesis ']' does not match opening parenthesis '(' (<unknown>, line 118)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\sistemas\sistema_inteligencia_preditiva.py
+
+Arquivo: sistemas\sistema_neural_network_v6.py
+Erro: unexpected indent (<unknown>, line 14)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\sistemas\sistema_neural_network_v6.py
+
+Arquivo: sistemas\sistema_neural_v6_corrigido.py
+Erro: closing parenthesis ']' does not match opening parenthesis '(' (<unknown>, line 132)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\sistemas\sistema_neural_v6_corrigido.py
+
+Arquivo: sistemas\sistema_otimizacao_probabilistica.py
+Erro: closing parenthesis ']' does not match opening parenthesis '(' (<unknown>, line 89)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\sistemas\sistema_otimizacao_probabilistica.py
+
+Arquivo: sistemas\sistema_previsao_adaptativa.py
+Erro: closing parenthesis ')' does not match opening parenthesis '[' (<unknown>, line 183)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\sistemas\sistema_previsao_adaptativa.py
+
+Arquivo: sistemas\sistema_rede_neural_insights.py
+Erro: closing parenthesis ']' does not match opening parenthesis '(' (<unknown>, line 84)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\sistemas\sistema_rede_neural_insights.py
+
+Arquivo: utils\conector_megasena_db.py
+Erro: closing parenthesis ')' does not match opening parenthesis '{' on line 419 (<unknown>, line 420)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\utils\conector_megasena_db.py
+
+Arquivo: ia\inteligencia_primos_fibonacci.py
+Erro: invalid syntax (<unknown>, line 405)
+Movido para: C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\_quarentena\ia\inteligencia_primos_fibonacci.py

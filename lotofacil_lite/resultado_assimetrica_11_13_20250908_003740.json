@@ -1,0 +1,122 @@
+{
+  "timestamp": "08/09/2025 00:37:40",
+  "estrategia": "assimetrica_11_13",
+  "quantidade": 5,
+  "combinacoes": [
+    {
+      "numeros": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        17,
+        19,
+        21,
+        23,
+        25
+      ],
+      "soma": 175,
+      "pares": 2,
+      "score_premium": 78.5,
+      "estrategia": "assimetrica_11_13"
+    },
+    {
+      "numeros": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        24
+      ],
+      "soma": 165,
+      "pares": 12,
+      "score_premium": 77.3,
+      "estrategia": "assimetrica_11_13"
+    },
+    {
+      "numeros": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        13,
+        14,
+        17,
+        18,
+        21,
+        22,
+        25
+      ],
+      "soma": 173,
+      "pares": 6,
+      "score_premium": 76.1,
+      "estrategia": "assimetrica_11_13"
+    },
+    {
+      "numeros": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        10,
+        11,
+        13,
+        15,
+        17,
+        19,
+        21,
+        23,
+        25
+      ],
+      "soma": 178,
+      "pares": 5,
+      "score_premium": 74.9,
+      "estrategia": "assimetrica_11_13"
+    },
+    {
+      "numeros": [
+        1,
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        24
+      ],
+      "soma": 175,
+      "pares": 10,
+      "score_premium": 73.7,
+      "estrategia": "assimetrica_11_13"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+🧠 SUPER-COMBINAÇÕES GERADAS POR IA
+============================================================
+Gerado em: 20/08/2025 17:53:03
+Origem: pipeline_dinamico
+
+🎯 SUPER-COMBINAÇÃO 1:
+1,2,3,5,6,7,10,12,16,18,19,21,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: conservadora
+Mudanças realizadas: 2
+  Removidos: [4]
+  Adicionados: [25]
+
+🎯 SUPER-COMBINAÇÃO 2:
+1,2,3,5,6,9,13,14,15,18,19,21,22,23,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: agressiva
+Mudanças realizadas: 4
+  Removidos: [17, 20]
+  Adicionados: [13, 22]
+
+🎯 SUPER-COMBINAÇÃO 3:
+1,2,3,9,10,11,13,16,17,18,19,21,22,24,25
+Performance Prevista: 50.0
+Confiança IA: 50.6%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [5, 6]
+  Adicionados: [10, 22]
+

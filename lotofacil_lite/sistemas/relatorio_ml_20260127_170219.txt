@@ -1,0 +1,128 @@
+======================================================================
+🤖 RELATÓRIO DE APRENDIZADO COM MACHINE LEARNING (10 ALGORITMOS)
+======================================================================
+
+📅 Data: 2026-01-27T17:02:19.255647
+🔢 Sessão #: 129
+📊 Janelas: 3565
+⏱️ Duração: 11.4s
+
+----------------------------------------------------------------------
+🎓 DISTRIBUIÇÃO DE ALGORITMOS (META-BANDIT)
+----------------------------------------------------------------------
+
+   THOMPSON: 3565 seleções (100.0%)
+
+----------------------------------------------------------------------
+🎰 MULTI-ARMED BANDITS
+----------------------------------------------------------------------
+
+   THOMPSON SAMPLING:
+      Atrasados: E[R]=-0.7300 (n=154738)
+      Quentes: E[R]=-0.7304 (n=192306)
+      Equilibrada: E[R]=-0.7305 (n=115509)
+
+   Melhor por E[reward]: ATRASADOS
+
+   Seleções por estratégia:
+      Equilibrada: 815 (22.9%)
+      Quentes: 852 (23.9%)
+      Atrasados: 1898 (53.2%)
+
+----------------------------------------------------------------------
+🔢 FEATURE IMPORTANCE - Top Números
+----------------------------------------------------------------------
+
+   Top 10 números mais importantes: [1, 4, 15, 20, 8, 2, 21, 22, 6, 18]
+   (Números que mais contribuem para acertos)
+
+----------------------------------------------------------------------
+📈 ESTATÍSTICAS POR ESTRATÉGIA
+----------------------------------------------------------------------
+
+🎯 ATRASADOS
+   Vezes selecionada: 1898
+   ROI: -69.4%
+   Reward médio: -0.6892
+   Custo: R$ 33215.00
+   Lucro líquido: R$ -23066.00
+   Acertos 11+: 1088
+      14 acertos: 1x
+      13 acertos: 14x
+      12 acertos: 164x
+      11 acertos: 909x
+
+🎯 QUENTES
+   Vezes selecionada: 852
+   ROI: -74.5%
+   Reward médio: -0.7446
+   Custo: R$ 14910.00
+   Lucro líquido: R$ -11102.00
+   Acertos 11+: 459
+      13 acertos: 5x
+      12 acertos: 65x
+      11 acertos: 389x
+
+🎯 EQUILIBRADA
+   Vezes selecionada: 815
+   ROI: -73.8%
+   Reward médio: -0.7384
+   Custo: R$ 14262.50
+   Lucro líquido: R$ -10531.50
+   Acertos 11+: 438
+      13 acertos: 5x
+      12 acertos: 75x
+      11 acertos: 358x
+
+----------------------------------------------------------------------
+⚙️ HIPERPARÂMETROS (Bayesian Optimization / TPE)
+----------------------------------------------------------------------
+
+   limite_atraso_minimo: 5.2584
+   limite_frequencia_quente: 0.6365
+   peso_atrasados_mix: 4.8879
+   peso_quentes_mix: 5.6263
+
+----------------------------------------------------------------------
+📊 EVOLUÇÃO DO APRENDIZADO
+----------------------------------------------------------------------
+
+   ROI médio atual: -72.58%
+   ROI médio anterior: -100.00%
+   Delta: 📈 +27.42%
+
+   ✅ SISTEMA MELHOROU NESTA SESSÃO!
+
+======================================================================
+🎓 10 ALGORITMOS ACADÊMICOS IMPLEMENTADOS
+======================================================================
+
+   1. THOMPSON SAMPLING (Auer et al.)
+      Convergência assintótica garantida para estratégia ótima.
+
+   2. UCB1 - Upper Confidence Bound (Auer et al., 2002)
+      Bound otimista determinístico para exploração.
+
+   3. EXP3 - Adversarial Bandit (Auer et al., 2002)
+      Robusto a mudanças de distribuição.
+
+   4. BAYESIAN OPTIMIZATION / TPE
+      Otimização de hiperparâmetros com menos avaliações.
+
+   5. GENETIC ALGORITHM (Holland, 1975)
+      Evolui combinações via crossover, mutação e seleção.
+
+   6. SIMULATED ANNEALING (Kirkpatrick et al., 1983)
+      Escape de mínimos locais via temperatura.
+
+   7. ENSEMBLE LEARNING
+      Combina votos de múltiplos algoritmos.
+
+   8. EXPONENTIAL MOVING AVERAGE (EMA)
+      Detecta mudanças de tendência rapidamente.
+
+   9. FEATURE IMPORTANCE
+      Identifica números/padrões mais importantes.
+
+   10. META-BANDIT (UCB sobre algoritmos)
+       Seleciona qual algoritmo usar baseado em performance.

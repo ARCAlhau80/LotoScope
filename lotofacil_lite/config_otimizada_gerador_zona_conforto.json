@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-09-25T09:00:21.483425",
+  "parametros": {
+    "percentual_zona_1_17": 0.8,
+    "max_sequencia": 12,
+    "diversidade_restante": 0.6
+  },
+  "acoes_sugeridas": [
+    "Ajustar percentual da zona 1-17",
+    "Calibrar tamanho máximo de sequências",
+    "Equilibrar números restantes (18-25)"
+  ],
+  "tipo_otimizacao": "zona_conforto",
+  "aplicado": false,
+  "versao": 1
+}

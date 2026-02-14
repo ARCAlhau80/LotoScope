@@ -1,0 +1,212 @@
+{
+  "gerado_em": "2025-08-20 18:28:44",
+  "arquivo_origem": "pipeline_dinamico",
+  "modelo_usado": {},
+  "super_combinacoes": [
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        13,
+        14,
+        16,
+        17,
+        18,
+        19,
+        21,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        13,
+        14,
+        16,
+        17,
+        18,
+        19,
+        21,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [],
+        "adicionados": [],
+        "mantidos": [
+          1,
+          2,
+          3,
+          5,
+          6,
+          7,
+          13,
+          14,
+          16,
+          17,
+          18,
+          19,
+          21,
+          23,
+          25
+        ],
+        "total_mudancas": 0
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.5,
+      "estrategia_aplicada": "conservadora"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        9,
+        13,
+        14,
+        17,
+        18,
+        19,
+        21,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        8,
+        9,
+        13,
+        17,
+        18,
+        19,
+        21,
+        22,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          8,
+          22
+        ],
+        "adicionados": [
+          14,
+          23
+        ],
+        "mantidos": [
+          1,
+          2,
+          3,
+          5,
+          6,
+          9,
+          13,
+          17,
+          18,
+          19,
+          21,
+          24,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.5,
+      "estrategia_aplicada": "agressiva"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        7,
+        8,
+        9,
+        13,
+        17,
+        18,
+        19,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        8,
+        9,
+        13,
+        17,
+        18,
+        19,
+        21,
+        22,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          5,
+          6
+        ],
+        "adicionados": [
+          23,
+          7
+        ],
+        "mantidos": [
+          1,
+          2,
+          3,
+          8,
+          9,
+          13,
+          17,
+          18,
+          19,
+          21,
+          22,
+          24,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.5,
+      "estrategia_aplicada": "hibrida"
+    }
+  ],
+  "configuracao_ia": {
+    "hidden_layers": [
+      256,
+      128,
+      64,
+      32
+    ],
+    "activation": "relu",
+    "solver": "adam",
+    "alpha": 0.001,
+    "learning_rate": "adaptive",
+    "max_iter": 2000,
+    "random_state": 42
+  }
+}

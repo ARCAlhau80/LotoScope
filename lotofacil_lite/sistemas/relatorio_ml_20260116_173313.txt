@@ -1,0 +1,131 @@
+======================================================================
+🤖 RELATÓRIO DE APRENDIZADO COM MACHINE LEARNING (10 ALGORITMOS)
+======================================================================
+
+📅 Data: 2026-01-16T17:33:13.530778
+🔢 Sessão #: 108
+📊 Janelas: 3557
+⏱️ Duração: 13.4s
+
+----------------------------------------------------------------------
+🎓 DISTRIBUIÇÃO DE ALGORITMOS (META-BANDIT)
+----------------------------------------------------------------------
+
+   EXP3: 1889 seleções (53.1%)
+   UCB1: 802 seleções (22.5%)
+   THOMPSON: 445 seleções (12.5%)
+   ENSEMBLE: 421 seleções (11.8%)
+
+----------------------------------------------------------------------
+🎰 MULTI-ARMED BANDITS
+----------------------------------------------------------------------
+
+   THOMPSON SAMPLING:
+      Atrasados: E[R]=-0.7199 (n=156341)
+      Quentes: E[R]=-0.7280 (n=69111)
+      Equilibrada: E[R]=-0.7236 (n=158600)
+
+   Melhor por E[reward]: ATRASADOS
+
+   Seleções por estratégia:
+      Atrasados: 1148 (32.3%)
+      Quentes: 1853 (52.1%)
+      Equilibrada: 556 (15.6%)
+
+----------------------------------------------------------------------
+🔢 FEATURE IMPORTANCE - Top Números
+----------------------------------------------------------------------
+
+   Top 10 números mais importantes: [2, 22, 8, 17, 10, 9, 21, 4, 15, 23]
+   (Números que mais contribuem para acertos)
+
+----------------------------------------------------------------------
+📈 ESTATÍSTICAS POR ESTRATÉGIA
+----------------------------------------------------------------------
+
+🎯 ATRASADOS
+   Vezes selecionada: 1148
+   ROI: -67.8%
+   Reward médio: -0.6690
+   Custo: R$ 20090.00
+   Lucro líquido: R$ -13616.00
+   Acertos 11+: 623
+      14 acertos: 1x
+      13 acertos: 14x
+      12 acertos: 104x
+      11 acertos: 504x
+
+🎯 QUENTES
+   Vezes selecionada: 1853
+   ROI: -73.8%
+   Reward médio: -0.7384
+   Custo: R$ 32427.50
+   Lucro líquido: R$ -23943.50
+   Acertos 11+: 1000
+      13 acertos: 16x
+      12 acertos: 148x
+      11 acertos: 836x
+
+🎯 EQUILIBRADA
+   Vezes selecionada: 556
+   ROI: -73.8%
+   Reward médio: -0.7381
+   Custo: R$ 9730.00
+   Lucro líquido: R$ -7182.00
+   Acertos 11+: 304
+      13 acertos: 3x
+      12 acertos: 48x
+      11 acertos: 253x
+
+----------------------------------------------------------------------
+⚙️ HIPERPARÂMETROS (Bayesian Optimization / TPE)
+----------------------------------------------------------------------
+
+   limite_atraso_minimo: 6.5649
+   limite_frequencia_quente: 0.6146
+   peso_atrasados_mix: 5.0112
+   peso_quentes_mix: 5.7448
+
+----------------------------------------------------------------------
+📊 EVOLUÇÃO DO APRENDIZADO
+----------------------------------------------------------------------
+
+   ROI médio atual: -71.81%
+   ROI médio anterior: -72.91%
+   Delta: 📈 +1.10%
+
+   ✅ SISTEMA MELHOROU NESTA SESSÃO!
+
+======================================================================
+🎓 10 ALGORITMOS ACADÊMICOS IMPLEMENTADOS
+======================================================================
+
+   1. THOMPSON SAMPLING (Auer et al.)
+      Convergência assintótica garantida para estratégia ótima.
+
+   2. UCB1 - Upper Confidence Bound (Auer et al., 2002)
+      Bound otimista determinístico para exploração.
+
+   3. EXP3 - Adversarial Bandit (Auer et al., 2002)
+      Robusto a mudanças de distribuição.
+
+   4. BAYESIAN OPTIMIZATION / TPE
+      Otimização de hiperparâmetros com menos avaliações.
+
+   5. GENETIC ALGORITHM (Holland, 1975)
+      Evolui combinações via crossover, mutação e seleção.
+
+   6. SIMULATED ANNEALING (Kirkpatrick et al., 1983)
+      Escape de mínimos locais via temperatura.
+
+   7. ENSEMBLE LEARNING
+      Combina votos de múltiplos algoritmos.
+
+   8. EXPONENTIAL MOVING AVERAGE (EMA)
+      Detecta mudanças de tendência rapidamente.
+
+   9. FEATURE IMPORTANCE
+      Identifica números/padrões mais importantes.
+
+   10. META-BANDIT (UCB sobre algoritmos)
+       Seleciona qual algoritmo usar baseado em performance.

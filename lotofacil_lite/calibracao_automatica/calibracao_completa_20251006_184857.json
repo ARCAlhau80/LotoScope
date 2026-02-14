@@ -1,0 +1,85 @@
+{
+  "timestamp": "2025-10-06T18:48:57.073655",
+  "cenario_detectado": {
+    "tipo": "equilibrio_normal",
+    "confianca": 0.5,
+    "descricao": "Estado de equilíbrio normal - sem padrões extremos",
+    "parametros": {
+      "menor_esperado": 5,
+      "soma_esperada": 195
+    },
+    "estrategia": {
+      "zona_foco": [
+        1,
+        25
+      ],
+      "distribuicao_uniforme": true,
+      "zona_conforto_peso": 0.7,
+      "soma_alvo": [
+        180,
+        220
+      ]
+    }
+  },
+  "geradores_calibrados": {
+    "gerador_academico_dinamico.py": {
+      "zona_foco": [
+        1,
+        25
+      ],
+      "peso_correlacoes": 0.6,
+      "soma_alvo": [
+        180,
+        220
+      ],
+      "modo_inversao": false
+    },
+    "super_gerador_ia.py": {
+      "modo_adaptativo": true,
+      "cenario_detectado": "equilibrio_normal",
+      "confianca_cenario": 0.5,
+      "parametros_especiais": {
+        "menor_esperado": 5,
+        "soma_esperada": 195
+      }
+    },
+    "gerador_complementacao_inteligente.py": {
+      "base_20_foco": [
+        1,
+        25
+      ],
+      "forca_extremos": false,
+      "peso_distribuicao": 3.0,
+      "soma_alvo": [
+        180,
+        220
+      ]
+    },
+    "sistema_desdobramento_complementar.py": {
+      "cenario": "equilibrio_normal",
+      "estrategia": {
+        "zona_foco": [
+          1,
+          25
+        ],
+        "distribuicao_uniforme": true,
+        "zona_conforto_peso": 0.7,
+        "soma_alvo": [
+          180,
+          220
+        ]
+      },
+      "parametros": {
+        "menor_esperado": 5,
+        "soma_esperada": 195
+      }
+    },
+    "gerador_zona_conforto.py": {
+      "zona_conforto_inicio": 1,
+      "zona_conforto_fim": 17,
+      "peso_zona": 0.8,
+      "permitir_sequencias": true
+    }
+  },
+  "proxima_validacao": "21:00 (resultado do concurso)"
+}

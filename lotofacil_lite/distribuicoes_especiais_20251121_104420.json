@@ -1,0 +1,115 @@
+{
+  "timestamp": "20251121_104420",
+  "padroes_matematicos": {
+    "fibonacci": {
+      "total_aparicoes": 4643,
+      "concursos_com_fibonacci": 999,
+      "media_por_concurso": 4.643,
+      "max_por_concurso": 7
+    },
+    "primos": {
+      "total_aparicoes": 5843,
+      "concursos_com_primos": 1000,
+      "media_por_concurso": 5.843,
+      "max_por_concurso": 9,
+      "primos_individuais": {
+        "2": 653,
+        "3": 686,
+        "5": 678,
+        "7": 636,
+        "17": 625,
+        "19": 616,
+        "23": 654,
+        "11": 630,
+        "13": 665
+      }
+    },
+    "quadrados_perfeitos": {
+      "total_aparicoes": 2986,
+      "media_por_concurso": 2.986,
+      "max_por_concurso": 5
+    },
+    "triangulares": {
+      "total_aparicoes": 3614,
+      "media_por_concurso": 3.614,
+      "max_por_concurso": 6
+    },
+    "somas_especiais": {
+      "multiplos_7": 161,
+      "multiplos_11": 87,
+      "multiplos_13": 72,
+      "potencias_2": 0,
+      "entre_200_250": 333,
+      "palindromicas": 90
+    }
+  },
+  "descobertas_especiais": [
+    {
+      "tipo": "soma_multiplos_7",
+      "significancia": "ALTA",
+      "frequencia": 161,
+      "porcentagem": 16.1
+    },
+    {
+      "tipo": "soma_multiplos_11",
+      "significancia": "ALTA",
+      "frequencia": 87,
+      "porcentagem": 8.7
+    },
+    {
+      "tipo": "soma_multiplos_13",
+      "significancia": "ALTA",
+      "frequencia": 72,
+      "porcentagem": 7.199999999999999
+    },
+    {
+      "tipo": "soma_entre_200_250",
+      "significancia": "ALTA",
+      "frequencia": 333,
+      "porcentagem": 33.300000000000004
+    },
+    {
+      "tipo": "soma_palindromicas",
+      "significancia": "ALTA",
+      "frequencia": 90,
+      "porcentagem": 9.0
+    }
+  ],
+  "sequencias_analisadas": {
+    "fibonacci": [
+      1,
+      2,
+      3,
+      5,
+      8,
+      13,
+      21
+    ],
+    "primos": [
+      2,
+      3,
+      5,
+      7,
+      11,
+      13,
+      17,
+      19,
+      23
+    ],
+    "quadrados_perfeitos": [
+      1,
+      4,
+      9,
+      16,
+      25
+    ],
+    "triangulares": [
+      1,
+      3,
+      6,
+      10,
+      15,
+      21
+    ]
+  }
+}

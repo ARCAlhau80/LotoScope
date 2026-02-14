@@ -1,0 +1,452 @@
+🧠 SUPER-COMBINAÇÕES GERADAS POR IA
+============================================================
+Gerado em: 21/08/2025 17:35:35
+Origem: pipeline_dinamico
+
+🎯 SUPER-COMBINAÇÃO 1:
+1,5,6,8,10,12,13,14,18,19,21,22,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: conservadora
+
+🎯 SUPER-COMBINAÇÃO 2:
+1,2,3,5,6,8,12,13,14,15,18,19,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: agressiva
+Mudanças realizadas: 4
+  Removidos: [9, 7]
+  Adicionados: [2, 12]
+
+🎯 SUPER-COMBINAÇÃO 3:
+1,2,7,8,9,12,13,14,15,18,19,20,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [3, 5, 6]
+  Adicionados: [8, 2, 21]
+
+🎯 SUPER-COMBINAÇÃO 4:
+1,2,3,6,11,13,15,16,17,18,19,20,21,22,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [9, 10, 5]
+  Adicionados: [2, 3, 15]
+
+🎯 SUPER-COMBINAÇÃO 5:
+1,2,5,6,9,11,13,15,18,19,21,22,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [8, 3]
+  Adicionados: [11, 15]
+
+🎯 SUPER-COMBINAÇÃO 6:
+1,6,9,10,11,12,13,14,15,18,19,22,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [3, 5]
+  Adicionados: [10, 11]
+
+🎯 SUPER-COMBINAÇÃO 7:
+1,2,6,7,8,11,12,13,14,18,19,20,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [3, 5]
+  Adicionados: [2, 23]
+
+🎯 SUPER-COMBINAÇÃO 8:
+1,2,3,9,12,13,14,15,18,19,21,22,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [8, 5, 6]
+  Adicionados: [2, 3, 21]
+
+🎯 SUPER-COMBINAÇÃO 9:
+1,2,3,5,8,9,10,11,13,14,16,18,19,24,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [4, 6]
+  Adicionados: [11, 3]
+
+🎯 SUPER-COMBINAÇÃO 10:
+1,2,6,8,9,11,12,13,14,18,19,21,22,23,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [3, 5]
+  Adicionados: [2, 11]
+
+🎯 SUPER-COMBINAÇÃO 11:
+1,5,6,9,10,11,12,13,14,16,17,18,19,21,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [2, 3]
+  Adicionados: [9, 12]
+
+🎯 SUPER-COMBINAÇÃO 12:
+1,2,3,5,6,9,11,12,13,15,18,19,21,24,25
+Performance Prevista: 50.0
+Confiança IA: 50.0%
+Estratégia: hibrida
+Mudanças realizadas: 2
+  Removidos: [4]
+  Adicionados: [15]
+
+🎯 SUPER-COMBINAÇÃO 13:
+1,2,7,8,9,10,11,13,15,16,18,19,20,21,25
+Performance Prevista: 50.0
+Confiança IA: 53.6%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [5, 6]
+  Adicionados: [8, 10]
+
+🎯 SUPER-COMBINAÇÃO 14:
+1,2,5,9,10,12,13,14,16,18,19,21,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 58.6%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [8, 4, 6]
+  Adicionados: [2, 12, 14]
+
+🎯 SUPER-COMBINAÇÃO 15:
+1,5,8,9,10,11,12,13,16,18,19,20,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 63.6%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [6, 7]
+  Adicionados: [12, 23]
+
+🎯 SUPER-COMBINAÇÃO 16:
+1,2,3,5,12,13,14,15,16,17,18,19,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 68.6%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [8, 6]
+  Adicionados: [2, 3]
+
+🎯 SUPER-COMBINAÇÃO 17:
+1,5,6,7,8,9,10,12,13,17,18,19,21,22,25
+Performance Prevista: 50.0
+Confiança IA: 73.6%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [2, 3, 14]
+  Adicionados: [9, 10, 12]
+
+🎯 SUPER-COMBINAÇÃO 18:
+1,2,3,5,6,12,13,14,18,19,21,22,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 78.6%
+Estratégia: hibrida
+Mudanças realizadas: 2
+  Removidos: [9]
+  Adicionados: [2]
+
+🎯 SUPER-COMBINAÇÃO 19:
+2,3,6,8,9,11,12,13,14,15,16,18,19,22,25
+Performance Prevista: 50.0
+Confiança IA: 83.6%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [1, 5]
+  Adicionados: [3, 15]
+
+🎯 SUPER-COMBINAÇÃO 20:
+1,5,9,10,11,13,15,16,18,19,21,22,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 88.6%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [8, 4, 6]
+  Adicionados: [9, 11, 23]
+
+🎯 SUPER-COMBINAÇÃO 21:
+1,5,6,8,10,11,12,13,16,18,19,21,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 93.6%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [9, 4]
+  Adicionados: [11, 12]
+
+🎯 SUPER-COMBINAÇÃO 22:
+1,2,5,6,9,11,12,13,14,15,18,19,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 2
+  Removidos: [8]
+  Adicionados: [9]
+
+🎯 SUPER-COMBINAÇÃO 23:
+1,2,6,8,9,10,13,14,15,18,19,20,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [3, 4, 5]
+  Adicionados: [8, 2, 21]
+
+🎯 SUPER-COMBINAÇÃO 24:
+1,5,6,8,9,10,13,14,15,16,18,19,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [2, 11, 7]
+  Adicionados: [10, 21, 14]
+
+🎯 SUPER-COMBINAÇÃO 25:
+1,5,6,8,10,12,13,15,18,19,21,22,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [9, 14]
+  Adicionados: [10, 21]
+
+🎯 SUPER-COMBINAÇÃO 26:
+1,3,5,6,10,11,12,13,14,18,19,20,21,22,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [8, 9]
+  Adicionados: [11, 12]
+
+🎯 SUPER-COMBINAÇÃO 27:
+2,8,9,10,12,13,14,15,17,18,19,21,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [1, 5, 6]
+  Adicionados: [2, 12, 15]
+
+🎯 SUPER-COMBINAÇÃO 28:
+1,2,5,6,9,12,14,15,18,19,21,22,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [3, 13]
+  Adicionados: [2, 21]
+
+🎯 SUPER-COMBINAÇÃO 29:
+1,2,3,5,6,8,9,10,13,15,21,22,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [18, 19]
+  Adicionados: [10, 15]
+
+🎯 SUPER-COMBINAÇÃO 30:
+1,2,3,5,6,8,11,13,14,18,19,21,22,23,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 2
+  Removidos: [9]
+  Adicionados: [8]
+
+🎯 SUPER-COMBINAÇÃO 31:
+1,2,3,5,6,8,9,15,16,18,19,21,22,24,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [10, 4, 13]
+  Adicionados: [9, 2, 3]
+
+🎯 SUPER-COMBINAÇÃO 32:
+1,3,5,7,9,12,13,14,15,17,18,19,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [2, 6]
+  Adicionados: [3, 23]
+
+🎯 SUPER-COMBINAÇÃO 33:
+1,2,5,6,8,9,12,13,18,19,20,21,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [11, 4]
+  Adicionados: [8, 12]
+
+🎯 SUPER-COMBINAÇÃO 34:
+1,6,8,9,10,11,12,13,14,18,19,21,22,23,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [2, 3, 5]
+  Adicionados: [11, 12, 21]
+
+🎯 SUPER-COMBINAÇÃO 35:
+1,5,6,9,10,11,13,14,15,18,19,20,21,22,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [8, 4]
+  Adicionados: [11, 15]
+
+🎯 SUPER-COMBINAÇÃO 36:
+1,8,10,11,12,13,14,15,17,18,19,20,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [2, 5, 6]
+  Adicionados: [11, 23, 15]
+
+🎯 SUPER-COMBINAÇÃO 37:
+1,3,6,8,9,11,12,13,14,17,18,19,21,22,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [2, 5, 7]
+  Adicionados: [9, 11, 12]
+
+🎯 SUPER-COMBINAÇÃO 38:
+1,5,6,8,9,10,13,14,15,16,18,19,21,24,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [2, 4]
+  Adicionados: [21, 15]
+
+🎯 SUPER-COMBINAÇÃO 39:
+1,2,3,5,6,11,13,14,18,19,21,22,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [9, 12]
+  Adicionados: [11, 3]
+
+🎯 SUPER-COMBINAÇÃO 40:
+3,6,7,8,9,11,12,13,14,15,18,19,20,21,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [1, 5]
+  Adicionados: [9, 15]
+
+🎯 SUPER-COMBINAÇÃO 41:
+1,2,5,6,9,11,14,15,18,19,21,22,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [8, 12, 13]
+  Adicionados: [2, 11, 21]
+
+🎯 SUPER-COMBINAÇÃO 42:
+1,5,7,8,9,10,12,13,14,15,18,19,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [3, 6]
+  Adicionados: [9, 10]
+
+🎯 SUPER-COMBINAÇÃO 43:
+1,5,6,8,9,12,13,14,18,19,21,22,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [2, 3, 4]
+  Adicionados: [12, 21, 14]
+
+🎯 SUPER-COMBINAÇÃO 44:
+2,7,8,9,11,12,13,14,15,18,19,21,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [1, 5, 6]
+  Adicionados: [9, 2, 11]
+
+🎯 SUPER-COMBINAÇÃO 45:
+1,5,6,8,9,10,12,13,14,17,18,19,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 4
+  Removidos: [2, 3]
+  Adicionados: [8, 21]
+
+🎯 SUPER-COMBINAÇÃO 46:
+1,5,6,8,9,10,12,13,14,15,18,19,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [2, 3, 4]
+  Adicionados: [8, 9, 15]
+
+🎯 SUPER-COMBINAÇÃO 47:
+1,3,4,6,9,10,13,14,15,17,18,19,20,21,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [8, 2, 5]
+  Adicionados: [10, 3, 15]
+
+🎯 SUPER-COMBINAÇÃO 48:
+1,5,6,8,9,11,13,14,15,18,19,21,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [10, 3, 12]
+  Adicionados: [8, 21, 14]
+
+🎯 SUPER-COMBINAÇÃO 49:
+1,2,5,8,9,13,14,15,18,19,21,22,23,24,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [3, 4, 6]
+  Adicionados: [9, 2, 15]
+
+🎯 SUPER-COMBINAÇÃO 50:
+1,3,5,8,9,10,11,12,13,14,18,19,21,23,25
+Performance Prevista: 50.0
+Confiança IA: 95.0%
+Estratégia: hibrida
+Mudanças realizadas: 6
+  Removidos: [2, 4, 6]
+  Adicionados: [8, 9, 11]
+

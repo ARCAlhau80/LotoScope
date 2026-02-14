@@ -1,0 +1,205 @@
+{
+  "ia_numeros_repetidos": {
+    "config": {
+      "timestamp": "2025-09-25T09:00:21.173459",
+      "parametros": {
+        "epochs": 200,
+        "learning_rate": 0.001
+      },
+      "acoes_sugeridas": [
+        "Aumentar épocas de treinamento",
+        "Reduzir taxa de aprendizado",
+        "Revisar arquitetura da rede neural"
+      ],
+      "tipo_otimizacao": "neural_ia",
+      "aplicado": false,
+      "versao": 1
+    },
+    "criado_em": "2025-09-25T09:00:21.187436",
+    "status": "pendente"
+  },
+  "gerador_academico_dinamico": {
+    "config": {
+      "timestamp": "2025-09-25T09:00:21.208425",
+      "parametros": {
+        "janela_temporal": 150,
+        "peso_frequencia": 0.4,
+        "peso_ciclos": 0.3,
+        "peso_tendencias": 0.3
+      },
+      "acoes_sugeridas": [
+        "Ajustar janela temporal baseada em performance",
+        "Rebalancear pesos dos fatores acadêmicos",
+        "Incorporar mais dados históricos"
+      ],
+      "tipo_otimizacao": "academico",
+      "aplicado": false,
+      "versao": 1
+    },
+    "criado_em": "2025-09-25T09:00:21.222430",
+    "status": "pendente"
+  },
+  "super_gerador_ia": {
+    "config": {
+      "timestamp": "2025-09-25T09:00:21.244418",
+      "parametros": {
+        "peso_ia": 0.5,
+        "peso_academico": 0.3,
+        "peso_heuristico": 0.2,
+        "diversidade_minima": 8
+      },
+      "acoes_sugeridas": [
+        "Rebalancear componentes IA vs Acadêmico",
+        "Aumentar diversidade se volatilidade alta",
+        "Otimizar integração entre módulos"
+      ],
+      "tipo_otimizacao": "super_integrado",
+      "aplicado": false,
+      "versao": 1
+    },
+    "criado_em": "2025-09-25T09:00:21.259408",
+    "status": "pendente"
+  },
+  "sistema_modelo_temporal_79": {
+    "config": {
+      "timestamp": "2025-09-25T09:00:21.279384",
+      "parametros": {
+        "janela_otima": 110,
+        "peso_recencia": 0.6,
+        "peso_sazonalidade": 0.4,
+        "suavizacao": 0.1
+      },
+      "acoes_sugeridas": [
+        "Manter configuração vencedora (79.9%)",
+        "Ajustar apenas se performance degradar",
+        "Monitorar sazonalidade dos padrões"
+      ],
+      "tipo_otimizacao": "temporal_avancado",
+      "aplicado": false,
+      "versao": 1
+    },
+    "criado_em": "2025-09-25T09:00:21.291375",
+    "status": "pendente"
+  },
+  "piramide_invertida_dinamica": {
+    "config": {
+      "timestamp": "2025-09-25T09:00:21.312377",
+      "parametros": {
+        "sensibilidade_transicao": 0.3,
+        "peso_faixas_baixas": 0.7,
+        "peso_faixas_altas": 0.3
+      },
+      "acoes_sugeridas": [
+        "Ajustar sensibilidade às transições",
+        "Priorizar números saindo de faixas baixas",
+        "Calibrar detecção de sequências dominantes"
+      ],
+      "tipo_otimizacao": "piramide_dinamica",
+      "aplicado": false,
+      "versao": 1
+    },
+    "criado_em": "2025-09-25T09:00:21.326355",
+    "status": "pendente"
+  },
+  "sistema_neural_v7": {
+    "config": {
+      "timestamp": "2025-09-25T09:00:21.346360",
+      "parametros": {
+        "enfase_altos_baixos": 0.8,
+        "threshold_reversao": 0.75,
+        "ensemble_size": 5
+      },
+      "acoes_sugeridas": [
+        "Calibrar detecção de reversão Altos/Baixos",
+        "Ajustar threshold de confiança",
+        "Otimizar ensemble de modelos"
+      ],
+      "tipo_otimizacao": "neural_v7",
+      "aplicado": false,
+      "versao": 1
+    },
+    "criado_em": "2025-09-25T09:00:21.359339",
+    "status": "pendente"
+  },
+  "sistema_hibrido_v3": {
+    "config": {
+      "timestamp": "2025-09-25T09:00:21.379340",
+      "parametros": {
+        "peso_neural": 0.6,
+        "peso_metadados": 0.4,
+        "threshold_extremo": 0.8,
+        "threshold_medio": 0.2
+      },
+      "acoes_sugeridas": [
+        "Ajustar equilíbrio neural vs metadados",
+        "Calibrar detecção de valores extremos",
+        "Refinar lógica adaptativa"
+      ],
+      "tipo_otimizacao": "hibrido_adaptativo",
+      "aplicado": false,
+      "versao": 1
+    },
+    "criado_em": "2025-09-25T09:00:21.394317",
+    "status": "pendente"
+  },
+  "gerador_complementacao": {
+    "config": {
+      "timestamp": "2025-09-25T09:00:21.417318",
+      "parametros": {
+        "criterio_selecao_20": "frequencia_balanceada",
+        "peso_historico": 0.7,
+        "peso_tendencia": 0.3
+      },
+      "acoes_sugeridas": [
+        "Otimizar seleção dos 20 números base",
+        "Melhorar critérios de complementação",
+        "Validar cobertura matemática C(5,3)"
+      ],
+      "tipo_otimizacao": "complementacao_matematica",
+      "aplicado": false,
+      "versao": 1
+    },
+    "criado_em": "2025-09-25T09:00:21.432295",
+    "status": "pendente"
+  },
+  "sistema_escalonado_v4": {
+    "config": {
+      "timestamp": "2025-09-25T09:00:21.451429",
+      "parametros": {
+        "niveis_filtro": 8,
+        "peso_neural_ranking": 0.6,
+        "peso_matematico": 0.4
+      },
+      "acoes_sugeridas": [
+        "Ajustar níveis de filtro redutor",
+        "Calibrar peso do ranking neural",
+        "Otimizar seleção TOP combinações"
+      ],
+      "tipo_otimizacao": "escalonado_filtrado",
+      "aplicado": false,
+      "versao": 1
+    },
+    "criado_em": "2025-09-25T09:00:21.464441",
+    "status": "pendente"
+  },
+  "gerador_zona_conforto": {
+    "config": {
+      "timestamp": "2025-09-25T09:00:21.483425",
+      "parametros": {
+        "percentual_zona_1_17": 0.8,
+        "max_sequencia": 12,
+        "diversidade_restante": 0.6
+      },
+      "acoes_sugeridas": [
+        "Ajustar percentual da zona 1-17",
+        "Calibrar tamanho máximo de sequências",
+        "Equilibrar números restantes (18-25)"
+      ],
+      "tipo_otimizacao": "zona_conforto",
+      "aplicado": false,
+      "versao": 1
+    },
+    "criado_em": "2025-09-25T09:00:21.498401",
+    "status": "pendente"
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "gerado_em": "2025-09-08 19:31:00",
+  "total_operacoes": 22,
+  "log_completo": [
+    {
+      "timestamp": "2025-09-08 19:30:55",
+      "tipo": "SETUP",
+      "mensagem": "🔧 PREPARANDO AMBIENTE"
+    },
+    {
+      "timestamp": "2025-09-08 19:30:55",
+      "tipo": "INFO",
+      "mensagem": "Verificando pré-requisitos do sistema..."
+    },
+    {
+      "timestamp": "2025-09-08 19:30:55",
+      "tipo": "INFO",
+      "mensagem": "  banco_dados: ✅ OK"
+    },
+    {
+      "timestamp": "2025-09-08 19:30:55",
+      "tipo": "INFO",
+      "mensagem": "  diretorios: ✅ OK"
+    },
+    {
+      "timestamp": "2025-09-08 19:30:55",
+      "tipo": "INFO",
+      "mensagem": "  modelo_treinado: ✅ OK"
+    },
+    {
+      "timestamp": "2025-09-08 19:30:55",
+      "tipo": "INFO",
+      "mensagem": "  datasets_historicos: ✅ OK"
+    },
+    {
+      "timestamp": "2025-09-08 19:30:55",
+      "tipo": "SUCCESS",
+      "mensagem": "✅ Ambiente preparado com sucesso"
+    },
+    {
+      "timestamp": "2025-09-08 19:30:55",
+      "tipo": "PIPELINE",
+      "mensagem": "🚀 INICIANDO PIPELINE COMPLETO DE SUPER-COMBINAÇÕES"
+    },
+    {
+      "timestamp": "2025-09-08 19:30:55",
+      "tipo": "INFO",
+      "mensagem": "ETAPA 1: Obtendo combinações base..."
+    },
+    {
+      "timestamp": "2025-09-08 19:30:55",
+      "tipo": "INFO",
+      "mensagem": "Gerando 1000 combinações usando o sistema dinâmico..."
+    },
+    {
+      "timestamp": "2025-09-08 19:30:56",
+      "tipo": "INFO",
+      "mensagem": "✅ 1000 combinações dinâmicas geradas"
+    },
+    {
+      "timestamp": "2025-09-08 19:30:56",
+      "tipo": "INFO",
+      "mensagem": "Combinações base salvas: combin_ia/pipeline/combinacoes_base_dinamico_20250908_193056.txt"
+    },
+    {
+      "timestamp": "2025-09-08 19:30:56",
+      "tipo": "INFO",
+      "mensagem": "✅ 1000 combinações base obtidas"
+    },
+    {
+      "timestamp": "2025-09-08 19:30:56",
+      "tipo": "INFO",
+      "mensagem": "ETAPA 2: Gerando super-combinações com IA..."
+    },
+    {
+      "timestamp": "2025-09-08 19:31:00",
+      "tipo": "INFO",
+      "mensagem": "✅ 3 super-combinação(ões) gerada(s)"
+    },
+    {
+      "timestamp": "2025-09-08 19:31:00",
+      "tipo": "INFO",
+      "mensagem": "ETAPA 3: Validando super-combinações..."
+    },
+    {
+      "timestamp": "2025-09-08 19:31:00",
+      "tipo": "INFO",
+      "mensagem": "✅ Validação concluída"
+    },
+    {
+      "timestamp": "2025-09-08 19:31:00",
+      "tipo": "INFO",
+      "mensagem": "📊 Melhor acerto: 12 números"
+    },
+    {
+      "timestamp": "2025-09-08 19:31:00",
+      "tipo": "INFO",
+      "mensagem": "📊 Média geral: 8.7"
+    },
+    {
+      "timestamp": "2025-09-08 19:31:00",
+      "tipo": "INFO",
+      "mensagem": "ETAPA 4: Gerando relatório final..."
+    },
+    {
+      "timestamp": "2025-09-08 19:31:00",
+      "tipo": "ERROR",
+      "mensagem": "Erro ao gerar relatório: 'status'"
+    },
+    {
+      "timestamp": "2025-09-08 19:31:00",
+      "tipo": "SUCCESS",
+      "mensagem": "🎉 PIPELINE CONCLUÍDO COM SUCESSO!"
+    }
+  ]
+}

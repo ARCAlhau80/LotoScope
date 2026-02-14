@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-10-07T11:12:36.383261",
+  "gerador": "gerador_zona_conforto.py",
+  "configuracao": {
+    "zona_conforto_inicio": 1,
+    "zona_conforto_fim": 12,
+    "peso_zona": 0.85,
+    "permitir_sequencias": false
+  },
+  "aplicado_automaticamente": true
+}

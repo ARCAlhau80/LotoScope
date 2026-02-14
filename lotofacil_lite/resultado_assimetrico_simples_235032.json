@@ -1,0 +1,79 @@
+{
+  "timestamp": "07/09/2025 23:50:32",
+  "configuracao": {
+    "quantidade_inicial": 10,
+    "quantidade_final": 3,
+    "foco": "faixa_9_13_acertos"
+  },
+  "combinacoes": [
+    {
+      "posicao": 1,
+      "combinacao": [
+        2,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        15,
+        19,
+        20,
+        21,
+        24,
+        25
+      ],
+      "score": 73.75,
+      "soma": 190,
+      "pares": 7
+    },
+    {
+      "posicao": 2,
+      "combinacao": [
+        1,
+        4,
+        5,
+        6,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "score": 73.75,
+      "soma": 200,
+      "pares": 7
+    },
+    {
+      "posicao": 3,
+      "combinacao": [
+        1,
+        4,
+        5,
+        8,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        19,
+        20,
+        21,
+        24,
+        25
+      ],
+      "score": 73.45,
+      "soma": 206,
+      "pares": 7
+    }
+  ]
+}

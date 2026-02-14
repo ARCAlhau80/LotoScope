@@ -1,0 +1,38 @@
+======================================================================
+🤖 RELATÓRIO CONSOLIDADO - MÚLTIPLAS SESSÕES ML
+======================================================================
+
+📅 Data: 2026-01-17T17:46:17.875234
+🔢 Sessões executadas: 25
+
+----------------------------------------------------------------------
+📊 EVOLUÇÃO POR SESSÃO
+----------------------------------------------------------------------
+
+   Sessão 1: ROI -21.64% | Melhor: ATRASADOS
+   Sessão 2: ROI -22.83% | Melhor: ATRASADOS
+   Sessão 3: ROI -22.65% | Melhor: ATRASADOS
+   Sessão 4: ROI -22.75% | Melhor: ATRASADOS
+   Sessão 5: ROI -22.24% | Melhor: ATRASADOS
+   Sessão 6: ROI -23.31% | Melhor: ATRASADOS
+   Sessão 7: ROI -23.30% | Melhor: ATRASADOS
+   Sessão 8: ROI -23.10% | Melhor: ATRASADOS
+   Sessão 9: ROI -23.42% | Melhor: ATRASADOS
+   Sessão 10: ROI -23.26% | Melhor: ATRASADOS
+   Sessão 11: ROI -22.91% | Melhor: ATRASADOS
+   Sessão 12: ROI -23.21% | Melhor: ATRASADOS
+   Sessão 13: ROI -22.98% | Melhor: ATRASADOS
+   Sessão 14: ROI -22.87% | Melhor: ATRASADOS
+   Sessão 15: ROI -23.16% | Melhor: ATRASADOS
+   Sessão 16: ROI -21.67% | Melhor: ATRASADOS
+   Sessão 17: ROI -23.41% | Melhor: ATRASADOS
+   Sessão 18: ROI -22.59% | Melhor: ATRASADOS
+   Sessão 19: ROI -21.56% | Melhor: ATRASADOS
+   Sessão 20: ROI -22.09% | Melhor: ATRASADOS
+   Sessão 21: ROI -23.39% | Melhor: ATRASADOS
+   Sessão 22: ROI -22.76% | Melhor: ATRASADOS
+   Sessão 23: ROI -22.35% | Melhor: ATRASADOS
+   Sessão 24: ROI -22.59% | Melhor: ATRASADOS
+   Sessão 25: ROI -23.03% | Melhor: ATRASADOS
+
+   Evolução total: -1.39%

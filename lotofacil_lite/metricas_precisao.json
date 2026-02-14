@@ -1,0 +1,19 @@
+{
+  "versao": "1.0",
+  "data_criacao": "2025-09-20T02:27:28.000063",
+  "metricas_historicas": [
+    {
+      "data": "2025-09-20T02:27:29.681156",
+      "precisao": 64.44444444444444,
+      "total_validacoes": 3
+    },
+    {
+      "data": "2025-09-20T02:28:27.313966",
+      "precisao": 64.0,
+      "total_validacoes": 5
+    }
+  ],
+  "precisao_atual": 64.0,
+  "tendencia": "estavel",
+  "ultima_validacao": "2025-09-20T02:28:27.313954"
+}

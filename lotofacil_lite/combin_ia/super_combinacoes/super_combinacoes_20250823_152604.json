@@ -1,0 +1,154 @@
+{
+  "gerado_em": "2025-08-23 15:26:04",
+  "arquivo_origem": "pipeline_dinamico",
+  "modelo_usado": {},
+  "super_combinacoes": [
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        10,
+        16,
+        17,
+        18,
+        20,
+        21,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        10,
+        16,
+        17,
+        18,
+        20,
+        21,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [],
+        "adicionados": [],
+        "mantidos": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          9,
+          10,
+          16,
+          17,
+          18,
+          20,
+          21,
+          24,
+          25
+        ],
+        "total_mudancas": 0
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.5,
+      "estrategia_aplicada": "conservadora"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        13,
+        14,
+        15,
+        16,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        10,
+        11,
+        14,
+        15,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          2,
+          11,
+          7
+        ],
+        "adicionados": [
+          16,
+          4,
+          13
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          10,
+          14,
+          15,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.5,
+      "estrategia_aplicada": "agressiva"
+    }
+  ],
+  "configuracao_ia": {
+    "hidden_layers": [
+      12288,
+      6144,
+      3072,
+      1536,
+      768,
+      384,
+      192
+    ],
+    "activation": "relu",
+    "solver": "adam",
+    "alpha": 1e-05,
+    "learning_rate": "adaptive",
+    "max_iter": 6000,
+    "random_state": 42,
+    "early_stopping": true,
+    "validation_fraction": 0.1,
+    "n_iter_no_change": 100
+  }
+}

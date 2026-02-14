@@ -1,0 +1,11 @@
+{
+  "versao": "1.0",
+  "data_criacao": "2025-08-25T01:10:01.120120",
+  "treinamentos": [],
+  "modelo_atual": {
+    "data_treino": null,
+    "amostras_treinamento": 0,
+    "precisao_qtde": 0.0,
+    "precisao_posicao": 0.0
+  }
+}

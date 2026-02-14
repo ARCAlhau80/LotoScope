@@ -1,0 +1,42 @@
+-- QUERY PREDITIVA PARA CONCURSO 3516
+-- Gerada em: 3515
+-- Condições: 35
+
+SELECT * FROM Resultados_INT WHERE QtdePrimos BETWEEN 4 AND 6 AND QtdeFibonacci BETWEEN 3 AND 5 AND QtdeImpares BETWEEN 7 AND 8 AND SomaTotal BETWEEN 186 AND 204 AND Quintil1 BETWEEN 2 AND 3 AND Quintil2 BETWEEN 2 AND 3 AND Quintil3 BETWEEN 2 AND 3 AND Quintil4 BETWEEN 2 AND 3 AND Quintil5 BETWEEN 3 AND 3 AND QtdeGaps BETWEEN 5 AND 6 AND QtdeRepetidos BETWEEN 8 AND 10 AND SEQ BETWEEN 7 AND 10.0 AND DistanciaExtremos BETWEEN 22 AND 23 AND ParesSequencia BETWEEN 3 AND 4 AND QtdeMultiplos3 BETWEEN 4 AND 6 AND ParesSaltados BETWEEN 0 AND 2 AND Faixa_Baixa BETWEEN 4 AND 5 AND Faixa_Media BETWEEN 4 AND 5 AND Faixa_Alta BETWEEN 4 AND 5 AND RepetidosMesmaPosicao BETWEEN 2 AND 3 AND N1 BETWEEN 1 AND 2 AND N2 BETWEEN 2 AND 3 AND N3 BETWEEN 4 AND 5 AND N4 BETWEEN 5 AND 7 AND N5 BETWEEN 7 AND 9 AND N6 BETWEEN 8 AND 10 AND N7 BETWEEN 10 AND 12 AND N8 BETWEEN 12 AND 13 AND N9 BETWEEN 14 AND 15 AND N10 BETWEEN 15 AND 16 AND N11 BETWEEN 17 AND 18 AND N12 BETWEEN 18 AND 20 AND N13 BETWEEN 21 AND 21 AND N14 BETWEEN 22 AND 23 AND N15 BETWEEN 23 AND 24;
+
+-- JUSTIFICATIVAS:
+-- 1. QtdePrimos: Continuidade decrescente moderada
+-- 2. QtdeFibonacci: Continuidade decrescente moderada
+-- 3. QtdeImpares: Retorno à mediana histórica
+-- 4. SomaTotal: Reversão após valor baixo (167 → média)
+-- 5. Quintil1: Reversão após valor alto (5 → média)
+-- 6. Quintil2: Continuidade decrescente moderada
+-- 7. Quintil3: Reversão após valor baixo (2 → média)
+-- 8. Quintil4: Reversão após valor baixo (2 → média)
+-- 9. Quintil5: Continuidade crescente moderada
+-- 10. QtdeGaps: Reversão após valor baixo (4 → média)
+-- 11. QtdeRepetidos: Continuidade decrescente moderada
+-- 12. SEQ: Continuidade decrescente moderada
+-- 13. DistanciaExtremos: Retorno à mediana histórica
+-- 14. ParesSequencia: Continuidade crescente moderada
+-- 15. QtdeMultiplos3: Continuidade decrescente moderada
+-- 16. ParesSaltados: Reversão após valor baixo (0 → média)
+-- 17. Faixa_Baixa: Reversão após valor alto (7 → média)
+-- 18. Faixa_Media: Retorno à mediana histórica
+-- 19. Faixa_Alta: Reversão após valor baixo (3 → média)
+-- 20. RepetidosMesmaPosicao: Retorno à mediana histórica
+-- 21. N1: Reversão após valor baixo (1 → média)
+-- 22. N2: Reversão após valor baixo (2 → média)
+-- 23. N3: Reversão após valor baixo (3 → média)
+-- 24. N4: Reversão após valor baixo (4 → média)
+-- 25. N5: Reversão após valor baixo (5 → média)
+-- 26. N6: Reversão após valor baixo (6 → média)
+-- 27. N7: Reversão após valor baixo (7 → média)
+-- 28. N8: Reversão após valor baixo (9 → média)
+-- 29. N9: Continuidade crescente moderada
+-- 30. N10: Continuidade crescente moderada
+-- 31. N11: Reversão após valor baixo (16 → média)
+-- 32. N12: Reversão após valor baixo (17 → média)
+-- 33. N13: Continuidade crescente moderada
+-- 34. N14: Continuidade decrescente moderada
+-- 35. N15: Reversão após valor baixo (24 → média)

@@ -1,0 +1,82 @@
+{
+  "inicio": "2025-09-23T08:30:14.385185",
+  "termino_previsto": "2025-09-23T16:30:14.385185",
+  "status": "finalizado",
+  "modelos_testados": 80,
+  "melhor_precisao": 0.7998314995265562,
+  "experimentos": [
+    {
+      "ciclo": 18,
+      "algoritmo": "Algoritmo Genético",
+      "precisao": 0.6629659951564644,
+      "timestamp": "2025-09-23T15:41:27.694381",
+      "tempo_treinamento": "estimado"
+    },
+    {
+      "ciclo": 18,
+      "algoritmo": "Temporal Avançado",
+      "precisao": 0.7082106596455263,
+      "timestamp": "2025-09-23T15:46:39.306469",
+      "tempo_treinamento": "estimado"
+    },
+    {
+      "ciclo": 19,
+      "algoritmo": "Ensemble Básico",
+      "precisao": 0.6376271474618181,
+      "timestamp": "2025-09-23T15:50:08.065897",
+      "tempo_treinamento": "estimado"
+    },
+    {
+      "ciclo": 19,
+      "algoritmo": "Neural Evolutivo",
+      "precisao": 0.6087483455799174,
+      "timestamp": "2025-09-23T15:58:13.880127",
+      "tempo_treinamento": "estimado"
+    },
+    {
+      "ciclo": 19,
+      "algoritmo": "Algoritmo Genético",
+      "precisao": 0.6956292445607465,
+      "timestamp": "2025-09-23T16:04:37.651139",
+      "tempo_treinamento": "estimado"
+    },
+    {
+      "ciclo": 19,
+      "algoritmo": "Temporal Avançado",
+      "precisao": 0.7919109396730627,
+      "timestamp": "2025-09-23T16:09:32.612896",
+      "tempo_treinamento": "estimado"
+    },
+    {
+      "ciclo": 20,
+      "algoritmo": "Ensemble Básico",
+      "precisao": 0.6452336820458119,
+      "timestamp": "2025-09-23T16:13:14.283241",
+      "tempo_treinamento": "estimado"
+    },
+    {
+      "ciclo": 20,
+      "algoritmo": "Neural Evolutivo",
+      "precisao": 0.6278592701348681,
+      "timestamp": "2025-09-23T16:20:51.810769",
+      "tempo_treinamento": "estimado"
+    },
+    {
+      "ciclo": 20,
+      "algoritmo": "Algoritmo Genético",
+      "precisao": 0.700159057199722,
+      "timestamp": "2025-09-23T16:27:11.682845",
+      "tempo_treinamento": "estimado"
+    },
+    {
+      "ciclo": 20,
+      "algoritmo": "Temporal Avançado",
+      "precisao": 0.7998314995265562,
+      "timestamp": "2025-09-23T16:32:09.923404",
+      "tempo_treinamento": "estimado"
+    }
+  ],
+  "tempo_decorrido": "08:01:55",
+  "tempo_restante": "00:00:00",
+  "porcentagem_concluida": 100
+}

@@ -1,0 +1,18 @@
+{
+  "inicio_treinamento": "2025-09-20T16:53:07.217039",
+  "duracao_configurada_h": 1,
+  "modelos_por_ciclo": 4,
+  "algoritmos_disponiveis": [
+    "ensemble_basico",
+    "neural_simples",
+    "neural_profunda",
+    "temporal_basico",
+    "temporal_avancado",
+    "genetico_simples",
+    "genetico_avancado",
+    "ensemble_neural",
+    "hibrido_temporal",
+    "meta_learning"
+  ],
+  "objetivo": "Superar 79.9% de precisão (recorde atual)"
+}

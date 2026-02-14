@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-09-25T09:00:21.451429",
+  "parametros": {
+    "niveis_filtro": 8,
+    "peso_neural_ranking": 0.6,
+    "peso_matematico": 0.4
+  },
+  "acoes_sugeridas": [
+    "Ajustar níveis de filtro redutor",
+    "Calibrar peso do ranking neural",
+    "Otimizar seleção TOP combinações"
+  ],
+  "tipo_otimizacao": "escalonado_filtrado",
+  "aplicado": false,
+  "versao": 1
+}

@@ -1,0 +1,43 @@
+{
+  "metricas_performance": {
+    "sessoes_totais": 7,
+    "sucessos": 7,
+    "media_acertos": 7.659936500000001,
+    "melhoria_acumulada": 0,
+    "tempo_total_treino": 1274.8830704689026
+  },
+  "estrategias_atuais": {
+    "frequencia_global": {
+      "peso": 0.16666666666666669,
+      "sucesso_acumulado": 6.866666666666667,
+      "tentativas": 7
+    },
+    "frequencia_recente": {
+      "peso": 0.16666666666666669,
+      "sucesso_acumulado": 6.866666666666667,
+      "tentativas": 7
+    },
+    "balanceamento_pares": {
+      "peso": 0.16666666666666669,
+      "sucesso_acumulado": 6.866666666666667,
+      "tentativas": 7
+    },
+    "distribuicao_posicional": {
+      "peso": 0.16666666666666669,
+      "sucesso_acumulado": 6.866666666666667,
+      "tentativas": 7
+    },
+    "gaps_temporais": {
+      "peso": 0.16666666666666669,
+      "sucesso_acumulado": 6.866666666666667,
+      "tentativas": 7
+    },
+    "sequencias_comuns": {
+      "peso": 0.16666666666666669,
+      "sucesso_acumulado": 6.866666666666667,
+      "tentativas": 7
+    }
+  },
+  "timestamp": "2025-11-19T13:15:36.185135",
+  "sessoes_executadas": 0
+}

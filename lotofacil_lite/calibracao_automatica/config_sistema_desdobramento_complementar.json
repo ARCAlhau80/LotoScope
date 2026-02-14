@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-10-07T11:12:36.381270",
+  "gerador": "sistema_desdobramento_complementar.py",
+  "configuracao": {
+    "cenario": "reset_extremo",
+    "estrategia": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_numeros_baixos": 0.85,
+      "evitar_repeticoes_posicao": true,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "priorizar_faixa_1_10": true,
+      "limite_superior": 15
+    },
+    "parametros": {
+      "menor_esperado": 11,
+      "soma_esperada": 170,
+      "repeticoes_esperadas": 1
+    }
+  },
+  "aplicado_automaticamente": true
+}

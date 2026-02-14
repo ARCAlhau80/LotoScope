@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-10-07T11:12:36.379660",
+  "gerador": "gerador_complementacao_inteligente.py",
+  "configuracao": {
+    "base_20_foco": [
+      1,
+      12
+    ],
+    "forca_extremos": true,
+    "peso_distribuicao": 4.0,
+    "soma_alvo": [
+      160,
+      180
+    ]
+  },
+  "aplicado_automaticamente": true
+}

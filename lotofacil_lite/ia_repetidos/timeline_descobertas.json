@@ -1,0 +1,1091 @@
+{
+  "marcos_temporais": [
+    {
+      "data": "2025-08-22T02:00:30.289325",
+      "tipo": "nova_versao",
+      "versao": "ia_repetidos_20250822_0200",
+      "titulo": "Lançamento da versão ia_repetidos_20250822_0200",
+      "descricao": "Demonstração do sistema completo",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.0,
+        "precisao_posicao": 0.0,
+        "tempo_treinamento": 0,
+        "qualidade_modelo": "baixa"
+      }
+    },
+    {
+      "data": "2025-08-22T02:08:27.187900",
+      "tipo": "nova_versao",
+      "versao": "ia_repetidos_20250822_0208",
+      "titulo": "Lançamento da versão ia_repetidos_20250822_0208",
+      "descricao": "Demonstração do sistema completo integrado",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.0,
+        "precisao_posicao": 0.0,
+        "tempo_treinamento": 0,
+        "qualidade_modelo": "baixa"
+      }
+    },
+    {
+      "data": "2025-08-22T13:18:19.965312",
+      "tipo": "nova_versao",
+      "versao": "ia_repetidos_20250822_1318",
+      "titulo": "Lançamento da versão ia_repetidos_20250822_1318",
+      "descricao": "Demonstração do sistema completo",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.0,
+        "precisao_posicao": 0.0,
+        "tempo_treinamento": 0,
+        "qualidade_modelo": "baixa"
+      }
+    },
+    {
+      "data": "2025-08-22T14:13:17.476017",
+      "tipo": "nova_versao",
+      "versao": "ia_repetidos_20250822_1413",
+      "titulo": "Lançamento da versão ia_repetidos_20250822_1413",
+      "descricao": "Demonstração do sistema completo",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.0,
+        "precisao_posicao": 0.0,
+        "tempo_treinamento": 0,
+        "qualidade_modelo": "baixa"
+      }
+    },
+    {
+      "data": "2025-08-23T14:44:54.609410",
+      "tipo": "nova_versao",
+      "versao": "ia_repetidos_20250823_1444",
+      "titulo": "Lançamento da versão ia_repetidos_20250823_1444",
+      "descricao": "Demonstração do sistema completo",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.0,
+        "precisao_posicao": 0.0,
+        "tempo_treinamento": 0,
+        "qualidade_modelo": "baixa"
+      }
+    },
+    {
+      "data": "2025-09-20T02:11:13.558191",
+      "tipo": "nova_versao",
+      "versao": "patterns_20250920_021113",
+      "titulo": "Lançamento da versão patterns_20250920_021113",
+      "descricao": "Modelo baseado em padrões históricos conhecidos",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "tipo_modelo": "patterns_conhecidos",
+        "estrategias_disponiveis": 3,
+        "base_historica": "frequencias_consolidadas"
+      }
+    },
+    {
+      "data": "2025-09-20T02:11:17.693151",
+      "tipo": "nova_versao",
+      "versao": "patterns_20250920_021117",
+      "titulo": "Lançamento da versão patterns_20250920_021117",
+      "descricao": "Modelo baseado em padrões históricos conhecidos",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "tipo_modelo": "patterns_conhecidos",
+        "estrategias_disponiveis": 3,
+        "base_historica": "frequencias_consolidadas"
+      }
+    },
+    {
+      "data": "2025-09-20T02:29:59.699142",
+      "tipo": "nova_versao",
+      "versao": "precisao_validada_64_20250920",
+      "titulo": "Lançamento da versão precisao_validada_64_20250920",
+      "descricao": "Sistema de validação implementado - Precisão corrigida para 64.0%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.64,
+        "precisao_geral": 64.0,
+        "total_validacoes": 5,
+        "melhor_resultado": 80.0,
+        "pior_resultado": 53.3,
+        "acertos_medios": 9.6
+      }
+    },
+    {
+      "data": "2025-09-20T08:25:23.857698",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_678_1758367523",
+      "titulo": "Lançamento da versão treinamento_auto_4h_678_1758367523",
+      "descricao": "Modelo treinado automaticamente - Precisão: 67.9%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.6785228168067742,
+        "precisao_geral": 67.85228168067742,
+        "tipo_modelo": "ensemble_v1",
+        "amostras_treinamento": 500
+      }
+    },
+    {
+      "data": "2025-09-20T08:40:32.514789",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_695_1758368432",
+      "titulo": "Lançamento da versão treinamento_auto_4h_695_1758368432",
+      "descricao": "Modelo treinado automaticamente - Precisão: 69.6%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.6955591595059937,
+        "precisao_geral": 69.55591595059937,
+        "tipo_modelo": "algoritmo_genetico",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-20T08:45:48.533347",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_712_1758368748",
+      "titulo": "Lançamento da versão treinamento_auto_4h_712_1758368748",
+      "descricao": "Modelo treinado automaticamente - Precisão: 71.3%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7126423595675162,
+        "precisao_geral": 71.26423595675162,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-20T09:09:25.373065",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_795_1758370165",
+      "titulo": "Lançamento da versão treinamento_auto_4h_795_1758370165",
+      "descricao": "Modelo treinado automaticamente - Precisão: 79.5%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7950448143283196,
+        "precisao_geral": 79.50448143283197,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-20T11:12:47.447563",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_795_1758377567",
+      "titulo": "Lançamento da versão treinamento_auto_4h_795_1758377567",
+      "descricao": "Modelo treinado automaticamente - Precisão: 79.5%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7952110807869931,
+        "precisao_geral": 79.52110807869931,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-20T12:24:49.184800",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_799_1758381889",
+      "titulo": "Lançamento da versão treinamento_auto_4h_799_1758381889",
+      "descricao": "Modelo treinado automaticamente - Precisão: 79.9%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.799384861475597,
+        "precisao_geral": 79.9384861475597,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-20T14:24:50.758494",
+      "tipo": "nova_versao",
+      "versao": "precisao_validada_64_20250920",
+      "titulo": "Lançamento da versão precisao_validada_64_20250920",
+      "descricao": "Sistema de validação implementado - Precisão corrigida para 64.0%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.64,
+        "precisao_geral": 64.0,
+        "total_validacoes": 5,
+        "melhor_resultado": 80.0,
+        "pior_resultado": 53.3,
+        "acertos_medios": 9.6
+      }
+    },
+    {
+      "data": "2025-09-21T13:27:26.491538",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_645_1758472046",
+      "titulo": "Lançamento da versão treinamento_auto_4h_645_1758472046",
+      "descricao": "Modelo treinado automaticamente - Precisão: 64.6%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.6455015137622951,
+        "precisao_geral": 64.55015137622951,
+        "tipo_modelo": "ensemble_v1",
+        "amostras_treinamento": 500
+      }
+    },
+    {
+      "data": "2025-09-21T13:43:36.560636",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_679_1758473016",
+      "titulo": "Lançamento da versão treinamento_auto_4h_679_1758473016",
+      "descricao": "Modelo treinado automaticamente - Precisão: 67.9%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.6792931305401261,
+        "precisao_geral": 67.92931305401261,
+        "tipo_modelo": "algoritmo_genetico",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-21T13:48:30.414090",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_796_1758473310",
+      "titulo": "Lançamento da versão treinamento_auto_4h_796_1758473310",
+      "descricao": "Modelo treinado automaticamente - Precisão: 79.6%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.796128970873198,
+        "precisao_geral": 79.6128970873198,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-22T08:25:46.897404",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_655_1758540346",
+      "titulo": "Lançamento da versão treinamento_auto_4h_655_1758540346",
+      "descricao": "Modelo treinado automaticamente - Precisão: 65.5%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.655305954765796,
+        "precisao_geral": 65.5305954765796,
+        "tipo_modelo": "ensemble_v1",
+        "amostras_treinamento": 500
+      }
+    },
+    {
+      "data": "2025-09-22T08:45:11.814323",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_759_1758541511",
+      "titulo": "Lançamento da versão treinamento_auto_4h_759_1758541511",
+      "descricao": "Modelo treinado automaticamente - Precisão: 76.0%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7598912715859953,
+        "precisao_geral": 75.98912715859953,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-22T09:31:53.294342",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_784_1758544313",
+      "titulo": "Lançamento da versão treinamento_auto_4h_784_1758544313",
+      "descricao": "Modelo treinado automaticamente - Precisão: 78.4%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7843227423142011,
+        "precisao_geral": 78.43227423142011,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-22T15:22:41.510780",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_670_1758565361",
+      "titulo": "Lançamento da versão treinamento_auto_4h_670_1758565361",
+      "descricao": "Modelo treinado automaticamente - Precisão: 67.0%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.6704753698650159,
+        "precisao_geral": 67.04753698650158,
+        "tipo_modelo": "ensemble_v1",
+        "amostras_treinamento": 500
+      }
+    },
+    {
+      "data": "2025-09-22T15:38:36.883831",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_681_1758566316",
+      "titulo": "Lançamento da versão treinamento_auto_4h_681_1758566316",
+      "descricao": "Modelo treinado automaticamente - Precisão: 68.1%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.6812909302597688,
+        "precisao_geral": 68.12909302597689,
+        "tipo_modelo": "algoritmo_genetico",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-22T15:43:15.526028",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_740_1758566595",
+      "titulo": "Lançamento da versão treinamento_auto_4h_740_1758566595",
+      "descricao": "Modelo treinado automaticamente - Precisão: 74.1%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7405023117352346,
+        "precisao_geral": 74.05023117352346,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-22T16:29:58.763286",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_769_1758569398",
+      "titulo": "Lançamento da versão treinamento_auto_4h_769_1758569398",
+      "descricao": "Modelo treinado automaticamente - Precisão: 76.9%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7692919823574997,
+        "precisao_geral": 76.92919823574998,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-23T08:32:31.919982",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_685_1758627151",
+      "titulo": "Lançamento da versão treinamento_auto_4h_685_1758627151",
+      "descricao": "Modelo treinado automaticamente - Precisão: 68.6%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.6855120623234123,
+        "precisao_geral": 68.55120623234123,
+        "tipo_modelo": "ensemble_v1",
+        "amostras_treinamento": 500
+      }
+    },
+    {
+      "data": "2025-09-23T08:48:43.307037",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_699_1758628123",
+      "titulo": "Lançamento da versão treinamento_auto_4h_699_1758628123",
+      "descricao": "Modelo treinado automaticamente - Precisão: 69.9%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.699427443690533,
+        "precisao_geral": 69.9427443690533,
+        "tipo_modelo": "algoritmo_genetico",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-23T08:53:55.349261",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_707_1758628435",
+      "titulo": "Lançamento da versão treinamento_auto_4h_707_1758628435",
+      "descricao": "Modelo treinado automaticamente - Precisão: 70.8%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7078624601074056,
+        "precisao_geral": 70.78624601074056,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-23T09:18:46.003002",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_715_1758629925",
+      "titulo": "Lançamento da versão treinamento_auto_4h_715_1758629925",
+      "descricao": "Modelo treinado automaticamente - Precisão: 71.5%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7154735968587252,
+        "precisao_geral": 71.54735968587252,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-23T10:30:27.739094",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_744_1758634227",
+      "titulo": "Lançamento da versão treinamento_auto_4h_744_1758634227",
+      "descricao": "Modelo treinado automaticamente - Precisão: 74.4%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7444408965984884,
+        "precisao_geral": 74.44408965984884,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-23T10:53:57.157395",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_746_1758635637",
+      "titulo": "Lançamento da versão treinamento_auto_4h_746_1758635637",
+      "descricao": "Modelo treinado automaticamente - Precisão: 74.7%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7467273970171548,
+        "precisao_geral": 74.67273970171549,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-23T11:18:15.066931",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_777_1758637094",
+      "titulo": "Lançamento da versão treinamento_auto_4h_777_1758637094",
+      "descricao": "Modelo treinado automaticamente - Precisão: 77.8%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7779230944885595,
+        "precisao_geral": 77.79230944885595,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-23T13:20:39.518248",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_797_1758644439",
+      "titulo": "Lançamento da versão treinamento_auto_4h_797_1758644439",
+      "descricao": "Modelo treinado automaticamente - Precisão: 79.7%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7973068538086607,
+        "precisao_geral": 79.73068538086608,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    },
+    {
+      "data": "2025-09-23T16:32:10.026421",
+      "tipo": "nova_versao",
+      "versao": "treinamento_auto_4h_799_1758655929",
+      "titulo": "Lançamento da versão treinamento_auto_4h_799_1758655929",
+      "descricao": "Modelo treinado automaticamente - Precisão: 80.0%",
+      "impacto": "medio",
+      "metricas_associadas": {
+        "precisao_qtde": 0.7998314995265562,
+        "precisao_geral": 79.98314995265562,
+        "tipo_modelo": "temporal_avancado",
+        "amostras_treinamento": 0
+      }
+    }
+  ],
+  "descobertas_por_periodo": {
+    "2025-08": [
+      {
+        "descoberta": "Sistema de aprendizado contínuo funcionando",
+        "versao": "ia_repetidos_20250822_0200",
+        "data": "2025-08-22T02:00:30.289325"
+      },
+      {
+        "descoberta": "Integração bem-sucedida com IA existente",
+        "versao": "ia_repetidos_20250822_0200",
+        "data": "2025-08-22T02:00:30.289325"
+      },
+      {
+        "descoberta": "Histórico completo implementado",
+        "versao": "ia_repetidos_20250822_0200",
+        "data": "2025-08-22T02:00:30.289325"
+      },
+      {
+        "descoberta": "Padrões de repetição identificados",
+        "versao": "ia_repetidos_20250822_0208",
+        "data": "2025-08-22T02:08:27.187900"
+      },
+      {
+        "descoberta": "Correlações temporais validadas",
+        "versao": "ia_repetidos_20250822_0208",
+        "data": "2025-08-22T02:08:27.187900"
+      },
+      {
+        "descoberta": "Integração transparente funcionando",
+        "versao": "ia_repetidos_20250822_0208",
+        "data": "2025-08-22T02:08:27.187900"
+      },
+      {
+        "descoberta": "Sistema de aprendizado contínuo funcionando",
+        "versao": "ia_repetidos_20250822_1318",
+        "data": "2025-08-22T13:18:19.966311"
+      },
+      {
+        "descoberta": "Integração bem-sucedida com IA existente",
+        "versao": "ia_repetidos_20250822_1318",
+        "data": "2025-08-22T13:18:19.966311"
+      },
+      {
+        "descoberta": "Histórico completo implementado",
+        "versao": "ia_repetidos_20250822_1318",
+        "data": "2025-08-22T13:18:19.966311"
+      },
+      {
+        "descoberta": "Sistema de aprendizado contínuo funcionando",
+        "versao": "ia_repetidos_20250822_1413",
+        "data": "2025-08-22T14:13:17.476017"
+      },
+      {
+        "descoberta": "Integração bem-sucedida com IA existente",
+        "versao": "ia_repetidos_20250822_1413",
+        "data": "2025-08-22T14:13:17.476017"
+      },
+      {
+        "descoberta": "Histórico completo implementado",
+        "versao": "ia_repetidos_20250822_1413",
+        "data": "2025-08-22T14:13:17.476017"
+      },
+      {
+        "descoberta": "Sistema de aprendizado contínuo funcionando",
+        "versao": "ia_repetidos_20250823_1444",
+        "data": "2025-08-23T14:44:54.609410"
+      },
+      {
+        "descoberta": "Integração bem-sucedida com IA existente",
+        "versao": "ia_repetidos_20250823_1444",
+        "data": "2025-08-23T14:44:54.609410"
+      },
+      {
+        "descoberta": "Histórico completo implementado",
+        "versao": "ia_repetidos_20250823_1444",
+        "data": "2025-08-23T14:44:54.609410"
+      }
+    ],
+    "2025-09": [
+      {
+        "descoberta": "Padrões de grupos correlacionados confirmados",
+        "versao": "patterns_20250920_021113",
+        "data": "2025-09-20T02:11:13.558269"
+      },
+      {
+        "descoberta": "Frequências históricas estabilizadas",
+        "versao": "patterns_20250920_021113",
+        "data": "2025-09-20T02:11:13.558281"
+      },
+      {
+        "descoberta": "Padrões de grupos correlacionados confirmados",
+        "versao": "patterns_20250920_021117",
+        "data": "2025-09-20T02:11:17.693208"
+      },
+      {
+        "descoberta": "Frequências históricas estabilizadas",
+        "versao": "patterns_20250920_021117",
+        "data": "2025-09-20T02:11:17.693213"
+      },
+      {
+        "descoberta": "Sistema estava com precisão 0% por falta de validação",
+        "versao": "precisao_validada_64_20250920",
+        "data": "2025-09-20T02:29:59.699183"
+      },
+      {
+        "descoberta": "Implementação de validação automática aumentou precisão",
+        "versao": "precisao_validada_64_20250920",
+        "data": "2025-09-20T02:29:59.699188"
+      },
+      {
+        "descoberta": "Validação contra resultados reais é fundamental",
+        "versao": "precisao_validada_64_20250920",
+        "data": "2025-09-20T02:29:59.699192"
+      },
+      {
+        "descoberta": "Sistema de feedback melhora evolução contínua",
+        "versao": "precisao_validada_64_20250920",
+        "data": "2025-09-20T02:29:59.699195"
+      },
+      {
+        "descoberta": "Modelo ensemble_v1 mostrou melhor performance",
+        "versao": "treinamento_auto_4h_678_1758367523",
+        "data": "2025-09-20T08:25:23.857751"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_678_1758367523",
+        "data": "2025-09-20T08:25:23.857758"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_678_1758367523",
+        "data": "2025-09-20T08:25:23.857763"
+      },
+      {
+        "descoberta": "Modelo algoritmo_genetico mostrou melhor performance",
+        "versao": "treinamento_auto_4h_695_1758368432",
+        "data": "2025-09-20T08:40:32.514851"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_695_1758368432",
+        "data": "2025-09-20T08:40:32.514857"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_695_1758368432",
+        "data": "2025-09-20T08:40:32.514860"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_712_1758368748",
+        "data": "2025-09-20T08:45:48.533395"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_712_1758368748",
+        "data": "2025-09-20T08:45:48.533399"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_712_1758368748",
+        "data": "2025-09-20T08:45:48.533402"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_795_1758370165",
+        "data": "2025-09-20T09:09:25.373121"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_795_1758370165",
+        "data": "2025-09-20T09:09:25.373127"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_795_1758370165",
+        "data": "2025-09-20T09:09:25.373131"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_795_1758377567",
+        "data": "2025-09-20T11:12:47.447625"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_795_1758377567",
+        "data": "2025-09-20T11:12:47.447630"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_795_1758377567",
+        "data": "2025-09-20T11:12:47.447633"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_799_1758381889",
+        "data": "2025-09-20T12:24:49.184854"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_799_1758381889",
+        "data": "2025-09-20T12:24:49.184859"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_799_1758381889",
+        "data": "2025-09-20T12:24:49.184862"
+      },
+      {
+        "descoberta": "Sistema estava com precisão 0% por falta de validação",
+        "versao": "precisao_validada_64_20250920",
+        "data": "2025-09-20T14:24:50.758537"
+      },
+      {
+        "descoberta": "Implementação de validação automática aumentou precisão",
+        "versao": "precisao_validada_64_20250920",
+        "data": "2025-09-20T14:24:50.758542"
+      },
+      {
+        "descoberta": "Validação contra resultados reais é fundamental",
+        "versao": "precisao_validada_64_20250920",
+        "data": "2025-09-20T14:24:50.758545"
+      },
+      {
+        "descoberta": "Sistema de feedback melhora evolução contínua",
+        "versao": "precisao_validada_64_20250920",
+        "data": "2025-09-20T14:24:50.758547"
+      },
+      {
+        "descoberta": "Modelo ensemble_v1 mostrou melhor performance",
+        "versao": "treinamento_auto_4h_645_1758472046",
+        "data": "2025-09-21T13:27:26.491588"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_645_1758472046",
+        "data": "2025-09-21T13:27:26.491600"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_645_1758472046",
+        "data": "2025-09-21T13:27:26.491605"
+      },
+      {
+        "descoberta": "Modelo algoritmo_genetico mostrou melhor performance",
+        "versao": "treinamento_auto_4h_679_1758473016",
+        "data": "2025-09-21T13:43:36.560696"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_679_1758473016",
+        "data": "2025-09-21T13:43:36.560702"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_679_1758473016",
+        "data": "2025-09-21T13:43:36.560706"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_796_1758473310",
+        "data": "2025-09-21T13:48:30.414147"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_796_1758473310",
+        "data": "2025-09-21T13:48:30.414151"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_796_1758473310",
+        "data": "2025-09-21T13:48:30.414154"
+      },
+      {
+        "descoberta": "Modelo ensemble_v1 mostrou melhor performance",
+        "versao": "treinamento_auto_4h_655_1758540346",
+        "data": "2025-09-22T08:25:46.897466"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_655_1758540346",
+        "data": "2025-09-22T08:25:46.897475"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_655_1758540346",
+        "data": "2025-09-22T08:25:46.897480"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_759_1758541511",
+        "data": "2025-09-22T08:45:11.814386"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_759_1758541511",
+        "data": "2025-09-22T08:45:11.814392"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_759_1758541511",
+        "data": "2025-09-22T08:45:11.814396"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_784_1758544313",
+        "data": "2025-09-22T09:31:53.294390"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_784_1758544313",
+        "data": "2025-09-22T09:31:53.294394"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_784_1758544313",
+        "data": "2025-09-22T09:31:53.294397"
+      },
+      {
+        "descoberta": "Modelo ensemble_v1 mostrou melhor performance",
+        "versao": "treinamento_auto_4h_670_1758565361",
+        "data": "2025-09-22T15:22:41.510831"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_670_1758565361",
+        "data": "2025-09-22T15:22:41.510837"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_670_1758565361",
+        "data": "2025-09-22T15:22:41.510841"
+      },
+      {
+        "descoberta": "Modelo algoritmo_genetico mostrou melhor performance",
+        "versao": "treinamento_auto_4h_681_1758566316",
+        "data": "2025-09-22T15:38:36.883887"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_681_1758566316",
+        "data": "2025-09-22T15:38:36.883893"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_681_1758566316",
+        "data": "2025-09-22T15:38:36.883897"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_740_1758566595",
+        "data": "2025-09-22T15:43:15.526078"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_740_1758566595",
+        "data": "2025-09-22T15:43:15.526083"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_740_1758566595",
+        "data": "2025-09-22T15:43:15.526086"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_769_1758569398",
+        "data": "2025-09-22T16:29:58.763347"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_769_1758569398",
+        "data": "2025-09-22T16:29:58.763353"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_769_1758569398",
+        "data": "2025-09-22T16:29:58.763357"
+      },
+      {
+        "descoberta": "Modelo ensemble_v1 mostrou melhor performance",
+        "versao": "treinamento_auto_4h_685_1758627151",
+        "data": "2025-09-23T08:32:31.920045"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_685_1758627151",
+        "data": "2025-09-23T08:32:31.920054"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_685_1758627151",
+        "data": "2025-09-23T08:32:31.920059"
+      },
+      {
+        "descoberta": "Modelo algoritmo_genetico mostrou melhor performance",
+        "versao": "treinamento_auto_4h_699_1758628123",
+        "data": "2025-09-23T08:48:43.307092"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_699_1758628123",
+        "data": "2025-09-23T08:48:43.307097"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_699_1758628123",
+        "data": "2025-09-23T08:48:43.307101"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_707_1758628435",
+        "data": "2025-09-23T08:53:55.349313"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_707_1758628435",
+        "data": "2025-09-23T08:53:55.349318"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_707_1758628435",
+        "data": "2025-09-23T08:53:55.349321"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_715_1758629925",
+        "data": "2025-09-23T09:18:46.003058"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_715_1758629925",
+        "data": "2025-09-23T09:18:46.003063"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_715_1758629925",
+        "data": "2025-09-23T09:18:46.003067"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_744_1758634227",
+        "data": "2025-09-23T10:30:27.739150"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_744_1758634227",
+        "data": "2025-09-23T10:30:27.739155"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_744_1758634227",
+        "data": "2025-09-23T10:30:27.739158"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_746_1758635637",
+        "data": "2025-09-23T10:53:57.157460"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_746_1758635637",
+        "data": "2025-09-23T10:53:57.157470"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_746_1758635637",
+        "data": "2025-09-23T10:53:57.157475"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_777_1758637094",
+        "data": "2025-09-23T11:18:15.067008"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_777_1758637094",
+        "data": "2025-09-23T11:18:15.067017"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_777_1758637094",
+        "data": "2025-09-23T11:18:15.067023"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_797_1758644439",
+        "data": "2025-09-23T13:20:39.518301"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_797_1758644439",
+        "data": "2025-09-23T13:20:39.518307"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_797_1758644439",
+        "data": "2025-09-23T13:20:39.518310"
+      },
+      {
+        "descoberta": "Modelo temporal_avancado mostrou melhor performance",
+        "versao": "treinamento_auto_4h_799_1758655929",
+        "data": "2025-09-23T16:32:10.026481"
+      },
+      {
+        "descoberta": "Treinamento automatizado é eficaz para melhoria de precisão",
+        "versao": "treinamento_auto_4h_799_1758655929",
+        "data": "2025-09-23T16:32:10.026487"
+      },
+      {
+        "descoberta": "Validação cruzada confirma consistência do modelo",
+        "versao": "treinamento_auto_4h_799_1758655929",
+        "data": "2025-09-23T16:32:10.026492"
+      }
+    ]
+  },
+  "evolucao_metricas": [],
+  "eventos_importantes": [
+    {
+      "data": "2025-09-20T01:53:38.442349",
+      "tipo": "descoberta",
+      "titulo": "Sistema de Aprendizado Completo Inicializado",
+      "detalhes": {
+        "data": "2025-09-20T01:53:38.441835",
+        "componentes": [
+          "Estrutura de pastas",
+          "Arquivos de configuração",
+          "Dashboard inicial",
+          "Sistema de logs"
+        ],
+        "status": "operacional"
+      },
+      "impacto": "medio",
+      "validada": false,
+      "testes_confirmacao": []
+    },
+    {
+      "data": "2025-09-20T01:54:27.729013",
+      "tipo": "descoberta",
+      "titulo": "Sistema de Aprendizado Completo Inicializado",
+      "detalhes": {
+        "data": "2025-09-20T01:54:27.712644",
+        "componentes": [
+          "Estrutura de pastas",
+          "Arquivos de configuração",
+          "Dashboard inicial",
+          "Sistema de logs"
+        ],
+        "status": "operacional"
+      },
+      "impacto": "medio",
+      "validada": false,
+      "testes_confirmacao": []
+    },
+    {
+      "data": "2025-09-20T01:59:37.484194",
+      "tipo": "descoberta",
+      "titulo": "Sistema de Aprendizado Completo Inicializado",
+      "detalhes": {
+        "data": "2025-09-20T01:59:37.463818",
+        "componentes": [
+          "Estrutura de pastas",
+          "Arquivos de configuração",
+          "Dashboard inicial",
+          "Sistema de logs"
+        ],
+        "status": "operacional"
+      },
+      "impacto": "medio",
+      "validada": false,
+      "testes_confirmacao": []
+    },
+    {
+      "data": "2025-09-20T02:18:39.261456",
+      "tipo": "descoberta",
+      "titulo": "Sistema de Aprendizado Completo Inicializado",
+      "detalhes": {
+        "data": "2025-09-20T02:18:39.260810",
+        "componentes": [
+          "Estrutura de pastas",
+          "Arquivos de configuração",
+          "Dashboard inicial",
+          "Sistema de logs"
+        ],
+        "status": "operacional"
+      },
+      "impacto": "medio",
+      "validada": false,
+      "testes_confirmacao": []
+    },
+    {
+      "data": "2025-10-20T12:13:31.737669",
+      "tipo": "descoberta",
+      "titulo": "Sistema de Aprendizado Completo Inicializado",
+      "detalhes": {
+        "data": "2025-10-20T12:13:31.723869",
+        "componentes": [
+          "Estrutura de pastas",
+          "Arquivos de configuração",
+          "Dashboard inicial",
+          "Sistema de logs"
+        ],
+        "status": "operacional"
+      },
+      "impacto": "medio",
+      "validada": false,
+      "testes_confirmacao": []
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-09-25T09:00:21.379340",
+  "parametros": {
+    "peso_neural": 0.6,
+    "peso_metadados": 0.4,
+    "threshold_extremo": 0.8,
+    "threshold_medio": 0.2
+  },
+  "acoes_sugeridas": [
+    "Ajustar equilíbrio neural vs metadados",
+    "Calibrar detecção de valores extremos",
+    "Refinar lógica adaptativa"
+  ],
+  "tipo_otimizacao": "hibrido_adaptativo",
+  "aplicado": false,
+  "versao": 1
+}

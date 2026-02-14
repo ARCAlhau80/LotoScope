@@ -1,0 +1,210 @@
+{
+  "gerado_em": "2025-08-20 17:45:05",
+  "arquivo_origem": "pipeline_dinamico",
+  "modelo_usado": {},
+  "super_combinacoes": [
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        13,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        13,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          4
+        ],
+        "adicionados": [
+          23
+        ],
+        "mantidos": [
+          1,
+          2,
+          3,
+          5,
+          6,
+          7,
+          9,
+          10,
+          13,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "total_mudancas": 2
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.5
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        13,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        13,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          4
+        ],
+        "adicionados": [
+          23
+        ],
+        "mantidos": [
+          1,
+          2,
+          3,
+          5,
+          6,
+          7,
+          9,
+          10,
+          13,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "total_mudancas": 2
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.5
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        13,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        13,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          4
+        ],
+        "adicionados": [
+          23
+        ],
+        "mantidos": [
+          1,
+          2,
+          3,
+          5,
+          6,
+          7,
+          9,
+          10,
+          13,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "total_mudancas": 2
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.5
+    }
+  ],
+  "configuracao_ia": {
+    "hidden_layers": [
+      256,
+      128,
+      64,
+      32
+    ],
+    "activation": "relu",
+    "solver": "adam",
+    "alpha": 0.001,
+    "learning_rate": "adaptive",
+    "max_iter": 2000,
+    "random_state": 42
+  }
+}

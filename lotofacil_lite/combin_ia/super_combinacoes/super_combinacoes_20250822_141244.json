@@ -1,0 +1,3287 @@
+{
+  "gerado_em": "2025-08-22 14:12:44",
+  "arquivo_origem": "pipeline_dinamico",
+  "modelo_usado": {},
+  "super_combinacoes": [
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        10,
+        11,
+        15,
+        17,
+        18,
+        19,
+        21,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        10,
+        11,
+        15,
+        17,
+        18,
+        19,
+        21,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [],
+        "adicionados": [],
+        "mantidos": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          9,
+          10,
+          11,
+          15,
+          17,
+          18,
+          19,
+          21,
+          25
+        ],
+        "total_mudancas": 0
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.5,
+      "estrategia_aplicada": "conservadora"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        9,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        5,
+        6,
+        9,
+        11,
+        13,
+        14,
+        15,
+        17,
+        18,
+        19,
+        21,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          11,
+          13,
+          14
+        ],
+        "adicionados": [
+          4,
+          22,
+          23
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          9,
+          15,
+          17,
+          18,
+          19,
+          21,
+          24,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.5,
+      "estrategia_aplicada": "agressiva"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        4,
+        5,
+        8,
+        9,
+        10,
+        13,
+        14,
+        15,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        13,
+        14,
+        15,
+        18,
+        19,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          6,
+          7
+        ],
+        "adicionados": [
+          4,
+          21
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          8,
+          9,
+          10,
+          13,
+          14,
+          15,
+          18,
+          19,
+          22,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.5,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        6,
+        9,
+        13,
+        14,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        9,
+        13,
+        14,
+        17,
+        18,
+        19,
+        20,
+        21,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          4,
+          5
+        ],
+        "adicionados": [
+          2,
+          22
+        ],
+        "mantidos": [
+          1,
+          3,
+          6,
+          9,
+          13,
+          14,
+          17,
+          18,
+          19,
+          20,
+          21,
+          23,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.5,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        9,
+        12,
+        14,
+        15,
+        17,
+        18,
+        19,
+        21,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        12,
+        14,
+        17,
+        18,
+        19,
+        21,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          4
+        ],
+        "adicionados": [
+          15
+        ],
+        "mantidos": [
+          1,
+          2,
+          3,
+          5,
+          6,
+          9,
+          12,
+          14,
+          17,
+          18,
+          19,
+          21,
+          23,
+          25
+        ],
+        "total_mudancas": 2
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.510700000571887,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        3,
+        4,
+        6,
+        8,
+        12,
+        13,
+        14,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        5,
+        6,
+        7,
+        8,
+        12,
+        13,
+        14,
+        15,
+        18,
+        19,
+        21,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          1,
+          5,
+          7
+        ],
+        "adicionados": [
+          17,
+          4,
+          22
+        ],
+        "mantidos": [
+          3,
+          6,
+          8,
+          12,
+          13,
+          14,
+          15,
+          18,
+          19,
+          21,
+          24,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.560700000571887,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        2,
+        3,
+        5,
+        7,
+        9,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        13,
+        15,
+        16,
+        17,
+        18,
+        19,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          1,
+          4,
+          6
+        ],
+        "adicionados": [
+          2,
+          14,
+          22
+        ],
+        "mantidos": [
+          3,
+          5,
+          7,
+          9,
+          13,
+          15,
+          16,
+          17,
+          18,
+          19,
+          23,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.610700000571887,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        4,
+        6,
+        9,
+        13,
+        14,
+        15,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        9,
+        13,
+        14,
+        15,
+        17,
+        18,
+        19,
+        20,
+        21,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          3,
+          5
+        ],
+        "adicionados": [
+          22,
+          23
+        ],
+        "mantidos": [
+          1,
+          4,
+          6,
+          9,
+          13,
+          14,
+          15,
+          17,
+          18,
+          19,
+          20,
+          21,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.660700000571887,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        5,
+        8,
+        10,
+        12,
+        14,
+        15,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        10,
+        12,
+        15,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          3,
+          6
+        ],
+        "adicionados": [
+          8,
+          14
+        ],
+        "mantidos": [
+          1,
+          2,
+          5,
+          10,
+          12,
+          15,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.7107000005718871,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        4,
+        5,
+        6,
+        8,
+        12,
+        13,
+        14,
+        15,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        12,
+        13,
+        14,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          2,
+          3
+        ],
+        "adicionados": [
+          8,
+          15
+        ],
+        "mantidos": [
+          1,
+          4,
+          5,
+          6,
+          12,
+          13,
+          14,
+          18,
+          19,
+          21,
+          22,
+          23,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.760700000571887,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        6,
+        8,
+        9,
+        10,
+        13,
+        14,
+        15,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        5,
+        6,
+        7,
+        8,
+        10,
+        13,
+        14,
+        15,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          5,
+          7
+        ],
+        "adicionados": [
+          9,
+          2
+        ],
+        "mantidos": [
+          1,
+          3,
+          6,
+          8,
+          10,
+          13,
+          14,
+          15,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.810700000571887,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        4,
+        6,
+        8,
+        10,
+        12,
+        15,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        10,
+        12,
+        15,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          2,
+          5
+        ],
+        "adicionados": [
+          8,
+          4
+        ],
+        "mantidos": [
+          1,
+          3,
+          6,
+          10,
+          12,
+          15,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.860700000571887,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        6,
+        8,
+        9,
+        13,
+        14,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        13,
+        15,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          3,
+          4,
+          5
+        ],
+        "adicionados": [
+          17,
+          2,
+          14
+        ],
+        "mantidos": [
+          1,
+          6,
+          8,
+          9,
+          13,
+          15,
+          18,
+          19,
+          21,
+          22,
+          23,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.910700000571887,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        9,
+        13,
+        14,
+        16,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        13,
+        14,
+        16,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          8,
+          6
+        ],
+        "adicionados": [
+          2,
+          23
+        ],
+        "mantidos": [
+          1,
+          3,
+          4,
+          5,
+          9,
+          13,
+          14,
+          16,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        13,
+        14,
+        17,
+        18,
+        19,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        13,
+        14,
+        17,
+        18,
+        19,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          2,
+          3
+        ],
+        "adicionados": [
+          4,
+          23
+        ],
+        "mantidos": [
+          1,
+          5,
+          6,
+          7,
+          8,
+          9,
+          13,
+          14,
+          17,
+          18,
+          19,
+          24,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        4,
+        5,
+        6,
+        9,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        9,
+        12,
+        13,
+        14,
+        16,
+        17,
+        18,
+        19,
+        21,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          2,
+          3
+        ],
+        "adicionados": [
+          4,
+          15
+        ],
+        "mantidos": [
+          1,
+          5,
+          6,
+          9,
+          12,
+          13,
+          14,
+          16,
+          17,
+          18,
+          19,
+          21,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        5,
+        6,
+        13,
+        14,
+        15,
+        16,
+        18,
+        19,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        14,
+        15,
+        16,
+        18,
+        19,
+        21,
+        23,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          2,
+          4
+        ],
+        "adicionados": [
+          13,
+          22
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          14,
+          15,
+          16,
+          18,
+          19,
+          21,
+          23,
+          24,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        5,
+        6,
+        9,
+        11,
+        14,
+        15,
+        16,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        11,
+        14,
+        16,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          10,
+          4
+        ],
+        "adicionados": [
+          9,
+          15
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          11,
+          14,
+          16,
+          18,
+          19,
+          21,
+          22,
+          23,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        6,
+        7,
+        8,
+        12,
+        13,
+        14,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        5,
+        6,
+        7,
+        8,
+        12,
+        13,
+        14,
+        15,
+        18,
+        19,
+        21,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          1,
+          3,
+          5
+        ],
+        "adicionados": [
+          17,
+          22,
+          23
+        ],
+        "mantidos": [
+          6,
+          7,
+          8,
+          12,
+          13,
+          14,
+          15,
+          18,
+          19,
+          21,
+          24,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        4,
+        7,
+        9,
+        13,
+        14,
+        15,
+        16,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        14,
+        15,
+        16,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          5,
+          6
+        ],
+        "adicionados": [
+          13,
+          23
+        ],
+        "mantidos": [
+          1,
+          3,
+          4,
+          7,
+          9,
+          14,
+          15,
+          16,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        13,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        13,
+        15,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          2,
+          7
+        ],
+        "adicionados": [
+          17,
+          4
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          8,
+          9,
+          13,
+          15,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        14,
+        15,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        12,
+        13,
+        14,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          12,
+          13
+        ],
+        "adicionados": [
+          9,
+          15
+        ],
+        "mantidos": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          14,
+          18,
+          19,
+          21,
+          22,
+          23,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        6,
+        8,
+        9,
+        10,
+        13,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        8,
+        10,
+        13,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          4,
+          5
+        ],
+        "adicionados": [
+          9,
+          2
+        ],
+        "mantidos": [
+          1,
+          3,
+          6,
+          8,
+          10,
+          13,
+          15,
+          17,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        5,
+        6,
+        9,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        5,
+        6,
+        8,
+        10,
+        13,
+        14,
+        15,
+        16,
+        18,
+        19,
+        21,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          8,
+          10
+        ],
+        "adicionados": [
+          9,
+          17
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          13,
+          14,
+          15,
+          16,
+          18,
+          19,
+          21,
+          23,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        8,
+        9,
+        13,
+        14,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        13,
+        14,
+        18,
+        19,
+        22,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          4,
+          7
+        ],
+        "adicionados": [
+          2,
+          21
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          8,
+          9,
+          13,
+          14,
+          18,
+          19,
+          22,
+          23,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        4,
+        8,
+        9,
+        10,
+        13,
+        14,
+        15,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        8,
+        9,
+        10,
+        13,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          3,
+          5,
+          6
+        ],
+        "adicionados": [
+          4,
+          14,
+          15
+        ],
+        "mantidos": [
+          1,
+          2,
+          8,
+          9,
+          10,
+          13,
+          18,
+          19,
+          21,
+          22,
+          23,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        2,
+        4,
+        5,
+        6,
+        8,
+        9,
+        13,
+        14,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        14,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          1,
+          3
+        ],
+        "adicionados": [
+          8,
+          13
+        ],
+        "mantidos": [
+          2,
+          4,
+          5,
+          6,
+          9,
+          14,
+          15,
+          17,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        9,
+        11,
+        13,
+        14,
+        15,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        11,
+        13,
+        14,
+        18,
+        19,
+        21,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          8,
+          6
+        ],
+        "adicionados": [
+          22,
+          15
+        ],
+        "mantidos": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          9,
+          11,
+          13,
+          14,
+          18,
+          19,
+          21,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        13,
+        14,
+        15,
+        19,
+        21,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        5,
+        6,
+        8,
+        9,
+        13,
+        14,
+        17,
+        18,
+        19,
+        21,
+        23,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          9,
+          18,
+          17
+        ],
+        "adicionados": [
+          2,
+          4,
+          15
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          8,
+          13,
+          14,
+          19,
+          21,
+          23,
+          24,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        9,
+        10,
+        13,
+        14,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        8,
+        9,
+        10,
+        13,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          8,
+          2
+        ],
+        "adicionados": [
+          4,
+          14
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          9,
+          10,
+          13,
+          18,
+          19,
+          21,
+          22,
+          23,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        8,
+        9,
+        13,
+        15,
+        16,
+        18,
+        19,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        5,
+        6,
+        8,
+        9,
+        12,
+        13,
+        15,
+        16,
+        18,
+        19,
+        22,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          12
+        ],
+        "adicionados": [
+          2
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          8,
+          9,
+          13,
+          15,
+          16,
+          18,
+          19,
+          22,
+          23,
+          25
+        ],
+        "total_mudancas": 2
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        4,
+        6,
+        7,
+        9,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          2,
+          5
+        ],
+        "adicionados": [
+          4,
+          21
+        ],
+        "mantidos": [
+          1,
+          3,
+          6,
+          7,
+          9,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        5,
+        6,
+        9,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        11,
+        12,
+        14,
+        15,
+        16,
+        18,
+        19,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          2,
+          3,
+          7
+        ],
+        "adicionados": [
+          17,
+          21,
+          13
+        ],
+        "mantidos": [
+          1,
+          5,
+          6,
+          9,
+          11,
+          12,
+          14,
+          15,
+          16,
+          18,
+          19,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        4,
+        6,
+        8,
+        9,
+        10,
+        13,
+        14,
+        15,
+        18,
+        19,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        13,
+        14,
+        15,
+        18,
+        19,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          5,
+          7
+        ],
+        "adicionados": [
+          4,
+          23
+        ],
+        "mantidos": [
+          1,
+          3,
+          6,
+          8,
+          9,
+          10,
+          13,
+          14,
+          15,
+          18,
+          19,
+          22,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        3,
+        4,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        5,
+        6,
+        9,
+        10,
+        11,
+        13,
+        14,
+        17,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          1,
+          5,
+          6
+        ],
+        "adicionados": [
+          4,
+          23,
+          15
+        ],
+        "mantidos": [
+          3,
+          9,
+          10,
+          11,
+          13,
+          14,
+          17,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        9,
+        11,
+        14,
+        15,
+        16,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        5,
+        6,
+        11,
+        14,
+        15,
+        16,
+        18,
+        19,
+        20,
+        21,
+        23,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          3,
+          5,
+          6
+        ],
+        "adicionados": [
+          9,
+          2,
+          22
+        ],
+        "mantidos": [
+          1,
+          11,
+          14,
+          15,
+          16,
+          18,
+          19,
+          20,
+          21,
+          23,
+          24,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        5,
+        8,
+        9,
+        13,
+        14,
+        16,
+        18,
+        19,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        13,
+        14,
+        16,
+        18,
+        19,
+        23,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          2,
+          4,
+          6
+        ],
+        "adicionados": [
+          8,
+          21,
+          22
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          9,
+          13,
+          14,
+          16,
+          18,
+          19,
+          23,
+          24,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        4,
+        5,
+        9,
+        13,
+        14,
+        17,
+        18,
+        19,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        5,
+        6,
+        8,
+        9,
+        13,
+        14,
+        17,
+        18,
+        19,
+        21,
+        23,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          8,
+          6
+        ],
+        "adicionados": [
+          4,
+          22
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          9,
+          13,
+          14,
+          17,
+          18,
+          19,
+          21,
+          23,
+          24,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        8,
+        14,
+        15,
+        18,
+        19,
+        20,
+        21,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        5,
+        6,
+        11,
+        14,
+        15,
+        16,
+        18,
+        19,
+        20,
+        21,
+        23,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          16,
+          11
+        ],
+        "adicionados": [
+          8,
+          2
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          14,
+          15,
+          18,
+          19,
+          20,
+          21,
+          23,
+          24,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        5,
+        6,
+        8,
+        9,
+        10,
+        13,
+        14,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        9,
+        10,
+        13,
+        14,
+        15,
+        18,
+        19,
+        22,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          1,
+          2,
+          3
+        ],
+        "adicionados": [
+          8,
+          17,
+          21
+        ],
+        "mantidos": [
+          5,
+          6,
+          9,
+          10,
+          13,
+          14,
+          15,
+          18,
+          19,
+          22,
+          23,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        6,
+        8,
+        11,
+        13,
+        14,
+        15,
+        16,
+        18,
+        19,
+        21,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        16,
+        18,
+        19,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          2,
+          5,
+          7
+        ],
+        "adicionados": [
+          21,
+          13,
+          23
+        ],
+        "mantidos": [
+          1,
+          3,
+          6,
+          8,
+          11,
+          14,
+          15,
+          16,
+          18,
+          19,
+          22,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        9,
+        13,
+        14,
+        15,
+        16,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        14,
+        15,
+        16,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          4,
+          7
+        ],
+        "adicionados": [
+          2,
+          13
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          9,
+          14,
+          15,
+          16,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        12,
+        13,
+        14,
+        18,
+        19,
+        21,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        8,
+        9,
+        10,
+        12,
+        13,
+        18,
+        19,
+        21,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          2,
+          10
+        ],
+        "adicionados": [
+          4,
+          14
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          8,
+          9,
+          12,
+          13,
+          18,
+          19,
+          21,
+          23,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        2,
+        5,
+        6,
+        9,
+        13,
+        14,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        9,
+        13,
+        14,
+        18,
+        19,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          1,
+          3,
+          4
+        ],
+        "adicionados": [
+          17,
+          2,
+          15
+        ],
+        "mantidos": [
+          5,
+          6,
+          9,
+          13,
+          14,
+          18,
+          19,
+          21,
+          22,
+          23,
+          24,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        13,
+        14,
+        15,
+        18,
+        19,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        13,
+        18,
+        19,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          9,
+          2
+        ],
+        "adicionados": [
+          14,
+          15
+        ],
+        "mantidos": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          13,
+          18,
+          19,
+          21,
+          22,
+          23,
+          24,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        6,
+        8,
+        9,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        8,
+        9,
+        13,
+        14,
+        16,
+        17,
+        18,
+        19,
+        21,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          3,
+          5
+        ],
+        "adicionados": [
+          23,
+          15
+        ],
+        "mantidos": [
+          1,
+          2,
+          6,
+          8,
+          9,
+          13,
+          14,
+          16,
+          17,
+          18,
+          19,
+          21,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        2,
+        3,
+        6,
+        8,
+        10,
+        11,
+        14,
+        16,
+        18,
+        19,
+        21,
+        22,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        9,
+        10,
+        11,
+        16,
+        18,
+        19,
+        21,
+        22,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          9,
+          5
+        ],
+        "adicionados": [
+          8,
+          14
+        ],
+        "mantidos": [
+          1,
+          2,
+          3,
+          6,
+          10,
+          11,
+          16,
+          18,
+          19,
+          21,
+          22,
+          24,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        5,
+        6,
+        7,
+        9,
+        13,
+        15,
+        17,
+        18,
+        19,
+        21,
+        23,
+        24,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        11,
+        14,
+        15,
+        18,
+        19,
+        21,
+        24,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          11,
+          4,
+          14
+        ],
+        "adicionados": [
+          17,
+          13,
+          23
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          7,
+          9,
+          15,
+          18,
+          19,
+          21,
+          24,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        5,
+        6,
+        8,
+        9,
+        13,
+        14,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        14,
+        15,
+        17,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          2,
+          4
+        ],
+        "adicionados": [
+          8,
+          13
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          9,
+          14,
+          15,
+          17,
+          18,
+          19,
+          21,
+          22,
+          25
+        ],
+        "total_mudancas": 4
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    },
+    {
+      "super_combinacao": [
+        1,
+        3,
+        5,
+        6,
+        9,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        22,
+        23,
+        25
+      ],
+      "combinacao_base": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        8,
+        13,
+        15,
+        16,
+        18,
+        19,
+        20,
+        22,
+        23,
+        25
+      ],
+      "substituicoes_realizadas": {
+        "removidos": [
+          8,
+          2,
+          13
+        ],
+        "adicionados": [
+          9,
+          14,
+          17
+        ],
+        "mantidos": [
+          1,
+          3,
+          5,
+          6,
+          15,
+          16,
+          18,
+          19,
+          20,
+          22,
+          23,
+          25
+        ],
+        "total_mudancas": 6
+      },
+      "performance_prevista": 50.0,
+      "confianca_ia": 0.95,
+      "estrategia_aplicada": "hibrida"
+    }
+  ],
+  "configuracao_ia": {
+    "hidden_layers": [
+      12288,
+      6144,
+      3072,
+      1536,
+      768,
+      384,
+      192
+    ],
+    "activation": "relu",
+    "solver": "adam",
+    "alpha": 1e-05,
+    "learning_rate": "adaptive",
+    "max_iter": 6000,
+    "random_state": 42,
+    "early_stopping": true,
+    "validation_fraction": 0.1,
+    "n_iter_no_change": 100
+  }
+}

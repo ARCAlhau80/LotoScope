@@ -1,0 +1,107 @@
+[
+  {
+    "concurso": 3491,
+    "timestamp": "2025-09-21T12:01:54.664559",
+    "precisao_geral": 58.666666666666664,
+    "melhor_acerto": 10,
+    "media_acertos": 8.8
+  },
+  {
+    "concurso": 3492,
+    "timestamp": "2025-09-21T12:11:36.546013",
+    "precisao_geral": 57.333333333333336,
+    "melhor_acerto": 10,
+    "media_acertos": 8.6
+  },
+  {
+    "concurso": 3492,
+    "timestamp": "2025-09-21T12:15:05.865151",
+    "precisao_geral": 58.666666666666664,
+    "melhor_acerto": 12,
+    "media_acertos": 8.8
+  },
+  {
+    "concurso": 3492,
+    "timestamp": "2025-09-21T12:16:20.301300",
+    "precisao_geral": 62.66666666666667,
+    "melhor_acerto": 10,
+    "media_acertos": 9.4
+  },
+  {
+    "concurso": 3492,
+    "timestamp": "2025-09-21T12:28:11.209646",
+    "precisao_geral": 54.666666666666664,
+    "melhor_acerto": 10,
+    "media_acertos": 8.2
+  },
+  {
+    "concurso": 3492,
+    "timestamp": "2025-09-21T12:30:17.200991",
+    "precisao_geral": 56.00000000000001,
+    "melhor_acerto": 10,
+    "media_acertos": 8.4
+  },
+  {
+    "concurso": 3492,
+    "timestamp": "2025-09-21T12:58:48.649694",
+    "precisao_geral": 58.666666666666664,
+    "melhor_acerto": 10,
+    "media_acertos": 8.8
+  },
+  {
+    "concurso": 3492,
+    "timestamp": "2025-09-21T14:37:58.225701",
+    "precisao_geral": 61.33333333333333,
+    "melhor_acerto": 11,
+    "media_acertos": 9.2
+  },
+  {
+    "concurso": 3492,
+    "timestamp": "2025-09-21T14:40:59.192550",
+    "precisao_geral": 61.33333333333333,
+    "melhor_acerto": 10,
+    "media_acertos": 9.2
+  },
+  {
+    "concurso": 3492,
+    "timestamp": "2025-09-21T14:49:32.269416",
+    "precisao_geral": 56.00000000000001,
+    "melhor_acerto": 11,
+    "media_acertos": 8.4
+  },
+  {
+    "concurso": 3492,
+    "timestamp": "2025-09-22T08:22:08.082315",
+    "precisao_geral": 60.0,
+    "melhor_acerto": 10,
+    "media_acertos": 9.0
+  },
+  {
+    "concurso": 3492,
+    "timestamp": "2025-09-22T14:42:00.274825",
+    "precisao_geral": 73.33333333333333,
+    "melhor_acerto": 13,
+    "media_acertos": 11.0
+  },
+  {
+    "concurso": 3492,
+    "timestamp": "2025-09-22T14:53:37.031425",
+    "precisao_geral": 62.66666666666667,
+    "melhor_acerto": 11,
+    "media_acertos": 9.4
+  },
+  {
+    "concurso": 3491,
+    "timestamp": "2025-09-22T18:10:17.742929",
+    "precisao_geral": 64.0,
+    "melhor_acerto": 11,
+    "media_acertos": 9.6
+  },
+  {
+    "concurso": 3495,
+    "timestamp": "2025-09-25T09:00:20.799827",
+    "precisao_geral": 66.66666666666666,
+    "melhor_acerto": 11,
+    "media_acertos": 10.0
+  }
+]

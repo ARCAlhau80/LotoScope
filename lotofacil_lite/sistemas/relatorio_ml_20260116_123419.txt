@@ -1,0 +1,131 @@
+======================================================================
+🤖 RELATÓRIO DE APRENDIZADO COM MACHINE LEARNING (10 ALGORITMOS)
+======================================================================
+
+📅 Data: 2026-01-16T12:34:19.096779
+🔢 Sessão #: 12
+📊 Janelas: 3556
+⏱️ Duração: 14.9s
+
+----------------------------------------------------------------------
+🎓 DISTRIBUIÇÃO DE ALGORITMOS (META-BANDIT)
+----------------------------------------------------------------------
+
+   EXP3: 2216 seleções (62.3%)
+   THOMPSON: 1337 seleções (37.6%)
+   UCB1: 3 seleções (0.1%)
+
+----------------------------------------------------------------------
+🎰 MULTI-ARMED BANDITS
+----------------------------------------------------------------------
+
+   THOMPSON SAMPLING:
+      Atrasados: E[R]=-0.7281 (n=14555)
+      Quentes: E[R]=-0.7463 (n=7913)
+      Equilibrada: E[R]=-0.7418 (n=20204)
+
+   Melhor por E[reward]: ATRASADOS
+
+   Seleções por estratégia:
+      Equilibrada: 2099 (59.0%)
+      Quentes: 58 (1.6%)
+      Atrasados: 1399 (39.3%)
+
+----------------------------------------------------------------------
+🔢 FEATURE IMPORTANCE - Top Números
+----------------------------------------------------------------------
+
+   Top 10 números mais importantes: [2, 10, 13, 4, 15, 20, 8, 17, 16, 1]
+   (Números que mais contribuem para acertos)
+
+----------------------------------------------------------------------
+📈 ESTATÍSTICAS POR ESTRATÉGIA
+----------------------------------------------------------------------
+
+🎯 ATRASADOS
+   Vezes selecionada: 1399
+   ROI: -73.9%
+   Reward médio: -0.7394
+   Custo: R$ 121583.00
+   Lucro líquido: R$ -89846.00
+   Acertos 11+: 3602
+      14 acertos: 1x
+      13 acertos: 52x
+      12 acertos: 582x
+      11 acertos: 2967x
+
+🎯 QUENTES
+   Vezes selecionada: 58
+   ROI: -75.7%
+   Reward médio: -0.7587
+   Custo: R$ 31052.00
+   Lucro líquido: R$ -23520.00
+   Acertos 11+: 892
+      13 acertos: 12x
+      12 acertos: 136x
+      11 acertos: 744x
+
+🎯 EQUILIBRADA
+   Vezes selecionada: 2099
+   ROI: -74.7%
+   Reward médio: -0.7479
+   Custo: R$ 234689.00
+   Lucro líquido: R$ -175413.00
+   Acertos 11+: 6981
+      13 acertos: 91x
+      12 acertos: 1123x
+      11 acertos: 5767x
+
+----------------------------------------------------------------------
+⚙️ HIPERPARÂMETROS (Bayesian Optimization / TPE)
+----------------------------------------------------------------------
+
+   limite_atraso_minimo: 6.6557
+   limite_frequencia_quente: 0.6231
+   peso_atrasados_mix: 4.8754
+   peso_quentes_mix: 5.7302
+
+----------------------------------------------------------------------
+📊 EVOLUÇÃO DO APRENDIZADO
+----------------------------------------------------------------------
+
+   ROI médio atual: -74.79%
+   ROI médio anterior: -74.60%
+   Delta: 📉 -0.20%
+
+   ⚠️ Performance abaixo da sessão anterior.
+   Meta-Bandit irá ajustar automaticamente.
+
+======================================================================
+🎓 10 ALGORITMOS ACADÊMICOS IMPLEMENTADOS
+======================================================================
+
+   1. THOMPSON SAMPLING (Auer et al.)
+      Convergência assintótica garantida para estratégia ótima.
+
+   2. UCB1 - Upper Confidence Bound (Auer et al., 2002)
+      Bound otimista determinístico para exploração.
+
+   3. EXP3 - Adversarial Bandit (Auer et al., 2002)
+      Robusto a mudanças de distribuição.
+
+   4. BAYESIAN OPTIMIZATION / TPE
+      Otimização de hiperparâmetros com menos avaliações.
+
+   5. GENETIC ALGORITHM (Holland, 1975)
+      Evolui combinações via crossover, mutação e seleção.
+
+   6. SIMULATED ANNEALING (Kirkpatrick et al., 1983)
+      Escape de mínimos locais via temperatura.
+
+   7. ENSEMBLE LEARNING
+      Combina votos de múltiplos algoritmos.
+
+   8. EXPONENTIAL MOVING AVERAGE (EMA)
+      Detecta mudanças de tendência rapidamente.
+
+   9. FEATURE IMPORTANCE
+      Identifica números/padrões mais importantes.
+
+   10. META-BANDIT (UCB sobre algoritmos)
+       Seleciona qual algoritmo usar baseado em performance.

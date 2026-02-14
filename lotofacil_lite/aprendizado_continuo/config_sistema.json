@@ -1,0 +1,25 @@
+{
+  "sistema": {
+    "nome": "Sistema de Aprendizado LotoScope",
+    "versao": "1.0.0",
+    "data_inicializacao": "2025-10-20T12:13:31.681451",
+    "ativo": true
+  },
+  "configuracoes": {
+    "backup_automatico": true,
+    "validacao_automatica": true,
+    "dashboard_tempo_real": true,
+    "log_detalhado": true
+  },
+  "metas": {
+    "precisao_minima": 0.75,
+    "acertos_11_plus_meta": 0.3,
+    "tempo_maximo_treinamento": 300
+  },
+  "caminhos": {
+    "modelos": "ia_repetidos/",
+    "backups": "ia_repetidos/backups_modelos/",
+    "logs": "ia_repetidos/logs_aprendizado/",
+    "dashboard": "aprendizado_continuo/dashboard/"
+  }
+}

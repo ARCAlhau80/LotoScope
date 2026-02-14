@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 LotoScope Web - Gerador Interativo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1><i class="fas fa-bullseye"></i> LotoScope Web</h1>
+            <p>Gerador Interativo de Combinações da Lotofácil</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Coluna da Esquerda: Informações e Configurações -->
+            <div class="left-column">
+                <!-- Previsão Info -->
+                <div class="prediction-info">
+                    <div class="contest-info">
+                        <h3><i class="fas fa-bullseye"></i> Previsão para o Concurso</h3>
+                        <div id="contestInfo" class="contest-display">
+                            <div class="contest-item">
+                                <span class="contest-label">Próximo concurso:</span>
+                                <span id="nextContest" class="contest-value">Carregando...</span>
+                            </div>
+                            <div class="contest-item">
+                                <span class="contest-label">Baseado no concurso:</span>
+                                <span id="lastContest" class="contest-value">Carregando...</span>
+                            </div>
+                            <div class="contest-item">
+                                <span class="contest-label">Tendência atual:</span>
+                                <span id="currentTrend" class="contest-value">Carregando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration Panel -->
+                <div class="config-panel">
+                    <div class="config-section">
+                        <h3><i class="fas fa-cog"></i> Configurações</h3>
+                    
+                    <!-- Game Size Selector -->
+                    <div class="form-group">
+                        <label for="gameSize">Números por jogo:</label>
+                        <select id="gameSize" class="form-control">
+                            <option value="15" selected>15 números</option>
+                            <option value="16">16 números</option>
+                            <option value="17">17 números</option>
+                            <option value="18">18 números</option>
+                            <option value="19">19 números</option>
+                            <option value="20">20 números</option>
+                        </select>
+                    </div>
+
+                    <!-- Quantity Selector -->
+                    <div class="form-group">
+                        <label for="quantity">Combinações a gerar:</label>
+                        <input type="number" id="quantity" class="form-control" value="1" min="0" max="10000" placeholder="Deixe vazio para TODAS">
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle"></i> Deixe vazio ou 0 para gerar TODAS as combinações que atendem os critérios
+                        </small>
+                    </div>
+
+                    <!-- Fixed Numbers Info -->
+                    <div class="form-group">
+                        <label>Números fixos selecionados:</label>
+                        <div id="fixedCount" class="info-display">0 números</div>
+                        <div id="fixedNumbers" class="fixed-numbers-display"></div>
+                    </div>
+
+                    <!-- Probability Display -->
+                    <div class="probability-section">
+                        <h4><i class="fas fa-chart-line"></i> Probabilidade</h4>
+                        <div id="probabilityDisplay" class="probability-display">
+                            <div class="prob-item">
+                                <span class="prob-label">Total de combinações:</span>
+                                <span id="totalCombinations" class="prob-value">-</span>
+                            </div>
+                            <div class="prob-item">
+                                <span class="prob-label">Chance de acerto:</span>
+                                <span id="probability" class="prob-value">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna da Direita: Seletor de Números -->
+            <div class="right-column">
+                <div class="numbers-section">
+                    <h3><i class="fas fa-th"></i> Selecione os Números Fixos (0-14)</h3>
+                    <div id="numbersGrid" class="numbers-grid">
+                        <!-- Numbers 1-25 will be generated by JavaScript -->
+                    </div>
+                    <div class="grid-info">
+                        <small><i class="fas fa-info-circle"></i> Clique nos números que devem aparecer obrigatoriamente nas combinações</small>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+            <!-- Actions -->
+            <div class="actions-section">
+                <button id="clearSelection" class="btn btn-secondary">
+                    <i class="fas fa-eraser"></i> Limpar Seleção
+                </button>
+                <button id="generateBtn" class="btn btn-primary">
+                    <i class="fas fa-magic"></i> Gerar Combinações
+                </button>
+            </div>
+
+            <!-- Results -->
+            <div id="resultsSection" class="results-section" style="display: none;">
+                <div class="results-header">
+                    <h3><i class="fas fa-list"></i> Combinações Geradas</h3>
+                    <div class="results-actions">
+                        <button id="exportBtn" class="btn btn-success" style="display: none;">
+                            <i class="fas fa-download"></i> Exportar TXT
+                        </button>
+                    </div>
+                </div>
+                <div id="loadingSpinner" class="loading" style="display: none;">
+                    <i class="fas fa-spinner fa-spin"></i> Gerando combinações...
+                </div>
+                <div id="resultsContainer" class="results-container">
+                    <!-- Results will be populated by JavaScript -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Status Bar -->
+        <div id="statusBar" class="status-bar">
+            <span id="statusMessage">Sistema pronto</span>
+        </div>
+
+        <!-- Modal de Explicação dos Filtros -->
+        <div id="filtersModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-info-circle"></i> Como são definidos os filtros?</h3>
+                    <span class="close" onclick="document.getElementById('filtersModal').style.display='none'">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <h4>🎯 Filtros Dinâmicos baseados no último concurso:</h4>
+                    
+                    <div class="filter-explanation">
+                        <h5>📊 menor_que_ultimo & maior_que_ultimo:</h5>
+                        <p>Compara os números sorteados no último concurso com os números das novas combinações:</p>
+                        <ul>
+                            <li><strong>menor_que_ultimo:</strong> Quantidade de números menores que os do último sorteio</li>
+                            <li><strong>maior_que_ultimo:</strong> Quantidade de números maiores que os do último sorteio</li>
+                        </ul>
+                        <p><em>Valores atuais: menor_que_ultimo in (9,10,11,12,13,14) AND maior_que_ultimo in (1,2,3,4,5,6)</em></p>
+                    </div>
+
+                    <div class="filter-explanation">
+                        <h5>📈 SomaTotal:</h5>
+                        <p>Soma de todos os 15 números da combinação:</p>
+                        <ul>
+                            <li>Calculado dinamicamente baseado na tendência da soma dos últimos concursos</li>
+                            <li>Margem de segurança de ±10% aplicada</li>
+                            <li>Faixa típica: 160-250 (varia conforme análise)</li>
+                        </ul>
+                        <p><em>Valor atual: SomaTotal between 160 and 220</em></p>
+                    </div>
+
+                    <div class="filter-explanation">
+                        <h5>🔮 Sistema de Tendências:</h5>
+                        <p>Os filtros são ajustados automaticamente baseado em:</p>
+                        <ul>
+                            <li><strong>Análise dos últimos 200 concursos</strong></li>
+                            <li><strong>Correlações estatísticas</strong> (soma vs comparações)</li>
+                            <li><strong>Estados extremos</strong> (padrões anômalos)</li>
+                            <li><strong>Tendências de estabilidade</strong> ou oscilação</li>
+                        </ul>
+                    </div>
+
+                    <div class="filter-explanation">
+                        <h5>⚙️ Filtros Fixos (sempre aplicados):</h5>
+                        <ul>
+                            <li>QtdePrimos in (2,3,4,5,6,7,8)</li>
+                            <li>QtdeFibonacci in (2,3,4,5,6)</li>
+                            <li>QtdeImpares in (6,7,8,9,10)</li>
+                            <li>QtdeRepetidos in (7,8,9,10)</li>
+                            <li>Quintis e sequências balanceadas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botão para abrir modal -->
+        <button id="infoBtn" class="info-btn" onclick="document.getElementById('filtersModal').style.display='block'">
+            <i class="fas fa-question-circle"></i>
+        </button>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Debug direto no HTML
+        console.log('🔍 HTML carregado, testando JavaScript...');
+        
+        // Testar fetch direto
+        fetch('/api/health')
+            .then(response => {
+                console.log('📡 Resposta health:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('✅ Dados health:', data);
+            })
+            .catch(error => {
+                console.error('❌ Erro health:', error);
+            });
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

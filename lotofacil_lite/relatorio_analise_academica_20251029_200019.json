@@ -1,0 +1,2396 @@
+{
+  "metadata": {
+    "timestamp": "20251029_200019",
+    "data_analise": "2025-10-29T20:00:19.953395",
+    "total_registros": 3523,
+    "servidor": "DESKTOP-K6JPBDS",
+    "database": "LOTOFACIL"
+  },
+  "analises_realizadas": {
+    "frequencias_numeros": {
+      "frequencias": {
+        "1": 2127,
+        "2": 2109,
+        "3": 2128,
+        "4": 2129,
+        "5": 2116,
+        "6": 2069,
+        "7": 2076,
+        "8": 2037,
+        "9": 2107,
+        "10": 2189,
+        "11": 2168,
+        "12": 2121,
+        "13": 2148,
+        "14": 2141,
+        "15": 2096,
+        "16": 2020,
+        "17": 2076,
+        "18": 2103,
+        "19": 2097,
+        "20": 2195,
+        "21": 2095,
+        "22": 2110,
+        "23": 2059,
+        "24": 2142,
+        "25": 2187
+      },
+      "freq_esperada": 2113.8,
+      "chi2_estatistica": 22.532879174945595,
+      "p_valor": 0.5474934930405408,
+      "desvios_padronizados": {
+        "1": 0.2871058121571114,
+        "2": -0.10440211351168227,
+        "3": 0.30885625247204435,
+        "4": 0.33060669278697735,
+        "5": 0.0478509686928486,
+        "6": -0.9744197261090015,
+        "7": -0.8221666439044706,
+        "8": -1.6704338161868568,
+        "9": -0.14790299414154823,
+        "10": 1.635633111682956,
+        "11": 1.1788738650693635,
+        "12": 0.1566031702675135,
+        "13": 0.743865058770704,
+        "14": 0.5916119765661731,
+        "15": -0.387157837605811,
+        "16": -2.0401913015407174,
+        "17": -0.8221666439044706,
+        "18": -0.23490475540128014,
+        "19": -0.365407397290878,
+        "20": 1.7661357535725541,
+        "21": -0.40890827792074397,
+        "22": -0.08265167319674928,
+        "23": -1.1919241292583314,
+        "24": 0.6133624168811062,
+        "25": 1.5921322310530903
+      },
+      "numeros_quentes": [],
+      "numeros_frios": [
+        16
+      ],
+      "coef_variacao": 0.020649350350134318,
+      "interpretacao": [
+        "Distribuicao compativel com uniformidade (p=0.5475)",
+        "Baixa variabilidade nas frequencias (CV=0.021)",
+        "Numeros com frequencia abaixo do esperado: [16]"
+      ]
+    },
+    "correlacoes_temporais": {
+      "autocorrelacoes": {
+        "QtdeImpares": -0.02217724610005767,
+        "QtdePrimos": -0.009429089454551644,
+        "SomaTotal": -0.01315059789976185,
+        "QtdeGaps": 0.009186204650991724
+      },
+      "tendencias": {
+        "QtdeImpares": {
+          "slope": -2.8624922214208166e-05,
+          "r_squared": 0.0005368678553816286,
+          "p_valor": 0.1691398044008009,
+          "significativa": "False"
+        },
+        "QtdePrimos": {
+          "slope": -4.912457529208345e-05,
+          "r_squared": 0.00172980007705889,
+          "p_valor": 0.013556228129696,
+          "significativa": "True"
+        },
+        "SomaTotal": {
+          "slope": -0.00010101767542786354,
+          "r_squared": 3.316192297506304e-05,
+          "p_valor": 0.732588129507598,
+          "significativa": "False"
+        },
+        "QtdeGaps": {
+          "slope": 1.8543737479042383e-06,
+          "r_squared": 2.3534796999961143e-06,
+          "p_valor": 0.9274732305391551,
+          "significativa": "False"
+        }
+      },
+      "correlacoes_cruzadas": {
+        "QtdeImpares_vs_QtdePrimos": 0.5651980382082263,
+        "QtdeImpares_vs_SomaTotal": -0.014040177288649213,
+        "QtdeImpares_vs_QtdeGaps": 0.08498229618625354,
+        "QtdePrimos_vs_SomaTotal": -0.1950684814430559,
+        "QtdePrimos_vs_QtdeGaps": -0.08665383935299892,
+        "SomaTotal_vs_QtdeGaps": -0.019674478304082078
+      },
+      "interpretacao": [
+        "Tendencias temporais em: ['QtdePrimos']",
+        "Correlacoes fortes entre: ['QtdeImpares_vs_QtdePrimos']"
+      ]
+    },
+    "sazonalidade_fft": {
+      "analise_fft": {
+        "QtdeImpares": {
+          "freq_dominante": 0.030939540164632413,
+          "periodo_dominante": 32.321100917431195,
+          "potencia_maxima": 44536.432771736414,
+          "potencia_total": 19582011.4004374
+        },
+        "QtdePrimos": {
+          "freq_dominante": 0.06585296622196991,
+          "periodo_dominante": 15.185344827586206,
+          "potencia_maxima": 40324.89674374067,
+          "potencia_total": 17878007.034637153
+        },
+        "SomaTotal": {
+          "freq_dominante": 0.38887311950042575,
+          "periodo_dominante": 2.5715328467153284,
+          "potencia_maxima": 9408712.73619314,
+          "potencia_total": 3950116680.1907697
+        },
+        "QtdeGaps": {
+          "freq_dominante": 0.33692875390292365,
+          "periodo_dominante": 2.9679865206402694,
+          "potencia_maxima": 41441.99813540448,
+          "potencia_total": 18756523.85679797
+        }
+      },
+      "interpretacao": [
+        "Ciclo mensal detectado em QtdeImpares (periodo: 32.3)"
+      ]
+    },
+    "anomalias": {
+      "anomalias_detectadas": [
+        {
+          "concurso": 3521,
+          "score_anomalia": -0.046583911407966916,
+          "data": "2025-10-24"
+        },
+        {
+          "concurso": 3510,
+          "score_anomalia": -0.04730180629274261,
+          "data": "2025-10-11"
+        },
+        {
+          "concurso": 3488,
+          "score_anomalia": -0.015430565749409708,
+          "data": "2025-09-16"
+        },
+        {
+          "concurso": 3478,
+          "score_anomalia": -0.00507647171465242,
+          "data": "2025-08-25"
+        },
+        {
+          "concurso": 3462,
+          "score_anomalia": -0.00380486410312475,
+          "data": "2025-08-06"
+        },
+        {
+          "concurso": 3441,
+          "score_anomalia": -0.03748083085391418,
+          "data": "2025-07-12"
+        },
+        {
+          "concurso": 3439,
+          "score_anomalia": -0.02664633390501736,
+          "data": "2025-07-10"
+        },
+        {
+          "concurso": 3432,
+          "score_anomalia": -0.10409279860384713,
+          "data": "2025-07-02"
+        },
+        {
+          "concurso": 3430,
+          "score_anomalia": -0.004373062622204826,
+          "data": "2025-06-30"
+        },
+        {
+          "concurso": 3424,
+          "score_anomalia": -0.05031993492074138,
+          "data": "2025-06-23"
+        },
+        {
+          "concurso": 3422,
+          "score_anomalia": -0.016452029061900353,
+          "data": "2025-06-20"
+        },
+        {
+          "concurso": 3407,
+          "score_anomalia": -0.033768848320782086,
+          "data": "2025-06-02"
+        },
+        {
+          "concurso": 3396,
+          "score_anomalia": -0.04309916242899081,
+          "data": "2025-05-20"
+        },
+        {
+          "concurso": 3394,
+          "score_anomalia": -0.07908295213136385,
+          "data": "2025-05-17"
+        },
+        {
+          "concurso": 3383,
+          "score_anomalia": -0.067570652720501,
+          "data": "2025-05-05"
+        },
+        {
+          "concurso": 3381,
+          "score_anomalia": -0.08879313856149262,
+          "data": "2025-05-02"
+        },
+        {
+          "concurso": 3371,
+          "score_anomalia": -0.04182661094228923,
+          "data": "2025-04-17"
+        },
+        {
+          "concurso": 3369,
+          "score_anomalia": -0.001744065294904673,
+          "data": "2025-04-15"
+        },
+        {
+          "concurso": 3364,
+          "score_anomalia": -0.029195990965028895,
+          "data": "2025-04-09"
+        },
+        {
+          "concurso": 3348,
+          "score_anomalia": -0.023460249849894144,
+          "data": "2025-03-21"
+        },
+        {
+          "concurso": 3347,
+          "score_anomalia": -0.02296834978060358,
+          "data": "2025-03-20"
+        },
+        {
+          "concurso": 3340,
+          "score_anomalia": -0.02617753311654125,
+          "data": "2025-03-12"
+        },
+        {
+          "concurso": 3327,
+          "score_anomalia": -0.07321605486590255,
+          "data": "2025-02-22"
+        },
+        {
+          "concurso": 3322,
+          "score_anomalia": -0.03744356613573141,
+          "data": "2025-02-17"
+        },
+        {
+          "concurso": 3303,
+          "score_anomalia": -0.01668126589415908,
+          "data": "2025-01-25"
+        },
+        {
+          "concurso": 3288,
+          "score_anomalia": -0.005061846256703806,
+          "data": "2025-01-08"
+        },
+        {
+          "concurso": 3284,
+          "score_anomalia": -0.04917512996500539,
+          "data": "2025-01-03"
+        },
+        {
+          "concurso": 3283,
+          "score_anomalia": -0.12600025175335972,
+          "data": "2025-01-02"
+        },
+        {
+          "concurso": 3282,
+          "score_anomalia": -0.049828223180380604,
+          "data": "2024-12-31"
+        },
+        {
+          "concurso": 3278,
+          "score_anomalia": -0.010126079715715108,
+          "data": "2024-12-26"
+        },
+        {
+          "concurso": 3253,
+          "score_anomalia": -0.031929586646983865,
+          "data": "2024-11-26"
+        },
+        {
+          "concurso": 3252,
+          "score_anomalia": -0.0029835122941312964,
+          "data": "2024-11-25"
+        },
+        {
+          "concurso": 3251,
+          "score_anomalia": -0.027360230050345158,
+          "data": "2024-11-23"
+        },
+        {
+          "concurso": 3246,
+          "score_anomalia": -0.061623188686998454,
+          "data": "2024-11-16"
+        },
+        {
+          "concurso": 3236,
+          "score_anomalia": -0.050461684623166136,
+          "data": "2024-11-04"
+        },
+        {
+          "concurso": 3234,
+          "score_anomalia": -0.0007519551154767656,
+          "data": "2024-10-31"
+        },
+        {
+          "concurso": 3231,
+          "score_anomalia": -0.052590394599858925,
+          "data": "2024-10-28"
+        },
+        {
+          "concurso": 3219,
+          "score_anomalia": -0.03592205865326392,
+          "data": "2024-10-14"
+        },
+        {
+          "concurso": 3208,
+          "score_anomalia": -0.025866268909090828,
+          "data": "2024-09-30"
+        },
+        {
+          "concurso": 3204,
+          "score_anomalia": -0.009186756409608532,
+          "data": "2024-09-25"
+        },
+        {
+          "concurso": 3195,
+          "score_anomalia": -0.014943028829270344,
+          "data": "2024-09-14"
+        },
+        {
+          "concurso": 3192,
+          "score_anomalia": -0.0023943917644886348,
+          "data": "2024-09-11"
+        },
+        {
+          "concurso": 3187,
+          "score_anomalia": -0.05594087717326346,
+          "data": "2024-08-21"
+        },
+        {
+          "concurso": 3175,
+          "score_anomalia": -0.031593062502349056,
+          "data": "2024-08-07"
+        },
+        {
+          "concurso": 3164,
+          "score_anomalia": -0.033162407733457244,
+          "data": "2024-07-25"
+        },
+        {
+          "concurso": 3163,
+          "score_anomalia": -0.04251719365602391,
+          "data": "2024-07-24"
+        },
+        {
+          "concurso": 3162,
+          "score_anomalia": -0.0006673119511726444,
+          "data": "2024-07-23"
+        },
+        {
+          "concurso": 3159,
+          "score_anomalia": -0.0622452321839736,
+          "data": "2024-07-19"
+        },
+        {
+          "concurso": 3153,
+          "score_anomalia": -0.008529694243427643,
+          "data": "2024-07-12"
+        },
+        {
+          "concurso": 3147,
+          "score_anomalia": -0.0027239211968264065,
+          "data": "2024-07-05"
+        },
+        {
+          "concurso": 3138,
+          "score_anomalia": -0.10687584122235927,
+          "data": "2024-06-25"
+        },
+        {
+          "concurso": 3118,
+          "score_anomalia": -0.005634428324101326,
+          "data": "2024-06-01"
+        },
+        {
+          "concurso": 3107,
+          "score_anomalia": -0.00220725774236874,
+          "data": "2024-05-18"
+        },
+        {
+          "concurso": 3102,
+          "score_anomalia": -0.04296817276121079,
+          "data": "2024-05-13"
+        },
+        {
+          "concurso": 3101,
+          "score_anomalia": -0.02010645114684584,
+          "data": "2024-05-11"
+        },
+        {
+          "concurso": 3095,
+          "score_anomalia": -0.007399042994808203,
+          "data": "2024-05-04"
+        },
+        {
+          "concurso": 3050,
+          "score_anomalia": -0.1239551844186173,
+          "data": "2024-03-11"
+        },
+        {
+          "concurso": 3049,
+          "score_anomalia": -0.06620649601554562,
+          "data": "2024-03-09"
+        },
+        {
+          "concurso": 3038,
+          "score_anomalia": -0.0667843917841443,
+          "data": "2024-02-26"
+        },
+        {
+          "concurso": 3022,
+          "score_anomalia": -0.03060568746444714,
+          "data": "2024-02-05"
+        },
+        {
+          "concurso": 3011,
+          "score_anomalia": -0.028642408706814115,
+          "data": "2024-01-23"
+        },
+        {
+          "concurso": 3007,
+          "score_anomalia": -0.05164897470399088,
+          "data": "2024-01-18"
+        },
+        {
+          "concurso": 2995,
+          "score_anomalia": -0.009516934562031176,
+          "data": "2024-01-04"
+        },
+        {
+          "concurso": 2987,
+          "score_anomalia": -0.029624491675874776,
+          "data": "2023-12-23"
+        },
+        {
+          "concurso": 2975,
+          "score_anomalia": -0.06370458079473529,
+          "data": "2023-12-09"
+        },
+        {
+          "concurso": 2974,
+          "score_anomalia": -0.03413485523057769,
+          "data": "2023-12-08"
+        },
+        {
+          "concurso": 2963,
+          "score_anomalia": -0.006638380640726638,
+          "data": "2023-11-25"
+        },
+        {
+          "concurso": 2956,
+          "score_anomalia": -0.059928121432470394,
+          "data": "2023-11-17"
+        },
+        {
+          "concurso": 2949,
+          "score_anomalia": -0.06239648696222233,
+          "data": "2023-11-08"
+        },
+        {
+          "concurso": 2937,
+          "score_anomalia": -0.045792664378462966,
+          "data": "2023-10-24"
+        },
+        {
+          "concurso": 2925,
+          "score_anomalia": -0.06928310407318194,
+          "data": "2023-10-09"
+        },
+        {
+          "concurso": 2911,
+          "score_anomalia": -0.00587306255118869,
+          "data": "2023-09-22"
+        },
+        {
+          "concurso": 2898,
+          "score_anomalia": -0.04186581036586923,
+          "data": "2023-08-24"
+        },
+        {
+          "concurso": 2894,
+          "score_anomalia": -0.02025265572976498,
+          "data": "2023-08-19"
+        },
+        {
+          "concurso": 2892,
+          "score_anomalia": -0.021253406826664767,
+          "data": "2023-08-17"
+        },
+        {
+          "concurso": 2873,
+          "score_anomalia": -0.023213816984583358,
+          "data": "2023-07-26"
+        },
+        {
+          "concurso": 2868,
+          "score_anomalia": -0.037767808479084786,
+          "data": "2023-07-20"
+        },
+        {
+          "concurso": 2860,
+          "score_anomalia": -0.01629303526368331,
+          "data": "2023-07-11"
+        },
+        {
+          "concurso": 2841,
+          "score_anomalia": -0.030217280032943217,
+          "data": "2023-06-19"
+        },
+        {
+          "concurso": 2837,
+          "score_anomalia": -0.005003152746686723,
+          "data": "2023-06-14"
+        },
+        {
+          "concurso": 2835,
+          "score_anomalia": -0.014284164177534642,
+          "data": "2023-06-12"
+        },
+        {
+          "concurso": 2829,
+          "score_anomalia": -0.016189843248732072,
+          "data": "2023-06-03"
+        },
+        {
+          "concurso": 2823,
+          "score_anomalia": -0.006690231060861529,
+          "data": "2023-05-27"
+        },
+        {
+          "concurso": 2818,
+          "score_anomalia": -0.10998640597999243,
+          "data": "2023-05-22"
+        },
+        {
+          "concurso": 2812,
+          "score_anomalia": -0.05301746648271588,
+          "data": "2023-05-15"
+        },
+        {
+          "concurso": 2811,
+          "score_anomalia": -0.009002487788791647,
+          "data": "2023-05-13"
+        },
+        {
+          "concurso": 2808,
+          "score_anomalia": -0.027924376882955793,
+          "data": "2023-05-10"
+        },
+        {
+          "concurso": 2807,
+          "score_anomalia": -0.024115287773049054,
+          "data": "2023-05-09"
+        },
+        {
+          "concurso": 2795,
+          "score_anomalia": -0.008027366063341312,
+          "data": "2023-04-24"
+        },
+        {
+          "concurso": 2774,
+          "score_anomalia": -0.012181123305631258,
+          "data": "2023-03-28"
+        },
+        {
+          "concurso": 2740,
+          "score_anomalia": -0.043093257525413375,
+          "data": "2023-02-14"
+        },
+        {
+          "concurso": 2722,
+          "score_anomalia": -0.11088070105216519,
+          "data": "2023-01-24"
+        },
+        {
+          "concurso": 2712,
+          "score_anomalia": -0.013899943405951465,
+          "data": "2023-01-12"
+        },
+        {
+          "concurso": 2709,
+          "score_anomalia": -0.009207896344076483,
+          "data": "2023-01-09"
+        },
+        {
+          "concurso": 2696,
+          "score_anomalia": -0.0065420436414471705,
+          "data": "2022-12-23"
+        },
+        {
+          "concurso": 2674,
+          "score_anomalia": -0.048647723529089304,
+          "data": "2022-11-28"
+        },
+        {
+          "concurso": 2670,
+          "score_anomalia": -0.02529017436536063,
+          "data": "2022-11-23"
+        },
+        {
+          "concurso": 2651,
+          "score_anomalia": -0.021901923936224144,
+          "data": "2022-10-29"
+        },
+        {
+          "concurso": 2648,
+          "score_anomalia": -0.02823107506804623,
+          "data": "2022-10-26"
+        },
+        {
+          "concurso": 2628,
+          "score_anomalia": -0.020529291626453117,
+          "data": "2022-10-01"
+        },
+        {
+          "concurso": 2622,
+          "score_anomalia": -0.0073491361255116905,
+          "data": "2022-09-24"
+        },
+        {
+          "concurso": 2618,
+          "score_anomalia": -0.05070304803294434,
+          "data": "2022-09-20"
+        },
+        {
+          "concurso": 2602,
+          "score_anomalia": -0.004384903853157374,
+          "data": "2022-08-18"
+        },
+        {
+          "concurso": 2594,
+          "score_anomalia": -0.04529426980192286,
+          "data": "2022-08-09"
+        },
+        {
+          "concurso": 2585,
+          "score_anomalia": -0.038630644818235416,
+          "data": "2022-07-29"
+        },
+        {
+          "concurso": 2584,
+          "score_anomalia": -0.0014434088981007953,
+          "data": "2022-07-28"
+        },
+        {
+          "concurso": 2573,
+          "score_anomalia": -0.020622579893265547,
+          "data": "2022-07-15"
+        },
+        {
+          "concurso": 2569,
+          "score_anomalia": -0.09368939086293271,
+          "data": "2022-07-11"
+        },
+        {
+          "concurso": 2567,
+          "score_anomalia": -0.023991276980987908,
+          "data": "2022-07-08"
+        },
+        {
+          "concurso": 2566,
+          "score_anomalia": -0.04067273492639911,
+          "data": "2022-07-07"
+        },
+        {
+          "concurso": 2557,
+          "score_anomalia": -0.015003725614863406,
+          "data": "2022-06-27"
+        },
+        {
+          "concurso": 2534,
+          "score_anomalia": -0.03959497948417878,
+          "data": "2022-05-30"
+        },
+        {
+          "concurso": 2525,
+          "score_anomalia": -0.02710638879645133,
+          "data": "2022-05-19"
+        },
+        {
+          "concurso": 2501,
+          "score_anomalia": -0.06761288615648042,
+          "data": "2022-04-20"
+        },
+        {
+          "concurso": 2492,
+          "score_anomalia": -0.021684630054989662,
+          "data": "2022-04-08"
+        },
+        {
+          "concurso": 2476,
+          "score_anomalia": -0.003292766155528426,
+          "data": "2022-03-21"
+        },
+        {
+          "concurso": 2473,
+          "score_anomalia": -0.011768130054269244,
+          "data": "2022-03-17"
+        },
+        {
+          "concurso": 2463,
+          "score_anomalia": -0.017401227837382627,
+          "data": "2022-03-05"
+        },
+        {
+          "concurso": 2452,
+          "score_anomalia": -0.02119648231057425,
+          "data": "2022-02-18"
+        },
+        {
+          "concurso": 2450,
+          "score_anomalia": -0.016575850868709385,
+          "data": "2022-02-16"
+        },
+        {
+          "concurso": 2434,
+          "score_anomalia": -0.0017577991794011094,
+          "data": "2022-01-28"
+        },
+        {
+          "concurso": 2411,
+          "score_anomalia": -0.04369433164237535,
+          "data": "2021-12-31"
+        },
+        {
+          "concurso": 2404,
+          "score_anomalia": -0.008505007033659528,
+          "data": "2021-12-22"
+        },
+        {
+          "concurso": 2390,
+          "score_anomalia": -0.018744481496198895,
+          "data": "2021-12-06"
+        },
+        {
+          "concurso": 2389,
+          "score_anomalia": -0.04861165059001149,
+          "data": "2021-12-04"
+        },
+        {
+          "concurso": 2382,
+          "score_anomalia": -0.01189194354557399,
+          "data": "2021-11-26"
+        },
+        {
+          "concurso": 2377,
+          "score_anomalia": -0.03546795130585312,
+          "data": "2021-11-20"
+        },
+        {
+          "concurso": 2371,
+          "score_anomalia": -0.0020739452471432163,
+          "data": "2021-11-12"
+        },
+        {
+          "concurso": 2369,
+          "score_anomalia": -0.006789823933356476,
+          "data": "2021-11-10"
+        },
+        {
+          "concurso": 2363,
+          "score_anomalia": -0.01389083906262556,
+          "data": "2021-11-03"
+        },
+        {
+          "concurso": 2351,
+          "score_anomalia": -0.008043728291159735,
+          "data": "2021-10-19"
+        },
+        {
+          "concurso": 2338,
+          "score_anomalia": -0.04121513557575773,
+          "data": "2021-10-02"
+        },
+        {
+          "concurso": 2325,
+          "score_anomalia": -0.03568141224663701,
+          "data": "2021-09-17"
+        },
+        {
+          "concurso": 2294,
+          "score_anomalia": -0.02457826411790731,
+          "data": "2021-07-29"
+        },
+        {
+          "concurso": 2280,
+          "score_anomalia": -0.02969040214008578,
+          "data": "2021-07-13"
+        },
+        {
+          "concurso": 2264,
+          "score_anomalia": -0.05490746381097267,
+          "data": "2021-06-24"
+        },
+        {
+          "concurso": 2262,
+          "score_anomalia": -0.019229968772776718,
+          "data": "2021-06-22"
+        },
+        {
+          "concurso": 2259,
+          "score_anomalia": -0.06263236331412925,
+          "data": "2021-06-18"
+        },
+        {
+          "concurso": 2250,
+          "score_anomalia": -0.0716236098561438,
+          "data": "2021-06-08"
+        },
+        {
+          "concurso": 2249,
+          "score_anomalia": -0.058440713186699855,
+          "data": "2021-06-07"
+        },
+        {
+          "concurso": 2233,
+          "score_anomalia": -0.007099047208710907,
+          "data": "2021-05-18"
+        },
+        {
+          "concurso": 2213,
+          "score_anomalia": -0.01980340445492723,
+          "data": "2021-04-23"
+        },
+        {
+          "concurso": 2190,
+          "score_anomalia": -0.0028552788340951984,
+          "data": "2021-03-25"
+        },
+        {
+          "concurso": 2175,
+          "score_anomalia": -0.008030634781883705,
+          "data": "2021-03-08"
+        },
+        {
+          "concurso": 2172,
+          "score_anomalia": -0.023332903676307026,
+          "data": "2021-03-04"
+        },
+        {
+          "concurso": 2171,
+          "score_anomalia": -0.017039904335678813,
+          "data": "2021-03-03"
+        },
+        {
+          "concurso": 2170,
+          "score_anomalia": -0.030054021699613798,
+          "data": "2021-03-02"
+        },
+        {
+          "concurso": 2141,
+          "score_anomalia": -0.07033455588747362,
+          "data": "2021-01-25"
+        },
+        {
+          "concurso": 2130,
+          "score_anomalia": -0.004536119375908809,
+          "data": "2021-01-12"
+        },
+        {
+          "concurso": 2118,
+          "score_anomalia": -0.0029998912815717427,
+          "data": "2020-12-28"
+        },
+        {
+          "concurso": 2106,
+          "score_anomalia": -0.01856820310160623,
+          "data": "2020-12-12"
+        },
+        {
+          "concurso": 2092,
+          "score_anomalia": -0.0151956832669643,
+          "data": "2020-11-26"
+        },
+        {
+          "concurso": 2091,
+          "score_anomalia": -0.05964527709485079,
+          "data": "2020-11-25"
+        },
+        {
+          "concurso": 2090,
+          "score_anomalia": -0.04794351637859229,
+          "data": "2020-11-24"
+        },
+        {
+          "concurso": 2069,
+          "score_anomalia": -0.10679097801086257,
+          "data": "2020-10-29"
+        },
+        {
+          "concurso": 2064,
+          "score_anomalia": -0.067558696843805,
+          "data": "2020-10-23"
+        },
+        {
+          "concurso": 2060,
+          "score_anomalia": -0.07575750219689947,
+          "data": "2020-10-19"
+        },
+        {
+          "concurso": 2057,
+          "score_anomalia": -0.024707222611341728,
+          "data": "2020-10-15"
+        },
+        {
+          "concurso": 2040,
+          "score_anomalia": -0.013648019210474871,
+          "data": "2020-09-24"
+        },
+        {
+          "concurso": 2035,
+          "score_anomalia": -0.01178071869845776,
+          "data": "2020-09-18"
+        },
+        {
+          "concurso": 2028,
+          "score_anomalia": -0.002703709986634828,
+          "data": "2020-09-03"
+        },
+        {
+          "concurso": 2011,
+          "score_anomalia": -0.01979216723674082,
+          "data": "2020-08-14"
+        },
+        {
+          "concurso": 1979,
+          "score_anomalia": -0.011930347387735574,
+          "data": "2020-06-12"
+        },
+        {
+          "concurso": 1967,
+          "score_anomalia": -0.027693157441130656,
+          "data": "2020-05-15"
+        },
+        {
+          "concurso": 1965,
+          "score_anomalia": -0.019466270092206917,
+          "data": "2020-05-11"
+        },
+        {
+          "concurso": 1954,
+          "score_anomalia": -0.009896100046572598,
+          "data": "2020-04-15"
+        },
+        {
+          "concurso": 1934,
+          "score_anomalia": -0.02411855752866343,
+          "data": "2020-02-28"
+        },
+        {
+          "concurso": 1933,
+          "score_anomalia": -0.03988012802729979,
+          "data": "2020-02-26"
+        },
+        {
+          "concurso": 1928,
+          "score_anomalia": -0.005280127080552033,
+          "data": "2020-02-12"
+        },
+        {
+          "concurso": 1912,
+          "score_anomalia": -0.010058830393712581,
+          "data": "2020-01-06"
+        },
+        {
+          "concurso": 1901,
+          "score_anomalia": -0.06654775280580572,
+          "data": "2019-12-09"
+        },
+        {
+          "concurso": 1892,
+          "score_anomalia": -0.016129305954619255,
+          "data": "2019-11-18"
+        },
+        {
+          "concurso": 1887,
+          "score_anomalia": -0.04418377375514648,
+          "data": "2019-11-06"
+        },
+        {
+          "concurso": 1849,
+          "score_anomalia": -0.031697164314235526,
+          "data": "2019-08-05"
+        },
+        {
+          "concurso": 1833,
+          "score_anomalia": -0.01453058066690549,
+          "data": "2019-06-28"
+        },
+        {
+          "concurso": 1832,
+          "score_anomalia": -0.10849800173692825,
+          "data": "2019-06-26"
+        },
+        {
+          "concurso": 1819,
+          "score_anomalia": -0.08160593749917533,
+          "data": "2019-05-27"
+        },
+        {
+          "concurso": 1783,
+          "score_anomalia": -0.002179733905117831,
+          "data": "2019-03-01"
+        },
+        {
+          "concurso": 1779,
+          "score_anomalia": -0.062469683346709215,
+          "data": "2019-02-20"
+        },
+        {
+          "concurso": 1777,
+          "score_anomalia": -0.008073394883224783,
+          "data": "2019-02-15"
+        },
+        {
+          "concurso": 1766,
+          "score_anomalia": -0.009737060169553113,
+          "data": "2019-01-21"
+        },
+        {
+          "concurso": 1763,
+          "score_anomalia": -0.027891257918684298,
+          "data": "2019-01-14"
+        },
+        {
+          "concurso": 1740,
+          "score_anomalia": -0.01224330239831195,
+          "data": "2018-11-21"
+        },
+        {
+          "concurso": 1728,
+          "score_anomalia": -0.014296306272646997,
+          "data": "2018-10-24"
+        },
+        {
+          "concurso": 1708,
+          "score_anomalia": -0.042431144751760574,
+          "data": "2018-09-08"
+        },
+        {
+          "concurso": 1697,
+          "score_anomalia": -0.058860013234633746,
+          "data": "2018-08-03"
+        },
+        {
+          "concurso": 1691,
+          "score_anomalia": -0.07696722514708476,
+          "data": "2018-07-20"
+        },
+        {
+          "concurso": 1688,
+          "score_anomalia": -0.004253440322737112,
+          "data": "2018-07-13"
+        },
+        {
+          "concurso": 1651,
+          "score_anomalia": -0.03784127645306823,
+          "data": "2018-04-18"
+        },
+        {
+          "concurso": 1648,
+          "score_anomalia": -0.060223685142826944,
+          "data": "2018-04-11"
+        },
+        {
+          "concurso": 1633,
+          "score_anomalia": -0.007127037292625427,
+          "data": "2018-03-07"
+        },
+        {
+          "concurso": 1632,
+          "score_anomalia": -0.04159532329199467,
+          "data": "2018-03-05"
+        },
+        {
+          "concurso": 1611,
+          "score_anomalia": -0.030416749313106894,
+          "data": "2018-01-12"
+        },
+        {
+          "concurso": 1607,
+          "score_anomalia": -0.02235745167592673,
+          "data": "2018-01-03"
+        },
+        {
+          "concurso": 1601,
+          "score_anomalia": -0.007597792835047246,
+          "data": "2017-12-20"
+        },
+        {
+          "concurso": 1596,
+          "score_anomalia": -0.025669782136436003,
+          "data": "2017-12-08"
+        },
+        {
+          "concurso": 1578,
+          "score_anomalia": -0.000838381745125516,
+          "data": "2017-10-27"
+        },
+        {
+          "concurso": 1573,
+          "score_anomalia": -0.05842089068644141,
+          "data": "2017-10-16"
+        },
+        {
+          "concurso": 1562,
+          "score_anomalia": -0.08911056829464636,
+          "data": "2017-09-20"
+        },
+        {
+          "concurso": 1519,
+          "score_anomalia": -0.013337613363155976,
+          "data": "2017-06-02"
+        },
+        {
+          "concurso": 1499,
+          "score_anomalia": -0.012340829696168232,
+          "data": "2017-04-15"
+        },
+        {
+          "concurso": 1481,
+          "score_anomalia": -0.03384567583592879,
+          "data": "2017-03-03"
+        },
+        {
+          "concurso": 1469,
+          "score_anomalia": -0.060341731956213285,
+          "data": "2017-02-01"
+        },
+        {
+          "concurso": 1467,
+          "score_anomalia": -0.025296142638719377,
+          "data": "2017-01-27"
+        },
+        {
+          "concurso": 1464,
+          "score_anomalia": -0.04282286514411637,
+          "data": "2017-01-20"
+        },
+        {
+          "concurso": 1443,
+          "score_anomalia": -0.03247446388882036,
+          "data": "2016-12-02"
+        },
+        {
+          "concurso": 1439,
+          "score_anomalia": -0.01102038128949645,
+          "data": "2016-11-23"
+        },
+        {
+          "concurso": 1413,
+          "score_anomalia": -0.002132712463957076,
+          "data": "2016-09-19"
+        },
+        {
+          "concurso": 1412,
+          "score_anomalia": -0.014432951883862177,
+          "data": "2016-09-16"
+        },
+        {
+          "concurso": 1411,
+          "score_anomalia": -0.030899407830610515,
+          "data": "2016-09-14"
+        },
+        {
+          "concurso": 1407,
+          "score_anomalia": -0.0031934707012856167,
+          "data": "2016-08-29"
+        },
+        {
+          "concurso": 1387,
+          "score_anomalia": -0.012210387846799842,
+          "data": "2016-07-13"
+        },
+        {
+          "concurso": 1385,
+          "score_anomalia": -0.02031636953573024,
+          "data": "2016-07-08"
+        },
+        {
+          "concurso": 1382,
+          "score_anomalia": -0.0468508732513222,
+          "data": "2016-07-01"
+        },
+        {
+          "concurso": 1373,
+          "score_anomalia": -0.04022043926071772,
+          "data": "2016-06-10"
+        },
+        {
+          "concurso": 1371,
+          "score_anomalia": -0.07143457542468035,
+          "data": "2016-06-06"
+        },
+        {
+          "concurso": 1366,
+          "score_anomalia": -0.09282811787889433,
+          "data": "2016-05-25"
+        },
+        {
+          "concurso": 1364,
+          "score_anomalia": -0.025751123293449973,
+          "data": "2016-05-20"
+        },
+        {
+          "concurso": 1363,
+          "score_anomalia": -0.0006840991812189223,
+          "data": "2016-05-18"
+        },
+        {
+          "concurso": 1361,
+          "score_anomalia": -0.0434376784535615,
+          "data": "2016-05-13"
+        },
+        {
+          "concurso": 1360,
+          "score_anomalia": -0.0010766881400046113,
+          "data": "2016-05-11"
+        },
+        {
+          "concurso": 1356,
+          "score_anomalia": -0.07454829449197953,
+          "data": "2016-05-02"
+        },
+        {
+          "concurso": 1352,
+          "score_anomalia": -0.05191095724151151,
+          "data": "2016-04-22"
+        },
+        {
+          "concurso": 1338,
+          "score_anomalia": -0.11299423597632785,
+          "data": "2016-03-21"
+        },
+        {
+          "concurso": 1336,
+          "score_anomalia": -0.09226295827628228,
+          "data": "2016-03-16"
+        },
+        {
+          "concurso": 1326,
+          "score_anomalia": -0.03150629295822749,
+          "data": "2016-02-22"
+        },
+        {
+          "concurso": 1299,
+          "score_anomalia": -0.03361210495145239,
+          "data": "2015-12-18"
+        },
+        {
+          "concurso": 1298,
+          "score_anomalia": -0.0005612927415458158,
+          "data": "2015-12-16"
+        },
+        {
+          "concurso": 1297,
+          "score_anomalia": -0.012605943656133767,
+          "data": "2015-12-14"
+        },
+        {
+          "concurso": 1296,
+          "score_anomalia": -0.021406569109845952,
+          "data": "2015-12-11"
+        },
+        {
+          "concurso": 1295,
+          "score_anomalia": -0.023670626808622308,
+          "data": "2015-12-09"
+        },
+        {
+          "concurso": 1283,
+          "score_anomalia": -0.029517347632627144,
+          "data": "2015-11-11"
+        },
+        {
+          "concurso": 1278,
+          "score_anomalia": -0.024744378523747446,
+          "data": "2015-10-30"
+        },
+        {
+          "concurso": 1244,
+          "score_anomalia": -0.0011644485689168427,
+          "data": "2015-08-05"
+        },
+        {
+          "concurso": 1239,
+          "score_anomalia": -0.052839201776924916,
+          "data": "2015-07-24"
+        },
+        {
+          "concurso": 1230,
+          "score_anomalia": -0.01676448957427279,
+          "data": "2015-07-03"
+        },
+        {
+          "concurso": 1224,
+          "score_anomalia": -0.022134578064728072,
+          "data": "2015-06-19"
+        },
+        {
+          "concurso": 1215,
+          "score_anomalia": -0.013519842599366005,
+          "data": "2015-05-29"
+        },
+        {
+          "concurso": 1214,
+          "score_anomalia": -0.009728980090692674,
+          "data": "2015-05-27"
+        },
+        {
+          "concurso": 1212,
+          "score_anomalia": -0.03081660283458798,
+          "data": "2015-05-22"
+        },
+        {
+          "concurso": 1203,
+          "score_anomalia": -0.012726784017067061,
+          "data": "2015-05-02"
+        },
+        {
+          "concurso": 1201,
+          "score_anomalia": -0.07185262386173075,
+          "data": "2015-04-27"
+        },
+        {
+          "concurso": 1182,
+          "score_anomalia": -0.01091933697907066,
+          "data": "2015-03-13"
+        },
+        {
+          "concurso": 1171,
+          "score_anomalia": -0.0032848810824219754,
+          "data": "2015-02-13"
+        },
+        {
+          "concurso": 1141,
+          "score_anomalia": -0.020233570188038064,
+          "data": "2014-12-05"
+        },
+        {
+          "concurso": 1140,
+          "score_anomalia": -0.02191735667141559,
+          "data": "2014-12-03"
+        },
+        {
+          "concurso": 1114,
+          "score_anomalia": -0.006800397015317428,
+          "data": "2014-10-03"
+        },
+        {
+          "concurso": 1094,
+          "score_anomalia": -0.024562883991133377,
+          "data": "2014-08-13"
+        },
+        {
+          "concurso": 1085,
+          "score_anomalia": -0.051276139139560195,
+          "data": "2014-07-23"
+        },
+        {
+          "concurso": 1082,
+          "score_anomalia": -0.008994968151023741,
+          "data": "2014-07-16"
+        },
+        {
+          "concurso": 1076,
+          "score_anomalia": -0.1092282646923256,
+          "data": "2014-07-02"
+        },
+        {
+          "concurso": 1070,
+          "score_anomalia": -0.11003539630771075,
+          "data": "2014-06-18"
+        },
+        {
+          "concurso": 1067,
+          "score_anomalia": -0.005293412794713737,
+          "data": "2014-06-11"
+        },
+        {
+          "concurso": 1038,
+          "score_anomalia": -0.019576714742095436,
+          "data": "2014-04-02"
+        },
+        {
+          "concurso": 1019,
+          "score_anomalia": -0.002255939654732364,
+          "data": "2014-02-14"
+        },
+        {
+          "concurso": 1000,
+          "score_anomalia": -0.05607235809054012,
+          "data": "2013-12-30"
+        },
+        {
+          "concurso": 984,
+          "score_anomalia": -0.00100401067937117,
+          "data": "2013-11-20"
+        },
+        {
+          "concurso": 979,
+          "score_anomalia": -0.015799673107307677,
+          "data": "2013-11-08"
+        },
+        {
+          "concurso": 978,
+          "score_anomalia": -0.025777407542451947,
+          "data": "2013-11-06"
+        },
+        {
+          "concurso": 971,
+          "score_anomalia": -0.05802525502144962,
+          "data": "2013-10-21"
+        },
+        {
+          "concurso": 957,
+          "score_anomalia": -0.02268511894862968,
+          "data": "2013-09-18"
+        },
+        {
+          "concurso": 949,
+          "score_anomalia": -0.10316057115155175,
+          "data": "2013-08-26"
+        },
+        {
+          "concurso": 946,
+          "score_anomalia": -0.07017423814546442,
+          "data": "2013-08-19"
+        },
+        {
+          "concurso": 944,
+          "score_anomalia": -0.005378161268432269,
+          "data": "2013-08-14"
+        },
+        {
+          "concurso": 934,
+          "score_anomalia": -0.021933558589883773,
+          "data": "2013-07-22"
+        },
+        {
+          "concurso": 926,
+          "score_anomalia": -0.03517643512822777,
+          "data": "2013-07-03"
+        },
+        {
+          "concurso": 924,
+          "score_anomalia": -0.030349719789743546,
+          "data": "2013-06-28"
+        },
+        {
+          "concurso": 919,
+          "score_anomalia": -0.0008056014340244166,
+          "data": "2013-06-17"
+        },
+        {
+          "concurso": 916,
+          "score_anomalia": -0.026165991383303888,
+          "data": "2013-06-10"
+        },
+        {
+          "concurso": 903,
+          "score_anomalia": -0.03059511395796355,
+          "data": "2013-05-10"
+        },
+        {
+          "concurso": 902,
+          "score_anomalia": -0.014418416663391387,
+          "data": "2013-05-08"
+        },
+        {
+          "concurso": 890,
+          "score_anomalia": -0.07483700203343946,
+          "data": "2013-04-08"
+        },
+        {
+          "concurso": 880,
+          "score_anomalia": -0.034328264181425094,
+          "data": "2013-03-15"
+        },
+        {
+          "concurso": 874,
+          "score_anomalia": -0.0020809930269699572,
+          "data": "2013-03-01"
+        },
+        {
+          "concurso": 870,
+          "score_anomalia": -0.0017259991200432312,
+          "data": "2013-02-20"
+        },
+        {
+          "concurso": 865,
+          "score_anomalia": -0.0011338608909082781,
+          "data": "2013-02-06"
+        },
+        {
+          "concurso": 859,
+          "score_anomalia": -0.03940218556441133,
+          "data": "2013-01-23"
+        },
+        {
+          "concurso": 826,
+          "score_anomalia": -0.006356962116075726,
+          "data": "2012-11-07"
+        },
+        {
+          "concurso": 820,
+          "score_anomalia": -0.0011963675057645728,
+          "data": "2012-10-24"
+        },
+        {
+          "concurso": 815,
+          "score_anomalia": -0.037761893399065216,
+          "data": "2012-10-13"
+        },
+        {
+          "concurso": 811,
+          "score_anomalia": -0.013943718265041705,
+          "data": "2012-10-03"
+        },
+        {
+          "concurso": 809,
+          "score_anomalia": -0.012918696153926712,
+          "data": "2012-09-28"
+        },
+        {
+          "concurso": 808,
+          "score_anomalia": -0.0008208495126649229,
+          "data": "2012-09-26"
+        },
+        {
+          "concurso": 803,
+          "score_anomalia": -0.03128005784874743,
+          "data": "2012-09-14"
+        },
+        {
+          "concurso": 795,
+          "score_anomalia": -0.07187230437941572,
+          "data": "2012-08-22"
+        },
+        {
+          "concurso": 790,
+          "score_anomalia": -0.00600227772026074,
+          "data": "2012-08-10"
+        },
+        {
+          "concurso": 782,
+          "score_anomalia": -0.09561734701990443,
+          "data": "2012-07-23"
+        },
+        {
+          "concurso": 775,
+          "score_anomalia": -0.07424496123404456,
+          "data": "2012-07-06"
+        },
+        {
+          "concurso": 762,
+          "score_anomalia": -0.009894088062123108,
+          "data": "2012-06-06"
+        },
+        {
+          "concurso": 746,
+          "score_anomalia": -0.008931794806028681,
+          "data": "2012-04-30"
+        },
+        {
+          "concurso": 740,
+          "score_anomalia": -4.375964729785853e-05,
+          "data": "2012-04-16"
+        },
+        {
+          "concurso": 727,
+          "score_anomalia": -0.029556584986342394,
+          "data": "2012-03-16"
+        },
+        {
+          "concurso": 721,
+          "score_anomalia": -0.06559495126974302,
+          "data": "2012-03-02"
+        },
+        {
+          "concurso": 718,
+          "score_anomalia": -0.020388954659624203,
+          "data": "2012-02-24"
+        },
+        {
+          "concurso": 714,
+          "score_anomalia": -0.053000772716984446,
+          "data": "2012-02-13"
+        },
+        {
+          "concurso": 713,
+          "score_anomalia": -0.009085758444273395,
+          "data": "2012-02-10"
+        },
+        {
+          "concurso": 702,
+          "score_anomalia": -0.0792590097701773,
+          "data": "2012-01-05"
+        },
+        {
+          "concurso": 695,
+          "score_anomalia": -0.00236773573681881,
+          "data": "2011-12-12"
+        },
+        {
+          "concurso": 683,
+          "score_anomalia": -0.052239009943505055,
+          "data": "2011-10-31"
+        },
+        {
+          "concurso": 679,
+          "score_anomalia": -0.009843340814489676,
+          "data": "2011-10-17"
+        },
+        {
+          "concurso": 673,
+          "score_anomalia": -0.048820006859816356,
+          "data": "2011-09-26"
+        },
+        {
+          "concurso": 633,
+          "score_anomalia": -0.0689955787544897,
+          "data": "2011-05-09"
+        },
+        {
+          "concurso": 626,
+          "score_anomalia": -0.05133290066020724,
+          "data": "2011-04-14"
+        },
+        {
+          "concurso": 622,
+          "score_anomalia": -0.008134860888265427,
+          "data": "2011-03-31"
+        },
+        {
+          "concurso": 576,
+          "score_anomalia": -0.022506301221548064,
+          "data": "2010-10-21"
+        },
+        {
+          "concurso": 548,
+          "score_anomalia": -0.008247186994815192,
+          "data": "2010-07-15"
+        },
+        {
+          "concurso": 521,
+          "score_anomalia": -0.0096504696231563,
+          "data": "2010-04-12"
+        },
+        {
+          "concurso": 512,
+          "score_anomalia": -0.03083840883306288,
+          "data": "2010-03-12"
+        },
+        {
+          "concurso": 504,
+          "score_anomalia": -0.024677366513916832,
+          "data": "2010-02-11"
+        },
+        {
+          "concurso": 471,
+          "score_anomalia": -0.02331888980183261,
+          "data": "2009-10-19"
+        },
+        {
+          "concurso": 447,
+          "score_anomalia": -0.01535875363563688,
+          "data": "2009-07-27"
+        },
+        {
+          "concurso": 433,
+          "score_anomalia": -0.0180017104010608,
+          "data": "2009-06-08"
+        },
+        {
+          "concurso": 418,
+          "score_anomalia": -0.03456954082286412,
+          "data": "2009-04-16"
+        },
+        {
+          "concurso": 402,
+          "score_anomalia": -0.005654933739177581,
+          "data": "2009-02-16"
+        },
+        {
+          "concurso": 397,
+          "score_anomalia": -0.027800150057260997,
+          "data": "2009-01-29"
+        },
+        {
+          "concurso": 371,
+          "score_anomalia": -0.020260967902612892,
+          "data": "2008-10-30"
+        },
+        {
+          "concurso": 360,
+          "score_anomalia": -0.05270625035132548,
+          "data": "2008-09-22"
+        },
+        {
+          "concurso": 345,
+          "score_anomalia": -0.003984851067288853,
+          "data": "2008-07-31"
+        },
+        {
+          "concurso": 328,
+          "score_anomalia": -0.04250385592681427,
+          "data": "2008-06-02"
+        },
+        {
+          "concurso": 308,
+          "score_anomalia": -0.0027486921403299114,
+          "data": "2008-03-24"
+        },
+        {
+          "concurso": 299,
+          "score_anomalia": -0.03554455945867552,
+          "data": "2008-02-21"
+        },
+        {
+          "concurso": 278,
+          "score_anomalia": -0.003861890300779325,
+          "data": "2007-12-06"
+        },
+        {
+          "concurso": 277,
+          "score_anomalia": -0.014211835602848222,
+          "data": "2007-12-03"
+        },
+        {
+          "concurso": 259,
+          "score_anomalia": -0.0325160305634703,
+          "data": "2007-10-01"
+        },
+        {
+          "concurso": 254,
+          "score_anomalia": -0.00948940005026,
+          "data": "2007-09-13"
+        },
+        {
+          "concurso": 234,
+          "score_anomalia": -0.025849398980994254,
+          "data": "2007-07-05"
+        },
+        {
+          "concurso": 233,
+          "score_anomalia": -0.0750584257528758,
+          "data": "2007-07-02"
+        },
+        {
+          "concurso": 230,
+          "score_anomalia": -0.03370612622007074,
+          "data": "2007-06-21"
+        },
+        {
+          "concurso": 229,
+          "score_anomalia": -0.022912877303642443,
+          "data": "2007-06-18"
+        },
+        {
+          "concurso": 228,
+          "score_anomalia": -0.08835668145771491,
+          "data": "2007-06-14"
+        },
+        {
+          "concurso": 222,
+          "score_anomalia": -0.0017435785637968104,
+          "data": "2007-05-24"
+        },
+        {
+          "concurso": 220,
+          "score_anomalia": -0.05631076986666961,
+          "data": "2007-05-17"
+        },
+        {
+          "concurso": 203,
+          "score_anomalia": -0.018579411293655257,
+          "data": "2007-03-19"
+        },
+        {
+          "concurso": 192,
+          "score_anomalia": -0.04271531956129182,
+          "data": "2007-02-05"
+        },
+        {
+          "concurso": 187,
+          "score_anomalia": -0.07550617500622137,
+          "data": "2007-01-18"
+        },
+        {
+          "concurso": 176,
+          "score_anomalia": -0.032248484852884785,
+          "data": "2006-12-11"
+        },
+        {
+          "concurso": 173,
+          "score_anomalia": -0.04171100470448941,
+          "data": "2006-11-30"
+        },
+        {
+          "concurso": 169,
+          "score_anomalia": -0.0037165267794250223,
+          "data": "2006-11-16"
+        },
+        {
+          "concurso": 161,
+          "score_anomalia": -0.004476045771535486,
+          "data": "2006-10-19"
+        },
+        {
+          "concurso": 158,
+          "score_anomalia": -0.006137101282096102,
+          "data": "2006-10-02"
+        },
+        {
+          "concurso": 150,
+          "score_anomalia": -0.020509499957681254,
+          "data": "2006-08-07"
+        },
+        {
+          "concurso": 117,
+          "score_anomalia": -0.007347005731715983,
+          "data": "2005-12-19"
+        },
+        {
+          "concurso": 91,
+          "score_anomalia": -0.012152325586765711,
+          "data": "2005-06-20"
+        },
+        {
+          "concurso": 89,
+          "score_anomalia": -0.055969331050871984,
+          "data": "2005-06-06"
+        },
+        {
+          "concurso": 81,
+          "score_anomalia": -0.060389207450268434,
+          "data": "2005-04-11"
+        },
+        {
+          "concurso": 63,
+          "score_anomalia": -0.01011283100119631,
+          "data": "2004-12-06"
+        },
+        {
+          "concurso": 60,
+          "score_anomalia": -0.02897526009459872,
+          "data": "2004-11-16"
+        },
+        {
+          "concurso": 58,
+          "score_anomalia": -0.05278958429174796,
+          "data": "2004-11-01"
+        },
+        {
+          "concurso": 27,
+          "score_anomalia": -0.018689580770776426,
+          "data": "2004-03-29"
+        },
+        {
+          "concurso": 23,
+          "score_anomalia": -0.005106538149509232,
+          "data": "2004-03-01"
+        },
+        {
+          "concurso": 22,
+          "score_anomalia": -0.05514312461201487,
+          "data": "2004-02-25"
+        },
+        {
+          "concurso": 20,
+          "score_anomalia": -0.010051456961710836,
+          "data": "2004-02-09"
+        },
+        {
+          "concurso": 13,
+          "score_anomalia": -0.0824803546735231,
+          "data": "2003-12-22"
+        }
+      ],
+      "scores_anomalia": {
+        "3521": -0.046583911407966916,
+        "3510": -0.04730180629274261,
+        "3488": -0.015430565749409708,
+        "3478": -0.00507647171465242,
+        "3462": -0.00380486410312475,
+        "3441": -0.03748083085391418,
+        "3439": -0.02664633390501736,
+        "3432": -0.10409279860384713,
+        "3430": -0.004373062622204826,
+        "3424": -0.05031993492074138,
+        "3422": -0.016452029061900353,
+        "3407": -0.033768848320782086,
+        "3396": -0.04309916242899081,
+        "3394": -0.07908295213136385,
+        "3383": -0.067570652720501,
+        "3381": -0.08879313856149262,
+        "3371": -0.04182661094228923,
+        "3369": -0.001744065294904673,
+        "3364": -0.029195990965028895,
+        "3348": -0.023460249849894144,
+        "3347": -0.02296834978060358,
+        "3340": -0.02617753311654125,
+        "3327": -0.07321605486590255,
+        "3322": -0.03744356613573141,
+        "3303": -0.01668126589415908,
+        "3288": -0.005061846256703806,
+        "3284": -0.04917512996500539,
+        "3283": -0.12600025175335972,
+        "3282": -0.049828223180380604,
+        "3278": -0.010126079715715108,
+        "3253": -0.031929586646983865,
+        "3252": -0.0029835122941312964,
+        "3251": -0.027360230050345158,
+        "3246": -0.061623188686998454,
+        "3236": -0.050461684623166136,
+        "3234": -0.0007519551154767656,
+        "3231": -0.052590394599858925,
+        "3219": -0.03592205865326392,
+        "3208": -0.025866268909090828,
+        "3204": -0.009186756409608532,
+        "3195": -0.014943028829270344,
+        "3192": -0.0023943917644886348,
+        "3187": -0.05594087717326346,
+        "3175": -0.031593062502349056,
+        "3164": -0.033162407733457244,
+        "3163": -0.04251719365602391,
+        "3162": -0.0006673119511726444,
+        "3159": -0.0622452321839736,
+        "3153": -0.008529694243427643,
+        "3147": -0.0027239211968264065,
+        "3138": -0.10687584122235927,
+        "3118": -0.005634428324101326,
+        "3107": -0.00220725774236874,
+        "3102": -0.04296817276121079,
+        "3101": -0.02010645114684584,
+        "3095": -0.007399042994808203,
+        "3050": -0.1239551844186173,
+        "3049": -0.06620649601554562,
+        "3038": -0.0667843917841443,
+        "3022": -0.03060568746444714,
+        "3011": -0.028642408706814115,
+        "3007": -0.05164897470399088,
+        "2995": -0.009516934562031176,
+        "2987": -0.029624491675874776,
+        "2975": -0.06370458079473529,
+        "2974": -0.03413485523057769,
+        "2963": -0.006638380640726638,
+        "2956": -0.059928121432470394,
+        "2949": -0.06239648696222233,
+        "2937": -0.045792664378462966,
+        "2925": -0.06928310407318194,
+        "2911": -0.00587306255118869,
+        "2898": -0.04186581036586923,
+        "2894": -0.02025265572976498,
+        "2892": -0.021253406826664767,
+        "2873": -0.023213816984583358,
+        "2868": -0.037767808479084786,
+        "2860": -0.01629303526368331,
+        "2841": -0.030217280032943217,
+        "2837": -0.005003152746686723,
+        "2835": -0.014284164177534642,
+        "2829": -0.016189843248732072,
+        "2823": -0.006690231060861529,
+        "2818": -0.10998640597999243,
+        "2812": -0.05301746648271588,
+        "2811": -0.009002487788791647,
+        "2808": -0.027924376882955793,
+        "2807": -0.024115287773049054,
+        "2795": -0.008027366063341312,
+        "2774": -0.012181123305631258,
+        "2740": -0.043093257525413375,
+        "2722": -0.11088070105216519,
+        "2712": -0.013899943405951465,
+        "2709": -0.009207896344076483,
+        "2696": -0.0065420436414471705,
+        "2674": -0.048647723529089304,
+        "2670": -0.02529017436536063,
+        "2651": -0.021901923936224144,
+        "2648": -0.02823107506804623,
+        "2628": -0.020529291626453117,
+        "2622": -0.0073491361255116905,
+        "2618": -0.05070304803294434,
+        "2602": -0.004384903853157374,
+        "2594": -0.04529426980192286,
+        "2585": -0.038630644818235416,
+        "2584": -0.0014434088981007953,
+        "2573": -0.020622579893265547,
+        "2569": -0.09368939086293271,
+        "2567": -0.023991276980987908,
+        "2566": -0.04067273492639911,
+        "2557": -0.015003725614863406,
+        "2534": -0.03959497948417878,
+        "2525": -0.02710638879645133,
+        "2501": -0.06761288615648042,
+        "2492": -0.021684630054989662,
+        "2476": -0.003292766155528426,
+        "2473": -0.011768130054269244,
+        "2463": -0.017401227837382627,
+        "2452": -0.02119648231057425,
+        "2450": -0.016575850868709385,
+        "2434": -0.0017577991794011094,
+        "2411": -0.04369433164237535,
+        "2404": -0.008505007033659528,
+        "2390": -0.018744481496198895,
+        "2389": -0.04861165059001149,
+        "2382": -0.01189194354557399,
+        "2377": -0.03546795130585312,
+        "2371": -0.0020739452471432163,
+        "2369": -0.006789823933356476,
+        "2363": -0.01389083906262556,
+        "2351": -0.008043728291159735,
+        "2338": -0.04121513557575773,
+        "2325": -0.03568141224663701,
+        "2294": -0.02457826411790731,
+        "2280": -0.02969040214008578,
+        "2264": -0.05490746381097267,
+        "2262": -0.019229968772776718,
+        "2259": -0.06263236331412925,
+        "2250": -0.0716236098561438,
+        "2249": -0.058440713186699855,
+        "2233": -0.007099047208710907,
+        "2213": -0.01980340445492723,
+        "2190": -0.0028552788340951984,
+        "2175": -0.008030634781883705,
+        "2172": -0.023332903676307026,
+        "2171": -0.017039904335678813,
+        "2170": -0.030054021699613798,
+        "2141": -0.07033455588747362,
+        "2130": -0.004536119375908809,
+        "2118": -0.0029998912815717427,
+        "2106": -0.01856820310160623,
+        "2092": -0.0151956832669643,
+        "2091": -0.05964527709485079,
+        "2090": -0.04794351637859229,
+        "2069": -0.10679097801086257,
+        "2064": -0.067558696843805,
+        "2060": -0.07575750219689947,
+        "2057": -0.024707222611341728,
+        "2040": -0.013648019210474871,
+        "2035": -0.01178071869845776,
+        "2028": -0.002703709986634828,
+        "2011": -0.01979216723674082,
+        "1979": -0.011930347387735574,
+        "1967": -0.027693157441130656,
+        "1965": -0.019466270092206917,
+        "1954": -0.009896100046572598,
+        "1934": -0.02411855752866343,
+        "1933": -0.03988012802729979,
+        "1928": -0.005280127080552033,
+        "1912": -0.010058830393712581,
+        "1901": -0.06654775280580572,
+        "1892": -0.016129305954619255,
+        "1887": -0.04418377375514648,
+        "1849": -0.031697164314235526,
+        "1833": -0.01453058066690549,
+        "1832": -0.10849800173692825,
+        "1819": -0.08160593749917533,
+        "1783": -0.002179733905117831,
+        "1779": -0.062469683346709215,
+        "1777": -0.008073394883224783,
+        "1766": -0.009737060169553113,
+        "1763": -0.027891257918684298,
+        "1740": -0.01224330239831195,
+        "1728": -0.014296306272646997,
+        "1708": -0.042431144751760574,
+        "1697": -0.058860013234633746,
+        "1691": -0.07696722514708476,
+        "1688": -0.004253440322737112,
+        "1651": -0.03784127645306823,
+        "1648": -0.060223685142826944,
+        "1633": -0.007127037292625427,
+        "1632": -0.04159532329199467,
+        "1611": -0.030416749313106894,
+        "1607": -0.02235745167592673,
+        "1601": -0.007597792835047246,
+        "1596": -0.025669782136436003,
+        "1578": -0.000838381745125516,
+        "1573": -0.05842089068644141,
+        "1562": -0.08911056829464636,
+        "1519": -0.013337613363155976,
+        "1499": -0.012340829696168232,
+        "1481": -0.03384567583592879,
+        "1469": -0.060341731956213285,
+        "1467": -0.025296142638719377,
+        "1464": -0.04282286514411637,
+        "1443": -0.03247446388882036,
+        "1439": -0.01102038128949645,
+        "1413": -0.002132712463957076,
+        "1412": -0.014432951883862177,
+        "1411": -0.030899407830610515,
+        "1407": -0.0031934707012856167,
+        "1387": -0.012210387846799842,
+        "1385": -0.02031636953573024,
+        "1382": -0.0468508732513222,
+        "1373": -0.04022043926071772,
+        "1371": -0.07143457542468035,
+        "1366": -0.09282811787889433,
+        "1364": -0.025751123293449973,
+        "1363": -0.0006840991812189223,
+        "1361": -0.0434376784535615,
+        "1360": -0.0010766881400046113,
+        "1356": -0.07454829449197953,
+        "1352": -0.05191095724151151,
+        "1338": -0.11299423597632785,
+        "1336": -0.09226295827628228,
+        "1326": -0.03150629295822749,
+        "1299": -0.03361210495145239,
+        "1298": -0.0005612927415458158,
+        "1297": -0.012605943656133767,
+        "1296": -0.021406569109845952,
+        "1295": -0.023670626808622308,
+        "1283": -0.029517347632627144,
+        "1278": -0.024744378523747446,
+        "1244": -0.0011644485689168427,
+        "1239": -0.052839201776924916,
+        "1230": -0.01676448957427279,
+        "1224": -0.022134578064728072,
+        "1215": -0.013519842599366005,
+        "1214": -0.009728980090692674,
+        "1212": -0.03081660283458798,
+        "1203": -0.012726784017067061,
+        "1201": -0.07185262386173075,
+        "1182": -0.01091933697907066,
+        "1171": -0.0032848810824219754,
+        "1141": -0.020233570188038064,
+        "1140": -0.02191735667141559,
+        "1114": -0.006800397015317428,
+        "1094": -0.024562883991133377,
+        "1085": -0.051276139139560195,
+        "1082": -0.008994968151023741,
+        "1076": -0.1092282646923256,
+        "1070": -0.11003539630771075,
+        "1067": -0.005293412794713737,
+        "1038": -0.019576714742095436,
+        "1019": -0.002255939654732364,
+        "1000": -0.05607235809054012,
+        "984": -0.00100401067937117,
+        "979": -0.015799673107307677,
+        "978": -0.025777407542451947,
+        "971": -0.05802525502144962,
+        "957": -0.02268511894862968,
+        "949": -0.10316057115155175,
+        "946": -0.07017423814546442,
+        "944": -0.005378161268432269,
+        "934": -0.021933558589883773,
+        "926": -0.03517643512822777,
+        "924": -0.030349719789743546,
+        "919": -0.0008056014340244166,
+        "916": -0.026165991383303888,
+        "903": -0.03059511395796355,
+        "902": -0.014418416663391387,
+        "890": -0.07483700203343946,
+        "880": -0.034328264181425094,
+        "874": -0.0020809930269699572,
+        "870": -0.0017259991200432312,
+        "865": -0.0011338608909082781,
+        "859": -0.03940218556441133,
+        "826": -0.006356962116075726,
+        "820": -0.0011963675057645728,
+        "815": -0.037761893399065216,
+        "811": -0.013943718265041705,
+        "809": -0.012918696153926712,
+        "808": -0.0008208495126649229,
+        "803": -0.03128005784874743,
+        "795": -0.07187230437941572,
+        "790": -0.00600227772026074,
+        "782": -0.09561734701990443,
+        "775": -0.07424496123404456,
+        "762": -0.009894088062123108,
+        "746": -0.008931794806028681,
+        "740": -4.375964729785853e-05,
+        "727": -0.029556584986342394,
+        "721": -0.06559495126974302,
+        "718": -0.020388954659624203,
+        "714": -0.053000772716984446,
+        "713": -0.009085758444273395,
+        "702": -0.0792590097701773,
+        "695": -0.00236773573681881,
+        "683": -0.052239009943505055,
+        "679": -0.009843340814489676,
+        "673": -0.048820006859816356,
+        "633": -0.0689955787544897,
+        "626": -0.05133290066020724,
+        "622": -0.008134860888265427,
+        "576": -0.022506301221548064,
+        "548": -0.008247186994815192,
+        "521": -0.0096504696231563,
+        "512": -0.03083840883306288,
+        "504": -0.024677366513916832,
+        "471": -0.02331888980183261,
+        "447": -0.01535875363563688,
+        "433": -0.0180017104010608,
+        "418": -0.03456954082286412,
+        "402": -0.005654933739177581,
+        "397": -0.027800150057260997,
+        "371": -0.020260967902612892,
+        "360": -0.05270625035132548,
+        "345": -0.003984851067288853,
+        "328": -0.04250385592681427,
+        "308": -0.0027486921403299114,
+        "299": -0.03554455945867552,
+        "278": -0.003861890300779325,
+        "277": -0.014211835602848222,
+        "259": -0.0325160305634703,
+        "254": -0.00948940005026,
+        "234": -0.025849398980994254,
+        "233": -0.0750584257528758,
+        "230": -0.03370612622007074,
+        "229": -0.022912877303642443,
+        "228": -0.08835668145771491,
+        "222": -0.0017435785637968104,
+        "220": -0.05631076986666961,
+        "203": -0.018579411293655257,
+        "192": -0.04271531956129182,
+        "187": -0.07550617500622137,
+        "176": -0.032248484852884785,
+        "173": -0.04171100470448941,
+        "169": -0.0037165267794250223,
+        "161": -0.004476045771535486,
+        "158": -0.006137101282096102,
+        "150": -0.020509499957681254,
+        "117": -0.007347005731715983,
+        "91": -0.012152325586765711,
+        "89": -0.055969331050871984,
+        "81": -0.060389207450268434,
+        "63": -0.01011283100119631,
+        "60": -0.02897526009459872,
+        "58": -0.05278958429174796,
+        "27": -0.018689580770776426,
+        "23": -0.005106538149509232,
+        "22": -0.05514312461201487,
+        "20": -0.010051456961710836,
+        "13": -0.0824803546735231
+      },
+      "total_anomalias": 353,
+      "percentual_anomalias": 10.019869429463526,
+      "interpretacao": [
+        "Detectadas 353 anomalias em 3523 concursos",
+        "Concurso mais atipico: 3283 (score: -0.126)"
+      ]
+    },
+    "clustering": {
+      "k_otimo": 2,
+      "clusters": {
+        "0": {
+          "tamanho": 1772,
+          "percentual": 50.298041441952876,
+          "concursos": [
+            3523,
+            3521,
+            3520,
+            3519,
+            3518,
+            3517,
+            3516,
+            3513,
+            3509,
+            3506
+          ],
+          "caracteristicas": {
+            "QtdeImpares": 7.274266365688487,
+            "QtdePrimos": 4.734198645598194,
+            "SomaTotal": 205.31715575620768,
+            "QtdeGaps": 5.56038374717833,
+            "Quintil1": 2.348194130925508,
+            "Quintil2": 3.0784424379232505,
+            "Quintil3": 3.124153498871332
+          }
+        },
+        "1": {
+          "tamanho": 1751,
+          "percentual": 49.701958558047124,
+          "concursos": [
+            3524,
+            3522,
+            3515,
+            3514,
+            3512,
+            3511,
+            3510,
+            3508,
+            3507,
+            3505
+          ],
+          "caracteristicas": {
+            "QtdeImpares": 8.332381496287836,
+            "QtdePrimos": 6.046830382638492,
+            "SomaTotal": 184.92290119931468,
+            "QtdeGaps": 5.703026841804683,
+            "Quintil1": 3.6824671616219304,
+            "Quintil2": 2.868646487721302,
+            "Quintil3": 2.9343232438606512
+          }
+        }
+      },
+      "inertias": [
+        20192.397956933044,
+        17643.495246989463,
+        16040.783155127037,
+        14785.503286351774,
+        13912.24106591178,
+        13194.288345454073,
+        12581.594649088936,
+        12123.361798833881,
+        11765.095808285125
+      ],
+      "interpretacao": [
+        "2 padroes distintos identificados",
+        "Padrao dominante: Cluster 0 (50.3%)"
+      ]
+    },
+    "entropia": {
+      "entropias": {
+        "QtdeImpares": 2.3752872072455498,
+        "QtdePrimos": 2.310329340698773,
+        "SomaTotal": 6.170633010828884,
+        "QtdeGaps": 2.342557574482219,
+        "sequencia_numeros": 4.643548490610073
+      },
+      "entropia_media": 3.5684711247731,
+      "interpretacao": [
+        "Alta aleatoriedade: entropia media = 3.568",
+        "Maior aleatoriedade em: SomaTotal (6.171)",
+        "Menor aleatoriedade em: QtdePrimos (2.310)"
+      ]
+    }
+  },
+  "resumo_executivo": {
+    "total_analises": 6,
+    "analises_concluidas": [
+      "frequencias_numeros",
+      "correlacoes_temporais",
+      "sazonalidade_fft",
+      "anomalias",
+      "clustering",
+      "entropia"
+    ],
+    "principais_descobertas": [
+      "Distribuicao compativel com uniformidade (p=0.5475)",
+      "Baixa variabilidade nas frequencias (CV=0.021)",
+      "Tendencias temporais em: ['QtdePrimos']",
+      "Correlacoes fortes entre: ['QtdeImpares_vs_QtdePrimos']",
+      "Ciclo mensal detectado em QtdeImpares (periodo: 32.3)",
+      "Detectadas 353 anomalias em 3523 concursos",
+      "Concurso mais atipico: 3283 (score: -0.126)",
+      "2 padroes distintos identificados",
+      "Padrao dominante: Cluster 0 (50.3%)",
+      "Alta aleatoriedade: entropia media = 3.568",
+      "Maior aleatoriedade em: SomaTotal (6.171)"
+    ]
+  }
+}

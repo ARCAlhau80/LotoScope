@@ -1,0 +1,1699 @@
+{
+  "timestamp": "2025-10-06T14:18:11.397294",
+  "descobertas_disponivel": true,
+  "banco_disponivel": true,
+  "dados_teste_quantidade": 100,
+  "testes": {
+    "predicao_estados": {
+      "total_testes": 18,
+      "precisao_sem_descoberta": 44.444444444444436,
+      "precisao_com_descoberta": 42.59259259259258,
+      "melhoria_percentual": -1.8518518518518547,
+      "detalhes": [
+        {
+          "concurso": 3500,
+          "estado_atual": [
+            4,
+            5,
+            6
+          ],
+          "estado_real": [
+            5,
+            7,
+            3
+          ],
+          "predicao_sem": [
+            4,
+            5,
+            6
+          ],
+          "predicao_com": [
+            4,
+            5,
+            6
+          ],
+          "acerto_sem": 0.3333333333333333,
+          "acerto_com": 0.3333333333333333
+        },
+        {
+          "concurso": 3495,
+          "estado_atual": [
+            5,
+            7,
+            3
+          ],
+          "estado_real": [
+            3,
+            5,
+            7
+          ],
+          "predicao_sem": [
+            5,
+            7,
+            3
+          ],
+          "predicao_com": [
+            5,
+            7,
+            3
+          ],
+          "acerto_sem": 0.0,
+          "acerto_com": 0.0
+        },
+        {
+          "concurso": 3490,
+          "estado_atual": [
+            3,
+            5,
+            7
+          ],
+          "estado_real": [
+            7,
+            7,
+            1
+          ],
+          "predicao_sem": [
+            3,
+            5,
+            7
+          ],
+          "predicao_com": [
+            3,
+            5,
+            7
+          ],
+          "acerto_sem": 0.0,
+          "acerto_com": 0.0
+        },
+        {
+          "concurso": 3485,
+          "estado_atual": [
+            7,
+            7,
+            1
+          ],
+          "estado_real": [
+            4,
+            7,
+            4
+          ],
+          "predicao_sem": [
+            7,
+            7,
+            1
+          ],
+          "predicao_com": [
+            7,
+            7,
+            1
+          ],
+          "acerto_sem": 0.3333333333333333,
+          "acerto_com": 0.3333333333333333
+        },
+        {
+          "concurso": 3480,
+          "estado_atual": [
+            4,
+            7,
+            4
+          ],
+          "estado_real": [
+            6,
+            8,
+            1
+          ],
+          "predicao_sem": [
+            4,
+            7,
+            4
+          ],
+          "predicao_com": [
+            4,
+            7,
+            4
+          ],
+          "acerto_sem": 0.3333333333333333,
+          "acerto_com": 0.3333333333333333
+        },
+        {
+          "concurso": 3475,
+          "estado_atual": [
+            6,
+            8,
+            1
+          ],
+          "estado_real": [
+            7,
+            6,
+            2
+          ],
+          "predicao_sem": [
+            6,
+            8,
+            1
+          ],
+          "predicao_com": [
+            6,
+            8,
+            1
+          ],
+          "acerto_sem": 0.6666666666666666,
+          "acerto_com": 0.6666666666666666
+        },
+        {
+          "concurso": 3470,
+          "estado_atual": [
+            7,
+            6,
+            2
+          ],
+          "estado_real": [
+            4,
+            7,
+            4
+          ],
+          "predicao_sem": [
+            7,
+            6,
+            2
+          ],
+          "predicao_com": [
+            7,
+            6,
+            2
+          ],
+          "acerto_sem": 0.3333333333333333,
+          "acerto_com": 0.3333333333333333
+        },
+        {
+          "concurso": 3465,
+          "estado_atual": [
+            4,
+            7,
+            4
+          ],
+          "estado_real": [
+            7,
+            5,
+            3
+          ],
+          "predicao_sem": [
+            4,
+            7,
+            4
+          ],
+          "predicao_com": [
+            4,
+            7,
+            4
+          ],
+          "acerto_sem": 0.3333333333333333,
+          "acerto_com": 0.3333333333333333
+        },
+        {
+          "concurso": 3460,
+          "estado_atual": [
+            7,
+            5,
+            3
+          ],
+          "estado_real": [
+            4,
+            7,
+            4
+          ],
+          "predicao_sem": [
+            7,
+            5,
+            3
+          ],
+          "predicao_com": [
+            7,
+            5,
+            3
+          ],
+          "acerto_sem": 0.3333333333333333,
+          "acerto_com": 0.3333333333333333
+        },
+        {
+          "concurso": 3455,
+          "estado_atual": [
+            4,
+            7,
+            4
+          ],
+          "estado_real": [
+            3,
+            7,
+            5
+          ],
+          "predicao_sem": [
+            4,
+            7,
+            4
+          ],
+          "predicao_com": [
+            4,
+            7,
+            4
+          ],
+          "acerto_sem": 1.0,
+          "acerto_com": 1.0
+        },
+        {
+          "concurso": 3450,
+          "estado_atual": [
+            3,
+            7,
+            5
+          ],
+          "estado_real": [
+            4,
+            7,
+            4
+          ],
+          "predicao_sem": [
+            3,
+            7,
+            5
+          ],
+          "predicao_com": [
+            5,
+            6,
+            5
+          ],
+          "acerto_sem": 1.0,
+          "acerto_com": 1.0
+        },
+        {
+          "concurso": 3445,
+          "estado_atual": [
+            4,
+            7,
+            4
+          ],
+          "estado_real": [
+            3,
+            7,
+            5
+          ],
+          "predicao_sem": [
+            4,
+            7,
+            4
+          ],
+          "predicao_com": [
+            4,
+            7,
+            4
+          ],
+          "acerto_sem": 1.0,
+          "acerto_com": 1.0
+        },
+        {
+          "concurso": 3440,
+          "estado_atual": [
+            3,
+            7,
+            5
+          ],
+          "estado_real": [
+            7,
+            4,
+            4
+          ],
+          "predicao_sem": [
+            3,
+            7,
+            5
+          ],
+          "predicao_com": [
+            5,
+            6,
+            5
+          ],
+          "acerto_sem": 0.3333333333333333,
+          "acerto_com": 0.3333333333333333
+        },
+        {
+          "concurso": 3435,
+          "estado_atual": [
+            7,
+            4,
+            4
+          ],
+          "estado_real": [
+            7,
+            4,
+            4
+          ],
+          "predicao_sem": [
+            7,
+            4,
+            4
+          ],
+          "predicao_com": [
+            7,
+            4,
+            4
+          ],
+          "acerto_sem": 1.0,
+          "acerto_com": 1.0
+        },
+        {
+          "concurso": 3430,
+          "estado_atual": [
+            7,
+            4,
+            4
+          ],
+          "estado_real": [
+            3,
+            7,
+            5
+          ],
+          "predicao_sem": [
+            7,
+            4,
+            4
+          ],
+          "predicao_com": [
+            7,
+            4,
+            4
+          ],
+          "acerto_sem": 0.3333333333333333,
+          "acerto_com": 0.3333333333333333
+        },
+        {
+          "concurso": 3425,
+          "estado_atual": [
+            3,
+            7,
+            5
+          ],
+          "estado_real": [
+            7,
+            8,
+            0
+          ],
+          "predicao_sem": [
+            3,
+            7,
+            5
+          ],
+          "predicao_com": [
+            5,
+            6,
+            5
+          ],
+          "acerto_sem": 0.3333333333333333,
+          "acerto_com": 0.0
+        },
+        {
+          "concurso": 3420,
+          "estado_atual": [
+            7,
+            8,
+            0
+          ],
+          "estado_real": [
+            3,
+            4,
+            8
+          ],
+          "predicao_sem": [
+            7,
+            8,
+            0
+          ],
+          "predicao_com": [
+            7,
+            8,
+            0
+          ],
+          "acerto_sem": 0.0,
+          "acerto_com": 0.0
+        },
+        {
+          "concurso": 3415,
+          "estado_atual": [
+            3,
+            4,
+            8
+          ],
+          "estado_real": [
+            5,
+            5,
+            5
+          ],
+          "predicao_sem": [
+            3,
+            4,
+            8
+          ],
+          "predicao_com": [
+            3,
+            4,
+            8
+          ],
+          "acerto_sem": 0.3333333333333333,
+          "acerto_com": 0.3333333333333333
+        }
+      ]
+    },
+    "estimativa_soma": {
+      "total_testes": 50,
+      "mae_sem_descoberta": 16.2,
+      "mae_com_descoberta": 84.24,
+      "melhoria_percentual": -419.99999999999994,
+      "detalhes": [
+        {
+          "concurso": 3500,
+          "estado": [
+            4,
+            5,
+            6
+          ],
+          "soma_real": 187,
+          "estimativa_sem": 195,
+          "estimativa_com": 277.68,
+          "erro_sem": 8,
+          "erro_com": 90.68
+        },
+        {
+          "concurso": 3499,
+          "estado": [
+            4,
+            6,
+            5
+          ],
+          "soma_real": 198,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 3,
+          "erro_com": 87.68
+        },
+        {
+          "concurso": 3498,
+          "estado": [
+            4,
+            7,
+            4
+          ],
+          "soma_real": 182,
+          "estimativa_sem": 195,
+          "estimativa_com": 293.68,
+          "erro_sem": 13,
+          "erro_com": 111.68
+        },
+        {
+          "concurso": 3497,
+          "estado": [
+            3,
+            8,
+            4
+          ],
+          "soma_real": 183,
+          "estimativa_sem": 195,
+          "estimativa_com": 309.68,
+          "erro_sem": 12,
+          "erro_com": 126.68
+        },
+        {
+          "concurso": 3496,
+          "estado": [
+            7,
+            4,
+            4
+          ],
+          "soma_real": 186,
+          "estimativa_sem": 195,
+          "estimativa_com": 245.67999999999998,
+          "erro_sem": 9,
+          "erro_com": 59.67999999999998
+        },
+        {
+          "concurso": 3495,
+          "estado": [
+            5,
+            7,
+            3
+          ],
+          "soma_real": 204,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 9,
+          "erro_com": 81.68
+        },
+        {
+          "concurso": 3494,
+          "estado": [
+            3,
+            7,
+            5
+          ],
+          "soma_real": 193,
+          "estimativa_sem": 195,
+          "estimativa_com": 301.68,
+          "erro_sem": 2,
+          "erro_com": 108.68
+        },
+        {
+          "concurso": 3493,
+          "estado": [
+            7,
+            8,
+            0
+          ],
+          "soma_real": 185,
+          "estimativa_sem": 195,
+          "estimativa_com": 277.68,
+          "erro_sem": 10,
+          "erro_com": 92.68
+        },
+        {
+          "concurso": 3492,
+          "estado": [
+            5,
+            7,
+            3
+          ],
+          "soma_real": 203,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 8,
+          "erro_com": 82.68
+        },
+        {
+          "concurso": 3491,
+          "estado": [
+            4,
+            6,
+            5
+          ],
+          "soma_real": 180,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 15,
+          "erro_com": 105.68
+        },
+        {
+          "concurso": 3490,
+          "estado": [
+            3,
+            5,
+            7
+          ],
+          "soma_real": 180,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 15,
+          "erro_com": 105.68
+        },
+        {
+          "concurso": 3489,
+          "estado": [
+            4,
+            7,
+            4
+          ],
+          "soma_real": 215,
+          "estimativa_sem": 195,
+          "estimativa_com": 293.68,
+          "erro_sem": 20,
+          "erro_com": 78.68
+        },
+        {
+          "concurso": 3488,
+          "estado": [
+            3,
+            5,
+            7
+          ],
+          "soma_real": 182,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 13,
+          "erro_com": 103.68
+        },
+        {
+          "concurso": 3487,
+          "estado": [
+            3,
+            6,
+            6
+          ],
+          "soma_real": 196,
+          "estimativa_sem": 195,
+          "estimativa_com": 293.68,
+          "erro_sem": 1,
+          "erro_com": 97.68
+        },
+        {
+          "concurso": 3486,
+          "estado": [
+            7,
+            7,
+            1
+          ],
+          "soma_real": 165,
+          "estimativa_sem": 195,
+          "estimativa_com": 269.68,
+          "erro_sem": 30,
+          "erro_com": 104.68
+        },
+        {
+          "concurso": 3485,
+          "estado": [
+            7,
+            7,
+            1
+          ],
+          "soma_real": 168,
+          "estimativa_sem": 195,
+          "estimativa_com": 269.68,
+          "erro_sem": 27,
+          "erro_com": 101.68
+        },
+        {
+          "concurso": 3484,
+          "estado": [
+            3,
+            8,
+            4
+          ],
+          "soma_real": 197,
+          "estimativa_sem": 195,
+          "estimativa_com": 309.68,
+          "erro_sem": 2,
+          "erro_com": 112.68
+        },
+        {
+          "concurso": 3483,
+          "estado": [
+            5,
+            8,
+            2
+          ],
+          "soma_real": 221,
+          "estimativa_sem": 195,
+          "estimativa_com": 293.68,
+          "erro_sem": 26,
+          "erro_com": 72.68
+        },
+        {
+          "concurso": 3482,
+          "estado": [
+            4,
+            4,
+            7
+          ],
+          "soma_real": 174,
+          "estimativa_sem": 195,
+          "estimativa_com": 269.68,
+          "erro_sem": 21,
+          "erro_com": 95.68
+        },
+        {
+          "concurso": 3481,
+          "estado": [
+            6,
+            6,
+            3
+          ],
+          "soma_real": 211,
+          "estimativa_sem": 195,
+          "estimativa_com": 269.68,
+          "erro_sem": 16,
+          "erro_com": 58.68000000000001
+        },
+        {
+          "concurso": 3480,
+          "estado": [
+            4,
+            7,
+            4
+          ],
+          "soma_real": 199,
+          "estimativa_sem": 195,
+          "estimativa_com": 293.68,
+          "erro_sem": 4,
+          "erro_com": 94.68
+        },
+        {
+          "concurso": 3479,
+          "estado": [
+            6,
+            8,
+            1
+          ],
+          "soma_real": 223,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 28,
+          "erro_com": 62.68000000000001
+        },
+        {
+          "concurso": 3478,
+          "estado": [
+            4,
+            5,
+            6
+          ],
+          "soma_real": 169,
+          "estimativa_sem": 195,
+          "estimativa_com": 277.68,
+          "erro_sem": 26,
+          "erro_com": 108.68
+        },
+        {
+          "concurso": 3477,
+          "estado": [
+            5,
+            6,
+            4
+          ],
+          "soma_real": 182,
+          "estimativa_sem": 195,
+          "estimativa_com": 277.68,
+          "erro_sem": 13,
+          "erro_com": 95.68
+        },
+        {
+          "concurso": 3476,
+          "estado": [
+            5,
+            6,
+            4
+          ],
+          "soma_real": 173,
+          "estimativa_sem": 195,
+          "estimativa_com": 277.68,
+          "erro_sem": 22,
+          "erro_com": 104.68
+        },
+        {
+          "concurso": 3475,
+          "estado": [
+            6,
+            8,
+            1
+          ],
+          "soma_real": 197,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 2,
+          "erro_com": 88.68
+        },
+        {
+          "concurso": 3474,
+          "estado": [
+            5,
+            5,
+            5
+          ],
+          "soma_real": 212,
+          "estimativa_sem": 195,
+          "estimativa_com": 269.68,
+          "erro_sem": 17,
+          "erro_com": 57.68000000000001
+        },
+        {
+          "concurso": 3473,
+          "estado": [
+            5,
+            4,
+            6
+          ],
+          "soma_real": 200,
+          "estimativa_sem": 195,
+          "estimativa_com": 261.68,
+          "erro_sem": 5,
+          "erro_com": 61.68000000000001
+        },
+        {
+          "concurso": 3472,
+          "estado": [
+            7,
+            5,
+            3
+          ],
+          "soma_real": 202,
+          "estimativa_sem": 195,
+          "estimativa_com": 253.67999999999998,
+          "erro_sem": 7,
+          "erro_com": 51.67999999999998
+        },
+        {
+          "concurso": 3471,
+          "estado": [
+            3,
+            6,
+            6
+          ],
+          "soma_real": 218,
+          "estimativa_sem": 195,
+          "estimativa_com": 293.68,
+          "erro_sem": 23,
+          "erro_com": 75.68
+        },
+        {
+          "concurso": 3470,
+          "estado": [
+            7,
+            6,
+            2
+          ],
+          "soma_real": 163,
+          "estimativa_sem": 195,
+          "estimativa_com": 261.68,
+          "erro_sem": 32,
+          "erro_com": 98.68
+        },
+        {
+          "concurso": 3469,
+          "estado": [
+            5,
+            6,
+            4
+          ],
+          "soma_real": 231,
+          "estimativa_sem": 195,
+          "estimativa_com": 277.68,
+          "erro_sem": 36,
+          "erro_com": 46.68000000000001
+        },
+        {
+          "concurso": 3468,
+          "estado": [
+            7,
+            8,
+            0
+          ],
+          "soma_real": 223,
+          "estimativa_sem": 195,
+          "estimativa_com": 277.68,
+          "erro_sem": 28,
+          "erro_com": 54.68000000000001
+        },
+        {
+          "concurso": 3467,
+          "estado": [
+            4,
+            8,
+            3
+          ],
+          "soma_real": 192,
+          "estimativa_sem": 195,
+          "estimativa_com": 301.68,
+          "erro_sem": 3,
+          "erro_com": 109.68
+        },
+        {
+          "concurso": 3466,
+          "estado": [
+            7,
+            4,
+            4
+          ],
+          "soma_real": 218,
+          "estimativa_sem": 195,
+          "estimativa_com": 245.67999999999998,
+          "erro_sem": 23,
+          "erro_com": 27.67999999999998
+        },
+        {
+          "concurso": 3465,
+          "estado": [
+            4,
+            7,
+            4
+          ],
+          "soma_real": 221,
+          "estimativa_sem": 195,
+          "estimativa_com": 293.68,
+          "erro_sem": 26,
+          "erro_com": 72.68
+        },
+        {
+          "concurso": 3464,
+          "estado": [
+            4,
+            8,
+            3
+          ],
+          "soma_real": 214,
+          "estimativa_sem": 195,
+          "estimativa_com": 301.68,
+          "erro_sem": 19,
+          "erro_com": 87.68
+        },
+        {
+          "concurso": 3463,
+          "estado": [
+            5,
+            7,
+            3
+          ],
+          "soma_real": 192,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 3,
+          "erro_com": 93.68
+        },
+        {
+          "concurso": 3462,
+          "estado": [
+            7,
+            6,
+            2
+          ],
+          "soma_real": 245,
+          "estimativa_sem": 195,
+          "estimativa_com": 261.68,
+          "erro_sem": 50,
+          "erro_com": 16.680000000000007
+        },
+        {
+          "concurso": 3461,
+          "estado": [
+            4,
+            7,
+            4
+          ],
+          "soma_real": 212,
+          "estimativa_sem": 195,
+          "estimativa_com": 293.68,
+          "erro_sem": 17,
+          "erro_com": 81.68
+        },
+        {
+          "concurso": 3460,
+          "estado": [
+            7,
+            5,
+            3
+          ],
+          "soma_real": 193,
+          "estimativa_sem": 195,
+          "estimativa_com": 253.67999999999998,
+          "erro_sem": 2,
+          "erro_com": 60.67999999999998
+        },
+        {
+          "concurso": 3459,
+          "estado": [
+            6,
+            8,
+            1
+          ],
+          "soma_real": 190,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 5,
+          "erro_com": 95.68
+        },
+        {
+          "concurso": 3458,
+          "estado": [
+            5,
+            4,
+            6
+          ],
+          "soma_real": 197,
+          "estimativa_sem": 195,
+          "estimativa_com": 261.68,
+          "erro_sem": 2,
+          "erro_com": 64.68
+        },
+        {
+          "concurso": 3457,
+          "estado": [
+            3,
+            5,
+            7
+          ],
+          "soma_real": 162,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 33,
+          "erro_com": 123.68
+        },
+        {
+          "concurso": 3456,
+          "estado": [
+            4,
+            6,
+            5
+          ],
+          "soma_real": 213,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 18,
+          "erro_com": 72.68
+        },
+        {
+          "concurso": 3455,
+          "estado": [
+            4,
+            7,
+            4
+          ],
+          "soma_real": 214,
+          "estimativa_sem": 195,
+          "estimativa_com": 293.68,
+          "erro_sem": 19,
+          "erro_com": 79.68
+        },
+        {
+          "concurso": 3454,
+          "estado": [
+            5,
+            7,
+            3
+          ],
+          "soma_real": 211,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 16,
+          "erro_com": 74.68
+        },
+        {
+          "concurso": 3453,
+          "estado": [
+            7,
+            8,
+            0
+          ],
+          "soma_real": 216,
+          "estimativa_sem": 195,
+          "estimativa_com": 277.68,
+          "erro_sem": 21,
+          "erro_com": 61.68000000000001
+        },
+        {
+          "concurso": 3452,
+          "estado": [
+            6,
+            8,
+            1
+          ],
+          "soma_real": 167,
+          "estimativa_sem": 195,
+          "estimativa_com": 285.68,
+          "erro_sem": 28,
+          "erro_com": 118.68
+        },
+        {
+          "concurso": 3451,
+          "estado": [
+            6,
+            5,
+            4
+          ],
+          "soma_real": 173,
+          "estimativa_sem": 195,
+          "estimativa_com": 261.68,
+          "erro_sem": 22,
+          "erro_com": 88.68
+        }
+      ]
+    },
+    "deteccao_inversoes": {
+      "total_inversoes": 35,
+      "detectadas_sem_descoberta": 4,
+      "detectadas_com_descoberta": 0,
+      "taxa_deteccao_sem": 11.428571428571429,
+      "taxa_deteccao_com": 0.0,
+      "melhoria_percentual": -11.428571428571429,
+      "detalhes": [
+        {
+          "concurso": 3497,
+          "estado_atual": [
+            3,
+            8,
+            4
+          ],
+          "estado_proximo": [
+            7,
+            4,
+            4
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3496,
+          "estado_atual": [
+            7,
+            4,
+            4
+          ],
+          "estado_proximo": [
+            5,
+            7,
+            3
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3472,
+          "estado_atual": [
+            7,
+            5,
+            3
+          ],
+          "estado_proximo": [
+            3,
+            6,
+            6
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3471,
+          "estado_atual": [
+            3,
+            6,
+            6
+          ],
+          "estado_proximo": [
+            7,
+            6,
+            2
+          ],
+          "inversao_real": true,
+          "detectada_sem": true,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3470,
+          "estado_atual": [
+            7,
+            6,
+            2
+          ],
+          "estado_proximo": [
+            5,
+            6,
+            4
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3467,
+          "estado_atual": [
+            4,
+            8,
+            3
+          ],
+          "estado_proximo": [
+            7,
+            4,
+            4
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3466,
+          "estado_atual": [
+            7,
+            4,
+            4
+          ],
+          "estado_proximo": [
+            4,
+            7,
+            4
+          ],
+          "inversao_real": true,
+          "detectada_sem": true,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3463,
+          "estado_atual": [
+            5,
+            7,
+            3
+          ],
+          "estado_proximo": [
+            7,
+            6,
+            2
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3462,
+          "estado_atual": [
+            7,
+            6,
+            2
+          ],
+          "estado_proximo": [
+            4,
+            7,
+            4
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3461,
+          "estado_atual": [
+            4,
+            7,
+            4
+          ],
+          "estado_proximo": [
+            7,
+            5,
+            3
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3460,
+          "estado_atual": [
+            7,
+            5,
+            3
+          ],
+          "estado_proximo": [
+            6,
+            8,
+            1
+          ],
+          "inversao_real": true,
+          "detectada_sem": true,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3459,
+          "estado_atual": [
+            6,
+            8,
+            1
+          ],
+          "estado_proximo": [
+            5,
+            4,
+            6
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3458,
+          "estado_atual": [
+            5,
+            4,
+            6
+          ],
+          "estado_proximo": [
+            3,
+            5,
+            7
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3452,
+          "estado_atual": [
+            6,
+            8,
+            1
+          ],
+          "estado_proximo": [
+            6,
+            5,
+            4
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3451,
+          "estado_atual": [
+            6,
+            5,
+            4
+          ],
+          "estado_proximo": [
+            3,
+            7,
+            5
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3450,
+          "estado_atual": [
+            3,
+            7,
+            5
+          ],
+          "estado_proximo": [
+            6,
+            5,
+            4
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3448,
+          "estado_atual": [
+            7,
+            6,
+            2
+          ],
+          "estado_proximo": [
+            3,
+            5,
+            7
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3447,
+          "estado_atual": [
+            3,
+            5,
+            7
+          ],
+          "estado_proximo": [
+            7,
+            4,
+            4
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3446,
+          "estado_atual": [
+            7,
+            4,
+            4
+          ],
+          "estado_proximo": [
+            4,
+            7,
+            4
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3440,
+          "estado_atual": [
+            3,
+            7,
+            5
+          ],
+          "estado_proximo": [
+            7,
+            5,
+            3
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3439,
+          "estado_atual": [
+            7,
+            5,
+            3
+          ],
+          "estado_proximo": [
+            3,
+            6,
+            6
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3437,
+          "estado_atual": [
+            4,
+            6,
+            5
+          ],
+          "estado_proximo": [
+            7,
+            4,
+            4
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3435,
+          "estado_atual": [
+            7,
+            4,
+            4
+          ],
+          "estado_proximo": [
+            3,
+            5,
+            7
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3431,
+          "estado_atual": [
+            4,
+            8,
+            3
+          ],
+          "estado_proximo": [
+            7,
+            4,
+            4
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3430,
+          "estado_atual": [
+            7,
+            4,
+            4
+          ],
+          "estado_proximo": [
+            3,
+            7,
+            5
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3428,
+          "estado_atual": [
+            4,
+            5,
+            6
+          ],
+          "estado_proximo": [
+            5,
+            4,
+            6
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3425,
+          "estado_atual": [
+            3,
+            7,
+            5
+          ],
+          "estado_proximo": [
+            6,
+            4,
+            5
+          ],
+          "inversao_real": true,
+          "detectada_sem": true,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3424,
+          "estado_atual": [
+            6,
+            4,
+            5
+          ],
+          "estado_proximo": [
+            4,
+            5,
+            6
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3420,
+          "estado_atual": [
+            7,
+            8,
+            0
+          ],
+          "estado_proximo": [
+            7,
+            5,
+            3
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3418,
+          "estado_atual": [
+            7,
+            5,
+            3
+          ],
+          "estado_proximo": [
+            4,
+            8,
+            3
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3415,
+          "estado_atual": [
+            3,
+            4,
+            8
+          ],
+          "estado_proximo": [
+            6,
+            4,
+            5
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3406,
+          "estado_atual": [
+            6,
+            5,
+            4
+          ],
+          "estado_proximo": [
+            3,
+            4,
+            8
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3405,
+          "estado_atual": [
+            3,
+            4,
+            8
+          ],
+          "estado_proximo": [
+            6,
+            4,
+            5
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3404,
+          "estado_atual": [
+            6,
+            4,
+            5
+          ],
+          "estado_proximo": [
+            7,
+            8,
+            0
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        },
+        {
+          "concurso": 3402,
+          "estado_atual": [
+            3,
+            5,
+            7
+          ],
+          "estado_proximo": [
+            5,
+            4,
+            6
+          ],
+          "inversao_real": true,
+          "detectada_sem": false,
+          "detectada_com": false
+        }
+      ]
+    }
+  },
+  "resumo_melhorias": {
+    "predicao_estados": -1.8518518518518547,
+    "estimativa_soma": -419.99999999999994,
+    "deteccao_inversoes": -11.428571428571429
+  }
+}

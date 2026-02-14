@@ -1,0 +1,240 @@
+{
+  "comparacoes_versoes": [],
+  "graficos_performance": {
+    "precisao_por_versao": [
+      {
+        "versao": "ia_repetidos_20250822_0200",
+        "data": "2025-08-22T02:00:30.271337",
+        "precisao_qtde": 0.0,
+        "precisao_posicao": 0.0
+      },
+      {
+        "versao": "ia_repetidos_20250822_0208",
+        "data": "2025-08-22T02:08:27.178902",
+        "precisao_qtde": 0.0,
+        "precisao_posicao": 0.0
+      },
+      {
+        "versao": "ia_repetidos_20250822_1318",
+        "data": "2025-08-22T13:18:19.945322",
+        "precisao_qtde": 0.0,
+        "precisao_posicao": 0.0
+      },
+      {
+        "versao": "ia_repetidos_20250822_1413",
+        "data": "2025-08-22T14:13:17.467005",
+        "precisao_qtde": 0.0,
+        "precisao_posicao": 0.0
+      },
+      {
+        "versao": "ia_repetidos_20250823_1444",
+        "data": "2025-08-23T14:44:54.587422",
+        "precisao_qtde": 0.0,
+        "precisao_posicao": 0.0
+      },
+      {
+        "versao": "patterns_20250920_021113",
+        "data": "2025-09-20T02:11:13.549688",
+        "precisao_qtde": 0,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "patterns_20250920_021117",
+        "data": "2025-09-20T02:11:17.675582",
+        "precisao_qtde": 0,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "precisao_validada_64_20250920",
+        "data": "2025-09-20T02:29:59.672116",
+        "precisao_qtde": 0.64,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_678_1758367523",
+        "data": "2025-09-20T08:25:23.837162",
+        "precisao_qtde": 0.6785228168067742,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_695_1758368432",
+        "data": "2025-09-20T08:40:32.478048",
+        "precisao_qtde": 0.6955591595059937,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_712_1758368748",
+        "data": "2025-09-20T08:45:48.514110",
+        "precisao_qtde": 0.7126423595675162,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_795_1758370165",
+        "data": "2025-09-20T09:09:25.349911",
+        "precisao_qtde": 0.7950448143283196,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_795_1758377567",
+        "data": "2025-09-20T11:12:47.423311",
+        "precisao_qtde": 0.7952110807869931,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_799_1758381889",
+        "data": "2025-09-20T12:24:49.160874",
+        "precisao_qtde": 0.799384861475597,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "precisao_validada_64_20250920",
+        "data": "2025-09-20T14:24:50.672603",
+        "precisao_qtde": 0.64,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_645_1758472046",
+        "data": "2025-09-21T13:27:26.482290",
+        "precisao_qtde": 0.6455015137622951,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_679_1758473016",
+        "data": "2025-09-21T13:43:36.539565",
+        "precisao_qtde": 0.6792931305401261,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_796_1758473310",
+        "data": "2025-09-21T13:48:30.393944",
+        "precisao_qtde": 0.796128970873198,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_655_1758540346",
+        "data": "2025-09-22T08:25:46.872694",
+        "precisao_qtde": 0.655305954765796,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_759_1758541511",
+        "data": "2025-09-22T08:45:11.790268",
+        "precisao_qtde": 0.7598912715859953,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_784_1758544313",
+        "data": "2025-09-22T09:31:53.275130",
+        "precisao_qtde": 0.7843227423142011,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_670_1758565361",
+        "data": "2025-09-22T15:22:41.485842",
+        "precisao_qtde": 0.6704753698650159,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_681_1758566316",
+        "data": "2025-09-22T15:38:36.858087",
+        "precisao_qtde": 0.6812909302597688,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_740_1758566595",
+        "data": "2025-09-22T15:43:15.498299",
+        "precisao_qtde": 0.7405023117352346,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_769_1758569398",
+        "data": "2025-09-22T16:29:58.739231",
+        "precisao_qtde": 0.7692919823574997,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_685_1758627151",
+        "data": "2025-09-23T08:32:31.890939",
+        "precisao_qtde": 0.6855120623234123,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_699_1758628123",
+        "data": "2025-09-23T08:48:43.281364",
+        "precisao_qtde": 0.699427443690533,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_707_1758628435",
+        "data": "2025-09-23T08:53:55.323936",
+        "precisao_qtde": 0.7078624601074056,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_715_1758629925",
+        "data": "2025-09-23T09:18:45.977231",
+        "precisao_qtde": 0.7154735968587252,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_744_1758634227",
+        "data": "2025-09-23T10:30:27.715679",
+        "precisao_qtde": 0.7444408965984884,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_746_1758635637",
+        "data": "2025-09-23T10:53:57.116328",
+        "precisao_qtde": 0.7467273970171548,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_777_1758637094",
+        "data": "2025-09-23T11:18:15.030890",
+        "precisao_qtde": 0.7779230944885595,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_797_1758644439",
+        "data": "2025-09-23T13:20:39.492312",
+        "precisao_qtde": 0.7973068538086607,
+        "precisao_posicao": 0
+      },
+      {
+        "versao": "treinamento_auto_4h_799_1758655929",
+        "data": "2025-09-23T16:32:09.993328",
+        "precisao_qtde": 0.7998314995265562,
+        "precisao_posicao": 0
+      }
+    ],
+    "acertos_por_versao": [],
+    "tempo_treinamento": [
+      {
+        "versao": "ia_repetidos_20250822_0200",
+        "tempo_segundos": 0,
+        "amostras": 0
+      },
+      {
+        "versao": "ia_repetidos_20250822_0208",
+        "tempo_segundos": 0,
+        "amostras": 0
+      },
+      {
+        "versao": "ia_repetidos_20250822_1318",
+        "tempo_segundos": 0,
+        "amostras": 0
+      },
+      {
+        "versao": "ia_repetidos_20250822_1413",
+        "tempo_segundos": 0,
+        "amostras": 0
+      },
+      {
+        "versao": "ia_repetidos_20250823_1444",
+        "tempo_segundos": 0,
+        "amostras": 0
+      }
+    ]
+  },
+  "decisoes_tecnicas": []
+}

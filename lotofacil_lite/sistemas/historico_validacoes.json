@@ -1,0 +1,76 @@
+[
+  {
+    "data": "2026-01-16T17:06:41.134752",
+    "validados": 0,
+    "melhor_acerto": 0,
+    "premio_total": 0,
+    "custo_total": 0,
+    "roi": 0,
+    "detalhes": []
+  },
+  {
+    "data": "2026-01-16T17:27:39.937489",
+    "validados": 0,
+    "melhor_acerto": 0,
+    "premio_total": 0,
+    "custo_total": 0,
+    "roi": 0,
+    "detalhes": []
+  },
+  {
+    "data": "2026-01-16T17:27:45.830740",
+    "validados": 0,
+    "melhor_acerto": 0,
+    "premio_total": 0,
+    "custo_total": 0,
+    "roi": 0,
+    "detalhes": []
+  },
+  {
+    "data": "2026-01-16T17:32:31.042909",
+    "validados": 1,
+    "melhor_acerto": 12,
+    "premio_total": 14,
+    "custo_total": 105.0,
+    "roi": 0,
+    "detalhes": [
+      {
+        "concurso": 3588,
+        "melhor_acerto": 12,
+        "premio": 14,
+        "custo": 105.0
+      }
+    ]
+  },
+  {
+    "data": "2026-01-17T17:48:21.874328",
+    "validados": 0,
+    "melhor_acerto": 0,
+    "premio_total": 0,
+    "custo_total": 0,
+    "roi": 0,
+    "detalhes": []
+  },
+  {
+    "data": "2026-01-27T17:01:35.315747",
+    "validados": 2,
+    "melhor_acerto": 11,
+    "premio_total": 7,
+    "custo_total": 105.0,
+    "roi": 0,
+    "detalhes": [
+      {
+        "concurso": 3589,
+        "melhor_acerto": 11,
+        "premio": 7,
+        "custo": 35.0
+      },
+      {
+        "concurso": 3590,
+        "melhor_acerto": 10,
+        "premio": 0,
+        "custo": 70.0
+      }
+    ]
+  }
+]

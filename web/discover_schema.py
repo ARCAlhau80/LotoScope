@@ -1,0 +1,76 @@
+"""
+🔍 Script para descobrir o esquema real da tabela
+"""
+import sys
+import os
+
+# Adicionar path do database
+sys.path.append(os.path.join(os.path.dirname(__file__), 'database'))
+
+try:
+    from database_config import DatabaseConfig
+
+# 🚀 SISTEMA DE OTIMIZAÇÃO DE BANCO
+try:
+    from database_optimizer import DatabaseOptimizer
+    _db_optimizer = DatabaseOptimizer()
+except ImportError:
+    _db_optimizer = None
+
+    
+    db_config = DatabaseConfig()
+    
+    with db_config.get_connection() as conn:
+        cursor = conn.cursor()
+        
+        print("🔍 DESCOBRINDO ESQUEMA DA TABELA...")
+        print("="*60)
+        
+        # Descobrir colunas da tabela
+        cursor.execute("""
+            SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE
+            FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_NAME = 'COMBINACOES_LOTOFACIL20_COMPLETO'
+            ORDER BY ORDINAL_POSITION
+        """)
+        
+        columns = cursor.fetchall()
+        
+        print(f"📊 TABELA: COMBINACOES_LOTOFACIL20_COMPLETO")
+        print(f"📋 TOTAL DE COLUNAS: {len(columns)}")
+        print()
+        
+        for i, (col_name, data_type, nullable) in enumerate(columns, 1):
+            print(f"{i:2d}. {col_name:<25} | {data_type:<15} | {'NULL' if nullable == 'YES' else 'NOT NULL'}")
+        
+        print()
+        print("🎯 PRIMEIRAS 5 LINHAS DA TABELA:")
+        print("="*60)
+        
+        # Mostrar primeiras linhas
+        # SUGESTÃO: Use _db_optimizer.cached_query() para melhor performance
+        cursor.execute("SELECT TOP 5 * FROM [dbo].[COMBINACOES_LOTOFACIL20_COMPLETO]")
+        rows = cursor.fetchall()
+        
+        if rows:
+            # Mostrar apenas algumas colunas para não sobrecarregar
+            cursor.execute("""
+                SELECT TOP 5 
+                    N1, N2, N3, N4, N5, N6, N7, N8, N9, N10, N11, N12, N13, N14, N15,
+                    QtdePrimos, QtdeFibonacci, QtdeImpares, SomaTotal
+                FROM [dbo].[COMBINACOES_LOTOFACIL20_COMPLETO]
+            """)
+            sample_rows = cursor.fetchall()
+            
+            print("N1  N2  N3  N4  N5  N6  N7  N8  N9 N10 N11 N12 N13 N14 N15 | Primos Fib Imp Soma")
+            print("-" * 80)
+            for row in sample_rows:
+                nums = " ".join(f"{n:2d}" for n in row[:15])
+                stats = f"{row[15]:2d}    {row[16]:2d}   {row[17]:2d}  {row[18]:3d}"
+                print(f"{nums} | {stats}")
+        
+        print()
+        print("✅ Esquema descoberto com sucesso!")
+        
+except Exception as e:
+    print(f"❌ Erro ao descobrir esquema: {e}")

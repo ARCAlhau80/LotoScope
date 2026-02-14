@@ -1,0 +1,24 @@
+{
+  "intervalo_treino_segundos": 30,
+  "concursos_por_sessao": 1,
+  "limite_combinacoes_por_teste": 3268760,
+  "threshold_melhoria": 0.05,
+  "salvar_estado_intervalo": 10,
+  "auto_implementar_melhorias": true,
+  "logging_nivel": "INFO",
+  "backup_conhecimento": true,
+  "reiniciar_se_degradar": true,
+  "limite_sessoes_por_dia": 2880,
+  "comentarios": {
+    "intervalo_treino_segundos": "Intervalo entre sess\u00c3\u00b5es de treino",
+    "concursos_por_sessao": "Quantos concursos treinar por sess\u00c3\u00a3o",
+    "limite_combinacoes_por_teste": "M\u00c3\u00a1ximo de combina\u00c3\u00a7\u00c3\u00b5es a testar por concurso",
+    "threshold_melhoria": "Melhoria m\u00c3\u00adnima para auto-implementar (5%)",
+    "salvar_estado_intervalo": "Salva conhecimento a cada X sess\u00c3\u00b5es",
+    "auto_implementar_melhorias": "Se deve gerar c\u00c3\u00b3digo automaticamente",
+    "logging_nivel": "N\u00c3\u00advel de log: DEBUG, INFO, WARNING, ERROR",
+    "backup_conhecimento": "Se deve fazer backup do conhecimento",
+    "reiniciar_se_degradar": "Se deve reiniciar estrat\u00c3\u00a9gias em caso de degrada\u00c3\u00a7\u00c3\u00a3o",
+    "limite_sessoes_por_dia": "M\u00c3\u00a1ximo de sess\u00c3\u00b5es por dia (prote\u00c3\u00a7\u00c3\u00a3o)"
+  }
+}

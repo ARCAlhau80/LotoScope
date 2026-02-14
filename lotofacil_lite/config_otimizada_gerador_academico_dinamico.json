@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-09-25T09:00:21.208425",
+  "parametros": {
+    "janela_temporal": 150,
+    "peso_frequencia": 0.4,
+    "peso_ciclos": 0.3,
+    "peso_tendencias": 0.3
+  },
+  "acoes_sugeridas": [
+    "Ajustar janela temporal baseada em performance",
+    "Rebalancear pesos dos fatores acadêmicos",
+    "Incorporar mais dados históricos"
+  ],
+  "tipo_otimizacao": "academico",
+  "aplicado": false,
+  "versao": 1
+}

@@ -1,0 +1,11 @@
+{
+  "data_inicializacao": "2025-10-20T12:13:31.693627",
+  "eventos": [
+    {
+      "timestamp": "2025-10-20T12:13:31.693652",
+      "tipo": "inicializacao",
+      "descricao": "Sistema de aprendizado inicializado com sucesso",
+      "status": "sucesso"
+    }
+  ]
+}

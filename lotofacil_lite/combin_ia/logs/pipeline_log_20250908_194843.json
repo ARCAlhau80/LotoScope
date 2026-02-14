@@ -1,0 +1,61 @@
+{
+  "gerado_em": "2025-09-08 19:48:43",
+  "total_operacoes": 11,
+  "log_completo": [
+    {
+      "timestamp": "2025-09-08 19:32:39",
+      "tipo": "SETUP",
+      "mensagem": "🔧 PREPARANDO AMBIENTE"
+    },
+    {
+      "timestamp": "2025-09-08 19:32:39",
+      "tipo": "INFO",
+      "mensagem": "Verificando pré-requisitos do sistema..."
+    },
+    {
+      "timestamp": "2025-09-08 19:32:39",
+      "tipo": "INFO",
+      "mensagem": "  banco_dados: ✅ OK"
+    },
+    {
+      "timestamp": "2025-09-08 19:32:39",
+      "tipo": "INFO",
+      "mensagem": "  diretorios: ✅ OK"
+    },
+    {
+      "timestamp": "2025-09-08 19:32:39",
+      "tipo": "INFO",
+      "mensagem": "  modelo_treinado: ✅ OK"
+    },
+    {
+      "timestamp": "2025-09-08 19:32:39",
+      "tipo": "INFO",
+      "mensagem": "  datasets_historicos: ✅ OK"
+    },
+    {
+      "timestamp": "2025-09-08 19:32:39",
+      "tipo": "INFO",
+      "mensagem": "Gerando datasets históricos..."
+    },
+    {
+      "timestamp": "2025-09-08 19:36:20",
+      "tipo": "SUCCESS",
+      "mensagem": "✅ Datasets históricos gerados"
+    },
+    {
+      "timestamp": "2025-09-08 19:36:20",
+      "tipo": "INFO",
+      "mensagem": "Treinando modelo de IA..."
+    },
+    {
+      "timestamp": "2025-09-08 19:48:43",
+      "tipo": "SUCCESS",
+      "mensagem": "✅ Modelo de IA treinado"
+    },
+    {
+      "timestamp": "2025-09-08 19:48:43",
+      "tipo": "SUCCESS",
+      "mensagem": "✅ Ambiente preparado com sucesso"
+    }
+  ]
+}

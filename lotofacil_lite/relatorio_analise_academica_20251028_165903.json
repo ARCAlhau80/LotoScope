@@ -1,0 +1,1107 @@
+{
+  "timestamp": "20251028_165903",
+  "total_concursos_analisados": 3522,
+  "periodo": {
+    "inicio": 1,
+    "fim": 3523
+  },
+  "analises_realizadas": {
+    "frequencias_numeros": {
+      "frequencias": {
+        "2": 2108,
+        "3": 2127,
+        "5": 2115,
+        "6": 2069,
+        "9": 2106,
+        "10": 2189,
+        "11": 2168,
+        "13": 2147,
+        "14": 2140,
+        "16": 2019,
+        "18": 2102,
+        "20": 2195,
+        "23": 2059,
+        "24": 2141,
+        "25": 2187,
+        "1": 2127,
+        "4": 2128,
+        "7": 2075,
+        "12": 2120,
+        "15": 2095,
+        "19": 2097,
+        "8": 2037,
+        "17": 2075,
+        "21": 2095,
+        "22": 2109
+      },
+      "freq_esperada": 2113.2,
+      "chi2_uniformidade": {
+        "estatistica": 22.62256293772478,
+        "p_valor": 0.5421603118571632
+      },
+      "numeros_quentes": [
+        10,
+        11,
+        20,
+        25
+      ],
+      "numeros_frios": [
+        6,
+        8,
+        16,
+        23
+      ],
+      "coeficiente_variacao": 0.02069334017989752,
+      "interpretacao": [
+        "✅ Distribuição próxima do esperado para sorteio aleatório",
+        "📊 Baixa variabilidade nas frequências (CV=0.021)",
+        "🔥 Números 'quentes': [10, 11, 20, 25]",
+        "❄️ Números 'frios': [6, 8, 16, 23]"
+      ]
+    },
+    "correlacoes_temporais": {
+      "autocorrelacoes": {
+        "SomaTotal": -0.012915767457910503,
+        "QtdePrimos": -0.009382916324623942,
+        "QtdeFibonacci": -0.00770207383005117,
+        "QtdeImpares": -0.02214986308749156,
+        "QtdeGaps": 0.008995368484333181,
+        "QtdeRepetidos": 0.035753109026130714,
+        "SEQ": 0.05936389590158225,
+        "DistanciaExtremos": 0.01702996156651991
+      },
+      "tendencias_temporais": {
+        "SomaTotal": {
+          "slope": -9.424259474540215e-05,
+          "r_squared": 2.8843468099238856e-05,
+          "p_valor": 0.7500178432977768,
+          "significativa": "False"
+        },
+        "QtdePrimos": {
+          "slope": -4.946321323784651e-05,
+          "r_squared": 0.0017523676470366579,
+          "p_valor": 0.012972412072316527,
+          "significativa": "True"
+        },
+        "QtdeFibonacci": {
+          "slope": -8.708177755586695e-06,
+          "r_squared": 6.230312335457791e-05,
+          "p_valor": 0.6395870275370109,
+          "significativa": "False"
+        },
+        "QtdeImpares": {
+          "slope": -2.826216237926493e-05,
+          "r_squared": 0.0005229614647781156,
+          "p_valor": 0.17482859296628095,
+          "significativa": "False"
+        },
+        "QtdeGaps": {
+          "slope": 2.161388176845562e-06,
+          "r_squared": 3.194803138106307e-06,
+          "p_valor": 0.9155519395794346,
+          "significativa": "False"
+        },
+        "QtdeRepetidos": {
+          "slope": 2.34085838077883e-05,
+          "r_squared": 0.00036744248306540484,
+          "p_valor": 0.25541285858810037,
+          "significativa": "False"
+        },
+        "SEQ": {
+          "slope": -2.2464593607485497e-05,
+          "r_squared": 0.00032518374132714436,
+          "p_valor": 0.2846676244476644,
+          "significativa": "False"
+        },
+        "DistanciaExtremos": {
+          "slope": 1.174082318201333e-06,
+          "r_squared": 8.661730675509638e-07,
+          "p_valor": 0.9559686128403071,
+          "significativa": "False"
+        }
+      },
+      "matriz_correlacao": {
+        "SomaTotal": {
+          "SomaTotal": 1.0,
+          "QtdePrimos": -0.19497794119008446,
+          "QtdeFibonacci": -0.4630705603261808,
+          "QtdeImpares": -0.014186001437078887,
+          "QtdeGaps": -0.019792891196395396,
+          "QtdeRepetidos": 0.010301043951975312,
+          "SEQ": 0.016046067109778888,
+          "DistanciaExtremos": -0.015147607422543804
+        },
+        "QtdePrimos": {
+          "SomaTotal": -0.19497794119008446,
+          "QtdePrimos": 1.0,
+          "QtdeFibonacci": 0.2743073330958989,
+          "QtdeImpares": 0.5653438575175125,
+          "QtdeGaps": -0.08658583211983262,
+          "QtdeRepetidos": -0.023515856023296138,
+          "SEQ": 0.07966097605422438,
+          "DistanciaExtremos": -0.12825336486160366
+        },
+        "QtdeFibonacci": {
+          "SomaTotal": -0.4630705603261808,
+          "QtdePrimos": 0.2743073330958989,
+          "QtdeFibonacci": 1.0,
+          "QtdeImpares": 0.26074550120037043,
+          "QtdeGaps": 0.04903935622945702,
+          "QtdeRepetidos": -0.02420442857748223,
+          "SEQ": -0.04844224403471604,
+          "DistanciaExtremos": 0.1742270891948138
+        },
+        "QtdeImpares": {
+          "SomaTotal": -0.014186001437078887,
+          "QtdePrimos": 0.5653438575175125,
+          "QtdeFibonacci": 0.26074550120037043,
+          "QtdeImpares": 1.0,
+          "QtdeGaps": 0.08489750513996577,
+          "QtdeRepetidos": -0.01811755761197797,
+          "SEQ": -0.08872803368754373,
+          "DistanciaExtremos": 0.15198681999510066
+        },
+        "QtdeGaps": {
+          "SomaTotal": -0.019792891196395396,
+          "QtdePrimos": -0.08658583211983262,
+          "QtdeFibonacci": 0.04903935622945702,
+          "QtdeImpares": 0.08489750513996577,
+          "QtdeGaps": 1.0,
+          "QtdeRepetidos": -0.010634437602093814,
+          "SEQ": -0.9718153752172798,
+          "DistanciaExtremos": 0.4446449654309187
+        },
+        "QtdeRepetidos": {
+          "SomaTotal": 0.010301043951975312,
+          "QtdePrimos": -0.023515856023296138,
+          "QtdeFibonacci": -0.02420442857748223,
+          "QtdeImpares": -0.01811755761197797,
+          "QtdeGaps": -0.010634437602093814,
+          "QtdeRepetidos": 1.0,
+          "SEQ": 0.010797492048953925,
+          "DistanciaExtremos": -0.018251284514113637
+        },
+        "SEQ": {
+          "SomaTotal": 0.016046067109778888,
+          "QtdePrimos": 0.07966097605422438,
+          "QtdeFibonacci": -0.04844224403471604,
+          "QtdeImpares": -0.08872803368754373,
+          "QtdeGaps": -0.9718153752172798,
+          "QtdeRepetidos": 0.010797492048953925,
+          "SEQ": 1.0,
+          "DistanciaExtremos": -0.43582688028080746
+        },
+        "DistanciaExtremos": {
+          "SomaTotal": -0.015147607422543804,
+          "QtdePrimos": -0.12825336486160366,
+          "QtdeFibonacci": 0.1742270891948138,
+          "QtdeImpares": 0.15198681999510066,
+          "QtdeGaps": 0.4446449654309187,
+          "QtdeRepetidos": -0.018251284514113637,
+          "SEQ": -0.43582688028080746,
+          "DistanciaExtremos": 1.0
+        }
+      },
+      "correlacoes_fortes": [
+        {
+          "campo1": "QtdePrimos",
+          "campo2": "QtdeImpares",
+          "correlacao": 0.5653438575175125
+        },
+        {
+          "campo1": "QtdeGaps",
+          "campo2": "SEQ",
+          "correlacao": -0.9718153752172798
+        }
+      ],
+      "interpretacao": [
+        "📈 Tendências temporais em: ['QtdePrimos']",
+        "🔗 2 correlações fortes detectadas",
+        "   • QtdePrimos ↔ QtdeImpares: r=0.565",
+        "   • QtdeGaps ↔ SEQ: r=-0.972"
+      ]
+    },
+    "deteccao_anomalias": {
+      "anomalias_por_campo": {
+        "SomaTotal": {
+          "quantidade_outliers": 169,
+          "percentual": 4.798409994321409,
+          "limites_iqr": {
+            "inferior": 145.5,
+            "superior": 245.5
+          },
+          "outliers_detalhes": [
+            {
+              "concurso": "521",
+              "valor": "155",
+              "z_score": 2.2523714651019495,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2569",
+              "valor": "243",
+              "z_score": 2.680053250386798,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2060",
+              "valor": "249",
+              "z_score": 3.0163549355337578,
+              "metodos_detectaram": {
+                "zscore": true,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2064",
+              "valor": "234",
+              "z_score": 2.1756007226663576,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "22",
+              "valor": "148",
+              "z_score": 2.644723431106736,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "1562",
+              "valor": "133",
+              "z_score": 3.485477643974136,
+              "metodos_detectaram": {
+                "zscore": true,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "3101",
+              "valor": "235",
+              "z_score": 2.2316510035241843,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2594",
+              "valor": "239",
+              "z_score": 2.455852126955491,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "548",
+              "valor": "157",
+              "z_score": 2.140270903386296,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2044",
+              "valor": "230",
+              "z_score": 1.951399599235051,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            }
+          ]
+        },
+        "QtdePrimos": {
+          "quantidade_outliers": 307,
+          "percentual": 8.71663827370812,
+          "limites_iqr": {
+            "inferior": 3.5,
+            "superior": 7.5
+          },
+          "outliers_detalhes": [
+            {
+              "concurso": "2052",
+              "valor": "3",
+              "z_score": 1.9864605407656308,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "2054",
+              "valor": "8",
+              "z_score": 2.175534714782586,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "7",
+              "valor": "3",
+              "z_score": 1.9864605407656308,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "13",
+              "valor": "8",
+              "z_score": 2.175534714782586,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "3086",
+              "valor": "8",
+              "z_score": 2.175534714782586,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "15",
+              "valor": "3",
+              "z_score": 1.9864605407656308,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "1040",
+              "valor": "3",
+              "z_score": 1.9864605407656308,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "2066",
+              "valor": "3",
+              "z_score": 1.9864605407656308,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "1047",
+              "valor": "3",
+              "z_score": 1.9864605407656308,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "24",
+              "valor": "8",
+              "z_score": 2.175534714782586,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            }
+          ]
+        },
+        "QtdeFibonacci": {
+          "quantidade_outliers": 59,
+          "percentual": 1.6751845542305508,
+          "limites_iqr": {
+            "inferior": 0.0,
+            "superior": 8.0
+          },
+          "outliers_detalhes": [
+            {
+              "concurso": "2186",
+              "valor": "1",
+              "z_score": 2.843635850459372,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "909",
+              "valor": "7",
+              "z_score": 2.505457330233832,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "911",
+              "valor": "7",
+              "z_score": 2.505457330233832,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "534",
+              "valor": "7",
+              "z_score": 2.505457330233832,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "791",
+              "valor": "7",
+              "z_score": 2.505457330233832,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "1433",
+              "valor": "1",
+              "z_score": 2.843635850459372,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "3098",
+              "valor": "7",
+              "z_score": 2.505457330233832,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "1179",
+              "valor": "7",
+              "z_score": 2.505457330233832,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "3356",
+              "valor": "1",
+              "z_score": 2.843635850459372,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "1662",
+              "valor": "7",
+              "z_score": 2.505457330233832,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            }
+          ]
+        },
+        "QtdeImpares": {
+          "quantidade_outliers": 148,
+          "percentual": 4.202157864849517,
+          "limites_iqr": {
+            "inferior": 4.0,
+            "superior": 12.0
+          },
+          "outliers_detalhes": [
+            {
+              "concurso": "2052",
+              "valor": "5",
+              "z_score": 2.2286939148971174,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "519",
+              "valor": "11",
+              "z_score": 2.5464008645417837,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "520",
+              "valor": "5",
+              "z_score": 2.2286939148971174,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "3079",
+              "valor": "5",
+              "z_score": 2.2286939148971174,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "1530",
+              "valor": "5",
+              "z_score": 2.2286939148971174,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "1551",
+              "valor": "11",
+              "z_score": 2.5464008645417837,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "1041",
+              "valor": "11",
+              "z_score": 2.5464008645417837,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2066",
+              "valor": "5",
+              "z_score": 2.2286939148971174,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "1555",
+              "valor": "5",
+              "z_score": 2.2286939148971174,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "535",
+              "valor": "11",
+              "z_score": 2.5464008645417837,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            }
+          ]
+        },
+        "QtdeGaps": {
+          "quantidade_outliers": 338,
+          "percentual": 9.596819988642817,
+          "limites_iqr": {
+            "inferior": 3.5,
+            "superior": 7.5
+          },
+          "outliers_detalhes": [
+            {
+              "concurso": "1027",
+              "valor": "9",
+              "z_score": 2.7398851276677725,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2052",
+              "valor": "8",
+              "z_score": 1.9265105980280308,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "1028",
+              "valor": "3",
+              "z_score": 2.1403620501706766,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "1030",
+              "valor": "3",
+              "z_score": 2.1403620501706766,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "6",
+              "valor": "8",
+              "z_score": 1.9265105980280308,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "7",
+              "valor": "8",
+              "z_score": 1.9265105980280308,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "1031",
+              "valor": "8",
+              "z_score": 1.9265105980280308,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "3078",
+              "valor": "3",
+              "z_score": 2.1403620501706766,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "15",
+              "valor": "9",
+              "z_score": 2.7398851276677725,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "16",
+              "valor": "8",
+              "z_score": 1.9265105980280308,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            }
+          ]
+        },
+        "QtdeRepetidos": {
+          "quantidade_outliers": 117,
+          "percentual": 3.321976149914821,
+          "limites_iqr": {
+            "inferior": 5.0,
+            "superior": 13.0
+          },
+          "outliers_detalhes": [
+            {
+              "concurso": "1",
+              "valor": "0",
+              "z_score": 7.2194824102378465,
+              "metodos_detectaram": {
+                "zscore": true,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "1551",
+              "valor": "12",
+              "z_score": 2.4455224863821203,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "3089",
+              "valor": "12",
+              "z_score": 2.4455224863821203,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "19",
+              "valor": "12",
+              "z_score": 2.4455224863821203,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "3096",
+              "valor": "6",
+              "z_score": 2.3869799619278633,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2589",
+              "valor": "12",
+              "z_score": 2.4455224863821203,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2079",
+              "valor": "12",
+              "z_score": 2.4455224863821203,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "3109",
+              "valor": "6",
+              "z_score": 2.3869799619278633,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2088",
+              "valor": "6",
+              "z_score": 2.3869799619278633,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "49",
+              "valor": "12",
+              "z_score": 2.4455224863821203,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            }
+          ]
+        },
+        "SEQ": {
+          "quantidade_outliers": 344,
+          "percentual": 9.7671777399205,
+          "limites_iqr": {
+            "inferior": 6.5,
+            "superior": 10.5
+          },
+          "outliers_detalhes": [
+            {
+              "concurso": "1027",
+              "valor": 5.0,
+              "z_score": 2.6498705097533155,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2052",
+              "valor": 6.0,
+              "z_score": 1.8603432412646197,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "1028",
+              "valor": 11.0,
+              "z_score": 2.0872931011788607,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "1030",
+              "valor": 11.0,
+              "z_score": 2.0872931011788607,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "6",
+              "valor": 6.0,
+              "z_score": 1.8603432412646197,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "7",
+              "valor": 6.0,
+              "z_score": 1.8603432412646197,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "1031",
+              "valor": 6.0,
+              "z_score": 1.8603432412646197,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            },
+            {
+              "concurso": "3078",
+              "valor": 11.0,
+              "z_score": 2.0872931011788607,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "15",
+              "valor": 5.0,
+              "z_score": 2.6498705097533155,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "16",
+              "valor": 6.0,
+              "z_score": 1.8603432412646197,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": true,
+                "isolation_forest": false
+              }
+            }
+          ]
+        },
+        "DistanciaExtremos": {
+          "quantidade_outliers": 71,
+          "percentual": 2.015900056785917,
+          "limites_iqr": {
+            "inferior": 19.0,
+            "superior": 27.0
+          },
+          "outliers_detalhes": [
+            {
+              "concurso": "775",
+              "valor": "18",
+              "z_score": 3.7316079909180058,
+              "metodos_detectaram": {
+                "zscore": true,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "779",
+              "valor": "19",
+              "z_score": 2.951948303902925,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "782",
+              "valor": "16",
+              "z_score": 5.290927364948168,
+              "metodos_detectaram": {
+                "zscore": true,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2064",
+              "valor": "19",
+              "z_score": 2.951948303902925,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2065",
+              "valor": "18",
+              "z_score": 3.7316079909180058,
+              "metodos_detectaram": {
+                "zscore": true,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "23",
+              "valor": "19",
+              "z_score": 2.951948303902925,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "1562",
+              "valor": "17",
+              "z_score": 4.511267677933087,
+              "metodos_detectaram": {
+                "zscore": true,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "26",
+              "valor": "18",
+              "z_score": 3.7316079909180058,
+              "metodos_detectaram": {
+                "zscore": true,
+                "iqr": true,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "1823",
+              "valor": "19",
+              "z_score": 2.951948303902925,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            },
+            {
+              "concurso": "2081",
+              "valor": "19",
+              "z_score": 2.951948303902925,
+              "metodos_detectaram": {
+                "zscore": false,
+                "iqr": false,
+                "isolation_forest": true
+              }
+            }
+          ]
+        }
+      },
+      "concursos_multiplas_anomalias": {

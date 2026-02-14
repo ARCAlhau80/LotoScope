@@ -1,0 +1,625 @@
+[
+  {
+    "concurso": 3495,
+    "timestamp": "2025-09-25T09:00:21.157453",
+    "geradores_processados": {
+      "ia_numeros_repetidos": {
+        "analise": {
+          "resumo": {
+            "total_validacoes": 15,
+            "percentual_11_plus_medio": 1.4666666666666672,
+            "percentual_11_plus_maximo": 8.000000000000014,
+            "taxa_sucesso": 0.0,
+            "total_sucessos": 0,
+            "total_excelencias": 0,
+            "precisao_media": 59.37777777777778,
+            "precisao_maxima": 65.33333333333334,
+            "precisao_minima": 53.333333333333336,
+            "melhor_acerto_medio": 10.2,
+            "consistencia": "Alta",
+            "desvio_padrao_11_plus": 2.5597618936887407,
+            "desvio_padrao": 3.3756049820304797
+          },
+          "tendencias": {
+            "percentual_11_plus": -0.0714285714285714,
+            "precisao": 0.009523809523809388,
+            "acertos": -0.02857142857142857,
+            "direcao_evolucao": "Degradando"
+          },
+          "padroes": {
+            "volatilidade": "Normal",
+            "picos_performance": [],
+            "quedas_performance": [],
+            "comportamento_recente": "Estável"
+          },
+          "recomendacoes": [
+            "🚨 CRÍTICO: Menos de 30% das combinações atingem 11+ acertos",
+            "🔧 Revisar completamente a estratégia de seleção de números",
+            "💡 Considerar usar padrões históricos mais rigorosos",
+            "🔴 Última performance INSUFICIENTE - ação urgente necessária"
+          ]
+        },
+        "otimizacoes": {
+          "tipo": "neural_ia",
+          "parametros": {
+            "epochs": 200,
+            "learning_rate": 0.001
+          },
+          "acoes": [
+            "Aumentar épocas de treinamento",
+            "Reduzir taxa de aprendizado",
+            "Revisar arquitetura da rede neural"
+          ]
+        },
+        "historico_size": 15,
+        "aplicacao_sucesso": true
+      },
+      "gerador_academico_dinamico": {
+        "analise": {
+          "resumo": {
+            "total_validacoes": 15,
+            "percentual_11_plus_medio": 0,
+            "percentual_11_plus_maximo": 0,
+            "taxa_sucesso": 0.0,
+            "total_sucessos": 0,
+            "total_excelencias": 0,
+            "precisao_media": 52.266666666666666,
+            "precisao_maxima": 58.666666666666664,
+            "precisao_minima": 46.666666666666664,
+            "melhor_acerto_medio": 8.866666666666667,
+            "consistencia": "Alta",
+            "desvio_padrao_11_plus": 0.0,
+            "desvio_padrao": 3.641035959331199
+          },
+          "tendencias": {
+            "percentual_11_plus": 0.0,
+            "precisao": -0.24761904761904777,
+            "acertos": -0.02142857142857143,
+            "direcao_evolucao": "Estável"
+          },
+          "padroes": {
+            "volatilidade": "Normal",
+            "picos_performance": [],
+            "quedas_performance": [],
+            "comportamento_recente": "Estável"
+          },
+          "recomendacoes": [
+            "🚨 CRÍTICO: Menos de 30% das combinações atingem 11+ acertos",
+            "🔧 Revisar completamente a estratégia de seleção de números",
+            "💡 Considerar usar padrões históricos mais rigorosos",
+            "🔴 Última performance INSUFICIENTE - ação urgente necessária"
+          ]
+        },
+        "otimizacoes": {
+          "tipo": "academico",
+          "parametros": {
+            "janela_temporal": 150,
+            "peso_frequencia": 0.4,
+            "peso_ciclos": 0.3,
+            "peso_tendencias": 0.3
+          },
+          "acoes": [
+            "Ajustar janela temporal baseada em performance",
+            "Rebalancear pesos dos fatores acadêmicos",
+            "Incorporar mais dados históricos"
+          ]
+        },
+        "historico_size": 15,
+        "aplicacao_sucesso": true
+      },
+      "super_gerador_ia": {
+        "analise": {
+          "resumo": {
+            "total_validacoes": 15,
+            "percentual_11_plus_medio": 0.9333333333333329,
+            "percentual_11_plus_maximo": 6.0,
+            "taxa_sucesso": 0.0,
+            "total_sucessos": 0,
+            "total_excelencias": 0,
+            "precisao_media": 58.75555555555556,
+            "precisao_maxima": 64.0,
+            "precisao_minima": 53.333333333333336,
+            "melhor_acerto_medio": 10.2,
+            "consistencia": "Alta",
+            "desvio_padrao_11_plus": 1.830950832868254,
+            "desvio_padrao": 2.8714983276162
+          },
+          "tendencias": {
+            "percentual_11_plus": -0.05000000000000005,
+            "precisao": 0.06190476190476171,
+            "acertos": -0.0035714285714285713,
+            "direcao_evolucao": "Degradando"
+          },
+          "padroes": {
+            "volatilidade": "Normal",
+            "picos_performance": [],
+            "quedas_performance": [],
+            "comportamento_recente": "Ascendente"
+          },
+          "recomendacoes": [
+            "🚨 CRÍTICO: Menos de 30% das combinações atingem 11+ acertos",
+            "🔧 Revisar completamente a estratégia de seleção de números",
+            "💡 Considerar usar padrões históricos mais rigorosos",
+            "📈 Tendência de melhoria - manter direção atual",
+            "🔴 Última performance INSUFICIENTE - ação urgente necessária"
+          ]
+        },
+        "otimizacoes": {
+          "tipo": "super_integrado",
+          "parametros": {
+            "peso_ia": 0.5,
+            "peso_academico": 0.3,
+            "peso_heuristico": 0.2,
+            "diversidade_minima": 8
+          },
+          "acoes": [
+            "Rebalancear componentes IA vs Acadêmico",
+            "Aumentar diversidade se volatilidade alta",
+            "Otimizar integração entre módulos"
+          ]
+        },
+        "historico_size": 15,
+        "aplicacao_sucesso": true
+      },
+      "sistema_modelo_temporal_79": {
+        "analise": {
+          "resumo": {
+            "total_validacoes": 15,
+            "percentual_11_plus_medio": 2.533333333333334,
+            "percentual_11_plus_maximo": 12.0,
+            "taxa_sucesso": 0.0,
+            "total_sucessos": 0,
+            "total_excelencias": 0,
+            "precisao_media": 60.53333333333333,
+            "precisao_maxima": 68.0,
+            "precisao_minima": 56.00000000000001,
+            "melhor_acerto_medio": 10.533333333333333,
+            "consistencia": "Alta",
+            "desvio_padrao_11_plus": 3.6619016657365098,
+            "desvio_padrao": 3.447566429485339
+          },
+          "tendencias": {
+            "percentual_11_plus": -0.12142857142857127,
+            "precisao": -0.14761904761904732,
+            "acertos": 0.03571428571428571,
+            "direcao_evolucao": "Degradando"
+          },
+          "padroes": {
+            "volatilidade": "Normal",
+            "picos_performance": [],
+            "quedas_performance": [],
+            "comportamento_recente": "Ascendente"
+          },
+          "recomendacoes": [
+            "🚨 CRÍTICO: Menos de 30% das combinações atingem 11+ acertos",
+            "🔧 Revisar completamente a estratégia de seleção de números",
+            "💡 Considerar usar padrões históricos mais rigorosos",
+            "📈 Tendência de melhoria - manter direção atual",
+            "🔴 Última performance INSUFICIENTE - ação urgente necessária"
+          ]
+        },
+        "otimizacoes": {
+          "tipo": "temporal_avancado",
+          "parametros": {
+            "janela_otima": 110,
+            "peso_recencia": 0.6,
+            "peso_sazonalidade": 0.4,
+            "suavizacao": 0.1
+          },
+          "acoes": [
+            "Manter configuração vencedora (79.9%)",
+            "Ajustar apenas se performance degradar",
+            "Monitorar sazonalidade dos padrões"
+          ]
+        },
+        "historico_size": 15,
+        "aplicacao_sucesso": true
+      },
+      "piramide_invertida_dinamica": {
+        "analise": {
+          "resumo": {
+            "total_validacoes": 15,
+            "percentual_11_plus_medio": 1.4666666666666657,
+            "percentual_11_plus_maximo": 12.0,
+            "taxa_sucesso": 0.0,
+            "total_sucessos": 0,
+            "total_excelencias": 0,
+            "precisao_media": 58.4,
+            "precisao_maxima": 68.0,
+            "precisao_minima": 52.0,
+            "melhor_acerto_medio": 10.266666666666667,
+            "consistencia": "Alta",
+            "desvio_padrao_11_plus": 3.159264531651692,
+            "desvio_padrao": 4.370173074194281
+          },
+          "tendencias": {
+            "percentual_11_plus": -0.14285714285714288,
+            "precisao": -0.3333333333333334,
+            "acertos": -0.1,
+            "direcao_evolucao": "Degradando"
+          },
+          "padroes": {
+            "volatilidade": "Normal",
+            "picos_performance": [],
+            "quedas_performance": [
+              {
+                "concurso": 3492,
+                "queda": 16.0
+              }
+            ],
+            "comportamento_recente": "Descendente"
+          },
+          "recomendacoes": [
+            "🚨 CRÍTICO: Menos de 30% das combinações atingem 11+ acertos",
+            "🔧 Revisar completamente a estratégia de seleção de números",
+            "💡 Considerar usar padrões históricos mais rigorosos",
+            "📉 Tendência de queda detectada - revisar mudanças recentes",
+            "🔴 Última performance INSUFICIENTE - ação urgente necessária"
+          ]
+        },
+        "otimizacoes": {
+          "tipo": "piramide_dinamica",
+          "parametros": {
+            "sensibilidade_transicao": 0.3,
+            "peso_faixas_baixas": 0.7,
+            "peso_faixas_altas": 0.3
+          },
+          "acoes": [
+            "Ajustar sensibilidade às transições",
+            "Priorizar números saindo de faixas baixas",
+            "Calibrar detecção de sequências dominantes"
+          ]
+        },
+        "historico_size": 15,
+        "aplicacao_sucesso": true
+      },
+      "sistema_neural_v7": {
+        "analise": {
+          "resumo": {
+            "total_validacoes": 15,
+            "percentual_11_plus_medio": 2.266666666666667,
+            "percentual_11_plus_maximo": 18.00000000000002,
+            "taxa_sucesso": 0.0,
+            "total_sucessos": 0,
+            "total_excelencias": 0,
+            "precisao_media": 60.266666666666666,
+            "precisao_maxima": 72.00000000000001,
+            "precisao_minima": 54.666666666666664,
+            "melhor_acerto_medio": 10.533333333333333,
+            "consistencia": "Alta",
+            "desvio_padrao_11_plus": 4.832430129073882,
+            "desvio_padrao": 4.161806689484141
+          },
+          "tendencias": {
+            "percentual_11_plus": 0.13571428571428626,
+            "precisao": 0.09523809523809573,
+            "acertos": 0.06428571428571428,
+            "direcao_evolucao": "Melhorando"
+          },
+          "padroes": {
+            "volatilidade": "Normal",
+            "picos_performance": [],
+            "quedas_performance": [],
+            "comportamento_recente": "Ascendente"
+          },
+          "recomendacoes": [
+            "🚨 CRÍTICO: Menos de 30% das combinações atingem 11+ acertos",
+            "🔧 Revisar completamente a estratégia de seleção de números",
+            "💡 Considerar usar padrões históricos mais rigorosos",
+            "📈 Tendência de melhoria - manter direção atual",
+            "🔴 Última performance INSUFICIENTE - ação urgente necessária"
+          ]
+        },
+        "otimizacoes": {
+          "tipo": "neural_v7",
+          "parametros": {
+            "enfase_altos_baixos": 0.8,
+            "threshold_reversao": 0.75,
+            "ensemble_size": 5
+          },
+          "acoes": [
+            "Calibrar detecção de reversão Altos/Baixos",
+            "Ajustar threshold de confiança",
+            "Otimizar ensemble de modelos"
+          ]
+        },
+        "historico_size": 15,
+        "aplicacao_sucesso": true
+      },
+      "sistema_hibrido_v3": {
+        "analise": {
+          "resumo": {
+            "total_validacoes": 15,
+            "percentual_11_plus_medio": 3.1999999999999984,
+            "percentual_11_plus_maximo": 19.999999999999993,
+            "taxa_sucesso": 0.0,
+            "total_sucessos": 0,
+            "total_excelencias": 0,
+            "precisao_media": 60.8,
+            "precisao_maxima": 73.33333333333333,
+            "precisao_minima": 54.666666666666664,
+            "melhor_acerto_medio": 10.666666666666666,
+            "consistencia": "Alta",
+            "desvio_padrao_11_plus": 5.492852498604758,
+            "desvio_padrao": 4.775599355719572
+          },
+          "tendencias": {
+            "percentual_11_plus": 0.6857142857142853,
+            "precisao": 0.6333333333333331,
+            "acertos": 0.07857142857142857,
+            "direcao_evolucao": "Melhorando"
+          },
+          "padroes": {
+            "volatilidade": "Normal",
+            "picos_performance": [],
+            "quedas_performance": [],
+            "comportamento_recente": "Ascendente"
+          },
+          "recomendacoes": [
+            "🚨 CRÍTICO: Menos de 30% das combinações atingem 11+ acertos",
+            "🔧 Revisar completamente a estratégia de seleção de números",
+            "💡 Considerar usar padrões históricos mais rigorosos",
+            "📈 Tendência de melhoria - manter direção atual",
+            "🔴 Última performance INSUFICIENTE - ação urgente necessária"
+          ]
+        },
+        "otimizacoes": {
+          "tipo": "hibrido_adaptativo",
+          "parametros": {
+            "peso_neural": 0.6,
+            "peso_metadados": 0.4,
+            "threshold_extremo": 0.8,
+            "threshold_medio": 0.2
+          },
+          "acoes": [
+            "Ajustar equilíbrio neural vs metadados",
+            "Calibrar detecção de valores extremos",
+            "Refinar lógica adaptativa"
+          ]
+        },
+        "historico_size": 15,
+        "aplicacao_sucesso": true
+      },
+      "gerador_complementacao": {
+        "analise": {
+          "resumo": {
+            "total_validacoes": 15,
+            "percentual_11_plus_medio": 2.9333333333333345,
+            "percentual_11_plus_maximo": 9.999999999999986,
+            "taxa_sucesso": 0.0,
+            "total_sucessos": 0,
+            "total_excelencias": 0,
+            "precisao_media": 60.17777777777778,
+            "precisao_maxima": 66.66666666666666,
+            "precisao_minima": 52.0,
+            "melhor_acerto_medio": 10.4,
+            "consistencia": "Alta",
+            "desvio_padrao_11_plus": 3.369329451445933,
+            "desvio_padrao": 4.4183360127646605
+          },
+          "tendencias": {
+            "percentual_11_plus": 0.0642857142857146,
+            "precisao": -0.038095238095238085,
+            "acertos": -0.03571428571428571,
+            "direcao_evolucao": "Melhorando"
+          },
+          "padroes": {
+            "volatilidade": "Normal",
+            "picos_performance": [],
+            "quedas_performance": [],
+            "comportamento_recente": "Estável"
+          },
+          "recomendacoes": [
+            "🚨 CRÍTICO: Menos de 30% das combinações atingem 11+ acertos",
+            "🔧 Revisar completamente a estratégia de seleção de números",
+            "💡 Considerar usar padrões históricos mais rigorosos",
+            "🔴 Última performance INSUFICIENTE - ação urgente necessária"
+          ]
+        },
+        "otimizacoes": {
+          "tipo": "complementacao_matematica",
+          "parametros": {
+            "criterio_selecao_20": "frequencia_balanceada",
+            "peso_historico": 0.7,
+            "peso_tendencia": 0.3
+          },
+          "acoes": [
+            "Otimizar seleção dos 20 números base",
+            "Melhorar critérios de complementação",
+            "Validar cobertura matemática C(5,3)"
+          ]
+        },
+        "historico_size": 15,
+        "aplicacao_sucesso": true
+      },
+      "sistema_escalonado_v4": {
+        "analise": {
+          "resumo": {
+            "total_validacoes": 15,
+            "percentual_11_plus_medio": 1.3333333333333328,
+            "percentual_11_plus_maximo": 6.0,
+            "taxa_sucesso": 0.0,
+            "total_sucessos": 0,
+            "total_excelencias": 0,
+            "precisao_media": 59.37777777777778,
+            "precisao_maxima": 64.0,
+            "precisao_minima": 54.666666666666664,
+            "melhor_acerto_medio": 10,
+            "consistencia": "Alta",
+            "desvio_padrao_11_plus": 2.2253945610567474,
+            "desvio_padrao": 2.889133078812733
+          },
+          "tendencias": {
+            "percentual_11_plus": 0.23571428571428577,
+            "precisao": 0.13333333333333347,
+            "acertos": 0.02142857142857143,
+            "direcao_evolucao": "Melhorando"
+          },
+          "padroes": {
+            "volatilidade": "Baixa",
+            "picos_performance": [],
+            "quedas_performance": [],
+            "comportamento_recente": "Estável"
+          },
+          "recomendacoes": [
+            "🚨 CRÍTICO: Menos de 30% das combinações atingem 11+ acertos",
+            "🔧 Revisar completamente a estratégia de seleção de números",
+            "💡 Considerar usar padrões históricos mais rigorosos",
+            "🔴 Última performance INSUFICIENTE - ação urgente necessária"
+          ]
+        },
+        "otimizacoes": {
+          "tipo": "escalonado_filtrado",
+          "parametros": {
+            "niveis_filtro": 8,
+            "peso_neural_ranking": 0.6,
+            "peso_matematico": 0.4
+          },
+          "acoes": [
+            "Ajustar níveis de filtro redutor",
+            "Calibrar peso do ranking neural",
+            "Otimizar seleção TOP combinações"
+          ]
+        },
+        "historico_size": 15,
+        "aplicacao_sucesso": true
+      },
+      "gerador_zona_conforto": {
+        "analise": {
+          "resumo": {
+            "total_validacoes": 15,
+            "percentual_11_plus_medio": 1.8666666666666671,
+            "percentual_11_plus_maximo": 9.999999999999986,
+            "taxa_sucesso": 0.0,
+            "total_sucessos": 0,
+            "total_excelencias": 0,
+            "precisao_media": 59.111111111111114,
+            "precisao_maxima": 66.66666666666666,
+            "precisao_minima": 50.66666666666666,
+            "melhor_acerto_medio": 10.333333333333334,
+            "consistencia": "Alta",
+            "desvio_padrao_11_plus": 3.24844285041017,
+            "desvio_padrao": 4.206319257156035
+          },
+          "tendencias": {
+            "percentual_11_plus": 0.4214285714285712,
+            "precisao": 0.595238095238095,
+            "acertos": 0.11071428571428571,
+            "direcao_evolucao": "Melhorando"
+          },
+          "padroes": {
+            "volatilidade": "Normal",
+            "picos_performance": [],
+            "quedas_performance": [],
+            "comportamento_recente": "Estável"
+          },
+          "recomendacoes": [
+            "🚨 CRÍTICO: Menos de 30% das combinações atingem 11+ acertos",
+            "🔧 Revisar completamente a estratégia de seleção de números",
+            "💡 Considerar usar padrões históricos mais rigorosos",
+            "🔴 Última performance INSUFICIENTE - ação urgente necessária"
+          ]
+        },
+        "otimizacoes": {
+          "tipo": "zona_conforto",
+          "parametros": {
+            "percentual_zona_1_17": 0.8,
+            "max_sequencia": 12,
+            "diversidade_restante": 0.6
+          },
+          "acoes": [
+            "Ajustar percentual da zona 1-17",
+            "Calibrar tamanho máximo de sequências",
+            "Equilibrar números restantes (18-25)"
+          ]
+        },
+        "historico_size": 15,
+        "aplicacao_sucesso": true
+      }
+    },
+    "resumo_otimizacoes": {
+      "total_geradores_otimizados": 10,
+      "tipos_otimizacao": {
+        "neural_ia": 1,
+        "academico": 1,
+        "super_integrado": 1,
+        "temporal_avancado": 1,
+        "piramide_dinamica": 1,
+        "neural_v7": 1,
+        "hibrido_adaptativo": 1,
+        "complementacao_matematica": 1,
+        "escalonado_filtrado": 1,
+        "zona_conforto": 1
+      },
+      "total_acoes_sugeridas": 30,
+      "melhoria_media_esperada": 12.0,
+      "geradores_com_maior_potencial": [
+        "ia_numeros_repetidos",
+        "gerador_academico_dinamico",
+        "super_gerador_ia"
+      ]
+    },
+    "impacto_estimado": {
+      "ia_numeros_repetidos": {
+        "melhoria_esperada": 12.0,
+        "confianca_estimativa": 0.7,
+        "prazo_esperado": "1-2 validações",
+        "tipo_impacto": "Significativo"
+      },
+      "gerador_academico_dinamico": {
+        "melhoria_esperada": 12.0,
+        "confianca_estimativa": 0.7,
+        "prazo_esperado": "1-2 validações",
+        "tipo_impacto": "Significativo"
+      },
+      "super_gerador_ia": {
+        "melhoria_esperada": 12.0,
+        "confianca_estimativa": 0.7,
+        "prazo_esperado": "1-2 validações",
+        "tipo_impacto": "Significativo"
+      },
+      "sistema_modelo_temporal_79": {
+        "melhoria_esperada": 12.0,
+        "confianca_estimativa": 0.7,
+        "prazo_esperado": "1-2 validações",
+        "tipo_impacto": "Significativo"
+      },
+      "piramide_invertida_dinamica": {
+        "melhoria_esperada": 12.0,
+        "confianca_estimativa": 0.7,
+        "prazo_esperado": "1-2 validações",
+        "tipo_impacto": "Significativo"
+      },
+      "sistema_neural_v7": {
+        "melhoria_esperada": 12.0,
+        "confianca_estimativa": 0.7,
+        "prazo_esperado": "1-2 validações",
+        "tipo_impacto": "Significativo"
+      },
+      "sistema_hibrido_v3": {
+        "melhoria_esperada": 12.0,
+        "confianca_estimativa": 0.7,
+        "prazo_esperado": "1-2 validações",
+        "tipo_impacto": "Significativo"
+      },
+      "gerador_complementacao": {
+        "melhoria_esperada": 12.0,
+        "confianca_estimativa": 0.7,
+        "prazo_esperado": "1-2 validações",
+        "tipo_impacto": "Significativo"
+      },
+      "sistema_escalonado_v4": {
+        "melhoria_esperada": 12.0,
+        "confianca_estimativa": 0.7,
+        "prazo_esperado": "1-2 validações",
+        "tipo_impacto": "Significativo"
+      },
+      "gerador_zona_conforto": {
+        "melhoria_esperada": 12.0,
+        "confianca_estimativa": 0.7,
+        "prazo_esperado": "1-2 validações",
+        "tipo_impacto": "Significativo"
+      }
+    }
+  }
+]

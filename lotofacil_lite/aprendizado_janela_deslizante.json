@@ -1,0 +1,110 @@
+{
+  "sessoes": [
+    {
+      "data": "2026-01-16T11:42:00.238985",
+      "janelas_processadas": 3556,
+      "duracao_segundos": 437.659964,
+      "estatisticas": {
+        "atrasados": {
+          "acertos": {
+            "8": 42200,
+            "10": 40825,
+            "11": 14978,
+            "9": 57043,
+            "12": 2823,
+            "7": 16144,
+            "6": 2875,
+            "5": 177,
+            "13": 253,
+            "14": 7
+          },
+          "lucro_total": 160223.0,
+          "custo_total": 620637.5
+        },
+        "quentes": {
+          "acertos": {
+            "7": 9191,
+            "8": 24804,
+            "6": 1634,
+            "9": 33813,
+            "10": 24142,
+            "12": 1632,
+            "11": 9081,
+            "13": 171,
+            "5": 135,
+            "14": 15
+          },
+          "lucro_total": 107400.0,
+          "custo_total": 366163.0
+        },
+        "equilibrada": {
+          "acertos": {
+            "8": 34060,
+            "7": 12248,
+            "9": 47141,
+            "10": 33896,
+            "11": 12280,
+            "6": 2066,
+            "5": 128,
+            "12": 2280,
+            "13": 168,
+            "14": 5
+          },
+          "lucro_total": 128760.0,
+          "custo_total": 504952.0
+        }
+      }
+    }
+  ],
+  "melhor_estrategia": "quentes",
+  "parametros_otimos": {
+    "peso_atrasados": 0.8376068376068376,
+    "peso_quentes": 1.1196581196581197,
+    "peso_equilibrada": 1.0427350427350428,
+    "limite_atraso_minimo": 4,
+    "limite_frequencia_quente": 0.6
+  },
+  "insights": [
+    {
+      "data": "2026-01-16T11:42:00.238985",
+      "insight": "Melhor estratégia: QUENTES; Atrasados: 18061 acertos premiados; Quentes: 10899 acertos premiados; Equilibrada: 14733 acertos premiados"
+    }
+  ],
+  "taxa_sucesso_global": {
+    "atrasados": {
+      "tentativas": 3556,
+      "sucessos": 196
+    },
+    "quentes": {
+      "tentativas": 3556,
+      "sucessos": 262
+    },
+    "equilibrada": {
+      "tentativas": 3556,
+      "sucessos": 244
+    }
+  },
+  "acertos_por_estrategia": {
+    "atrasados": {
+      "11": 14978,
+      "12": 2823,
+      "13": 253,
+      "14": 7,
+      "15": 0
+    },
+    "quentes": {
+      "11": 9081,
+      "12": 1632,
+      "13": 171,
+      "14": 15,
+      "15": 0
+    },
+    "equilibrada": {
+      "11": 12280,
+      "12": 2280,
+      "13": 168,
+      "14": 5,
+      "15": 0
+    }
+  }
+}

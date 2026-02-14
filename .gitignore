@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Database files (sensitive data)
+*.db
+*.sqlite
+*.sqlite3
+
+# Modelos ML grandes (>100MB)
+*.pkl
+lotofacil_lite/dados/ia_autonoma_modelo.pkl
+
+# CSV grandes (combinações)
+COMBINACOES_LOTOFACIL20_COMPLETO.csv
+
+# Arquivos de dados gerados
+dados/*.txt
+!dados/.gitkeep
+graficos_posicionais/
+*.png
+
+# Logs e temporários
+*.log
+*.tmp
+temp_*.py
+
+# Benchmark e testes locais
+teste_benchmark.txt
+
+# Arquivos do Windows
+Thumbs.db
+Desktop.ini
+
+# Arquivos sensíveis
+*.env
+.env.local
+
+# Serena (AI assistant context)
+.serena/
+
+# Cache
+.cache/

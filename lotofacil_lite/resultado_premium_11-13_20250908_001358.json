@@ -1,0 +1,28 @@
+{
+  "timestamp": "08/09/2025 00:13:58",
+  "tipo_estrategia": "assimetrica_premium",
+  "faixa_alvo": "11-13",
+  "configuracao": {
+    "combinacoes_iniciais": 20,
+    "filtro_final": 5,
+    "score_minimo": 50,
+    "faixa_alvo": "11-13"
+  },
+  "estatisticas": {
+    "combinacoes_iniciais": 20,
+    "combinacoes_avaliadas": 5,
+    "combinacoes_finais": 3,
+    "score_maximo": 20.95,
+    "score_medio": 20.95,
+    "classificacao": {
+      "excelentes": 0,
+      "boas": 0,
+      "regulares": 3
+    }
+  },
+  "combinacoes_premium": [
+    {
+      "posicao": 1,
+      "combinacao": [
+        1,
+        

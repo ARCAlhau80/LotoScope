@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-09-25T09:00:21.417318",
+  "parametros": {
+    "criterio_selecao_20": "frequencia_balanceada",
+    "peso_historico": 0.7,
+    "peso_tendencia": 0.3
+  },
+  "acoes_sugeridas": [
+    "Otimizar seleção dos 20 números base",
+    "Melhorar critérios de complementação",
+    "Validar cobertura matemática C(5,3)"
+  ],
+  "tipo_otimizacao": "complementacao_matematica",
+  "aplicado": false,
+  "versao": 1
+}

@@ -1,0 +1,14 @@
+{
+  "sistema_ativo": true,
+  "auto_backup": true,
+  "auto_validacao": true,
+  "intervalo_relatorios_dias": 7,
+  "meta_precisao": 0.75,
+  "meta_11_acertos_percentual": 0.3,
+  "ultima_execucao": "2025-08-23T14:44:54.711430",
+  "configuracoes_avancadas": {
+    "max_backups": 10,
+    "dias_validacao": 30,
+    "threshold_melhoria": 0.05
+  }
+}

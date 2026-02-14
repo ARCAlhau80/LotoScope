@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-10-07T11:12:36.373218",
+  "gerador": "gerador_academico_dinamico.py",
+  "configuracao": {
+    "zona_foco": [
+      1,
+      12
+    ],
+    "peso_correlacoes": 0.8,
+    "soma_alvo": [
+      160,
+      180
+    ],
+    "modo_inversao": true
+  },
+  "aplicado_automaticamente": true
+}

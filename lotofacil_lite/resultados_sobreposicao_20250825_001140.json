@@ -1,0 +1,58 @@
+{
+  "timestamp": "2025-08-25T00:11:40.933576",
+  "metadata": {
+    "versao_teste": "2.0",
+    "autor": "AR CALHAU",
+    "descricao": "Teste de estratégias de sobreposição com validação temporal"
+  },
+  "resultados_detalhados": {
+    "alta_sobreposicao": {
+      "acertos_totais": [],
+      "acertos_maximos": [],
+      "acertos_por_concurso": [],
+      "roi_acumulado": 0.0,
+      "combinacoes_11_plus": 0,
+      "combinacoes_13_plus": 0,
+      "sobreposicoes_reais": []
+    },
+    "media_sobreposicao": {
+      "acertos_totais": [],
+      "acertos_maximos": [],
+      "acertos_por_concurso": [],
+      "roi_acumulado": 0.0,
+      "combinacoes_11_plus": 0,
+      "combinacoes_13_plus": 0,
+      "sobreposicoes_reais": []
+    },
+    "baixa_sobreposicao": {
+      "acertos_totais": [],
+      "acertos_maximos": [],
+      "acertos_por_concurso": [],
+      "roi_acumulado": 0.0,
+      "combinacoes_11_plus": 0,
+      "combinacoes_13_plus": 0,
+      "sobreposicoes_reais": []
+    }
+  },
+  "analise_comparativa": {},
+  "estrategias_testadas": {
+    "alta_sobreposicao": {
+      "nome": "Alta Sobreposição",
+      "numeros_comuns_min": 16,
+      "numeros_comuns_max": 18,
+      "descricao": "16-18 números comuns entre combinações"
+    },
+    "media_sobreposicao": {
+      "nome": "Média Sobreposição",
+      "numeros_comuns_min": 12,
+      "numeros_comuns_max": 15,
+      "descricao": "12-15 números comuns entre combinações"
+    },
+    "baixa_sobreposicao": {
+      "nome": "Baixa Sobreposição",
+      "numeros_comuns_min": 8,
+      "numeros_comuns_max": 11,
+      "descricao": "8-11 números comuns entre combinações"
+    }
+  }
+}

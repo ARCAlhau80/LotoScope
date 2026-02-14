@@ -1,0 +1,131 @@
+======================================================================
+🤖 RELATÓRIO DE APRENDIZADO COM MACHINE LEARNING (10 ALGORITMOS)
+======================================================================
+
+📅 Data: 2026-01-16T18:36:31.445299
+🔢 Sessão #: 116
+📊 Janelas: 3557
+⏱️ Duração: 15.9s
+
+----------------------------------------------------------------------
+🎓 DISTRIBUIÇÃO DE ALGORITMOS (META-BANDIT)
+----------------------------------------------------------------------
+
+   THOMPSON: 2697 seleções (75.8%)
+   UCB1: 852 seleções (24.0%)
+   ENSEMBLE: 5 seleções (0.1%)
+   EXP3: 3 seleções (0.1%)
+
+----------------------------------------------------------------------
+🎰 MULTI-ARMED BANDITS
+----------------------------------------------------------------------
+
+   THOMPSON SAMPLING:
+      Atrasados: E[R]=-0.7171 (n=175231)
+      Quentes: E[R]=-0.7277 (n=74196)
+      Equilibrada: E[R]=-0.7236 (n=166638)
+
+   Melhor por E[reward]: ATRASADOS
+
+   Seleções por estratégia:
+      Equilibrada: 233 (6.6%)
+      Atrasados: 3104 (87.3%)
+      Quentes: 220 (6.2%)
+
+----------------------------------------------------------------------
+🔢 FEATURE IMPORTANCE - Top Números
+----------------------------------------------------------------------
+
+   Top 10 números mais importantes: [8, 17, 10, 16, 2, 9, 21, 15, 22, 13]
+   (Números que mais contribuem para acertos)
+
+----------------------------------------------------------------------
+📈 ESTATÍSTICAS POR ESTRATÉGIA
+----------------------------------------------------------------------
+
+🎯 ATRASADOS
+   Vezes selecionada: 3104
+   ROI: -69.6%
+   Reward médio: -0.6893
+   Custo: R$ 76510.00
+   Lucro líquido: R$ -53266.00
+   Acertos 11+: 2388
+      14 acertos: 3x
+      13 acertos: 39x
+      12 acertos: 351x
+      11 acertos: 1995x
+
+🎯 QUENTES
+   Vezes selecionada: 220
+   ROI: -76.5%
+   Reward médio: -0.7650
+   Custo: R$ 21717.50
+   Lucro líquido: R$ -16614.50
+   Acertos 11+: 614
+      13 acertos: 4x
+      12 acertos: 99x
+      11 acertos: 511x
+
+🎯 EQUILIBRADA
+   Vezes selecionada: 233
+   ROI: -75.0%
+   Reward médio: -0.7498
+   Custo: R$ 26267.50
+   Lucro líquido: R$ -19694.50
+   Acertos 11+: 771
+      13 acertos: 12x
+      12 acertos: 120x
+      11 acertos: 639x
+
+----------------------------------------------------------------------
+⚙️ HIPERPARÂMETROS (Bayesian Optimization / TPE)
+----------------------------------------------------------------------
+
+   limite_atraso_minimo: 6.6383
+   limite_frequencia_quente: 0.6175
+   peso_atrasados_mix: 4.9722
+   peso_quentes_mix: 5.6947
+
+----------------------------------------------------------------------
+📊 EVOLUÇÃO DO APRENDIZADO
+----------------------------------------------------------------------
+
+   ROI médio atual: -73.70%
+   ROI médio anterior: -100.00%
+   Delta: 📈 +26.30%
+
+   ✅ SISTEMA MELHOROU NESTA SESSÃO!
+
+======================================================================
+🎓 10 ALGORITMOS ACADÊMICOS IMPLEMENTADOS
+======================================================================
+
+   1. THOMPSON SAMPLING (Auer et al.)
+      Convergência assintótica garantida para estratégia ótima.
+
+   2. UCB1 - Upper Confidence Bound (Auer et al., 2002)
+      Bound otimista determinístico para exploração.
+
+   3. EXP3 - Adversarial Bandit (Auer et al., 2002)
+      Robusto a mudanças de distribuição.
+
+   4. BAYESIAN OPTIMIZATION / TPE
+      Otimização de hiperparâmetros com menos avaliações.
+
+   5. GENETIC ALGORITHM (Holland, 1975)
+      Evolui combinações via crossover, mutação e seleção.
+
+   6. SIMULATED ANNEALING (Kirkpatrick et al., 1983)
+      Escape de mínimos locais via temperatura.
+
+   7. ENSEMBLE LEARNING
+      Combina votos de múltiplos algoritmos.
+
+   8. EXPONENTIAL MOVING AVERAGE (EMA)
+      Detecta mudanças de tendência rapidamente.
+
+   9. FEATURE IMPORTANCE
+      Identifica números/padrões mais importantes.
+
+   10. META-BANDIT (UCB sobre algoritmos)
+       Seleciona qual algoritmo usar baseado em performance.

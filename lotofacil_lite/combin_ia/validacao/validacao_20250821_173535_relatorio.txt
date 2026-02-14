@@ -1,0 +1,226 @@
+🎯 RELATÓRIO DE VALIDAÇÃO - SUPER-COMBINAÇÕES IA
+=================================================================
+Validado em: 2025-08-21 17:35:35
+Arquivo origem: combin_ia/super_combinacoes\super_combinacoes_20250821_173535.json
+
+📊 PERFORMANCE GERAL:
+------------------------------
+Melhor acerto geral: 13 números
+Média dos máximos: 11.4
+Média geral: 9.8
+Consistência: 0.43
+
+🏆 SUPER-COMBINAÇÃO DESTAQUE:
+-----------------------------------
+Combinação: 1,2,6,8,9,10,13,14,15,18,19,20,21,23,25
+Melhor acerto: 13
+Média: 9.6
+Performance prevista: 50.0
+Confiança IA: 95.0%
+
+💡 RECOMENDAÇÕES:
+--------------------
+1. Performance satisfatória. Continuar monitoramento.
+
+📋 RESULTADOS DETALHADOS:
+------------------------------
+Super-combinação 1:
+  Máximo: 12 | Médio: 10.4 | Mínimo: 9
+  Performances: BOA(2) REGULAR(3) 
+
+Super-combinação 2:
+  Máximo: 11 | Médio: 10.4 | Mínimo: 9
+  Performances: BOA(3) REGULAR(2) 
+
+Super-combinação 3:
+  Máximo: 12 | Médio: 9.8 | Mínimo: 7
+  Performances: BOA(1) REGULAR(3) BAIXA(1) 
+
+Super-combinação 4:
+  Máximo: 12 | Médio: 8.8 | Mínimo: 6
+  Performances: REGULAR(2) BAIXA(2) BOA(1) 
+
+Super-combinação 5:
+  Máximo: 12 | Médio: 9.8 | Mínimo: 8
+  Performances: REGULAR(2) BOA(2) BAIXA(1) 
+
+Super-combinação 6:
+  Máximo: 11 | Médio: 9.6 | Mínimo: 9
+  Performances: BOA(1) REGULAR(4) 
+
+Super-combinação 7:
+  Máximo: 11 | Médio: 10.0 | Mínimo: 9
+  Performances: BOA(1) REGULAR(4) 
+
+Super-combinação 8:
+  Máximo: 11 | Médio: 10.0 | Mínimo: 9
+  Performances: REGULAR(4) BOA(1) 
+
+Super-combinação 9:
+  Máximo: 10 | Médio: 9.2 | Mínimo: 8
+  Performances: REGULAR(4) BAIXA(1) 
+
+Super-combinação 10:
+  Máximo: 11 | Médio: 9.8 | Mínimo: 9
+  Performances: BOA(1) REGULAR(4) 
+
+Super-combinação 11:
+  Máximo: 11 | Médio: 9.6 | Mínimo: 8
+  Performances: BOA(1) REGULAR(3) BAIXA(1) 
+
+Super-combinação 12:
+  Máximo: 12 | Médio: 10.0 | Mínimo: 7
+  Performances: REGULAR(2) BOA(2) BAIXA(1) 
+
+Super-combinação 13:
+  Máximo: 11 | Médio: 8.8 | Mínimo: 7
+  Performances: BOA(1) BAIXA(3) REGULAR(1) 
+
+Super-combinação 14:
+  Máximo: 11 | Médio: 10.2 | Mínimo: 10
+  Performances: REGULAR(4) BOA(1) 
+
+Super-combinação 15:
+  Máximo: 11 | Médio: 9.6 | Mínimo: 8
+  Performances: BOA(1) BAIXA(1) REGULAR(3) 
+
+Super-combinação 16:
+  Máximo: 11 | Médio: 10.0 | Mínimo: 8
+  Performances: REGULAR(1) BOA(3) BAIXA(1) 
+
+Super-combinação 17:
+  Máximo: 11 | Médio: 9.8 | Mínimo: 9
+  Performances: BOA(1) REGULAR(4) 
+
+Super-combinação 18:
+  Máximo: 12 | Médio: 10.6 | Mínimo: 9
+  Performances: REGULAR(2) BOA(3) 
+
+Super-combinação 19:
+  Máximo: 10 | Médio: 8.8 | Mínimo: 6
+  Performances: REGULAR(4) BAIXA(1) 
+
+Super-combinação 20:
+  Máximo: 11 | Médio: 9.4 | Mínimo: 7
+  Performances: REGULAR(2) BAIXA(1) BOA(2) 
+
+Super-combinação 21:
+  Máximo: 11 | Médio: 10.0 | Mínimo: 8
+  Performances: REGULAR(2) BAIXA(1) BOA(2) 
+
+Super-combinação 22:
+  Máximo: 11 | Médio: 10.2 | Mínimo: 8
+  Performances: BOA(3) REGULAR(1) BAIXA(1) 
+
+Super-combinação 23:
+  Máximo: 13 | Médio: 9.6 | Mínimo: 8
+  Performances: EXCELENTE(1) REGULAR(3) BAIXA(1) 
+
+Super-combinação 24:
+  Máximo: 12 | Médio: 9.6 | Mínimo: 9
+  Performances: BOA(1) REGULAR(4) 
+
+Super-combinação 25:
+  Máximo: 11 | Médio: 10.2 | Mínimo: 8
+  Performances: BOA(3) BAIXA(1) REGULAR(1) 
+
+Super-combinação 26:
+  Máximo: 11 | Médio: 10.0 | Mínimo: 9
+  Performances: BOA(1) REGULAR(4) 
+
+Super-combinação 27:
+  Máximo: 11 | Médio: 9.8 | Mínimo: 8
+  Performances: BOA(2) REGULAR(2) BAIXA(1) 
+
+Super-combinação 28:
+  Máximo: 10 | Médio: 9.8 | Mínimo: 9
+  Performances: REGULAR(5) 
+
+Super-combinação 29:
+  Máximo: 11 | Médio: 9.4 | Mínimo: 8
+  Performances: REGULAR(3) BAIXA(1) BOA(1) 
+
+Super-combinação 30:
+  Máximo: 12 | Médio: 10.0 | Mínimo: 9
+  Performances: REGULAR(4) BOA(1) 
+
+Super-combinação 31:
+  Máximo: 11 | Médio: 8.8 | Mínimo: 7
+  Performances: REGULAR(2) BAIXA(2) BOA(1) 
+
+Super-combinação 32:
+  Máximo: 12 | Médio: 10.2 | Mínimo: 9
+  Performances: REGULAR(3) BOA(2) 
+
+Super-combinação 33:
+  Máximo: 11 | Médio: 10.2 | Mínimo: 10
+  Performances: BOA(1) REGULAR(4) 
+
+Super-combinação 34:
+  Máximo: 12 | Médio: 9.8 | Mínimo: 9
+  Performances: BOA(1) REGULAR(4) 
+
+Super-combinação 35:
+  Máximo: 12 | Médio: 9.4 | Mínimo: 8
+  Performances: BOA(1) BAIXA(1) REGULAR(3) 
+
+Super-combinação 36:
+  Máximo: 12 | Médio: 9.6 | Mínimo: 8
+  Performances: BOA(1) BAIXA(2) REGULAR(2) 
+
+Super-combinação 37:
+  Máximo: 11 | Médio: 9.4 | Mínimo: 8
+  Performances: BOA(1) REGULAR(2) BAIXA(2) 
+
+Super-combinação 38:
+  Máximo: 12 | Médio: 9.4 | Mínimo: 8
+  Performances: BOA(1) BAIXA(1) REGULAR(3) 
+
+Super-combinação 39:
+  Máximo: 13 | Médio: 10.2 | Mínimo: 8
+  Performances: BAIXA(1) REGULAR(2) BOA(1) EXCELENTE(1) 
+
+Super-combinação 40:
+  Máximo: 12 | Médio: 9.4 | Mínimo: 7
+  Performances: BOA(1) REGULAR(2) BAIXA(2) 
+
+Super-combinação 41:
+  Máximo: 11 | Médio: 9.4 | Mínimo: 8
+  Performances: REGULAR(3) BOA(1) BAIXA(1) 
+
+Super-combinação 42:
+  Máximo: 12 | Médio: 10.2 | Mínimo: 7
+  Performances: BOA(3) REGULAR(1) BAIXA(1) 
+
+Super-combinação 43:
+  Máximo: 11 | Médio: 10.2 | Mínimo: 9
+  Performances: BOA(2) REGULAR(3) 
+
+Super-combinação 44:
+  Máximo: 12 | Médio: 9.8 | Mínimo: 8
+  Performances: REGULAR(3) BOA(1) BAIXA(1) 
+
+Super-combinação 45:
+  Máximo: 12 | Médio: 10.2 | Mínimo: 9
+  Performances: BOA(2) REGULAR(3) 
+
+Super-combinação 46:
+  Máximo: 13 | Médio: 10.2 | Mínimo: 8
+  Performances: EXCELENTE(1) REGULAR(3) BAIXA(1) 
+
+Super-combinação 47:
+  Máximo: 13 | Médio: 9.4 | Mínimo: 8
+  Performances: EXCELENTE(1) REGULAR(1) BAIXA(3) 
+
+Super-combinação 48:
+  Máximo: 11 | Médio: 9.8 | Mínimo: 9
+  Performances: BOA(1) REGULAR(4) 
+
+Super-combinação 49:
+  Máximo: 10 | Médio: 9.8 | Mínimo: 9
+  Performances: REGULAR(5) 
+
+Super-combinação 50:
+  Máximo: 11 | Médio: 10.2 | Mínimo: 9
+  Performances: BOA(2) REGULAR(3) 
+

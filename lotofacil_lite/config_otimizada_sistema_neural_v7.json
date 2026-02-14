@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-09-25T09:00:21.346360",
+  "parametros": {
+    "enfase_altos_baixos": 0.8,
+    "threshold_reversao": 0.75,
+    "ensemble_size": 5
+  },
+  "acoes_sugeridas": [
+    "Calibrar detecção de reversão Altos/Baixos",
+    "Ajustar threshold de confiança",
+    "Otimizar ensemble de modelos"
+  ],
+  "tipo_otimizacao": "neural_v7",
+  "aplicado": false,
+  "versao": 1
+}

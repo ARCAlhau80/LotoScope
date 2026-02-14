@@ -1,0 +1,251 @@
+{
+  "timestamp": "20251121_104154",
+  "correlacoes_par_a_par": [
+    {
+      "numero1": 7,
+      "numero2": 17,
+      "pearson": -0.1491342316778876,
+      "p_pearson": 0.0008224658914330627,
+      "spearman": -0.14913423167788759,
+      "p_spearman": 0.0008224658914330478,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 19,
+      "numero2": 21,
+      "pearson": -0.14123179134680902,
+      "p_pearson": 0.0015454131266388847,
+      "spearman": -0.14123179134680902,
+      "p_spearman": 0.00154541312663887,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 6,
+      "numero2": 13,
+      "pearson": -0.14016127735740755,
+      "p_pearson": 0.00167924551689746,
+      "spearman": -0.14016127735740747,
+      "p_spearman": 0.0016792455168974753,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 4,
+      "numero2": 20,
+      "pearson": -0.13927507863723232,
+      "p_pearson": 0.001797989126705252,
+      "spearman": -0.13927507863723235,
+      "p_spearman": 0.0017979891267052269,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 2,
+      "numero2": 4,
+      "pearson": -0.12837901360536685,
+      "p_pearson": 0.0040356204743386475,
+      "spearman": -0.12837901360536685,
+      "p_spearman": 0.004035620474338674,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 3,
+      "numero2": 7,
+      "pearson": -0.12659809939571523,
+      "p_pearson": 0.004580422812610758,
+      "spearman": -0.12659809939571523,
+      "p_spearman": 0.004580422812610725,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 17,
+      "numero2": 21,
+      "pearson": -0.12473810819501899,
+      "p_pearson": 0.005219514733794122,
+      "spearman": -0.12473810819501892,
+      "p_spearman": 0.005219514733794038,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 15,
+      "numero2": 16,
+      "pearson": -0.12197658274395398,
+      "p_pearson": 0.006316996878513785,
+      "spearman": -0.12197658274395397,
+      "p_spearman": 0.006316996878513888,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 7,
+      "numero2": 16,
+      "pearson": -0.12048456460374393,
+      "p_pearson": 0.006992407352190273,
+      "spearman": -0.12048456460374381,
+      "p_spearman": 0.006992407352190292,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 5,
+      "numero2": 23,
+      "pearson": -0.11777524921407279,
+      "p_pearson": 0.008385922142804734,
+      "spearman": -0.11777524921407279,
+      "p_spearman": 0.008385922142804803,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 8,
+      "numero2": 25,
+      "pearson": -0.1161421627042278,
+      "p_pearson": 0.009340880200252545,
+      "spearman": -0.11614216270422772,
+      "p_spearman": 0.009340880200252503,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 4,
+      "numero2": 23,
+      "pearson": -0.11526942052871127,
+      "p_pearson": 0.009889897837155796,
+      "spearman": -0.11526942052871125,
+      "p_spearman": 0.009889897837155829,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 5,
+      "numero2": 25,
+      "pearson": -0.11524765837984866,
+      "p_pearson": 0.00990394662491758,
+      "spearman": -0.11524765837984868,
+      "p_spearman": 0.009903946624917498,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 3,
+      "numero2": 24,
+      "pearson": -0.1138818388867074,
+      "p_pearson": 0.010821915903260992,
+      "spearman": -0.11388183888670741,
+      "p_spearman": 0.010821915903261047,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 2,
+      "numero2": 5,
+      "pearson": -0.11374068315502857,
+      "p_pearson": 0.010920957682460364,
+      "spearman": -0.11374068315502857,
+      "p_spearman": 0.010920957682460567,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 15,
+      "numero2": 18,
+      "pearson": -0.11367394203193319,
+      "p_pearson": 0.010968065533874544,
+      "spearman": -0.11367394203193319,
+      "p_spearman": 0.010968065533874612,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 6,
+      "numero2": 9,
+      "pearson": -0.10981386053311032,
+      "p_pearson": 0.014018036397427745,
+      "spearman": -0.10981386053311032,
+      "p_spearman": 0.014018036397427441,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 14,
+      "numero2": 22,
+      "pearson": -0.10973421639805332,
+      "p_pearson": 0.014088137564705734,
+      "spearman": -0.10973421639805335,
+      "p_spearman": 0.014088137564705385,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 8,
+      "numero2": 20,
+      "pearson": -0.10954197000855165,
+      "p_pearson": 0.014258621240540514,
+      "spearman": -0.10954197000855163,
+      "p_spearman": 0.014258621240540526,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 5,
+      "numero2": 12,
+      "pearson": -0.10891877400772566,
+      "p_pearson": 0.014823809207677079,
+      "spearman": -0.10891877400772568,
+      "p_spearman": 0.014823809207676859,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 21,
+      "numero2": 23,
+      "pearson": -0.10422007177997604,
+      "p_pearson": 0.019756013096023553,
+      "spearman": -0.10422007177997605,
+      "p_spearman": 0.0197560130960231,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 9,
+      "numero2": 13,
+      "pearson": -0.1035250486585354,
+      "p_pearson": 0.020595388415098285,
+      "spearman": -0.10352504865853539,
+      "p_spearman": 0.020595388415097886,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 3,
+      "numero2": 5,
+      "pearson": -0.1030028464567063,
+      "p_pearson": 0.02124628540258999,
+      "spearman": -0.10300284645670632,
+      "p_spearman": 0.021246285402590277,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 8,
+      "numero2": 23,
+      "pearson": -0.10294021291221819,
+      "p_pearson": 0.021325541954992464,
+      "spearman": -0.1029402129122182,
+      "p_spearman": 0.021325541954992568,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 21,
+      "numero2": 24,
+      "pearson": -0.10209489899978533,
+      "p_pearson": 0.022420577499070244,
+      "spearman": -0.1020948989997853,
+      "p_spearman": 0.022420577499070456,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 3,
+      "numero2": 4,
+      "pearson": -0.10139449868715437,
+      "p_pearson": 0.023364485533803006,
+      "spearman": -0.10139449868715433,
+      "p_spearman": 0.023364485533803242,
+      "tipo": "negativa"
+    },
+    {
+      "numero1": 20,
+      "numero2": 23,
+      "pearson": 0.10057930570079167,
+      "p_pearson": 0.024506228453291427,
+      "spearman": 0.10057930570079165,
+      "p_spearman": 0.024506228453291982,
+      "tipo": "positiva"
+    }
+  ],
+  "redes_descobertas": [
+    {
+      "tipo": "clusters_hierarquicos",
+      "clusters": {

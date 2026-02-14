@@ -1,0 +1,1517 @@
+[
+  {
+    "timestamp": "2025-10-06T18:57:47.937475",
+    "gerador": "gerador_zona_conforto",
+    "configuracao_aplicada": {
+      "zona_conforto_inicio": 1,
+      "zona_conforto_fim": 17,
+      "peso_zona": 0.8,
+      "permitir_sequencias": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-06T18:57:47.942839",
+    "gerador": "gerador_zona_conforto",
+    "configuracao_aplicada": {
+      "zona_conforto_inicio": 1,
+      "zona_conforto_fim": 17,
+      "peso_zona": 0.8,
+      "permitir_sequencias": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-06T18:57:47.962323",
+    "gerador": "gerador_zona_conforto",
+    "configuracao_aplicada": {
+      "zona_conforto_inicio": 1,
+      "zona_conforto_fim": 17,
+      "peso_zona": 0.8,
+      "permitir_sequencias": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T10:40:38.045628",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        25
+      ],
+      "peso_correlacoes": 0.6,
+      "soma_alvo": [
+        180,
+        220
+      ],
+      "modo_inversao": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T10:40:39.227991",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        25
+      ],
+      "peso_correlacoes": 0.6,
+      "soma_alvo": [
+        180,
+        220
+      ],
+      "modo_inversao": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T10:40:39.242392",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        25
+      ],
+      "peso_correlacoes": 0.6,
+      "soma_alvo": [
+        180,
+        220
+      ],
+      "modo_inversao": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T10:40:39.262841",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        25
+      ],
+      "peso_correlacoes": 0.6,
+      "soma_alvo": [
+        180,
+        220
+      ],
+      "modo_inversao": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T10:40:39.279729",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        25
+      ],
+      "peso_correlacoes": 0.6,
+      "soma_alvo": [
+        180,
+        220
+      ],
+      "modo_inversao": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T10:40:39.297253",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        25
+      ],
+      "peso_correlacoes": 0.6,
+      "soma_alvo": [
+        180,
+        220
+      ],
+      "modo_inversao": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T11:13:08.635329",
+    "gerador": "gerador_zona_conforto",
+    "configuracao_aplicada": {
+      "zona_conforto_inicio": 1,
+      "zona_conforto_fim": 12,
+      "peso_zona": 0.85,
+      "permitir_sequencias": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T11:13:08.652365",
+    "gerador": "gerador_zona_conforto",
+    "configuracao_aplicada": {
+      "zona_conforto_inicio": 1,
+      "zona_conforto_fim": 12,
+      "peso_zona": 0.85,
+      "permitir_sequencias": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T11:13:08.670199",
+    "gerador": "gerador_zona_conforto",
+    "configuracao_aplicada": {
+      "zona_conforto_inicio": 1,
+      "zona_conforto_fim": 12,
+      "peso_zona": 0.85,
+      "permitir_sequencias": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T11:59:35.543528",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T11:59:36.700183",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T11:59:36.945581",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T11:59:37.218989",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T11:59:37.481208",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T11:59:37.729807",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:02:38.509256",
+    "gerador": "gerador_zona_conforto",
+    "configuracao_aplicada": {
+      "zona_conforto_inicio": 1,
+      "zona_conforto_fim": 12,
+      "peso_zona": 0.85,
+      "permitir_sequencias": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:02:38.529280",
+    "gerador": "gerador_zona_conforto",
+    "configuracao_aplicada": {
+      "zona_conforto_inicio": 1,
+      "zona_conforto_fim": 12,
+      "peso_zona": 0.85,
+      "permitir_sequencias": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:02:38.548347",
+    "gerador": "gerador_zona_conforto",
+    "configuracao_aplicada": {
+      "zona_conforto_inicio": 1,
+      "zona_conforto_fim": 12,
+      "peso_zona": 0.85,
+      "permitir_sequencias": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:04:10.693376",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:04:11.954695",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:04:12.253713",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:04:12.542864",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:04:12.823598",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:04:13.087597",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:07:58.074818",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:09:22.600494",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:09:23.883362",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:09:24.129500",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:09:24.420383",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:09:24.700284",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T12:09:25.005527",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T13:56:42.466482",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T13:56:43.747281",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T13:56:43.999124",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T13:56:44.259837",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T13:56:44.535219",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T13:56:44.822321",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T13:56:54.675749",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T13:56:54.939336",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T13:56:55.193913",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T13:56:55.453709",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T13:56:55.713547",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-07T13:56:55.977681",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-08T14:19:46.486752",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-08T14:19:47.709346",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-08T14:19:47.974317",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-08T14:19:48.264147",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-08T14:19:48.600300",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-08T14:19:48.933556",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:54:39.025111",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:54:40.244889",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:54:40.552920",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:54:40.878512",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:54:41.228920",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:54:41.539677",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:56:31.717835",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:56:32.980698",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:56:33.309394",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:56:33.642390",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:56:33.948571",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:56:34.258602",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:59:24.714116",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:59:26.015446",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:59:26.298771",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:59:26.575295",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:59:26.881263",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T12:59:27.181280",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:01:34.470913",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:01:34.777415",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:01:35.069277",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:01:35.392538",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:01:35.647799",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:01:35.944142",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:02:43.267530",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:03:34.822205",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:04:07.773202",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:04:52.469780",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:04:52.771066",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:04:53.108878",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:04:53.388673",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:04:53.690754",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-09T13:04:54.001706",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-19T19:17:11.295445",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-20T11:50:15.783169",
+    "gerador": "gerador_zona_conforto",
+    "configuracao_aplicada": {
+      "zona_conforto_inicio": 1,
+      "zona_conforto_fim": 12,
+      "peso_zona": 0.85,
+      "permitir_sequencias": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-20T11:51:23.665429",
+    "gerador": "gerador_zona_conforto",
+    "configuracao_aplicada": {
+      "zona_conforto_inicio": 1,
+      "zona_conforto_fim": 12,
+      "peso_zona": 0.85,
+      "permitir_sequencias": false
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-20T11:57:41.445249",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-20T11:57:41.492348",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-20T12:18:21.514316",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-20T12:18:22.772235",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  },
+  {
+    "timestamp": "2025-10-20T12:18:23.100341",
+    "gerador": "gerador_academico_dinamico",
+    "configuracao_aplicada": {
+      "zona_foco": [
+        1,
+        12
+      ],
+      "peso_correlacoes": 0.8,
+      "soma_alvo": [
+        160,
+        180
+      ],
+      "modo_inversao": true
+    },
+    "status": "aplicado"
+  }
+]

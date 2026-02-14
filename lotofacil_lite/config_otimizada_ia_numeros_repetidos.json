@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-09-25T09:00:21.173459",
+  "parametros": {
+    "epochs": 200,
+    "learning_rate": 0.001
+  },
+  "acoes_sugeridas": [
+    "Aumentar épocas de treinamento",
+    "Reduzir taxa de aprendizado",
+    "Revisar arquitetura da rede neural"
+  ],
+  "tipo_otimizacao": "neural_ia",
+  "aplicado": false,
+  "versao": 1
+}

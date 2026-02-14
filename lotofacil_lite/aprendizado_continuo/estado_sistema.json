@@ -1,0 +1,15 @@
+{
+  "status": {
+    "sistema_ativo": true,
+    "ultimo_treinamento": null,
+    "modelos_carregados": false,
+    "backup_disponivel": false
+  },
+  "estatisticas": {
+    "total_treinamentos": 0,
+    "total_previsoes": 0,
+    "total_validacoes": 0,
+    "precisao_atual": 0.0
+  },
+  "historico_execucoes": []
+}

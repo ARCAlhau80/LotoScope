@@ -1,0 +1,138 @@
+{
+  "timestamp": "2025-09-25T09:00:21.642340",
+  "concurso_referencia": 3495,
+  "total_geradores": 10,
+  "geradores": {
+    "ia_numeros_repetidos": {
+      "score_final": 70.61,
+      "precisao_atual": 58.666666666666664,
+      "consistencia": 93.2,
+      "tendencia": 63.3,
+      "confianca": 0.65,
+      "historico_size": 15,
+      "melhor_acerto": 10,
+      "posicao_anterior": null,
+      "posicao": 4,
+      "mudanca_posicao": 0
+    },
+    "gerador_academico_dinamico": {
+      "score_final": 71.48,
+      "precisao_atual": 53.333333333333336,
+      "consistencia": 92.7,
+      "tendencia": 76.7,
+      "confianca": 0.7,
+      "historico_size": 15,
+      "melhor_acerto": 9,
+      "posicao_anterior": null,
+      "posicao": 3,
+      "mudanca_posicao": 0
+    },
+    "super_gerador_ia": {
+      "score_final": 65.94,
+      "precisao_atual": 60.0,
+      "consistencia": 94.3,
+      "tendencia": 63.3,
+      "confianca": 0.1,
+      "historico_size": 15,
+      "melhor_acerto": 10,
+      "posicao_anterior": null,
+      "posicao": 8,
+      "mudanca_posicao": 0
+    },
+    "sistema_modelo_temporal_79": {
+      "score_final": 78.19,
+      "precisao_atual": 64.0,
+      "consistencia": 93.1,
+      "tendencia": 83.3,
+      "confianca": 0.799,
+      "historico_size": 15,
+      "melhor_acerto": 12,
+      "posicao_anterior": null,
+      "posicao": 1,
+      "mudanca_posicao": 0
+    },
+    "piramide_invertida_dinamica": {
+      "score_final": 62.31,
+      "precisao_atual": 52.0,
+      "consistencia": 91.3,
+      "tendencia": 36.7,
+      "confianca": 0.68,
+      "historico_size": 15,
+      "melhor_acerto": 9,
+      "posicao_anterior": null,
+      "posicao": 9,
+      "mudanca_posicao": 0
+    },
+    "sistema_neural_v7": {
+      "score_final": 73.97,
+      "precisao_atual": 65.33333333333334,
+      "consistencia": 91.7,
+      "tendencia": 96.7,
+      "confianca": 0.1,
+      "historico_size": 15,
+      "melhor_acerto": 12,
+      "posicao_anterior": null,
+      "posicao": 2,
+      "mudanca_posicao": 0
+    },
+    "sistema_hibrido_v3": {
+      "score_final": 68.8,
+      "precisao_atual": 66.66666666666666,
+      "consistencia": 90.4,
+      "tendencia": 70.0,
+      "confianca": 0.1,
+      "historico_size": 15,
+      "melhor_acerto": 11,
+      "posicao_anterior": null,
+      "posicao": 5,
+      "mudanca_posicao": 0
+    },
+    "gerador_complementacao": {
+      "score_final": 67.15,
+      "precisao_atual": 58.666666666666664,
+      "consistencia": 91.2,
+      "tendencia": 76.7,
+      "confianca": 0.1,
+      "historico_size": 15,
+      "melhor_acerto": 10,
+      "posicao_anterior": null,
+      "posicao": 6,
+      "mudanca_posicao": 0
+    },
+    "sistema_escalonado_v4": {
+      "score_final": 53.67,
+      "precisao_atual": 56.00000000000001,
+      "consistencia": 94.2,
+      "tendencia": 10.0,
+      "confianca": 0.1,
+      "historico_size": 15,
+      "melhor_acerto": 9,
+      "posicao_anterior": null,
+      "posicao": 10,
+      "mudanca_posicao": 0
+    },
+    "gerador_zona_conforto": {
+      "score_final": 66.48,
+      "precisao_atual": 66.66666666666666,
+      "consistencia": 91.6,
+      "tendencia": 56.7,
+      "confianca": 0.1,
+      "historico_size": 15,
+      "melhor_acerto": 12,
+      "posicao_anterior": null,
+      "posicao": 7,
+      "mudanca_posicao": 0
+    }
+  },
+  "top_3": [
+    "sistema_modelo_temporal_79",
+    "sistema_neural_v7",
+    "gerador_academico_dinamico"
+  ],
+  "pesos_utilizados": {
+    "precisao_atual": 0.4,
+    "consistencia_historica": 0.3,
+    "tendencia_evolucao": 0.2,
+    "confianca_declarada": 0.1
+  }
+}

@@ -1,0 +1,605 @@
+{
+  "timestamp": "20251121_101632",
+  "resumo": {
+    "total_concursos_analisados": 3541,
+    "total_padroes_significativos": 30,
+    "total_padroes_detalhados": 68
+  },
+  "padroes_significativos": [
+    {
+      "tipo": "ciclo_28",
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "fase_min": 3,
+          "fase_max": 6,
+          "diferenca_pct": 6.947608200455581,
+          "p_value": 0.0029079720457383562
+        }
+      ]
+    },
+    {
+      "tipo": "ciclo_30",
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "fase_min": 21,
+          "fase_max": 18,
+          "diferenca_pct": 7.533414337788584,
+          "p_value": 0.0022226380277598694
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "fase_min": 16,
+          "fase_max": 7,
+          "diferenca_pct": 7.56097560975609,
+          "p_value": 0.001411274732338934
+        }
+      ]
+    },
+    {
+      "tipo": "ciclo_91",
+      "padroes": [
+        {
+          "estatistica": "SomaTotal",
+          "fase_min": 16,
+          "fase_max": 61,
+          "diferenca_pct": 8.944421685101736,
+          "p_value": 1.2619764415170842e-05
+        },
+        {
+          "estatistica": "QtdPares",
+          "fase_min": 6,
+          "fase_max": 74,
+          "diferenca_pct": 14.393939393939394,
+          "p_value": 0.00044552201045682465
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "fase_min": 4,
+          "fase_max": 16,
+          "diferenca_pct": 16.141732283464563,
+          "p_value": 0.00011785158079797011
+        }
+      ]
+    },
+    {
+      "tipo": "ciclo_365",
+      "padroes": [
+        {
+          "estatistica": "SomaTotal",
+          "fase_min": 17,
+          "fase_max": 345,
+          "diferenca_pct": 20.564694019033197,
+          "p_value": 3.787598913126322e-05
+        },
+        {
+          "estatistica": "QtdPares",
+          "fase_min": 50,
+          "fase_max": 84,
+          "diferenca_pct": 34.42622950819671,
+          "p_value": 0.0007944876741378365
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "fase_min": 69,
+          "fase_max": 17,
+          "diferenca_pct": 36.065573770491824,
+          "p_value": 4.032988077480333e-05
+        },
+        {
+          "estatistica": "GapMedio",
+          "fase_min": 129,
+          "fase_max": 209,
+          "diferenca_pct": 10.648148148148124,
+          "p_value": 0.006077371600640064
+        }
+      ]
+    },
+    {
+      "tipo": "repeticoes_consecutivas",
+      "media": 8.969209039548023,
+      "outliers_baixo": 50,
+      "outliers_alto": 65,
+      "desvio": 1.221932777760141
+    },
+    {
+      "tipo": "numero_1",
+      "frequencia_aparicao": 0.6046314600395368,
+      "padroes": [
+        {
+          "estatistica": "SomaTotal",
+          "diferenca_pct": -6.221212339541209,
+          "p_value": 4.1971223631256216e-100,
+          "frequencia": 0.6046314600395368
+        },
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": -7.078996117083089,
+          "p_value": 1.0204791085647452e-35,
+          "frequencia": 0.6046314600395368
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": 7.756698590895204,
+          "p_value": 5.027056746097756e-37,
+          "frequencia": 0.6046314600395368
+        },
+        {
+          "estatistica": "GapMedio",
+          "diferenca_pct": 6.549887690218748,
+          "p_value": 1.3096277670949415e-276,
+          "frequencia": 0.6046314600395368
+        }
+      ]
+    },
+    {
+      "tipo": "numero_2",
+      "frequencia_aparicao": 0.5987009319401299,
+      "padroes": [
+        {
+          "estatistica": "SomaTotal",
+          "diferenca_pct": -5.7725108255245665,
+          "p_value": 1.4566131524786237e-85,
+          "frequencia": 0.5987009319401299
+        },
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": 7.909595461034559,
+          "p_value": 2.1775049682747675e-37,
+          "frequencia": 0.5987009319401299
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": 8.27225751398502,
+          "p_value": 5.3010621341876214e-42,
+          "frequencia": 0.5987009319401299
+        }
+      ]
+    },
+    {
+      "tipo": "numero_3",
+      "frequencia_aparicao": 0.6051962722394804,
+      "padroes": [
+        {
+          "estatistica": "SomaTotal",
+          "diferenca_pct": -5.028037181417758,
+          "p_value": 1.312508830883122e-63,
+          "frequencia": 0.6051962722394804
+        },
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": -7.582827811479236,
+          "p_value": 4.251333479224467e-41,
+          "frequencia": 0.6051962722394804
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": 7.233721912491766,
+          "p_value": 1.677929995466276e-32,
+          "frequencia": 0.6051962722394804
+        }
+      ]
+    },
+    {
+      "tipo": "numero_4",
+      "frequencia_aparicao": 0.6029370234397063,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": 7.7444473237444535,
+          "p_value": 8.422317512749027e-36,
+          "frequencia": 0.6029370234397063
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": 8.486435800433272,
+          "p_value": 6.992048077939397e-44,
+          "frequencia": 0.6029370234397063
+        }
+      ]
+    },
+    {
+      "tipo": "numero_5",
+      "frequencia_aparicao": 0.5998305563400169,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": -7.077951040024268,
+          "p_value": 7.971988904552235e-36,
+          "frequencia": 0.5998305563400169
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": 6.962650115078288,
+          "p_value": 1.9365864423019765e-30,
+          "frequencia": 0.5998305563400169
+        }
+      ]
+    },
+    {
+      "tipo": "numero_6",
+      "frequencia_aparicao": 0.5865574696413443,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": 8.029938285114016,
+          "p_value": 7.024899505128359e-39,
+          "frequencia": 0.5865574696413443
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": 7.452849495568889,
+          "p_value": 6.094692597918136e-35,
+          "frequencia": 0.5865574696413443
+        }
+      ]
+    },
+    {
+      "tipo": "numero_7",
+      "frequencia_aparicao": 0.5899463428410053,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": -5.724223788499937,
+          "p_value": 1.324322033273526e-23,
+          "frequencia": 0.5899463428410053
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": 7.325262834969173,
+          "p_value": 9.695061374363757e-34,
+          "frequencia": 0.5899463428410053
+        }
+      ]
+    },
+    {
+      "tipo": "numero_8",
+      "frequencia_aparicao": 0.5783676927421633,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": 8.06210401146655,
+          "p_value": 1.9610320906384665e-39,
+          "frequencia": 0.5783676927421633
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": 7.946473355423156,
+          "p_value": 1.1917448831086591e-39,
+          "frequencia": 0.5783676927421633
+        }
+      ]
+    },
+    {
+      "tipo": "numero_9",
+      "frequencia_aparicao": 0.5975713075402429,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": -6.456785716183923,
+          "p_value": 8.224140206083418e-30,
+          "frequencia": 0.5975713075402429
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": 8.60184593253233,
+          "p_value": 3.005178342180834e-45,
+          "frequencia": 0.5975713075402429
+        }
+      ]
+    },
+    {
+      "tipo": "numero_10",
+      "frequencia_aparicao": 0.6210110138378989,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": 7.790286957742593,
+          "p_value": 1.6563863804464601e-35,
+          "frequencia": 0.6210110138378989
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": 8.377879195709896,
+          "p_value": 5.3008913680588896e-42,
+          "frequencia": 0.6210110138378989
+        }
+      ]
+    },
+    {
+      "tipo": "numero_11",
+      "frequencia_aparicao": 0.6153628918384637,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": -6.6479911915635155,
+          "p_value": 3.349375619607508e-31,
+          "frequencia": 0.6153628918384637
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": 7.414452547524235,
+          "p_value": 1.1457036163320417e-33,
+          "frequencia": 0.6153628918384637
+        }
+      ]
+    },
+    {
+      "tipo": "numero_12",
+      "frequencia_aparicao": 0.6018073990398193,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": 8.724024351862965,
+          "p_value": 8.89848604346009e-45,
+          "frequencia": 0.6018073990398193
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": 6.543028366651658,
+          "p_value": 4.281486653026682e-27,
+          "frequencia": 0.6018073990398193
+        }
+      ]
+    },
+    {
+      "tipo": "numero_13",
+      "frequencia_aparicao": 0.6094323637390567,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": -6.8092976061811115,
+          "p_value": 6.738031666083309e-33,
+          "frequencia": 0.6094323637390567
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": -7.089070091049189,
+          "p_value": 7.1947743272961135e-37,
+          "frequencia": 0.6094323637390567
+        }
+      ]
+    },
+    {
+      "tipo": "numero_14",
+      "frequencia_aparicao": 0.608020333239198,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": 7.900022127275971,
+          "p_value": 5.820625574221849e-37,
+          "frequencia": 0.608020333239198
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": -6.384758297902744,
+          "p_value": 7.074299673510445e-30,
+          "frequencia": 0.608020333239198
+        }
+      ]
+    },
+    {
+      "tipo": "numero_15",
+      "frequencia_aparicao": 0.5955944648404405,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": -7.04208023323657,
+          "p_value": 1.486665316007834e-35,
+          "frequencia": 0.5955944648404405
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": -6.687999158072031,
+          "p_value": 4.4549423673648075e-33,
+          "frequencia": 0.5955944648404405
+        }
+      ]
+    },
+    {
+      "tipo": "numero_16",
+      "frequencia_aparicao": 0.5735667890426434,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": 8.022959372224733,
+          "p_value": 3.2166875533199066e-39,
+          "frequencia": 0.5735667890426434
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": -6.914478706158395,
+          "p_value": 8.348874269225105e-36,
+          "frequencia": 0.5735667890426434
+        }
+      ]
+    },
+    {
+      "tipo": "numero_17",
+      "frequencia_aparicao": 0.5888167184411184,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": -6.999081305756707,
+          "p_value": 2.9400951252030904e-35,
+          "frequencia": 0.5888167184411184
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": -6.029789854650499,
+          "p_value": 5.2887095535257534e-27,
+          "frequencia": 0.5888167184411184
+        }
+      ]
+    },
+    {
+      "tipo": "numero_18",
+      "frequencia_aparicao": 0.5970064953402994,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": 7.84694602693837,
+          "p_value": 6.750018770693422e-37,
+          "frequencia": 0.5970064953402994
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": -6.694769020568381,
+          "p_value": 4.0850229616430946e-33,
+          "frequencia": 0.5970064953402994
+        }
+      ]
+    },
+    {
+      "tipo": "numero_19",
+      "frequencia_aparicao": 0.5958768709404123,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": -7.165950767450124,
+          "p_value": 7.847568293469456e-37,
+          "frequencia": 0.5958768709404123
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": -6.37649788116754,
+          "p_value": 4.7411284224319555e-30,
+          "frequencia": 0.5958768709404123
+        }
+      ]
+    },
+    {
+      "tipo": "numero_20",
+      "frequencia_aparicao": 0.6232702626376729,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": 7.177701852993275,
+          "p_value": 1.94750043550928e-30,
+          "frequencia": 0.6232702626376729
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": -6.591965523773976,
+          "p_value": 1.8364910573513624e-31,
+          "frequencia": 0.6232702626376729
+        }
+      ]
+    },
+    {
+      "tipo": "numero_21",
+      "frequencia_aparicao": 0.59390002824061,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": -6.671806898789698,
+          "p_value": 6.549172441930194e-32,
+          "frequencia": 0.59390002824061
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": -7.155440804486132,
+          "p_value": 5.602203024626091e-38,
+          "frequencia": 0.59390002824061
+        }
+      ]
+    },
+    {
+      "tipo": "numero_22",
+      "frequencia_aparicao": 0.5995481502400452,
+      "padroes": [
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": 8.228477808835557,
+          "p_value": 3.2135428868884455e-40,
+          "frequencia": 0.5995481502400452
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": -6.628984141937515,
+          "p_value": 2.079866066521506e-32,
+          "frequencia": 0.5995481502400452
+        }
+      ]
+    },
+    {
+      "tipo": "numero_23",
+      "frequencia_aparicao": 0.5845806269415419,
+      "padroes": [
+        {
+          "estatistica": "SomaTotal",
+          "diferenca_pct": 5.013161281026274,
+          "p_value": 5.589394981159079e-57,
+          "frequencia": 0.5845806269415419
+        },
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": -6.459268624055385,
+          "p_value": 4.574896993162345e-30,
+          "frequencia": 0.5845806269415419
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": -5.877898561733009,
+          "p_value": 9.742523003033845e-26,
+          "frequencia": 0.5845806269415419
+        }
+      ]
+    },
+    {
+      "tipo": "numero_24",
+      "frequencia_aparicao": 0.608020333239198,
+      "padroes": [
+        {
+          "estatistica": "SomaTotal",
+          "diferenca_pct": 5.884622023059867,
+          "p_value": 2.1565782571696712e-76,
+          "frequencia": 0.608020333239198
+        },
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": 8.117247339697753,
+          "p_value": 7.051764657459403e-39,
+          "frequencia": 0.608020333239198
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": -6.3391441518130645,
+          "p_value": 1.8833731486568811e-29,
+          "frequencia": 0.608020333239198
+        }
+      ]
+    },
+    {
+      "tipo": "numero_25",
+      "frequencia_aparicao": 0.6204462016379554,
+      "padroes": [
+        {
+          "estatistica": "SomaTotal",
+          "diferenca_pct": 6.537968817960091,
+          "p_value": 7.111199188513267e-93,
+          "frequencia": 0.6204462016379554
+        },
+        {
+          "estatistica": "QtdPares",
+          "diferenca_pct": -5.763245202996204,
+          "p_value": 2.117024613313981e-23,
+          "frequencia": 0.6204462016379554
+        },
+        {
+          "estatistica": "QtdBaixos",
+          "diferenca_pct": -6.020899617420524,
+          "p_value": 2.5432770420059666e-26,
+          "frequencia": 0.6204462016379554
+        },
+        {
+          "estatistica": "GapMedio",
+          "diferenca_pct": 6.647946457618821,
+          "p_value": 1.8781459787783362e-280,
+          "frequencia": 0.6204462016379554
+        }
+      ]
+    }
+  ]
+}

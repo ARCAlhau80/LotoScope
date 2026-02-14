@@ -1,0 +1,265 @@
+{
+  "versao": "2.0",
+  "timestamp": "08/09/2025 19:25:18",
+  "melhor_estrategia": "Hierárquica Quintetos V2",
+  "resultados_completos": {
+    "Hierárquica Trios V2": {
+      "nome": "Hierárquica Trios V2",
+      "testes_realizados": 100,
+      "media_acertos": 12.07,
+      "taxa_11_15": 92.0,
+      "taxa_13_15": 41.0,
+      "media_premio_estimado": 103,
+      "distribuicao_acertos": {
+        "12": 34,
+        "13": 35,
+        "11": 17,
+        "14": 6,
+        "10": 4,
+        "7": 1,
+        "9": 2,
+        "8": 1
+      },
+      "exemplo_combinacao": {
+        "estrategia": "hierarquica_trios_v2",
+        "grupos_usados": [
+          [
+            1,
+            11,
+            24
+          ],
+          [
+            11,
+            2,
+            23
+          ],
+          [
+            1,
+            11,
+            20
+          ],
+          [
+            11,
+            2,
+            5
+          ],
+          [
+            1,
+            10,
+            25
+          ]
+        ],
+        "numeros_finais": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          10,
+          11,
+          12,
+          13,
+          14,
+          20,
+          23,
+          24,
+          25
+        ],
+        "score_medio": 82.232,
+        "total_numeros": 15,
+        "diversidade": 60.0
+      }
+    },
+    "Balanceada Trios V2": {
+      "nome": "Balanceada Trios V2",
+      "testes_realizados": 100,
+      "media_acertos": 12.17,
+      "taxa_11_15": 90.0,
+      "taxa_13_15": 46.0,
+      "media_premio_estimado": 133.1,
+      "distribuicao_acertos": {
+        "14": 8,
+        "13": 38,
+        "12": 28,
+        "9": 1,
+        "11": 16,
+        "10": 9
+      },
+      "exemplo_combinacao": {
+        "estrategia": "balanceada_trios_v2",
+        "grupos_usados": [
+          [
+            1,
+            11,
+            24
+          ],
+          [
+            20,
+            7,
+            8
+          ],
+          [
+            3,
+            10,
+            15
+          ],
+          [
+            5,
+            23,
+            4
+          ],
+          [
+            3,
+            25,
+            13
+          ]
+        ],
+        "numeros_finais": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          8,
+          10,
+          11,
+          13,
+          15,
+          20,
+          23,
+          24,
+          25
+        ],
+        "score_medio": 72.14666666666668,
+        "total_numeros": 15,
+        "diversidade": 93.33333333333333
+      }
+    },
+    "Hierárquica Quintetos V2": {
+      "nome": "Hierárquica Quintetos V2",
+      "testes_realizados": 100,
+      "media_acertos": 12.27,
+      "taxa_11_15": 95.0,
+      "taxa_13_15": 43.0,
+      "media_premio_estimado": 103.85,
+      "distribuicao_acertos": {
+        "11": 12,
+        "12": 40,
+        "13": 37,
+        "14": 6,
+        "10": 5
+      },
+      "exemplo_combinacao": {
+        "estrategia": "hierarquica_quintetos_v2",
+        "grupos_usados": [
+          [
+            1,
+            11,
+            23,
+            10,
+            20
+          ],
+          [
+            1,
+            11,
+            2,
+            5,
+            24
+          ],
+          [
+            1,
+            11,
+            25,
+            4,
+            20
+          ]
+        ],
+        "numeros_finais": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          10,
+          11,
+          12,
+          13,
+          14,
+          20,
+          23,
+          24,
+          25
+        ],
+        "score_medio": 72.7088888888889,
+        "total_numeros": 15,
+        "diversidade": 66.66666666666666
+      }
+    },
+    "Mista V2 (Quinteto + Trios)": {
+      "nome": "Mista V2 (Quinteto + Trios)",
+      "testes_realizados": 100,
+      "media_acertos": 12.08,
+      "taxa_11_15": 95.0,
+      "taxa_13_15": 34.0,
+      "media_premio_estimado": 58.05,
+      "distribuicao_acertos": {
+        "12": 45,
+        "13": 31,
+        "11": 16,
+        "14": 3,
+        "10": 4,
+        "7": 1
+      },
+      "exemplo_combinacao": {
+        "estrategia": "mista_v2",
+        "grupos_usados": [
+          [
+            1,
+            11,
+            5,
+            24,
+            20
+          ],
+          [
+            11,
+            2,
+            25
+          ],
+          [
+            1,
+            23,
+            10
+          ]
+        ],
+        "numeros_finais": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          10,
+          11,
+          12,
+          13,
+          14,
+          20,
+          23,
+          24,
+          25
+        ],
+        "score_medio": 79.04222222222222,
+        "total_numeros": 15,
+        "diversidade": 81.81818181818183
+      }
+    }
+  },
+  "configuracao": {
+    "testes_por_estrategia": 100,
+    "garantia_15_numeros": true,
+    "otimizacao_diversidade": true
+  }
+}

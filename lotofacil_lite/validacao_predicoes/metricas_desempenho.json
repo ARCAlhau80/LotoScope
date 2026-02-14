@@ -1,0 +1,21 @@
+{
+  "timestamp": "2025-10-07T10:10:10.731698",
+  "metricas_gerais": {
+    "total_predicoes": 1,
+    "total_acertos": 0,
+    "taxa_acerto_geral": 0.0,
+    "pontuacao_media_geral": 0.6666666666666666
+  },
+  "por_tipo_predicao": {
+    "reset_extremo_com_combinacoes": {
+      "total": 1,
+      "acertos": 0,
+      "pontuacoes": [
+        0.6666666666666666
+      ],
+      "taxa_acerto": 0.0,
+      "pontuacao_media": 0.6666666666666666
+    }
+  },
+  "registros_pendentes": 0
+}

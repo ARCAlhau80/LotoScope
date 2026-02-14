@@ -1,0 +1,11 @@
+{
+  "roi": -100,
+  "hyperparams": {
+    "limite_atraso_minimo": 5.318582506693876,
+    "limite_frequencia_quente": 0.6411123179559675,
+    "peso_atrasados_mix": 4.743008677698546,
+    "peso_quentes_mix": 5.6764072196644095
+  },
+  "sessao": 0,
+  "data": "2026-01-18T11:45:39.839581"
+}

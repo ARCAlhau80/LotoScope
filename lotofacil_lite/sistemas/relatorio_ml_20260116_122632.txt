@@ -1,0 +1,131 @@
+======================================================================
+🤖 RELATÓRIO DE APRENDIZADO COM MACHINE LEARNING (10 ALGORITMOS)
+======================================================================
+
+📅 Data: 2026-01-16T12:26:32.138636
+🔢 Sessão #: 4
+📊 Janelas: 3556
+⏱️ Duração: 12.3s
+
+----------------------------------------------------------------------
+🎓 DISTRIBUIÇÃO DE ALGORITMOS (META-BANDIT)
+----------------------------------------------------------------------
+
+   EXP3: 1534 seleções (43.1%)
+   UCB1: 814 seleções (22.9%)
+   THOMPSON: 801 seleções (22.5%)
+   ENSEMBLE: 407 seleções (11.4%)
+
+----------------------------------------------------------------------
+🎰 MULTI-ARMED BANDITS
+----------------------------------------------------------------------
+
+   THOMPSON SAMPLING:
+      Atrasados: E[R]=-0.7220 (n=4966)
+      Quentes: E[R]=-0.7449 (n=4804)
+      Equilibrada: E[R]=-0.7213 (n=4454)
+
+   Melhor por E[reward]: EQUILIBRADA
+
+   Seleções por estratégia:
+      Atrasados: 1646 (46.3%)
+      Quentes: 962 (27.1%)
+      Equilibrada: 948 (26.7%)
+
+----------------------------------------------------------------------
+🔢 FEATURE IMPORTANCE - Top Números
+----------------------------------------------------------------------
+
+   Top 10 números mais importantes: [2, 10, 13, 4, 8, 1, 17, 25, 22, 20]
+   (Números que mais contribuem para acertos)
+
+----------------------------------------------------------------------
+📈 ESTATÍSTICAS POR ESTRATÉGIA
+----------------------------------------------------------------------
+
+🎯 ATRASADOS
+   Vezes selecionada: 1646
+   ROI: -73.5%
+   Reward médio: -0.7354
+   Custo: R$ 28805.00
+   Lucro líquido: R$ -21182.00
+   Acertos 11+: 890
+      13 acertos: 16x
+      12 acertos: 135x
+      11 acertos: 739x
+
+🎯 QUENTES
+   Vezes selecionada: 962
+   ROI: -74.3%
+   Reward médio: -0.7426
+   Custo: R$ 16835.00
+   Lucro líquido: R$ -12502.00
+   Acertos 11+: 525
+      13 acertos: 7x
+      12 acertos: 66x
+      11 acertos: 452x
+
+🎯 EQUILIBRADA
+   Vezes selecionada: 948
+   ROI: -74.5%
+   Reward médio: -0.7447
+   Custo: R$ 16590.00
+   Lucro líquido: R$ -12355.00
+   Acertos 11+: 485
+      13 acertos: 9x
+      12 acertos: 84x
+      11 acertos: 392x
+
+----------------------------------------------------------------------
+⚙️ HIPERPARÂMETROS (Bayesian Optimization / TPE)
+----------------------------------------------------------------------
+
+   limite_atraso_minimo: 6.6002
+   limite_frequencia_quente: 0.6254
+   peso_atrasados_mix: 4.9121
+   peso_quentes_mix: 5.8272
+
+----------------------------------------------------------------------
+📊 EVOLUÇÃO DO APRENDIZADO
+----------------------------------------------------------------------
+
+   ROI médio atual: -74.09%
+   ROI médio anterior: -70.02%
+   Delta: 📉 -4.07%
+
+   ⚠️ Performance abaixo da sessão anterior.
+   Meta-Bandit irá ajustar automaticamente.
+
+======================================================================
+🎓 10 ALGORITMOS ACADÊMICOS IMPLEMENTADOS
+======================================================================
+
+   1. THOMPSON SAMPLING (Auer et al.)
+      Convergência assintótica garantida para estratégia ótima.
+
+   2. UCB1 - Upper Confidence Bound (Auer et al., 2002)
+      Bound otimista determinístico para exploração.
+
+   3. EXP3 - Adversarial Bandit (Auer et al., 2002)
+      Robusto a mudanças de distribuição.
+
+   4. BAYESIAN OPTIMIZATION / TPE
+      Otimização de hiperparâmetros com menos avaliações.
+
+   5. GENETIC ALGORITHM (Holland, 1975)
+      Evolui combinações via crossover, mutação e seleção.
+
+   6. SIMULATED ANNEALING (Kirkpatrick et al., 1983)
+      Escape de mínimos locais via temperatura.
+
+   7. ENSEMBLE LEARNING
+      Combina votos de múltiplos algoritmos.
+
+   8. EXPONENTIAL MOVING AVERAGE (EMA)
+      Detecta mudanças de tendência rapidamente.
+
+   9. FEATURE IMPORTANCE
+      Identifica números/padrões mais importantes.
+
+   10. META-BANDIT (UCB sobre algoritmos)
+       Seleciona qual algoritmo usar baseado em performance.

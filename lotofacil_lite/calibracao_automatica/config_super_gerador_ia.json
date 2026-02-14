@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-10-07T11:12:36.376262",
+  "gerador": "super_gerador_ia.py",
+  "configuracao": {
+    "modo_adaptativo": true,
+    "cenario_detectado": "reset_extremo",
+    "confianca_cenario": 0.85,
+    "parametros_especiais": {
+      "menor_esperado": 11,
+      "soma_esperada": 170,
+      "repeticoes_esperadas": 1
+    }
+  },
+  "aplicado_automaticamente": true
+}

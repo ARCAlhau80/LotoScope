@@ -1,0 +1,59 @@
+
+🚀 RELATÓRIO FINAL - TREINAMENTO AUTOMATIZADO PARAMETRIZADO
+================================================================================
+
+⚙️ CONFIGURAÇÃO:
+   🕐 Duração configurada: 1 horas
+   🕐 Tempo real de execução: 1.00 horas
+   🤖 Modelos por ciclo: 4
+   🔄 Ciclos completados: 58
+   📊 Total de modelos testados: 232
+
+🏆 RESULTADOS:
+   🥇 Melhor precisão alcançada: 93.5%
+   📊 Precisão média: 80.0%
+   📊 Mediana de precisão: 79.7%
+   📊 Desvio padrão: 5.9%
+   📈 Melhoria sobre baseline (64%): +46.2%
+
+🧠 MELHOR MODELO:
+   🔬 Algoritmo: temporal_avancado
+   📊 Precisão: 93.5% if resultado['melhor_modelo'] else 'N/A'
+   🔄 Encontrado no ciclo: 46
+   🆔 ID do modelo: 183
+
+🔬 ALGORITMOS TESTADOS:
+    1. ensemble_basico
+    2. ensemble_neural
+    3. genetico_avancado
+    4. genetico_simples
+    5. hibrido_temporal
+    6. meta_learning
+    7. neural_profunda
+    8. neural_simples
+    9. temporal_avancado
+   10. temporal_basico
+
+📈 EVOLUÇÃO DA PRECISÃO:
+     90-94%: ███████████ (11)
+     85-89%: ██████████████████████████████████████ (38)
+     80-84%: ██████████████████████████████████████████████████ (64)
+     75-79%: ██████████████████████████████████████████████████ (77)
+     70-74%: ███████████████████████████████ (31)
+     65-69%: ██████████ (10)
+     60-64%: █ (1)
+
+💾 ARQUIVOS GERADOS:
+   📁 Pasta de experimentos: ia_repetidos/experimentos_4h
+   📁 Melhores modelos: ia_repetidos/experimentos_4h/melhores_modelos
+   📊 Progresso tempo real: ia_repetidos/experimentos_4h/progresso_tempo_real.json
+   📋 Log detalhado: ia_repetidos/experimentos_4h/log_treinamento.json
+
+================================================================================
+🎯 CONCLUSÃO:
+   ✅ META ALCANÇADA!
+   📊 Sistema evoluiu de precisão baseline para 93.5%
+   🚀 Treinamento parametrizado permitiu otimização de 232 modelos
+   🧠 Algoritmo temporal mantém-se como superior para Lotofácil
+   
+📅 Gerado em: 20/09/2025 17:53:01

@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-09-25T09:00:21.312377",
+  "parametros": {
+    "sensibilidade_transicao": 0.3,
+    "peso_faixas_baixas": 0.7,
+    "peso_faixas_altas": 0.3
+  },
+  "acoes_sugeridas": [
+    "Ajustar sensibilidade às transições",
+    "Priorizar números saindo de faixas baixas",
+    "Calibrar detecção de sequências dominantes"
+  ],
+  "tipo_otimizacao": "piramide_dinamica",
+  "aplicado": false,
+  "versao": 1
+}

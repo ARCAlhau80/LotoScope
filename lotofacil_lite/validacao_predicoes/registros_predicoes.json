@@ -1,0 +1,114 @@
+[
+  {
+    "timestamp": "2025-10-06T19:00:05.563310",
+    "concurso": 3505,
+    "tipo_predicao": "reset_extremo_com_combinacoes",
+    "predicao": {
+      "menor_que_anterior_esperado": 12,
+      "maior_que_anterior_esperado": 2,
+      "igual_esperado": 1,
+      "soma_esperada": [
+        160,
+        185
+      ],
+      "repeticoes_posicao_esperadas": [
+        0,
+        1
+      ],
+      "combinacoes_otimizadas": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          8,
+          9,
+          10,
+          11,
+          12,
+          14,
+          15,
+          16,
+          17
+        ],
+        [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ]
+      ],
+      "meta_minima_acertos": 12
+    },
+    "confianca": 0.85,
+    "cenario_detectado": "reset_extremo",
+    "parametros_calibracao": {
+      "atraso_repeticoes": 10,
+      "tendencia_menor": "decrescente",
+      "estado_atual": [
+        7,
+        5,
+        3
+      ],
+      "convergencia_padroes": true
+    },
+    "resultado_real": {
+      "concurso": 3505,
+      "numeros": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        16,
+        20,
+        21,
+        23,
+        25
+      ],
+      "menor_que_anterior": 11,
+      "maior_que_anterior": 0,
+      "igual": 4,
+      "soma": 170,
+      "repeticoes_posicao": 4
+    },
+    "acertou": false,
+    "pontuacao_acerto": 0.6666666666666666,
+    "observacoes": "Predição baseada em análise convergente de inversão + atraso de repetições posicionais. Meta: pelo menos 12 pontos em uma das 3 combinações."
+  }
+]

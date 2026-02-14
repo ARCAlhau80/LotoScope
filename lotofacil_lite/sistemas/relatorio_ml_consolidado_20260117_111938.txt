@@ -1,0 +1,113 @@
+======================================================================
+🤖 RELATÓRIO CONSOLIDADO - MÚLTIPLAS SESSÕES ML
+======================================================================
+
+📅 Data: 2026-01-17T11:19:38.800460
+🔢 Sessões executadas: 100
+
+----------------------------------------------------------------------
+📊 EVOLUÇÃO POR SESSÃO
+----------------------------------------------------------------------
+
+   Sessão 1: ROI -23.75% | Melhor: QUENTES
+   Sessão 2: ROI -24.30% | Melhor: QUENTES
+   Sessão 3: ROI -73.55% | Melhor: QUENTES
+   Sessão 4: ROI -73.32% | Melhor: ATRASADOS
+   Sessão 5: ROI -71.12% | Melhor: ATRASADOS
+   Sessão 6: ROI -73.57% | Melhor: EQUILIBRADA
+   Sessão 7: ROI -23.85% | Melhor: QUENTES
+   Sessão 8: ROI -23.64% | Melhor: QUENTES
+   Sessão 9: ROI -24.53% | Melhor: QUENTES
+   Sessão 10: ROI -47.32% | Melhor: QUENTES
+   Sessão 11: ROI -24.75% | Melhor: ATRASADOS
+   Sessão 12: ROI -75.74% | Melhor: EQUILIBRADA
+   Sessão 13: ROI -24.36% | Melhor: QUENTES
+   Sessão 14: ROI -23.92% | Melhor: QUENTES
+   Sessão 15: ROI -24.73% | Melhor: QUENTES
+   Sessão 16: ROI -24.48% | Melhor: QUENTES
+   Sessão 17: ROI -24.40% | Melhor: QUENTES
+   Sessão 18: ROI -24.55% | Melhor: QUENTES
+   Sessão 19: ROI -24.68% | Melhor: QUENTES
+   Sessão 20: ROI -24.37% | Melhor: QUENTES
+   Sessão 21: ROI -24.30% | Melhor: QUENTES
+   Sessão 22: ROI -24.01% | Melhor: QUENTES
+   Sessão 23: ROI -24.20% | Melhor: QUENTES
+   Sessão 24: ROI -24.64% | Melhor: QUENTES
+   Sessão 25: ROI -24.52% | Melhor: QUENTES
+   Sessão 26: ROI -24.27% | Melhor: QUENTES
+   Sessão 27: ROI -24.59% | Melhor: QUENTES
+   Sessão 28: ROI -24.40% | Melhor: QUENTES
+   Sessão 29: ROI -23.09% | Melhor: QUENTES
+   Sessão 30: ROI -75.21% | Melhor: ATRASADOS
+   Sessão 31: ROI -72.51% | Melhor: QUENTES
+   Sessão 32: ROI -48.35% | Melhor: EQUILIBRADA
+   Sessão 33: ROI -47.19% | Melhor: EQUILIBRADA
+   Sessão 34: ROI -23.56% | Melhor: QUENTES
+   Sessão 35: ROI -22.63% | Melhor: QUENTES
+   Sessão 36: ROI -23.35% | Melhor: QUENTES
+   Sessão 37: ROI -48.02% | Melhor: EQUILIBRADA
+   Sessão 38: ROI -23.66% | Melhor: ATRASADOS
+   Sessão 39: ROI -22.57% | Melhor: ATRASADOS
+   Sessão 40: ROI -23.05% | Melhor: ATRASADOS
+   Sessão 41: ROI -56.82% | Melhor: EQUILIBRADA
+   Sessão 42: ROI -22.26% | Melhor: ATRASADOS
+   Sessão 43: ROI -22.86% | Melhor: ATRASADOS
+   Sessão 44: ROI -22.84% | Melhor: ATRASADOS
+   Sessão 45: ROI -23.18% | Melhor: ATRASADOS
+   Sessão 46: ROI -23.47% | Melhor: ATRASADOS
+   Sessão 47: ROI -22.22% | Melhor: ATRASADOS
+   Sessão 48: ROI -23.47% | Melhor: ATRASADOS
+   Sessão 49: ROI -23.36% | Melhor: ATRASADOS
+   Sessão 50: ROI -23.27% | Melhor: ATRASADOS
+   Sessão 51: ROI -56.77% | Melhor: ATRASADOS
+   Sessão 52: ROI -52.62% | Melhor: ATRASADOS
+   Sessão 53: ROI -22.60% | Melhor: ATRASADOS
+   Sessão 54: ROI -22.57% | Melhor: ATRASADOS
+   Sessão 55: ROI -23.49% | Melhor: ATRASADOS
+   Sessão 56: ROI -23.28% | Melhor: ATRASADOS
+   Sessão 57: ROI -22.26% | Melhor: ATRASADOS
+   Sessão 58: ROI -23.58% | Melhor: ATRASADOS
+   Sessão 59: ROI -45.41% | Melhor: ATRASADOS
+   Sessão 60: ROI -51.92% | Melhor: EQUILIBRADA
+   Sessão 61: ROI -48.11% | Melhor: ATRASADOS
+   Sessão 62: ROI -47.02% | Melhor: ATRASADOS
+   Sessão 63: ROI -49.21% | Melhor: ATRASADOS
+   Sessão 64: ROI -47.29% | Melhor: ATRASADOS
+   Sessão 65: ROI -81.14% | Melhor: QUENTES
+   Sessão 66: ROI -47.97% | Melhor: ATRASADOS
+   Sessão 67: ROI -35.92% | Melhor: ATRASADOS
+   Sessão 68: ROI -46.78% | Melhor: ATRASADOS
+   Sessão 69: ROI -47.58% | Melhor: ATRASADOS
+   Sessão 70: ROI -46.06% | Melhor: ATRASADOS
+   Sessão 71: ROI -46.51% | Melhor: ATRASADOS
+   Sessão 72: ROI -47.56% | Melhor: ATRASADOS
+   Sessão 73: ROI -46.82% | Melhor: ATRASADOS
+   Sessão 74: ROI -33.00% | Melhor: ATRASADOS
+   Sessão 75: ROI -42.28% | Melhor: ATRASADOS
+   Sessão 76: ROI -21.35% | Melhor: ATRASADOS
+   Sessão 77: ROI -23.36% | Melhor: ATRASADOS
+   Sessão 78: ROI -23.04% | Melhor: ATRASADOS
+   Sessão 79: ROI -23.18% | Melhor: ATRASADOS
+   Sessão 80: ROI -22.95% | Melhor: ATRASADOS
+   Sessão 81: ROI -21.35% | Melhor: ATRASADOS
+   Sessão 82: ROI -22.31% | Melhor: ATRASADOS
+   Sessão 83: ROI -22.46% | Melhor: ATRASADOS
+   Sessão 84: ROI -21.61% | Melhor: ATRASADOS
+   Sessão 85: ROI -22.87% | Melhor: ATRASADOS
+   Sessão 86: ROI -23.39% | Melhor: ATRASADOS
+   Sessão 87: ROI -23.32% | Melhor: ATRASADOS
+   Sessão 88: ROI -23.19% | Melhor: ATRASADOS
+   Sessão 89: ROI -23.36% | Melhor: ATRASADOS
+   Sessão 90: ROI -23.27% | Melhor: ATRASADOS
+   Sessão 91: ROI -23.04% | Melhor: ATRASADOS
+   Sessão 92: ROI -22.45% | Melhor: ATRASADOS
+   Sessão 93: ROI -23.23% | Melhor: ATRASADOS
+   Sessão 94: ROI -22.49% | Melhor: ATRASADOS
+   Sessão 95: ROI -23.40% | Melhor: ATRASADOS
+   Sessão 96: ROI -23.43% | Melhor: ATRASADOS
+   Sessão 97: ROI -23.28% | Melhor: ATRASADOS
+   Sessão 98: ROI -23.33% | Melhor: ATRASADOS
+   Sessão 99: ROI -22.70% | Melhor: ATRASADOS
+   Sessão 100: ROI -23.27% | Melhor: ATRASADOS
+
+   Evolução total: +0.48%
