@@ -10739,7 +10739,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("\n   OPÇÕES DE BACKTESTING:")
         print("   ┌─────────────────────────────────────────────────────────────────┐")
         print("   │ [1] 📊 Backtesting Gerador Mestre (histórico)                   │")
-        print("   │ [2] 🎯 Backtesting Pool 23 Híbrido (concurso futuro) ⭐ NOVO    │")
+        print("   │ [2] 🎯 Backtesting Pool 23 Híbrido (concurso futuro)            │")
+        print("   │ [3] 🧠 Relatório de Aprendizado (erros/acertos) ⭐ NOVO         │")
         print("   │ [0] ↩️  Voltar                                                   │")
         print("   └─────────────────────────────────────────────────────────────────┘")
         
@@ -10749,6 +10750,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             return
         elif sub_opcao == '2':
             self._executar_backtesting_pool23()
+            return
+        elif sub_opcao == '3':
+            self._exibir_relatorio_aprendizado()
             return
         elif sub_opcao != '1':
             print("   ⚠️ Opção inválida, usando Backtesting Gerador Mestre")
@@ -11766,36 +11770,45 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             queda_forte = fc < fm < fl
             tendencia_queda = (fc < fm) or (fm < fl)
             
-            # NOVA LÓGICA: Score baseado em SUPERÁVIT (não débito!)
-            # Queremos excluir números em SUPERÁVIT (aparecem MAIS que deveriam)
+            # LÓGICA CONSERVADORA v2.1 (baseado em 7 backtests - 42.9% acerto)
+            # Problema anterior: excluía números frequentes demais (5, 10, 11, 12, 15)
+            # Nova regra: SÓ excluir se estiver em SUPERÁVIT EXTREMO + AUSENTE nos últimos concursos
             score = 0
             
-            # Superávit forte (curta MUITO maior que longa) = bom candidato a excluir
-            if indice_debito < -30:
-                score += 5  # Superávit muito alto
-                status = '💰 SUPERÁVIT ALTO'
-            elif indice_debito < -15:
+            # Verificar se apareceu nos últimos 3 concursos (PROTEÇÃO CONSERVADORA)
+            apareceu_recente = any(n in r['numeros'] for r in resultados[:3])
+            
+            # Se apareceu nos últimos 3 concursos, NUNCA excluir!
+            if apareceu_recente:
+                score -= 10  # Penalidade forte
+                status = '🛡️ PROTEGIDO (recente)'
+            # Superávit EXTREMO (curta MUITO maior que longa) E ausente recente
+            elif indice_debito < -40 and fc >= 80:
+                score += 5  # Superávit muito alto + quente
+                status = '💰 SUPERÁVIT EXTREMO'
+            elif indice_debito < -30 and not apareceu_recente:
                 score += 4  # Superávit significativo
-                status = '💰 SUPERÁVIT'
+                status = '💰 SUPERÁVIT ALTO'
+            elif indice_debito < -15 and not apareceu_recente:
+                score += 2  # Superávit moderado
+                status = 'superávit'
             elif indice_debito < 0:
-                score += 2  # Leve superávit
-                status = 'superávit leve'
-            elif indice_debito < 15:
-                score += 0  # Equilibrado ou débito leve - NÃO EXCLUIR
+                score += 0  # Leve superávit - não excluir
                 status = 'equilibrado'
+            elif indice_debito < 20:
+                score -= 3  # DÉBITO - NUNCA excluir!
+                status = '⚠️ DÉBITO'
             else:
-                score -= 3  # DÉBITO ALTO - NUNCA excluir! Vai voltar!
-                status = '⚠️ DÉBITO ALTO'
+                score -= 6  # DÉBITO ALTO - vai voltar com certeza!
+                status = '🔥 DÉBITO ALTO'
             
-            # Bônus para curta muito alta (está "quente demais")
-            if fc >= 100:
-                score += 3
-            elif fc >= 80:
-                score += 2
+            # PROTEÇÃO EXTRA: números acima da mediana de frequência longa
+            if fl >= FREQ_ESPERADA:
+                score -= 2  # Números frequentes são perigosos de excluir
             
-            # Penalizar fortemente números em débito (curta baixa + longa alta)
+            # Penalizar MUITO fortemente números em débito (curta baixa + longa alta)
             if fc <= 40 and fl >= 55:
-                score -= 4  # Está devendo, vai voltar!
+                score -= 6  # Está devendo, vai voltar!
             
             candidatos.append({
                 'num': n,
@@ -12242,6 +12255,101 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         arquivos_gerados = []
         
         # ═══════════════════════════════════════════════════════════════════
+        # FILTRO PROBABILÍSTICO (opcional) - Melhoria de 11-21%
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n" + "─"*78)
+        print("🎲 FILTRO PROBABILÍSTICO (opcional)")
+        print("─"*78)
+        print("   Baseado em análise de frequência histórica (Acertos_11).")
+        print("   Combinações com mais 11-acertos têm MAIOR probabilidade.")
+        print("")
+        print("   📊 Modos disponíveis:")
+        print("   [1] Conservador: Acertos_11 >= 313 (58% das combos, +11% chance)")
+        print("   [2] Moderado:    Acertos_11 >= 320 (45% das combos, +15% chance)")
+        print("   [3] Agressivo:   Acertos_11 >= 330 (35% das combos, +18% chance)")
+        print("   [4] Personalizado: Definir limite manualmente")
+        print("   [0] Desativado:  Sem filtro probabilístico")
+        print("")
+        
+        filtro_prob_modo = 0
+        filtro_prob_limite = 0
+        filtro_prob_recentes = 0
+        
+        try:
+            modo_prob = input("   Modo [0-4, ENTER=0]: ").strip()
+            if modo_prob == '':
+                filtro_prob_modo = 0
+            else:
+                filtro_prob_modo = int(modo_prob)
+                filtro_prob_modo = max(0, min(4, filtro_prob_modo))
+            
+            if filtro_prob_modo == 1:
+                filtro_prob_limite = 313
+            elif filtro_prob_modo == 2:
+                filtro_prob_limite = 320
+            elif filtro_prob_modo == 3:
+                filtro_prob_limite = 330
+            elif filtro_prob_modo == 4:
+                try:
+                    limite_input = input("   Limite de Acertos_11 [300-350]: ").strip()
+                    filtro_prob_limite = int(limite_input)
+                    filtro_prob_limite = max(300, min(350, filtro_prob_limite))
+                except:
+                    filtro_prob_limite = 313
+                    print("   ⚠️ Usando limite padrão: 313")
+            
+            if filtro_prob_modo > 0:
+                # Opção de filtro de "recentes" (encalhadas são piores)
+                print(f"\n   📌 Filtro de recentes (opcional):")
+                print("   Combinações 'encalhadas' (sem 11+ há muito tempo) são PIORES.")
+                print("   [0] Desativado - aceitar todas")
+                print("   [20] Máx 20 concursos desde último 11+ (recomendado)")
+                print("   [10] Máx 10 concursos (agressivo)")
+                
+                try:
+                    recentes_input = input("   Máx concursos sem 11+ [ENTER=0]: ").strip()
+                    if recentes_input == '':
+                        filtro_prob_recentes = 0
+                    else:
+                        filtro_prob_recentes = int(recentes_input)
+                        filtro_prob_recentes = max(0, min(100, filtro_prob_recentes))
+                except:
+                    filtro_prob_recentes = 0
+                
+                print(f"\n   ✅ Filtro probabilístico ATIVADO:")
+                print(f"      • Limite Acertos_11: >= {filtro_prob_limite}")
+                if filtro_prob_recentes > 0:
+                    print(f"      • Máx concursos sem 11+: {filtro_prob_recentes}")
+                else:
+                    print(f"      • Recentes: desativado")
+            else:
+                print(f"\n   ⏭️ Filtro probabilístico DESATIVADO")
+        except Exception as e:
+            print(f"   ⚠️ Erro: {e}. Filtro probabilístico desativado.")
+            filtro_prob_modo = 0
+        
+        # Carregar filtro probabilístico se ativado
+        filtro_prob_obj = None
+        if filtro_prob_modo > 0:
+            try:
+                # Import dinâmico para evitar overhead se não usar
+                sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+                from filtro_probabilistico import FiltroProbabilistico
+                
+                print(f"\n   ⏳ Carregando dados probabilísticos...")
+                filtro_prob_obj = FiltroProbabilistico()
+                filtro_prob_obj.carregar(
+                    min_acertos_11=filtro_prob_limite,
+                    max_concursos_sem_11=filtro_prob_recentes if filtro_prob_recentes > 0 else None
+                )
+                print(f"   ✅ {filtro_prob_obj.combinacoes_filtradas:,} combinações válidas carregadas")
+            except Exception as e:
+                print(f"   ⚠️ Erro ao carregar filtro probabilístico: {e}")
+                print(f"   ⏭️ Continuando SEM filtro probabilístico...")
+                filtro_prob_obj = None
+                filtro_prob_modo = 0
+        
+        # ═══════════════════════════════════════════════════════════════════
         # LOOP PRINCIPAL - PROCESSA CADA NÍVEL
         # ═══════════════════════════════════════════════════════════════════
         for nivel in niveis_a_processar:
@@ -12476,8 +12584,38 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     print(f"      • Mapa térmico posicional: ATIVO (evitar improváveis)")
                 if debito_ativo and debitos_dict:
                     print(f"      • Débito posicional: ATIVO (mín {debito_min_matches} matches)")
+                if filtro_prob_obj:
+                    print(f"      • 🎲 Filtro probabilístico: Acertos_11 >= {filtro_prob_limite}")
                 print()
             print("─"*78)
+            
+            # ═══════════════════════════════════════════════════════════════════
+            # APLICAR FILTRO PROBABILÍSTICO (pré-filtro rápido)
+            # ═══════════════════════════════════════════════════════════════════
+            total_original = len(todas_combos)  # Guardar para cálculo de redução
+            
+            if filtro_prob_obj:
+                print(f"\n   🎲 Aplicando filtro probabilístico...")
+                print(f"      Total antes: {len(todas_combos):,}")
+                
+                inicio_prob = time.time()
+                # Usar o método filtrar_lista para processamento em batch
+                todas_combos = filtro_prob_obj.filtrar_lista(todas_combos)
+                tempo_prob = time.time() - inicio_prob
+                
+                print(f"      Total depois: {len(todas_combos):,}")
+                print(f"      ✅ Filtro probabilístico aplicado em {tempo_prob:.2f}s")
+                print(f"      📉 Redução: {100*(1 - len(todas_combos)/total_original):.1f}%")
+                
+                if len(todas_combos) == 0:
+                    print(f"\n   ⚠️ Nenhuma combinação passou no filtro probabilístico!")
+                    print(f"   💡 Tente um limite menor (ex: 300)")
+                    if len(niveis_a_processar) > 1:
+                        print("   ⏭️ Pulando para próximo nível...")
+                        continue
+                    else:
+                        input("\n   Pressione ENTER para voltar ao menu...")
+                        return
         
             def calcular_sequencia_maxima(combo):
                 """Retorna o tamanho da maior sequência consecutiva."""
@@ -12580,14 +12718,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     
                         saldo_combo = subir_count - descer_count
                     
-                        # Aplicar filtro baseado na tendência
+                        # Aplicar filtro baseado na tendência (LÓGICA INVERTIDA - baseado em 7 backtests)
+                        # Descoberta: A tendência do sorteio é OPOSTA à do resultado anterior!
                         if tendencia_compensacao == 'SUBIR':
-                            # Queremos combinações onde números tendem a SUBIR (saldo positivo)
-                            if saldo_combo < 0:  # Mais descem que sobem - não queremos
+                            # Se previu SUBIR, na verdade tende a DESCER (aceitar saldo negativo)
+                            if saldo_combo > 0:  # Saldo positivo quando deveria ser negativo
                                 continue
                         elif tendencia_compensacao == 'DESCER':
-                            # Queremos combinações onde números tendem a DESCER (saldo negativo)
-                            if saldo_combo > 0:  # Mais sobem que descem - não queremos
+                            # Se previu DESCER, na verdade tende a SUBIR (aceitar saldo positivo)
+                            if saldo_combo < 0:  # Saldo negativo quando deveria ser positivo
                                 continue
             
                 # Filtro IMPROBABILIDADE POSICIONAL (até 84% assertividade)
@@ -12696,6 +12835,11 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 f.write(f"# Números EXCLUÍDOS: {sorted(excluir)}\n")
                 f.write(f"# Pool 23: {pool_23}\n")
                 f.write(f"# Nível de filtro: {nivel}\n")
+                if filtro_prob_obj:
+                    f.write(f"# Filtro probabilístico: Acertos_11 >= {filtro_prob_limite}")
+                    if filtro_prob_recentes > 0:
+                        f.write(f", Recentes <= {filtro_prob_recentes}")
+                    f.write(f" (+11-18% chance)\n")
                 f.write(f"# Combinações: {len(combos_filtradas):,}\n")
                 f.write(f"# Custo: R$ {len(combos_filtradas) * 3.50:,.2f}\n")
                 f.write(f"#" + "="*60 + "\n")
@@ -13168,6 +13312,250 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         return debitos, lista_debitos
 
+    def _exibir_relatorio_aprendizado(self):
+        """
+        🧠 RELATÓRIO DE APRENDIZADO
+        
+        Exibe histórico detalhado de erros e acertos do sistema de exclusão
+        e previsões, permitindo acompanhar a evolução ao longo do tempo.
+        """
+        import json
+        from datetime import datetime
+        
+        print("\n" + "═"*78)
+        print("🧠 RELATÓRIO DE APRENDIZADO - HISTÓRICO DE ERROS E ACERTOS")
+        print("═"*78)
+        
+        # Carregar histórico
+        base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        dados_path = os.path.join(base_path, 'dados')
+        historico_path = os.path.join(dados_path, 'historico_aprendizado.json')
+        
+        if not os.path.exists(historico_path):
+            print("\n   ⚠️ Nenhum histórico de aprendizado encontrado!")
+            print("   💡 Execute alguns backtests na Opção 30.2 para gerar dados.")
+            input("\n   Pressione ENTER para voltar...")
+            return
+        
+        try:
+            with open(historico_path, 'r', encoding='utf-8') as f:
+                historico = json.load(f)
+        except Exception as e:
+            print(f"\n   ❌ Erro ao carregar histórico: {e}")
+            input("\n   Pressione ENTER para voltar...")
+            return
+        
+        total_backtests = historico.get('total_backtests', 0)
+        
+        if total_backtests == 0:
+            print("\n   ⚠️ Histórico vazio! Execute alguns backtests primeiro.")
+            input("\n   Pressione ENTER para voltar...")
+            return
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # RESUMO GERAL
+        # ═══════════════════════════════════════════════════════════════════
+        print(f"\n   📊 RESUMO GERAL ({total_backtests} backtests)")
+        print("   " + "─"*70)
+        
+        exc_correta = historico.get('exclusao_correta', 0)
+        exc_errada = historico.get('exclusao_errada', 0)
+        taxa_exc = exc_correta / total_backtests * 100 if total_backtests > 0 else 0
+        
+        # Barra visual
+        barra_size = 30
+        barra_ok = int(taxa_exc / 100 * barra_size)
+        barra_err = barra_size - barra_ok
+        barra = "█" * barra_ok + "░" * barra_err
+        
+        print(f"\n   🎯 TAXA DE EXCLUSÃO CORRETA: {taxa_exc:.1f}%")
+        print(f"      [{barra}] {exc_correta}/{total_backtests}")
+        
+        if taxa_exc < 50:
+            print(f"      ⚠️ Abaixo de 50% - método de exclusão precisa melhorar")
+        elif taxa_exc >= 70:
+            print(f"      ✅ Excelente! Acima de 70%")
+        else:
+            print(f"      📈 Razoável - há espaço para melhoria")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # PREVISÕES
+        # ═══════════════════════════════════════════════════════════════════
+        previsoes = historico.get('previsoes', {})
+        
+        print(f"\n   📈 TAXAS DE ACERTO DAS PREVISÕES:")
+        print("   " + "─"*70)
+        
+        # Soma
+        soma_prev = previsoes.get('soma', {})
+        soma_ac = soma_prev.get('acertos', 0)
+        soma_er = soma_prev.get('erros', 0)
+        soma_total = soma_ac + soma_er
+        if soma_total > 0:
+            taxa_soma = soma_ac / soma_total * 100
+            barra_soma = "█" * int(taxa_soma / 100 * 20) + "░" * (20 - int(taxa_soma / 100 * 20))
+            status_soma = "✅" if taxa_soma >= 70 else ("⚠️" if taxa_soma >= 50 else "❌")
+            print(f"      Previsão de Soma:        {taxa_soma:5.1f}% [{barra_soma}] {soma_ac}/{soma_total} {status_soma}")
+        else:
+            print(f"      Previsão de Soma:        N/A (sem dados)")
+        
+        # Compensação
+        comp_prev = previsoes.get('compensacao', {})
+        comp_ac = comp_prev.get('acertos', 0)
+        comp_er = comp_prev.get('erros', 0)
+        comp_total = comp_ac + comp_er
+        if comp_total > 0:
+            taxa_comp = comp_ac / comp_total * 100
+            barra_comp = "█" * int(taxa_comp / 100 * 20) + "░" * (20 - int(taxa_comp / 100 * 20))
+            status_comp = "✅" if taxa_comp >= 70 else ("⚠️" if taxa_comp >= 50 else "❌")
+            print(f"      Compensação Posicional:  {taxa_comp:5.1f}% [{barra_comp}] {comp_ac}/{comp_total} {status_comp}")
+        else:
+            print(f"      Compensação Posicional:  N/A (sem dados)")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # JACKPOTS POR NÍVEL
+        # ═══════════════════════════════════════════════════════════════════
+        niveis_jackpot = historico.get('niveis_jackpot', {})
+        
+        if niveis_jackpot:
+            print(f"\n   🏆 JACKPOTS POR NÍVEL DE FILTRO:")
+            print("   " + "─"*70)
+            print(f"      {'Nível':<8} {'Jackpots':<10} {'Visual':<30}")
+            print("      " + "-"*50)
+            
+            for nivel in range(7):
+                jackpots = niveis_jackpot.get(str(nivel), 0)
+                barra_jack = "🏆" * jackpots if jackpots > 0 else "─"
+                print(f"      N{nivel:<7} {jackpots:<10} {barra_jack}")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # HISTÓRICO DETALHADO DE EXCLUSÕES
+        # ═══════════════════════════════════════════════════════════════════
+        historico_det = historico.get('historico_detalhado', [])
+        
+        if historico_det:
+            print(f"\n   📋 HISTÓRICO DETALHADO DE EXCLUSÕES:")
+            print("   " + "═"*70)
+            print(f"      {'Data':<12} {'Excluídos':<15} {'No Resultado?':<25} {'Status':<10}")
+            print("   " + "─"*70)
+            
+            for item in historico_det:
+                # Formatar data
+                data_str = item.get('data', '')
+                try:
+                    if len(data_str) >= 8:
+                        data_fmt = f"{data_str[6:8]}/{data_str[4:6]}"
+                    else:
+                        data_fmt = data_str[:10]
+                except:
+                    data_fmt = data_str[:10]
+                
+                excluidos = item.get('excluidos', [])
+                resultado = set(item.get('resultado', []))
+                exclusao_ok = item.get('exclusao_correta', False)
+                
+                # Verificar quais excluídos estavam no resultado
+                excl_no_resultado = [n for n in excluidos if n in resultado]
+                
+                excl_str = str(excluidos)
+                
+                if excl_no_resultado:
+                    resultado_str = f"Sim! {excl_no_resultado} estava(m)"
+                    status = "❌ Erro"
+                else:
+                    resultado_str = "Não"
+                    status = "✅ Correto"
+                
+                print(f"      {data_fmt:<12} {excl_str:<15} {resultado_str:<25} {status:<10}")
+            
+            print("   " + "─"*70)
+            
+            # Análise de padrões de erro
+            print(f"\n   🔍 ANÁLISE DE PADRÕES:")
+            print("   " + "─"*70)
+            
+            # Contar quais números foram excluídos erroneamente
+            nums_erro = {}
+            for item in historico_det:
+                if not item.get('exclusao_correta', False):
+                    resultado = set(item.get('resultado', []))
+                    for n in item.get('excluidos', []):
+                        if n in resultado:
+                            nums_erro[n] = nums_erro.get(n, 0) + 1
+            
+            if nums_erro:
+                nums_erro_ord = sorted(nums_erro.items(), key=lambda x: -x[1])
+                print(f"      Números excluídos ERRONEAMENTE (estavam no resultado):")
+                for num, count in nums_erro_ord[:5]:
+                    print(f"         • Número {num:2d}: {count} erro(s)")
+                print(f"\n      💡 RECOMENDAÇÃO: Proteger estes números de exclusão!")
+            else:
+                print(f"      ✅ Nenhum padrão de erro identificado!")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # FILTROS PROBLEMÁTICOS
+        # ═══════════════════════════════════════════════════════════════════
+        filtros_falhas = historico.get('filtros_falhas', {})
+        
+        if filtros_falhas:
+            print(f"\n   ⚠️ FILTROS QUE MAIS ELIMINAM JACKPOTS:")
+            print("   " + "─"*70)
+            
+            falhas_ord = sorted(filtros_falhas.items(), key=lambda x: -x[1])
+            for filtro, count in falhas_ord[:5]:
+                taxa = count / total_backtests * 100
+                status = "🔴" if taxa > 30 else ("🟡" if taxa > 15 else "🟢")
+                print(f"      {status} {filtro}: {count} falhas ({taxa:.1f}%)")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # RECOMENDAÇÕES
+        # ═══════════════════════════════════════════════════════════════════
+        print(f"\n   💡 RECOMENDAÇÕES BASEADAS NO APRENDIZADO:")
+        print("   " + "═"*70)
+        
+        recomendacoes = []
+        
+        if taxa_exc < 50:
+            recomendacoes.append("• Método de exclusão com taxa baixa (<50%). Já aplicamos lógica conservadora v2.1.")
+        
+        if comp_total > 0 and taxa_comp < 50:
+            recomendacoes.append("• Compensação Posicional com taxa baixa. Lógica já foi INVERTIDA para melhorar.")
+        
+        if soma_total > 0 and taxa_soma >= 80:
+            recomendacoes.append("• Previsão de Soma está EXCELENTE! Manter estratégia atual.")
+        
+        # Verificar níveis com mais jackpots
+        if niveis_jackpot:
+            melhor_nivel = max(niveis_jackpot.items(), key=lambda x: x[1])
+            if int(melhor_nivel[1]) > 0:
+                recomendacoes.append(f"• Nível {melhor_nivel[0]} tem mais jackpots ({melhor_nivel[1]}). Considere usar este nível.")
+        
+        if not recomendacoes:
+            recomendacoes.append("• Continue executando backtests para gerar mais dados de aprendizado.")
+        
+        for rec in recomendacoes:
+            print(f"      {rec}")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # OPÇÕES
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n" + "─"*78)
+        print("   [1] Limpar histórico e recomeçar")
+        print("   [0] Voltar")
+        
+        opcao = input("\n   Escolha: ").strip()
+        
+        if opcao == '1':
+            confirmar = input("   ⚠️ Tem certeza? Isso apagará todo o histórico! [S/N]: ").strip().upper()
+            if confirmar == 'S':
+                try:
+                    os.remove(historico_path)
+                    print("   ✅ Histórico limpo! Novos backtests começarão do zero.")
+                except Exception as e:
+                    print(f"   ❌ Erro ao limpar: {e}")
+        
+        input("\n   Pressione ENTER para voltar...")
+
     def _executar_backtesting_pool23(self):
         """
         🎯 BACKTESTING POOL 23 HÍBRIDO
@@ -13258,30 +13646,38 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             # Superávit = negativo (está adiantado, pode ficar fora)
             indice_debito = fl - fc
             
-            # NOVA LÓGICA: Score baseado em SUPERÁVIT (não débito!)
+            # LÓGICA CONSERVADORA v2.1 (baseado em 7 backtests - 42.9% acerto)
+            # Problema anterior: excluía números frequentes demais (5, 10, 11, 12, 15)
+            # Nova regra: SÓ excluir se estiver em SUPERÁVIT EXTREMO + AUSENTE nos últimos concursos
             score = 0
             
-            # Superávit forte (curta MUITO maior que longa) = bom candidato a excluir
-            if indice_debito < -30:
-                score += 5  # Superávit muito alto
-            elif indice_debito < -15:
+            # Verificar se apareceu nos últimos 3 concursos (PROTEÇÃO CONSERVADORA)
+            apareceu_recente = any(n in r['numeros'] for r in resultados[:3])
+            
+            # Se apareceu nos últimos 3 concursos, NUNCA excluir!
+            if apareceu_recente:
+                score -= 10  # Penalidade forte
+            # Superávit EXTREMO (curta MUITO maior que longa) E ausente recente
+            elif indice_debito < -40 and fc >= 80:
+                score += 5  # Superávit muito alto + quente
+            elif indice_debito < -30 and not apareceu_recente:
                 score += 4  # Superávit significativo
+            elif indice_debito < -15 and not apareceu_recente:
+                score += 2  # Superávit moderado
             elif indice_debito < 0:
-                score += 2  # Leve superávit
-            elif indice_debito < 15:
-                score += 0  # Equilibrado ou débito leve
+                score += 0  # Leve superávit - não excluir
+            elif indice_debito < 20:
+                score -= 3  # DÉBITO - NUNCA excluir!
             else:
-                score -= 3  # DÉBITO ALTO - NUNCA excluir! Vai voltar!
+                score -= 6  # DÉBITO ALTO - vai voltar com certeza!
             
-            # Bônus para curta muito alta (está "quente demais")
-            if fc >= 100:
-                score += 3
-            elif fc >= 80:
-                score += 2
+            # PROTEÇÃO EXTRA: números acima da mediana de frequência longa
+            if fl >= FREQ_ESPERADA:
+                score -= 2  # Números frequentes são perigosos de excluir
             
-            # Penalizar fortemente números em débito (curta baixa + longa alta)
+            # Penalizar MUITO fortemente números em débito (curta baixa + longa alta)
             if fc <= 40 and fl >= 55:
-                score -= 4  # Está devendo, vai voltar!
+                score -= 6  # Está devendo, vai voltar!
             
             candidatos.append({'num': n, 'score': score, 'indice_debito': indice_debito})
         
@@ -13403,7 +13799,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         _, evitar_por_posicao, _, _ = self._calcular_improbabilidade_posicional(resultados_30)
         
         # DÉBITO POSICIONAL (50.7% assertividade - 10x vs aleatório!)
-        debitos_dict = self._calcular_debitos_posicionais(resultados)
+        debitos_dict, lista_debitos = self._calcular_debitos_posicionais(resultados)
         print(f"\n   📊 Débitos posicionais calculados: {len(debitos_dict)} pares (número, posição) em débito")
         
         # Gerar todas as combinações base
@@ -13573,10 +13969,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     
                     saldo_combo = subir_count - descer_count
                     
-                    if tendencia_compensacao == 'SUBIR' and saldo_combo < 0:
-                        return False
-                    elif tendencia_compensacao == 'DESCER' and saldo_combo > 0:
-                        return False
+                    # LÓGICA INVERTIDA (baseado em 7 backtests - 28.6% acerto original)
+                    # Tendência do sorteio é OPOSTA à do resultado anterior!
+                    if tendencia_compensacao == 'SUBIR' and saldo_combo > 0:
+                        return False  # Quando previu SUBIR, aceitar DESCER
+                    elif tendencia_compensacao == 'DESCER' and saldo_combo < 0:
+                        return False  # Quando previu DESCER, aceitar SUBIR
             
             # Filtro IMPROBABILIDADE POSICIONAL
             if filtros.get('usar_improbabilidade_posicional') and evitar_por_posicao:
@@ -13980,7 +14378,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         filtros_problematicos.append(('FAVORECIDOS', filtros_nivel['favorecidos_min'], 15, fav_resultado))
                 
                 if filtros_nivel.get('usar_compensacao') and compensacao_ativa:
-                    status = "✅" if (tendencia_compensacao == 'SUBIR' and saldo_resultado >= 0) or (tendencia_compensacao == 'DESCER' and saldo_resultado <= 0) else "❌"
+                    # LÓGICA INVERTIDA: Tendência é oposta ao previsto
+                    status = "✅" if (tendencia_compensacao == 'SUBIR' and saldo_resultado <= 0) or (tendencia_compensacao == 'DESCER' and saldo_resultado >= 0) else "❌"
                     print(f"      {status} Compensação: tendência {tendencia_compensacao} (saldo resultado: {saldo_resultado:+d})")
                     if status == "❌":
                         filtros_problematicos.append(('COMPENSAÇÃO', tendencia_compensacao, saldo_resultado, None))

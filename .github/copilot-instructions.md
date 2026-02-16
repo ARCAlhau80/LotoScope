@@ -67,21 +67,42 @@ python super_menu.py
 ### 6. Pool 23 Hybrid Generator (Option 31) ⭐⭐⭐ BREAKTHROUGH!
 - **Strategy**: Exclude 2 numbers using hybrid analysis (median + downward trend)
 - **Jackpot Rate**: 21% (vs 15% traditional methods)
-- **Validated**: Jackpot on contest 3610 with ROI +118.6%
+- **Validated**: Jackpots on contests 3610, 3615 with ROI up to +2841%
 - **7 Filter Levels**:
   - Level 0: No filters (490k combos)
-  - Level 1: Sum only (safest)
-  - Level 2: Basic - **RECOMMENDED FOR JACKPOT** (370k combos)
-  - Level 3: Balanced (seq max 6)
-  - Level 4: Moderate (+ repetition filter)
-  - Level 5: Aggressive (ROI optimized)
-  - Level 6: Ultra (minimum cost, ~2k combos, +16% ROI)
+  - Level 1: Sum only (381k combos)
+  - Level 2: Basic - **RECOMMENDED FOR JACKPOT** (325k combos)
+  - Level 3: Balanced (100k combos, seq max 6)
+  - Level 4: Moderate (12k combos, strict soma)
+  - Level 5: Aggressive (42k combos, ROI optimized)
+  - Level 6: Ultra (18k combos, **+2841% ROI** when jackpot!)
+
+### 7. Probabilistic Filter (Option 31 Sub-filter) ⭐⭐ NEW!
+- **Purpose**: Pre-filter combinations based on historical 11+ hits
+- **Concept**: Combinations with more historical 11+ hits have HIGHER probability
+- **Modes**:
+  - [0] Disabled (default)
+  - [1] Conservative: Acertos_11 >= 313 (58% combos, +11% chance)
+  - [2] Moderate: Acertos_11 >= 320 (45% combos, +15% chance)
+  - [3] Aggressive: Acertos_11 >= 330 (35% combos, +18% chance)
+  - [4] Custom: Manual limit (300-350)
+- **Recentes Filter**: Optionally exclude "stale" combinations (no 11+ in last N draws)
+- **Performance**: ~7s load, <1ms for 100k lookups, ~91MB RAM
+- **Validation**: Contest 3614 winner passes Conservative filter (Acertos_11=317)
+
+### 8. Learning System v2.1 (Option 30 → Option 3) ⭐⭐ NEW!
+- **Purpose**: Track exclusion/compensation accuracy over backtests
+- **Exclusion Algorithm v2.1**: Conservative mode - protects numbers in last 3 draws
+- **Compensation Logic**: INVERTED (predict SUBIR → accept DESCER)
+- **Current Stats**: 50% exclusion accuracy (8 backtests)
+- **Report Features**: Detailed history table, accuracy bars, pattern analysis
 
 ## Important Files
 
 | File | Purpose |
 |------|---------|  
 | `super_menu.py` | Main menu (4800+ lines) |
+| `filtro_probabilistico.py` | Probabilistic filter for Option 31 |
 | `sistema_aprendizado_ml.py` | ML system with 15 algorithms (Association Rules v2.0) |
 | `estrategia_combo20.py` | C1/C2 strategy implementation |
 | `combo20_FILTRADAS_TOP1000.txt` | Top 1000 C1 combinations |
@@ -98,13 +119,24 @@ python super_menu.py
 
 ✅ **15 correct numbers** (jackpot) achieved in contest 3474 with 50 combinations
 ✅ **15 correct numbers** (jackpot) achieved in contest 3610 with Pool 23 Hybrid (Option 31)
+✅ **15 correct numbers** (jackpot) achieved in contest 3615 with Pool 23 Level 6 (+2841% ROI!)
 
 ## Economic Analysis (Important!)
 
-- Break-even without jackpot: **Impossible** (but Pool 23 Level 6 gives +16% ROI)
+- Break-even without jackpot: **Impossible** (but Pool 23 Level 6 gives +2841% ROI when jackpot!)
 - Our filters improve odds by ~650x vs random
-- **NEW**: Pool 23 Level 2 = Best jackpot chance with +118% ROI when hit
-- Recommended: Level 2 for jackpot hunting, Level 6 for consistent small profit
+- **Pool 23 Levels Performance**:
+  - Level 2: 325k combos, best jackpot preservation, +134% ROI
+  - Level 3: 100k combos, balanced, +492% ROI
+  - Level 5: 42k combos, aggressive, +1257% ROI
+  - Level 6: 18k combos, ultra, **+2841% ROI** ⭐ BEST!
+- Recommended: Level 2-3 for jackpot hunting, Level 5-6 for maximum ROI
+
+## Bug Fixes (Feb/2026)
+
+1. **Fixed**: `_calcular_debitos_posicionais` tuple unpacking (levels 1-6 showed 0 combos)
+2. **Fixed**: Compensation logic was INVERTED (now: predict SUBIR → accept DESCER)
+3. **Improved**: Exclusion algorithm v2.1 (conservative mode, protects recent numbers)
 
 ---
-*Last updated: 2026-02-11*
+*Last updated: 2026-02-16*

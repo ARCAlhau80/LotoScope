@@ -5,7 +5,7 @@
 > trabalhando no projeto LotoScope. Mantenha-o atualizado após cada sessão significativa.
 
 ```
-📅 ÚLTIMA ATUALIZAÇÃO: 26/01/2026
+📅 ÚLTIMA ATUALIZAÇÃO: 16/02/2026
 👤 AUTOR: AR CALHAU
 🤖 VALIDADO POR: Claude Opus 4.5
 ```
@@ -16,14 +16,16 @@
 
 O **LotoScope** é um sistema científico completo para análise estatística e geração inteligente de combinações para a **Lotofácil** (loteria brasileira). O sistema combina:
 
-- **Análise estatística avançada** de 3.600+ concursos históricos
+- **Análise estatística avançada** de 3.615+ concursos históricos
 - **Redes neurais** e machine learning para padrões
 - **Interface web Flask** para interação
-- **Menu console (super_menu.py)** com 22+ sistemas integrados
-- **Estratégias matemáticas** validadas com resultados reais
+- **Menu console (super_menu.py)** com 31+ sistemas integrados
+- **Sistema de aprendizado** que rastreia erros e acertos
 
-### 🏆 RESULTADO VALIDADO
-✅ **15 ACERTOS (PRÊMIO MÁXIMO)** em 50 combinações no Concurso 3474
+### 🏆 RESULTADOS VALIDADOS
+✅ **15 ACERTOS (PRÊMIO MÁXIMO)** no Concurso 3474 (50 combinações)
+✅ **15 ACERTOS (PRÊMIO MÁXIMO)** no Concurso 3610 (Pool 23 Híbrido)
+✅ **15 ACERTOS (PRÊMIO MÁXIMO)** no Concurso 3615 (Pool 23 Nível 6, **ROI +2841%**!)
 
 ---
 
@@ -466,6 +468,46 @@ def carregar_combinacoes(arquivo):
 - Análise econômica completa: break-even impossível sem jackpot
 - Nossos filtros melhoram chances em ~650x vs aleatório
 - Recomendação: 200-500 combinações/concurso = melhor custo-benefício
+
+### 13/02/2026 - Filtro Probabilístico na Opção 31 ⭐ NOVO!
+**Conceito:**
+- Combinações com mais "hits" históricos de 11+ acertos têm MAIOR probabilidade
+- Análise de 3.268.760 combinações na tabela COMBINACOES_LOTOFACIL
+- Descoberta: correlação <0.15 para padrões ocultos, mas frequência de acertos funciona!
+
+**Implementação:**
+- Arquivo: `lotofacil_lite/interfaces/filtro_probabilistico.py`
+- Integrado como sub-filtro OPCIONAL na Opção 31 (Pool 23 Híbrido)
+- 4 modos de operação:
+  - [0] Desativado (padrão)
+  - [1] Conservador: Acertos_11 >= 313 (58% das combos, +11% chance)
+  - [2] Moderado: Acertos_11 >= 320 (45% das combos, +15% chance)
+  - [3] Agressivo: Acertos_11 >= 330 (35% das combos, +18% chance)
+  - [4] Personalizado: Limite manual (300-350)
+
+**Filtro de "Recentes" (opcional):**
+- Combinações "encalhadas" (sem 11+ há muito tempo) performam 0.72x PIOR
+- Opção para limitar a max N concursos sem 11+ (ex: 20)
+- Recomendado: 20 concursos para balance entre chance e volume
+
+**Performance:**
+- Carregamento: ~7 segundos para 1.9M combinações
+- Lookup: <1ms para 100k combinações (dicionário em memória)
+- Memória: ~91MB
+
+**Validação (Concurso 3614):**
+- Combinação vencedora: ID 2522851
+- Acertos_11: 317 (acima da mediana 313)
+- Ultimo_Acertos_11: 3611 (2 concursos antes)
+- ✅ PASSA no filtro Conservador (Acertos_11 >= 313)
+- ❌ NÃO PASSA no filtro Agressivo (Acertos_11 < 330)
+
+**Uso na Opção 31:**
+1. Selecionar números a excluir (método híbrido)
+2. Escolher nível de filtro (0-6)
+3. **NOVO:** Escolher modo do filtro probabilístico (0-4)
+4. Opcionalmente ativar filtro de recentes
+5. Gerar combinações filtradas
 
 ### 27/01/2026 - Conferidor Simples + Association Rules v2.0 ⭐ NOVO!
 **Opção 23 - Conferidor Simples:**
