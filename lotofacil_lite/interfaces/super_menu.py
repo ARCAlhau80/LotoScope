@@ -5678,6 +5678,19 @@ class SuperMenuLotofacil:
         print("   • Sem filtros ou redução - apenas conferência pura")
         print("=" * 70)
         
+        # 0. Escolher modo: arquivo único ou lote
+        print("\n📂 MODO DE ENTRADA:")
+        print("   1. Arquivo ÚNICO")
+        print("   2. LOTE de arquivos (múltiplos níveis Pool 23) ⭐ NOVO!")
+        print()
+        modo_entrada = input("🎯 Escolha o modo (1/2): ").strip()
+        
+        if modo_entrada == '2':
+            # MODO LOTE
+            self._conferidor_em_lote()
+            return
+        
+        # MODO ARQUIVO ÚNICO (código original)
         # 1. Solicitar caminho do arquivo
         print("\n📂 CAMINHO DO ARQUIVO TXT:")
         print("   (Formato esperado: 15 números separados por vírgula ou espaço por linha)")
@@ -6066,6 +6079,254 @@ class SuperMenuLotofacil:
             print(f"❌ Erro inesperado: {e}")
             import traceback
             traceback.print_exc()
+        
+        input("\n⏸️ Pressione ENTER para voltar ao menu principal...")
+
+
+    def _conferidor_em_lote(self):
+        """
+        📦 CONFERIDOR EM LOTE
+        
+        Confere múltiplos arquivos de combinações de uma vez.
+        Ideal para validar todos os níveis do Pool 23 simultaneamente.
+        """
+        import pyodbc
+        
+        print("\n" + "═"*78)
+        print("📦 CONFERIDOR EM LOTE - MÚLTIPLOS ARQUIVOS")
+        print("═"*78)
+        print("   Ideal para validar todos os níveis do Pool 23 de uma vez!")
+        print("   Cole os caminhos dos arquivos (um por linha ou separados por vírgula)")
+        print("   Formatos aceitos:")
+        print("   • N0: caminho/arquivo.txt, N1: caminho/arquivo2.txt, ...")
+        print("   • caminho/arquivo.txt")
+        print("   • caminho/arquivo.txt, caminho/arquivo2.txt")
+        print("   Digite FIM quando terminar")
+        print("═"*78)
+        
+        # 1. Coletar caminhos dos arquivos
+        print("\n📂 ARQUIVOS PARA CONFERIR:")
+        arquivos = []
+        
+        while True:
+            entrada = input("   📁 ").strip()
+            
+            if entrada.upper() == 'FIM' or entrada == '':
+                if not arquivos:
+                    print("   ⚠️ Nenhum arquivo informado!")
+                    continue
+                break
+            
+            # Parsear entrada - pode ter múltiplos arquivos
+            # Formatos: "N0: path, N1: path" ou "path, path" ou "path"
+            partes = entrada.split(',')
+            
+            for parte in partes:
+                parte = parte.strip()
+                if not parte:
+                    continue
+                
+                # Remover prefixo "N0:", "N1:", etc.
+                if ':' in parte and parte.split(':')[0].strip().upper().startswith('N'):
+                    parte = ':'.join(parte.split(':')[1:]).strip()
+                
+                # Remover aspas
+                parte = parte.strip('"').strip("'")
+                
+                if parte and os.path.exists(parte):
+                    arquivos.append(parte)
+                    print(f"      ✅ {os.path.basename(parte)}")
+                elif parte:
+                    print(f"      ❌ Não encontrado: {parte}")
+        
+        if not arquivos:
+            print("\n❌ Nenhum arquivo válido para conferir!")
+            input("\n⏸️ Pressione ENTER para voltar...")
+            return
+        
+        print(f"\n✅ {len(arquivos)} arquivos para conferir")
+        
+        # 2. Solicitar resultado para conferência
+        print("\n" + "─"*78)
+        print("🎯 RESULTADO PARA CONFERIR")
+        print("─"*78)
+        print("   Opções:")
+        print("   1. CONCURSO específico (buscar do banco)")
+        print("   2. MANUAL (digitar os 15 números)")
+        print()
+        
+        modo_resultado = input("   Escolha (1/2): ").strip()
+        
+        resultado = None
+        concurso_num = None
+        
+        if modo_resultado == '1':
+            try:
+                conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=Lotofacil;Trusted_Connection=yes;'
+                conn = pyodbc.connect(conn_str)
+                cursor = conn.cursor()
+                
+                concurso_input = input("   Número do concurso: ").strip()
+                
+                if concurso_input.isdigit():
+                    cursor.execute("""
+                        SELECT N1, N2, N3, N4, N5, N6, N7, N8, N9, N10, N11, N12, N13, N14, N15
+                        FROM Resultados_INT WHERE Concurso = ?
+                    """, int(concurso_input))
+                    
+                    row = cursor.fetchone()
+                    if row:
+                        resultado = set(row)
+                        concurso_num = int(concurso_input)
+                        print(f"   ✅ Resultado do concurso {concurso_num}: {sorted(resultado)}")
+                    else:
+                        print(f"   ❌ Concurso {concurso_input} não encontrado!")
+                
+                conn.close()
+            except Exception as e:
+                print(f"   ❌ Erro ao buscar concurso: {e}")
+        
+        if resultado is None:
+            print("\n   Digite os 15 números (separados por vírgula ou espaço):")
+            entrada_manual = input("   🎲 Números: ").strip()
+            
+            try:
+                if ',' in entrada_manual:
+                    numeros = [int(x.strip()) for x in entrada_manual.split(',')]
+                else:
+                    numeros = [int(x) for x in entrada_manual.split()]
+                
+                if len(numeros) == 15 and all(1 <= n <= 25 for n in numeros) and len(set(numeros)) == 15:
+                    resultado = set(numeros)
+                    print(f"   ✅ Resultado aceito: {sorted(resultado)}")
+                else:
+                    print("   ❌ Resultado inválido!")
+                    input("\n⏸️ Pressione ENTER para voltar...")
+                    return
+            except:
+                print("   ❌ Formato inválido!")
+                input("\n⏸️ Pressione ENTER para voltar...")
+                return
+        
+        # 3. Conferir cada arquivo
+        print("\n" + "═"*78)
+        print("📊 CONFERINDO ARQUIVOS...")
+        print("═"*78)
+        
+        PREMIOS = {11: 7, 12: 14, 13: 35, 14: 1000, 15: 1800000}
+        CUSTO_APOSTA = 3.50
+        
+        resultados_lote = []
+        
+        for idx, arquivo in enumerate(arquivos):
+            print(f"\n   ⏳ [{idx+1}/{len(arquivos)}] {os.path.basename(arquivo)}...")
+            
+            # Carregar combinações
+            combinacoes = []
+            try:
+                with open(arquivo, 'r', encoding='utf-8') as f:
+                    for linha in f:
+                        linha = linha.strip()
+                        if not linha or linha.startswith('#'):
+                            continue
+                        
+                        linha_limpa = linha.replace(',', ' ').replace('\t', ' ')
+                        try:
+                            numeros = sorted([int(n.strip()) for n in linha_limpa.split() if n.strip()])
+                            if len(numeros) == 15 and all(1 <= n <= 25 for n in numeros):
+                                combinacoes.append(set(numeros))
+                        except:
+                            continue
+            except Exception as e:
+                print(f"      ❌ Erro ao ler: {e}")
+                continue
+            
+            if not combinacoes:
+                print(f"      ⚠️ Nenhuma combinação válida")
+                continue
+            
+            # Conferir acertos
+            acertos_dist = {11: 0, 12: 0, 13: 0, 14: 0, 15: 0}
+            
+            for combo in combinacoes:
+                acertos = len(combo & resultado)
+                if acertos >= 11:
+                    acertos_dist[acertos] += 1
+            
+            # Calcular financeiro
+            custo = len(combinacoes) * CUSTO_APOSTA
+            receita = sum(acertos_dist[k] * PREMIOS[k] for k in acertos_dist)
+            lucro = receita - custo
+            roi = (lucro / custo * 100) if custo > 0 else 0
+            
+            # Extrair nível do nome do arquivo (se possível)
+            nome = os.path.basename(arquivo)
+            nivel = "?"
+            if 'nivel' in nome.lower():
+                try:
+                    nivel = nome.lower().split('nivel')[1][0]
+                except:
+                    pass
+            
+            resultados_lote.append({
+                'arquivo': nome,
+                'nivel': nivel,
+                'combos': len(combinacoes),
+                'custo': custo,
+                'acertos': acertos_dist,
+                'receita': receita,
+                'lucro': lucro,
+                'roi': roi
+            })
+            
+            print(f"      ✅ {len(combinacoes):,} combos | 15ac:{acertos_dist[15]} 14ac:{acertos_dist[14]} 13ac:{acertos_dist[13]} | ROI: {roi:+.1f}%")
+        
+        # 4. Exibir tabela comparativa
+        print("\n" + "═"*78)
+        print("📊 RESULTADOS COMPARATIVOS - CONFERÊNCIA EM LOTE")
+        print("═"*78)
+        if concurso_num:
+            print(f"   Resultado do Concurso {concurso_num}: {sorted(resultado)}")
+        else:
+            print(f"   Resultado informado: {sorted(resultado)}")
+        print("═"*78)
+        
+        print()
+        print(f"   {'NÍVEL':<6} {'COMBOS':>10} {'CUSTO':>14} {'11ac':>6} {'12ac':>6} {'13ac':>6} {'14ac':>6} {'15ac':>6} {'PRÊMIO':>14} {'ROI':>10}")
+        print("   " + "─"*100)
+        
+        for r in sorted(resultados_lote, key=lambda x: x['nivel']):
+            icon = "🏆" if r['acertos'][15] > 0 else ("⭐" if r['acertos'][14] > 0 else "  ")
+            
+            print(f" {icon} {r['nivel']:<6} {r['combos']:>10,} R$ {r['custo']:>10,.0f} "
+                  f"{r['acertos'][11]:>6} {r['acertos'][12]:>6} {r['acertos'][13]:>6} "
+                  f"{r['acertos'][14]:>6} {r['acertos'][15]:>6} "
+                  f"R$ {r['receita']:>10,.0f} {r['roi']:>+9.1f}%")
+        
+        print("   " + "─"*100)
+        
+        # Totais
+        total_combos = sum(r['combos'] for r in resultados_lote)
+        total_custo = sum(r['custo'] for r in resultados_lote)
+        total_receita = sum(r['receita'] for r in resultados_lote)
+        
+        print()
+        print(f"   📈 MELHOR ROI: Nível {max(resultados_lote, key=lambda x: x['roi'])['nivel']} ({max(r['roi'] for r in resultados_lote):+.1f}%)")
+        
+        jackpots = [r for r in resultados_lote if r['acertos'][15] > 0]
+        if jackpots:
+            print(f"   🏆 JACKPOTS encontrados em: {', '.join('Nível ' + str(j['nivel']) for j in jackpots)}")
+        else:
+            # Verificar até qual nível preservou pelo menos um 14 acertos
+            nivel_max_14 = None
+            for r in sorted(resultados_lote, key=lambda x: x['nivel'], reverse=True):
+                if r['acertos'][14] > 0:
+                    nivel_max_14 = r['nivel']
+                    break
+            if nivel_max_14:
+                print(f"   ⭐ 14 ACERTOS preservados até o Nível {nivel_max_14}")
+        
+        print()
         
         input("\n⏸️ Pressione ENTER para voltar ao menu principal...")
 

@@ -51,11 +51,16 @@ python super_menu.py
 - **Color Coding**: Red (-10%), Blue (-6%), White (avg), Orange (+6%), Purple (+10%)
 - **Default**: Last 30 contests (configurable)
 
-### 4. Simple Checker (Option 23) ⭐ NEW!
+### 4. Simple Checker (Option 23) ⭐ UPDATED!
 - **Purpose**: Check TXT file combinations against real results
-- **Modes**: ALL, RANGE (3470-3475), or MANUAL entry
+- **Modes**: 
+  - Single file: ALL concursos, RANGE (3470-3475), or MANUAL entry
+  - **Batch mode** ⭐ NEW: Multiple files at once (ideal for Pool 23 levels)
+- **Batch Input**: Accepts formats like:
+  - `N0: path/file.txt, N1: path/file2.txt`
+  - `path/file.txt, path/file2.txt`
 - **Financial Analysis**: Cost R$3.50/bet, Prizes (11=R$7, 12=R$14, 13=R$35, 14=R$1000, 15=R$1.8M)
-- **Output**: Total cost, prize, profit/loss, ROI%
+- **Output**: Comparative table with ROI for each level/file
 
 ### 5. Association Rules v2.0 (Option 7.12 → Option 10) ⭐ NEW!
 - **Positive Rules**: X → Y (co-occurrence patterns)
