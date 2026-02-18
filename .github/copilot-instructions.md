@@ -77,8 +77,9 @@ python super_menu.py
   - Level 5: Aggressive (42k combos, ROI optimized)
   - Level 6: Ultra (18k combos, **+2841% ROI** when jackpot!)
 
-### 7. Probabilistic Filter (Option 31 Sub-filter) ⭐⭐ NEW!
+### 7. Probabilistic Filter (Option 31 + Backtesting) ⭐⭐ UPDATED!
 - **Purpose**: Pre-filter combinations based on historical 11+ hits
+- **Available in**: Option 31 (Generator) AND Option 30.2 (Backtesting) ⭐ NEW!
 - **Concept**: Combinations with more historical 11+ hits have HIGHER probability
 - **Modes**:
   - [0] Disabled (default)
@@ -132,11 +133,12 @@ python super_menu.py
   - Level 6: 18k combos, ultra, **+2841% ROI** ⭐ BEST!
 - Recommended: Level 2-3 for jackpot hunting, Level 5-6 for maximum ROI
 
-## Bug Fixes (Feb/2026)
+## Bug Fixes & Improvements (Feb/2026)
 
 1. **Fixed**: `_calcular_debitos_posicionais` tuple unpacking (levels 1-6 showed 0 combos)
 2. **Fixed**: Compensation logic was INVERTED (now: predict SUBIR → accept DESCER)
 3. **Improved**: Exclusion algorithm v2.1 (conservative mode, protects recent numbers)
+4. **Added**: Probabilistic filter now available in Backtesting (Option 30.2)
 
 ---
-*Last updated: 2026-02-16*
+*Last updated: 2026-02-18*

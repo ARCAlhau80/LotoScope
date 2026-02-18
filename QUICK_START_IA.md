@@ -152,17 +152,22 @@ CUSTO_APOSTA = 3.50
 # Tolerância flexível para não perder jackpots
 ```
 
-### 9. Backtesting Pool 23 (Opção 30 → Sub-opção 2) ⭐⭐ NOVO!
+### 9. Backtesting Pool 23 (Opção 30 → Sub-opção 2) ⭐⭐ ATUALIZADO!
 ```python
 # TESTE AUTOMATIZADO de todos os níveis do Pool 23
 # Fluxo:
 # 1. Pergunta se quer ajustar números excluídos (S/N)
 # 2. Se N → usa sugestão automática (estratégia híbrida)
-# 3. Gera TODOS os níveis (0-6) automaticamente
-# 4. Salva arquivos de cada nível em dados/
-# 5. Pergunta o resultado sorteado (entrada manual - concurso futuro)
-# 6. Valida TODOS os arquivos contra o resultado
-# 7. Exibe tabela comparativa com ROI de cada nível
+# 3. ⭐ NOVO: Filtro probabilístico opcional (Acertos_11)
+#    [1] Conservador: >= 313 (58% combos)
+#    [2] Moderado:    >= 320 (45% combos)
+#    [3] Agressivo:   >= 330 (35% combos)
+#    [0] Desativado
+# 4. Gera TODOS os níveis (0-6) automaticamente
+# 5. Salva arquivos de cada nível em dados/
+# 6. Pergunta o resultado sorteado (entrada manual - concurso futuro)
+# 7. Valida TODOS os arquivos contra o resultado
+# 8. Exibe tabela comparativa com ROI de cada nível
 
 # Output:
 # ┌─────────────────────────────────────────────────────────────────┐
@@ -208,7 +213,7 @@ conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=Lot
 
 ---
 
-## ANÁLISE ECONÔMICA (Atualizada 16/02/2026)
+## ANÁLISE ECONÔMICA (Atualizada 18/02/2026)
 
 | Nível | Combos | Custo | 15ac? | ROI |
 |-------|--------|-------|-------|-----|
@@ -224,8 +229,9 @@ conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=Lot
 - Nível 2: Melhor preservação de jackpot (recomendado para cautela)
 - Nível 6: **MELHOR ROI** quando acerta jackpot (+2841%!)
 - Nível 4: EVITAR - filtro de soma muito restritivo, perde jackpots
+- **Filtro Probabilístico**: Agora disponível no Backtesting (Opção 30.2)
 
 ---
 
 > Para detalhes: `CONTEXTO_MASTER_IA.md`
-> Última atualização: 16/02/2026
+> Última atualização: 18/02/2026

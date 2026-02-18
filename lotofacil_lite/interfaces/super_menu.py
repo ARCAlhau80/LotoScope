@@ -13802,6 +13802,73 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         debitos_dict, lista_debitos = self._calcular_debitos_posicionais(resultados)
         print(f"\n   📊 Débitos posicionais calculados: {len(debitos_dict)} pares (número, posição) em débito")
         
+        # ═══════════════════════════════════════════════════════════════════
+        # FILTRO PROBABILÍSTICO (opcional)
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n" + "─"*78)
+        print("🎲 FILTRO PROBABILÍSTICO (opcional)")
+        print("─"*78)
+        print("   Baseado em análise de frequência histórica (Acertos_11).")
+        print("   Combinações com mais 11-acertos têm MAIOR probabilidade.")
+        print()
+        print("   📊 Modos disponíveis:")
+        print("   [1] Conservador: Acertos_11 >= 313 (58% das combos, +11% chance)")
+        print("   [2] Moderado:    Acertos_11 >= 320 (45% das combos, +15% chance)")
+        print("   [3] Agressivo:   Acertos_11 >= 330 (35% das combos, +18% chance)")
+        print("   [4] Personalizado: Definir limite manualmente")
+        print("   [0] Desativado:  Sem filtro probabilístico")
+        
+        filtro_prob_ativo = False
+        filtro_prob_limite = 0
+        filtro_prob_dados = None
+        
+        try:
+            modo_prob = input("\n   Modo do filtro probabilístico [0-4]: ").strip()
+            
+            if modo_prob == '1':
+                filtro_prob_ativo = True
+                filtro_prob_limite = 313
+            elif modo_prob == '2':
+                filtro_prob_ativo = True
+                filtro_prob_limite = 320
+            elif modo_prob == '3':
+                filtro_prob_ativo = True
+                filtro_prob_limite = 330
+            elif modo_prob == '4':
+                try:
+                    filtro_prob_limite = int(input("   Digite o limite mínimo de Acertos_11 (300-350): ").strip())
+                    if 300 <= filtro_prob_limite <= 350:
+                        filtro_prob_ativo = True
+                    else:
+                        print("   ⚠️ Valor fora do range! Filtro desativado.")
+                except:
+                    print("   ⚠️ Valor inválido! Filtro desativado.")
+            
+            if filtro_prob_ativo:
+                print(f"\n   ✅ Filtro probabilístico ATIVADO:")
+                print(f"      • Limite mínimo: Acertos_11 >= {filtro_prob_limite}")
+            else:
+                print(f"\n   ⏭️ Filtro probabilístico DESATIVADO")
+        except Exception as e:
+            print(f"   ⚠️ Erro: {e}. Filtro probabilístico desativado.")
+        
+        # Carregar filtro probabilístico se ativado
+        if filtro_prob_ativo:
+            try:
+                from filtro_probabilistico import FiltroProbabilistico
+                print(f"\n   ⏳ Carregando dados do filtro probabilístico...")
+                filtro_prob = FiltroProbabilistico()
+                if filtro_prob.carregar_dados():
+                    filtro_prob_dados = filtro_prob
+                    print(f"   ✅ Filtro probabilístico carregado ({filtro_prob.total_combinacoes:,} combinações)")
+                else:
+                    print(f"   ⚠️ Falha ao carregar dados. Filtro desativado.")
+                    filtro_prob_ativo = False
+            except Exception as e:
+                print(f"   ⚠️ Erro ao carregar filtro probabilístico: {e}")
+                print(f"   ⏭️ Continuando SEM filtro probabilístico...")
+                filtro_prob_ativo = False
+        
         # Gerar todas as combinações base
         print("\n   ⏳ Gerando 490.314 combinações base...")
         inicio = time.time()
@@ -14007,6 +14074,19 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         dados_path = os.path.join(base_path, 'dados')
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
+        # PRÉ-FILTRO PROBABILÍSTICO (se ativo)
+        combos_pre_filtradas = todas_combos
+        if filtro_prob_ativo and filtro_prob_dados:
+            print(f"\n   🎲 Aplicando filtro probabilístico às {len(todas_combos):,} combinações...")
+            inicio_prob = time.time()
+            combos_pre_filtradas = [
+                c for c in todas_combos 
+                if filtro_prob_dados.verificar_combinacao(tuple(sorted(c)), filtro_prob_limite)
+            ]
+            tempo_prob = time.time() - inicio_prob
+            print(f"   ✅ Filtro probabilístico: {len(combos_pre_filtradas):,} combinações restantes ({tempo_prob:.1f}s)")
+            print(f"      Redução: {len(todas_combos):,} → {len(combos_pre_filtradas):,} ({len(combos_pre_filtradas)/len(todas_combos)*100:.1f}%)")
+        
         for nivel in range(7):
             print(f"\n   ⏳ Processando NÍVEL {nivel}...")
             inicio_nivel = time.time()
@@ -14014,10 +14094,10 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             filtros = FILTROS_POR_NIVEL[nivel]
             
             if nivel == 0:
-                # Nível 0 = todas
-                combos_nivel = todas_combos
+                # Nível 0 = todas (com filtro probabilístico se ativo)
+                combos_nivel = combos_pre_filtradas
             else:
-                combos_nivel = [c for c in todas_combos if aplicar_filtros(c, filtros)]
+                combos_nivel = [c for c in combos_pre_filtradas if aplicar_filtros(c, filtros)]
             
             tempo_nivel = time.time() - inicio_nivel
             
@@ -14030,6 +14110,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 f.write(f"# BACKTESTING POOL 23 - NIVEL {nivel}\n")
                 f.write(f"# Excluídos: {sorted(excluir)}\n")
                 f.write(f"# Combinações: {len(combos_nivel):,}\n")
+                if filtro_prob_ativo:
+                    f.write(f"# Filtro probabilístico: Acertos_11 >= {filtro_prob_limite}\n")
                 f.write(f"#" + "="*60 + "\n")
                 for combo in combos_nivel:
                     f.write(','.join(f"{n:02d}" for n in sorted(combo)) + "\n")
