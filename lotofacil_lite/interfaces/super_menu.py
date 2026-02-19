@@ -14921,159 +14921,171 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"      {status} Posição: Previu {pos_prevista}, resultado foi {pos_real} (saldo {saldo_resultado:+d})")
         
         # ═══════════════════════════════════════════════════════════════════
-        # PASSO 11: SALVAR APRENDIZADO PARA MELHORIAS FUTURAS
+        # PASSO 11: SALVAR APRENDIZADO PARA MELHORIAS FUTURAS (OPCIONAL)
         # ═══════════════════════════════════════════════════════════════════
         print("\n" + "─"*78)
-        print("🧠 SALVANDO APRENDIZADO")
+        print("🧠 SALVAR APRENDIZADO?")
         print("─"*78)
+        print("   ⚠️ Se este foi um TESTE EXPLORATÓRIO, escolha [N] para não gerar ruído.")
+        print("   ✅ Se este foi um BACKTEST REAL de concurso novo, escolha [S].")
+        print()
         
-        import json
-        historico_path = os.path.join(dados_path, 'historico_aprendizado.json')
+        salvar_aprendizado = input("   💾 Salvar este resultado no histórico de aprendizado? [S/N]: ").strip().upper()
         
-        # Carregar histórico existente
-        historico = {
-            'total_backtests': 0,
-            'filtros_falhas': {},  # Contador de falhas por filtro
-            'filtros_acertos': {},  # Contador de acertos por filtro
-            'niveis_jackpot': {str(i): 0 for i in range(7)},  # Quantas vezes cada nível teve jackpot
-            'exclusao_correta': 0,
-            'exclusao_errada': 0,
-            'previsoes': {
-                'soma': {'acertos': 0, 'erros': 0},
-                'compensacao': {'acertos': 0, 'erros': 0}
-            },
-            'eventos_atipicos': [],
-            'historico_detalhado': []
-        }
-        
-        if os.path.exists(historico_path):
-            try:
-                with open(historico_path, 'r', encoding='utf-8') as f:
-                    historico = json.load(f)
-            except:
-                pass
-        
-        # Atualizar estatísticas
-        historico['total_backtests'] += 1
-        
-        # Exclusão correta/errada
-        if not excluidos_no_resultado:
-            historico['exclusao_correta'] += 1
+        if salvar_aprendizado != 'S':
+            print("\n   ⏭️ Aprendizado NÃO salvo (teste exploratório)")
+            print("─"*78)
         else:
-            historico['exclusao_errada'] += 1
-        
-        # Níveis com jackpot
-        for n in range(7):
-            if resultados_validacao[n]['acertos'][15] > 0:
-                historico['niveis_jackpot'][str(n)] = historico['niveis_jackpot'].get(str(n), 0) + 1
-        
-        # Registrar filtros que falharam (analisar cada nível)
-        for nivel_analisar in range(1, 7):
-            tinha_jackpot_anterior = resultados_validacao[nivel_analisar - 1]['acertos'][15] > 0
-            tem_jackpot_nivel = resultados_validacao[nivel_analisar]['acertos'][15] > 0
+            print("\n🧠 SALVANDO APRENDIZADO...")
+            print("─"*78)
             
-            filtros_nivel = FILTROS_POR_NIVEL[nivel_analisar]
+            import json
+            historico_path = os.path.join(dados_path, 'historico_aprendizado.json')
             
-            # Se perdeu jackpot neste nível, registrar quais filtros falharam
-            if tinha_jackpot_anterior and not tem_jackpot_nivel:
-                # Testar cada filtro
-                if 'soma_min' in filtros_nivel:
-                    soma_min = filtros_nivel['soma_min']
-                    soma_max = filtros_nivel['soma_max']
-                    if resultado_soma < soma_min or resultado_soma > soma_max:
-                        chave = f"N{nivel_analisar}_SOMA"
-                        historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
-                    else:
-                        chave = f"N{nivel_analisar}_SOMA"
-                        historico['filtros_acertos'][chave] = historico['filtros_acertos'].get(chave, 0) + 1
-                
-                if 'pares_min' in filtros_nivel:
-                    if pares_resultado < filtros_nivel['pares_min'] or pares_resultado > filtros_nivel['pares_max']:
-                        chave = f"N{nivel_analisar}_PARES"
-                        historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
-                
-                if 'seq_max' in filtros_nivel:
-                    if seq_max_resultado > filtros_nivel['seq_max']:
-                        chave = f"N{nivel_analisar}_SEQ"
-                        historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
-                
-                if 'rep_min' in filtros_nivel:
-                    if rep_ultimo < filtros_nivel['rep_min'] or rep_ultimo > filtros_nivel['rep_max']:
-                        chave = f"N{nivel_analisar}_REP"
-                        historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
-        
-        # Previsões
-        if reversao_soma_ativa:
-            soma_prevista = 'ALTA' if soma_ajuste and soma_ajuste[0] > 185 else 'BAIXA'
-            soma_real = 'ALTA' if resultado_soma > 195 else ('BAIXA' if resultado_soma < 195 else 'MÉDIA')
-            if soma_prevista == soma_real:
-                historico['previsoes']['soma']['acertos'] += 1
+            # Carregar histórico existente
+            historico = {
+                'total_backtests': 0,
+                'filtros_falhas': {},  # Contador de falhas por filtro
+                'filtros_acertos': {},  # Contador de acertos por filtro
+                'niveis_jackpot': {str(i): 0 for i in range(7)},  # Quantas vezes cada nível teve jackpot
+                'exclusao_correta': 0,
+                'exclusao_errada': 0,
+                'previsoes': {
+                    'soma': {'acertos': 0, 'erros': 0},
+                    'compensacao': {'acertos': 0, 'erros': 0}
+                },
+                'eventos_atipicos': [],
+                'historico_detalhado': []
+            }
+            
+            if os.path.exists(historico_path):
+                try:
+                    with open(historico_path, 'r', encoding='utf-8') as f:
+                        historico = json.load(f)
+                except:
+                    pass
+            
+            # Atualizar estatísticas
+            historico['total_backtests'] += 1
+            
+            # Exclusão correta/errada
+            if not excluidos_no_resultado:
+                historico['exclusao_correta'] += 1
             else:
-                historico['previsoes']['soma']['erros'] += 1
-        
-        if compensacao_ativa:
-            pos_prevista = tendencia_compensacao
-            pos_real = 'SUBIR' if saldo_resultado > 0 else ('DESCER' if saldo_resultado < 0 else 'NEUTRO')
-            if pos_prevista == pos_real or (pos_prevista and saldo_resultado == 0):
-                historico['previsoes']['compensacao']['acertos'] += 1
-            else:
-                historico['previsoes']['compensacao']['erros'] += 1
-        
-        # Eventos atípicos
-        if padroes_atipicos:
-            historico['eventos_atipicos'].append({
+                historico['exclusao_errada'] += 1
+            
+            # Níveis com jackpot
+            for n in range(7):
+                if resultados_validacao[n]['acertos'][15] > 0:
+                    historico['niveis_jackpot'][str(n)] = historico['niveis_jackpot'].get(str(n), 0) + 1
+            
+            # Registrar filtros que falharam (analisar cada nível)
+            for nivel_analisar in range(1, 7):
+                tinha_jackpot_anterior = resultados_validacao[nivel_analisar - 1]['acertos'][15] > 0
+                tem_jackpot_nivel = resultados_validacao[nivel_analisar]['acertos'][15] > 0
+                
+                filtros_nivel = FILTROS_POR_NIVEL[nivel_analisar]
+                
+                # Se perdeu jackpot neste nível, registrar quais filtros falharam
+                if tinha_jackpot_anterior and not tem_jackpot_nivel:
+                    # Testar cada filtro
+                    if 'soma_min' in filtros_nivel:
+                        soma_min = filtros_nivel['soma_min']
+                        soma_max = filtros_nivel['soma_max']
+                        if resultado_soma < soma_min or resultado_soma > soma_max:
+                            chave = f"N{nivel_analisar}_SOMA"
+                            historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
+                        else:
+                            chave = f"N{nivel_analisar}_SOMA"
+                            historico['filtros_acertos'][chave] = historico['filtros_acertos'].get(chave, 0) + 1
+                    
+                    if 'pares_min' in filtros_nivel:
+                        if pares_resultado < filtros_nivel['pares_min'] or pares_resultado > filtros_nivel['pares_max']:
+                            chave = f"N{nivel_analisar}_PARES"
+                            historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
+                    
+                    if 'seq_max' in filtros_nivel:
+                        if seq_max_resultado > filtros_nivel['seq_max']:
+                            chave = f"N{nivel_analisar}_SEQ"
+                            historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
+                    
+                    if 'rep_min' in filtros_nivel:
+                        if rep_ultimo < filtros_nivel['rep_min'] or rep_ultimo > filtros_nivel['rep_max']:
+                            chave = f"N{nivel_analisar}_REP"
+                            historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
+            
+            # Previsões
+            if reversao_soma_ativa:
+                soma_prevista = 'ALTA' if soma_ajuste and soma_ajuste[0] > 185 else 'BAIXA'
+                soma_real = 'ALTA' if resultado_soma > 195 else ('BAIXA' if resultado_soma < 195 else 'MÉDIA')
+                if soma_prevista == soma_real:
+                    historico['previsoes']['soma']['acertos'] += 1
+                else:
+                    historico['previsoes']['soma']['erros'] += 1
+            
+            if compensacao_ativa:
+                pos_prevista = tendencia_compensacao
+                pos_real = 'SUBIR' if saldo_resultado > 0 else ('DESCER' if saldo_resultado < 0 else 'NEUTRO')
+                if pos_prevista == pos_real or (pos_prevista and saldo_resultado == 0):
+                    historico['previsoes']['compensacao']['acertos'] += 1
+                else:
+                    historico['previsoes']['compensacao']['erros'] += 1
+            
+            # Eventos atípicos
+            if padroes_atipicos:
+                historico['eventos_atipicos'].append({
+                    'data': timestamp,
+                    'resultado': sorted(list(resultado_validacao)),
+                    'padroes': padroes_atipicos
+                })
+                # Manter apenas últimos 50 eventos
+                historico['eventos_atipicos'] = historico['eventos_atipicos'][-50:]
+            
+            # Histórico detalhado (últimos 20 backtests)
+            registro = {
                 'data': timestamp,
                 'resultado': sorted(list(resultado_validacao)),
-                'padroes': padroes_atipicos
-            })
-            # Manter apenas últimos 50 eventos
-            historico['eventos_atipicos'] = historico['eventos_atipicos'][-50:]
-        
-        # Histórico detalhado (últimos 20 backtests)
-        registro = {
-            'data': timestamp,
-            'resultado': sorted(list(resultado_validacao)),
-            'excluidos': sorted(list(excluir)),
-            'exclusao_correta': not bool(excluidos_no_resultado),
-            'soma': resultado_soma,
-            'seq_max': seq_max_resultado,
-            'pares': pares_resultado,
-            'ultimo_nivel_jackpot': ultimo_nivel_jackpot if tem_jackpot_n0 else -1,
-            'melhor_roi_nivel': nivel_melhor_roi,
-            'melhor_roi_valor': round(melhor_roi, 2)
-        }
-        historico['historico_detalhado'].append(registro)
-        historico['historico_detalhado'] = historico['historico_detalhado'][-20:]
-        
-        # Salvar
-        with open(historico_path, 'w', encoding='utf-8') as f:
-            json.dump(historico, f, indent=2, ensure_ascii=False)
-        
-        # Exibir estatísticas acumuladas
-        print(f"\n   📊 ESTATÍSTICAS ACUMULADAS ({historico['total_backtests']} backtests):")
-        print(f"      • Exclusões corretas: {historico['exclusao_correta']} ({historico['exclusao_correta']/historico['total_backtests']*100:.1f}%)")
-        print(f"      • Exclusões erradas: {historico['exclusao_errada']} ({historico['exclusao_errada']/historico['total_backtests']*100:.1f}%)")
-        
-        # Top filtros problemáticos
-        if historico['filtros_falhas']:
-            print(f"\n   ⚠️ FILTROS QUE MAIS ELIMINAM JACKPOTS:")
-            falhas_ordenadas = sorted(historico['filtros_falhas'].items(), key=lambda x: x[1], reverse=True)[:5]
-            for filtro, count in falhas_ordenadas:
-                print(f"      • {filtro}: {count} falhas")
-        
-        # Taxa de acerto das previsões
-        prev_soma = historico['previsoes']['soma']
-        prev_comp = historico['previsoes']['compensacao']
-        
-        if prev_soma['acertos'] + prev_soma['erros'] > 0:
-            taxa_soma = prev_soma['acertos'] / (prev_soma['acertos'] + prev_soma['erros']) * 100
-            print(f"\n   📈 TAXA DE ACERTO - Previsão de Soma: {taxa_soma:.1f}%")
-        
-        if prev_comp['acertos'] + prev_comp['erros'] > 0:
-            taxa_comp = prev_comp['acertos'] / (prev_comp['acertos'] + prev_comp['erros']) * 100
-            print(f"   📈 TAXA DE ACERTO - Compensação Posicional: {taxa_comp:.1f}%")
-        
-        print(f"\n   ✅ Aprendizado salvo em: historico_aprendizado.json")
+                'excluidos': sorted(list(excluir)),
+                'exclusao_correta': not bool(excluidos_no_resultado),
+                'soma': resultado_soma,
+                'seq_max': seq_max_resultado,
+                'pares': pares_resultado,
+                'ultimo_nivel_jackpot': ultimo_nivel_jackpot if tem_jackpot_n0 else -1,
+                'melhor_roi_nivel': nivel_melhor_roi,
+                'melhor_roi_valor': round(melhor_roi, 2)
+            }
+            historico['historico_detalhado'].append(registro)
+            historico['historico_detalhado'] = historico['historico_detalhado'][-20:]
+            
+            # Salvar
+            with open(historico_path, 'w', encoding='utf-8') as f:
+                json.dump(historico, f, indent=2, ensure_ascii=False)
+            
+            # Exibir estatísticas acumuladas
+            print(f"\n   📊 ESTATÍSTICAS ACUMULADAS ({historico['total_backtests']} backtests):")
+            print(f"      • Exclusões corretas: {historico['exclusao_correta']} ({historico['exclusao_correta']/historico['total_backtests']*100:.1f}%)")
+            print(f"      • Exclusões erradas: {historico['exclusao_errada']} ({historico['exclusao_errada']/historico['total_backtests']*100:.1f}%)")
+            
+            # Top filtros problemáticos
+            if historico['filtros_falhas']:
+                print(f"\n   ⚠️ FILTROS QUE MAIS ELIMINAM JACKPOTS:")
+                falhas_ordenadas = sorted(historico['filtros_falhas'].items(), key=lambda x: x[1], reverse=True)[:5]
+                for filtro, count in falhas_ordenadas:
+                    print(f"      • {filtro}: {count} falhas")
+            
+            # Taxa de acerto das previsões
+            prev_soma = historico['previsoes']['soma']
+            prev_comp = historico['previsoes']['compensacao']
+            
+            if prev_soma['acertos'] + prev_soma['erros'] > 0:
+                taxa_soma = prev_soma['acertos'] / (prev_soma['acertos'] + prev_soma['erros']) * 100
+                print(f"\n   📈 TAXA DE ACERTO - Previsão de Soma: {taxa_soma:.1f}%")
+            
+            if prev_comp['acertos'] + prev_comp['erros'] > 0:
+                taxa_comp = prev_comp['acertos'] / (prev_comp['acertos'] + prev_comp['erros']) * 100
+                print(f"   📈 TAXA DE ACERTO - Compensação Posicional: {taxa_comp:.1f}%")
+            
+            print(f"\n   ✅ Aprendizado salvo em: historico_aprendizado.json")
         
         # Limpeza de arquivos
         print("\n" + "─"*78)

@@ -1,5 +1,5 @@
 {
-  "total_backtests": 8,
+  "total_backtests": 9,
   "filtros_falhas": {
     "N4_SOMA": 1
   },
@@ -17,10 +17,10 @@
     "6": 1
   },
   "exclusao_correta": 4,
-  "exclusao_errada": 4,
+  "exclusao_errada": 5,
   "previsoes": {
     "soma": {
-      "acertos": 3,
+      "acertos": 4,
       "erros": 0
     },
     "compensacao": {
@@ -28,7 +28,31 @@
       "erros": 6
     }
   },
-  "eventos_atipicos": [],
+  "eventos_atipicos": [
+    {
+      "data": "20260219_100634",
+      "resultado": [
+        2,
+        3,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        14,
+        15,
+        17,
+        18,
+        21,
+        23,
+        25
+      ],
+      "padroes": [
+        "⚠️ SEQUÊNCIA LONGA: 6 consecutivos!"
+      ]
+    }
+  ],
   "historico_detalhado": [
     {
       "data": "20260214_125629",
@@ -277,6 +301,37 @@
       "ultimo_nivel_jackpot": 6,
       "melhor_roi_nivel": 6,
       "melhor_roi_valor": 2841.14
+    },
+    {
+      "data": "20260219_100634",
+      "resultado": [
+        2,
+        3,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        14,
+        15,
+        17,
+        18,
+        21,
+        23,
+        25
+      ],
+      "excluidos": [
+        3,
+        13
+      ],
+      "exclusao_correta": false,
+      "soma": 189,
+      "seq_max": 6,
+      "pares": 6,
+      "ultimo_nivel_jackpot": -1,
+      "melhor_roi_nivel": 3,
+      "melhor_roi_valor": -70.7
     }
   ]
 }
