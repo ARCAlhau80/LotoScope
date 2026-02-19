@@ -13971,6 +13971,72 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print(f"\n   ✅ POOL 23: {pool_23}")
         
         # ═══════════════════════════════════════════════════════════════════
+        # PASSO 2.5: NÚMEROS FIXOS (opcional)
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n" + "─"*78)
+        print("📌 NÚMEROS FIXOS (opcional)")
+        print("─"*78)
+        print("   Se você tem CERTEZA de alguns números, pode fixá-los.")
+        print("   Isso REDUZ MUITO as combinações a serem geradas.")
+        print("")
+        print("   Impacto dos números fixos:")
+        print("   • 0 fixos: 490.314 combinações (Pool 23 completo)")
+        print("   • 3 fixos: ~125.000 combinações")
+        print("   • 5 fixos: ~43.000 combinações")
+        print("   • 7 fixos: ~12.000 combinações")
+        print("   • 10 fixos: ~1.300 combinações")
+        
+        numeros_fixos = set()
+        try:
+            qtd_fixos = input("\n   Quantos números FIXOS? [0-10, ENTER=0]: ").strip()
+            if qtd_fixos == '':
+                qtd_fixos = 0
+            else:
+                qtd_fixos = int(qtd_fixos)
+                qtd_fixos = max(0, min(10, qtd_fixos))
+            
+            if qtd_fixos > 0:
+                print(f"\n   Digite {qtd_fixos} números (1-25) separados por espaço ou vírgula:")
+                print(f"   (Excluídos: {sorted(excluir)} - NÃO podem ser fixos)")
+                
+                entrada = input("   Números fixos: ").strip()
+                entrada = entrada.replace(',', ' ')
+                numeros_input = [int(x) for x in entrada.split() if x.isdigit() or (x.lstrip('-').isdigit())]
+                
+                # Validar números
+                for num in numeros_input[:qtd_fixos]:
+                    if 1 <= num <= 25:
+                        if num in excluir:
+                            print(f"   ⚠️ Número {num} está nos EXCLUÍDOS - ignorando")
+                        else:
+                            numeros_fixos.add(num)
+                
+                if numeros_fixos:
+                    # Calcular impacto
+                    pool_disponivel = 23 - len(numeros_fixos)
+                    posicoes_restantes = 15 - len(numeros_fixos)
+                    
+                    from math import comb
+                    combinacoes_estimadas = comb(pool_disponivel, posicoes_restantes)
+                    
+                    print(f"\n   ✅ NÚMEROS FIXOS: {sorted(numeros_fixos)}")
+                    print(f"   📊 Pool disponível: {pool_disponivel} números")
+                    print(f"   📊 Posições restantes: {posicoes_restantes}")
+                    print(f"   📊 Combinações estimadas: {combinacoes_estimadas:,}")
+                    
+                    # Verificar se fixos estão no último resultado (curiosidade)
+                    ultimo_resultado_set = set(resultados[0]['numeros'])
+                    fixos_no_ultimo = numeros_fixos & ultimo_resultado_set
+                    if fixos_no_ultimo:
+                        print(f"   🎯 {len(fixos_no_ultimo)}/{len(numeros_fixos)} fixos estavam no último resultado!")
+                else:
+                    print(f"   ⚠️ Nenhum número válido - continuando sem fixos")
+        
+        except Exception as e:
+            print(f"   ⚠️ Erro ao processar fixos: {e}")
+            numeros_fixos = set()
+        
+        # ═══════════════════════════════════════════════════════════════════
         # PASSO 3: GERAR COMBINAÇÕES PARA TODOS OS NÍVEIS
         # ═══════════════════════════════════════════════════════════════════
         print("\n" + "─"*78)
@@ -14130,11 +14196,27 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"   ⏭️ Continuando SEM filtro probabilístico...")
                 filtro_prob_ativo = False
         
-        # Gerar todas as combinações base
-        print("\n   ⏳ Gerando 490.314 combinações base...")
-        inicio = time.time()
-        todas_combos = list(combinations(pool_23, 15))
-        print(f"   ✅ {len(todas_combos):,} combinações em {time.time()-inicio:.1f}s")
+        # Gerar todas as combinações base (com ou sem números fixos)
+        if numeros_fixos:
+            # Pool disponível = Pool 23 - números fixos
+            pool_disponivel = [n for n in pool_23 if n not in numeros_fixos]
+            posicoes_restantes = 15 - len(numeros_fixos)
+            
+            print(f"\n   📌 NÚMEROS FIXOS: {sorted(numeros_fixos)}")
+            print(f"   📊 Pool disponível: {len(pool_disponivel)} números")
+            print(f"   📊 Posições a preencher: {posicoes_restantes}")
+            print(f"\n   ⏳ Gerando combinações (com {len(numeros_fixos)} fixos)...")
+            
+            inicio = time.time()
+            # Gerar combinações parciais e depois adicionar os fixos
+            combos_parciais = list(combinations(pool_disponivel, posicoes_restantes))
+            todas_combos = [tuple(sorted(list(numeros_fixos) + list(c))) for c in combos_parciais]
+            print(f"   ✅ {len(todas_combos):,} combinações em {time.time()-inicio:.1f}s")
+        else:
+            print("\n   ⏳ Gerando 490.314 combinações base...")
+            inicio = time.time()
+            todas_combos = list(combinations(pool_23, 15))
+            print(f"   ✅ {len(todas_combos):,} combinações em {time.time()-inicio:.1f}s")
         
         # Parâmetros por nível - SINCRONIZADO com Gerador Pool 23 (Opção 31)
         # META: Progressão suave de 100% → 1%
