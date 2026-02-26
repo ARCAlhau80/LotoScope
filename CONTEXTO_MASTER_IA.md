@@ -5,7 +5,7 @@
 > trabalhando no projeto LotoScope. Mantenha-o atualizado após cada sessão significativa.
 
 ```
-📅 ÚLTIMA ATUALIZAÇÃO: 16/02/2026
+📅 ÚLTIMA ATUALIZAÇÃO: 26/02/2026
 👤 AUTOR: AR CALHAU
 🤖 VALIDADO POR: Claude Opus 4.5
 ```
@@ -547,6 +547,64 @@ def carregar_combinacoes(arquivo):
 - Identificados padrões de retorno recorrentes (131%, 26.5%, 8.05%)
 - Criado `filtro_rapido.py` para seleção top 1000
 - Encontrado jackpot (15 acertos) no concurso 3521
+
+### 26/02/2026 - VALIDAÇÃO CIENTÍFICA COMPLETA ⭐⭐⭐
+
+#### 🔬 Métricas Testadas e Resultados
+
+| Métrica | Concursos | Resultado | Conclusão |
+|---------|-----------|-----------|-----------|
+| Ranking Quintetos (débito) | 200 | 0% vantagem | ❌ NÃO FUNCIONA |
+| Índice de Débito extremo | 2000+ casos | 0% vantagem | ❌ NÃO FUNCIONA |
+| Anomaly v2.0 (consecutivas) | 3619 | +2-3% | ⚠️ INCONCLUSIVO |
+| Números Primos | 3619 | -0.3% | ❌ NÃO FUNCIONA |
+| Fibonacci | 3619 | -0.2% | ❌ NÃO FUNCIONA |
+| Múltiplos de 3 | 3619 | -0.4% | ❌ NÃO FUNCIONA |
+| Euler (e) | 3619 | -0.6% | ❌ NÃO FUNCIONA |
+| Pi (π) | 3619 | -0.6% | ❌ NÃO FUNCIONA |
+
+**Conclusão:** A loteria é VERDADEIRAMENTE ALEATÓRIA. Padrões matemáticos e históricos não predizem resultados futuros.
+
+#### ✅ Novos Filtros VALIDADOS (Redutores)
+
+| Filtro | Cobertura | Uso |
+|--------|-----------|-----|
+| **Consecutivos 7-10** | 90.5% | Elimina combinações muito espalhadas/agrupadas |
+| **Gap máximo ≤5** | 93.5% | Elimina combinações com lacunas grandes |
+| **Primos 4-7** | 91.4% | Elimina extremos |
+| **Fibonacci 3-5** | 81.7% | Elimina extremos |
+
+#### 🔧 Implementação no Pool 23
+
+Novos filtros adicionados aos níveis 2-6:
+```
+Nível 2: Consecutivos 7-10, Gap ≤5 (seguro para jackpot)
+Nível 3: Consecutivos 7-10, Gap ≤5
+Nível 4-6: Consecutivos 7-9, Gap ≤4 (mais restritivo)
+```
+
+#### 📊 Probabilidade Fundamental
+
+**TODOS os 25 números têm EXATAMENTE 60% de chance de sair:**
+- Prova matemática: C(24,14) / C(25,15) = 0.60
+- Verificação empírica (3619 concursos): 57.3% - 62.6% (variação natural)
+- "Ou sai ou não sai" NÃO é 50/50 - é 60/40!
+
+#### 🎯 Abordagem Recomendada
+
+```
+1. NÃO tentar prever qual número vai sair (impossível)
+2. FOCAR em reduzir universo eliminando combinações improváveis
+3. USAR: Pool 23 + filtros validados (soma, consecutivos, gap)
+4. ACEITAR: ROI negativo sem jackpot, positivo com jackpot
+```
+
+#### 📁 Arquivos de Validação Criados
+- `validar_ranking_quintetos.py` - Valida ranking por débito
+- `validar_anomaly_v2.py` - Valida consecutivas
+- `validar_padroes_matematicos.py` - Valida primos, fibonacci, múltiplos
+- `validar_padroes_avancados.py` - Valida Euler, Pi, consecutivos, gaps
+- `demonstrar_probabilidade_60.py` - Prova dos 60%
 
 ---
 

@@ -381,6 +381,13 @@ class SuperMenuLotofacil:
         print("     • Exportação TOTAL (sem tops arbitrários)")
         print("     • 490k → filtrado por nível escolhido")
         print()
+        print("3️⃣2️⃣  📊 MAPA GRÁFICO DE RANKING ⭐⭐ NOVO!")
+        print("     • Visualização gráfica dos 25 números")
+        print("     • 5 Quintetos (TOP 5, ALTOS, MÉDIO, BAIXOS, PIORES 5)")
+        print("     • Círculos concêntricos = frequência recente")
+        print("     • Cores: 🔴 último sorteio | 🟡 4 anteriores")
+        print("     • Baseado no ranking do Pool 23 Híbrido")
+        print()
         print("0️⃣  🚪 SAIR")
         print("=" * 60)
     
@@ -2582,6 +2589,8 @@ class SuperMenuLotofacil:
                     self.executar_backtesting_automatizado()
                 elif opcao == "31":
                     self.executar_gerador_pool_23_hibrido()
+                elif opcao == "32":
+                    self.executar_mapa_grafico_ranking()
                 elif opcao == "0":
                     print("\n👋 Obrigado por usar o Super Menu Lotofácil!")
                     print("🎯 Boa sorte com suas apostas inteligentes!")
@@ -2589,7 +2598,7 @@ class SuperMenuLotofacil:
                     print("🔺 Nova funcionalidade: Pirâmide Invertida Dinâmica!")
                     break
                 else:
-                    print("\n❌ Opção inválida! Escolha entre 0-31 (ou 2.1, 2.2, 7.1-7.13).")
+                    print("\n❌ Opção inválida! Escolha entre 0-32 (ou 2.1, 2.2, 7.1-7.13).")
                     input("Pressione ENTER para continuar...")
             
             except KeyboardInterrupt:
@@ -12153,25 +12162,24 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   ├─────────────────────────────────────────────────────────────────┤")
         print("   │ NÍVEL 2: BÁSICO (RECOMENDADO PARA JACKPOT) ⭐                   │")
         print("   │          SOMA DINÂMICA | PARES: 5-10 | PRIMOS: 3-8              │")
+        print("   │          CONSEC: 7-10 | GAP ≤5 ⭐NOVO                          │")
         print("   │          + COMPENSAÇÃO POSICIONAL (64%)                         │")
-        print("   │          + MAPA TÉRMICO POSICIONAL (84%)                        │")
         print("   ├─────────────────────────────────────────────────────────────────┤")
         print("   │ NÍVEL 3: EQUILIBRADO                                            │")
         print("   │          SOMA DINÂMICA | PARES: 6-9 | PRIMOS: 4-7               │")
-        print("   │          SEQ máx: 6 | + COMP. POS. + MAPA TÉRMICO              │")
+        print("   │          CONSEC: 7-10 | GAP ≤5 | SEQ máx: 6                    │")
         print("   ├─────────────────────────────────────────────────────────────────┤")
         print("   │ NÍVEL 4: MODERADO                                               │")
         print("   │          SOMA DINÂMICA | PARES: 6-9 | PRIMOS: 4-7               │")
-        print("   │          SEQ máx: 5 | REP: 4-11 | + COMP. + MAPA               │")
+        print("   │          CONSEC: 7-9 | GAP ≤4 | SEQ máx: 5 | REP: 4-11         │")
         print("   ├─────────────────────────────────────────────────────────────────┤")
         print("   │ NÍVEL 5: AGRESSIVO (ROI OTIMIZADO) 📈                           │")
         print("   │          SOMA: 180-210 | PARES: 6-9 | PRIMOS: 3-7               │")
-        print("   │          SEQ máx: 5 | REP: 4-11 | NÚCLEO ≥8                    │")
-        print("   │          Otimizado para maximizar 14 acertos                    │")
+        print("   │          CONSEC: 7-9 | GAP ≤4 | SEQ máx: 5 | NÚCLEO ≥8         │")
         print("   ├─────────────────────────────────────────────────────────────────┤")
         print("   │ NÍVEL 6: ULTRA (CONSISTÊNCIA) 🎯                                │")
         print("   │          SOMA: 185-205 | PARES: 6-9 | PRIMOS: 4-7               │")
-        print("   │          SEQ máx: 5 | REP: 5-10 | NÚCLEO ≥8 | FAV ≥4           │")
+        print("   │          CONSEC: 7-9 | GAP ≤4 | SEQ máx: 5 | NÚCLEO ≥8         │")
         print("   │          Foco em acertos 12-14 (não depende de jackpot)         │")
         print("   └─────────────────────────────────────────────────────────────────┘")
         
@@ -12193,47 +12201,67 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         FILTROS_POR_NIVEL = {
             0: {},  # Sem filtros - 490k combos (100%) - PURO
             1: {
-                # NÍVEL 1: SUAVE - soma + débito posicional (meta: ~350k, 70%)
+                # NÍVEL 1: SUAVE - soma + débito posicional + anomalias (meta: ~350k, 70%)
                 'soma_min': 175, 'soma_max': 235,
                 'usar_debito_posicional': True,  # NOVO: 50.7% assertividade
                 'debito_min_matches': 1,  # Mínimo 1 número em posição de débito
+                'usar_analise_anomalias': True,  # NOVO: Filtro de anomalias de frequência
+                'anomalias_max_quentes': 3,  # Máximo de números "muito quentes" permitidos
+                'anomalias_min_frios': 0,  # Mínimo de números "frios" exigidos
             },
             2: {
-                # NÍVEL 2: BÁSICO - soma + reversão + débito (meta: ~250k, 50%)
+                # NÍVEL 2: BÁSICO - soma + reversão + débito + anomalias + NOVOS FILTROS
                 'soma_min': 180, 'soma_max': 230,
+                'consecutivos_min': 7, 'consecutivos_max': 10,  # NOVO: 90.5% cobertura
+                'gap_max': 5,  # NOVO: 93.5% cobertura
                 'usar_reversao_soma': True,
                 'usar_debito_posicional': True,
                 'debito_min_matches': 2,  # Mínimo 2 números em posições de débito
+                'usar_analise_anomalias': True,  # Filtro de anomalias
+                'anomalias_max_quentes': 3,  # Máximo de números "muito quentes"
+                'anomalias_min_frios': 0,  # Mínimo de números "frios"
             },
             3: {
-                # NÍVEL 3: EQUILIBRADO - adiciona pares/primos (meta: ~150k, 30%)
+                # NÍVEL 3: EQUILIBRADO - adiciona pares/primos + consecutivos/gap
                 'soma_min': 185, 'soma_max': 225,
                 'pares_min': 5, 'pares_max': 10,
                 'primos_min': 3, 'primos_max': 8,
+                'consecutivos_min': 7, 'consecutivos_max': 10,  # NOVO
+                'gap_max': 5,  # NOVO
                 'usar_reversao_soma': True,
                 'usar_compensacao': True,
                 'usar_debito_posicional': True,
                 'debito_min_matches': 2,
+                'usar_analise_anomalias': True,  # Filtro de anomalias
+                'anomalias_max_quentes': 2,  # Mais restritivo
+                'anomalias_min_frios': 1,  # Exige ao menos 1 número frio
             },
             4: {
-                # NÍVEL 4: MODERADO - adiciona sequência (meta: ~80k, 16%)
+                # NÍVEL 4: MODERADO - adiciona sequência + gap mais restritivo
                 'soma_min': 190, 'soma_max': 220,
                 'pares_min': 6, 'pares_max': 9,
                 'primos_min': 4, 'primos_max': 7,
-                'seq_max': 6,
+                'consecutivos_min': 7, 'consecutivos_max': 9,  # NOVO: mais restritivo
+                'gap_max': 4,  # NOVO: mais restritivo
+                'seq_max': 5,
                 'usar_compensacao': True,
                 'usar_reversao_soma': True,
                 'usar_improbabilidade_posicional': True,
                 'usar_debito_posicional': True,
                 'debito_min_matches': 3,  # Mais exigente
+                'usar_analise_anomalias': True,  # Filtro de anomalias
+                'anomalias_max_quentes': 2,  # Restritivo
+                'anomalias_min_frios': 1,  # Exige 1 número frio
             },
             5: {
-                # NÍVEL 5: AGRESSIVO - OTIMIZADO PARA ROI (meta: ~30k, 6%)
+                # NÍVEL 5: AGRESSIVO - OTIMIZADO PARA ROI + consecutivos/gap restritivos
                 # AJUSTE: Soma ampliada baseado em análise de 14 acertos (176-205)
                 # Combinações com 14+ acertos têm soma média de 189.9
                 'soma_min': 180, 'soma_max': 210,  # Antes: 195-215 (muito apertado!)
                 'pares_min': 6, 'pares_max': 9,
                 'primos_min': 3, 'primos_max': 7,  # Ampliado: jackpot tinha 4
+                'consecutivos_min': 7, 'consecutivos_max': 9,  # NOVO: 76.9% cobertura
+                'gap_max': 4,  # NOVO: 76.7% cobertura
                 'seq_max': 5,
                 'rep_min': 4, 'rep_max': 11,
                 'nucleo_min': 8,  # Reduzido: jackpot tinha 9
@@ -12242,14 +12270,19 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'usar_improbabilidade_posicional': True,
                 'usar_debito_posicional': True,
                 'debito_min_matches': 3,
+                'usar_analise_anomalias': True,  # Filtro de anomalias
+                'anomalias_max_quentes': 1,  # Muito restritivo - máx 1 número quente
+                'anomalias_min_frios': 2,  # Exige 2 números frios (estão devendo)
             },
             6: {
-                # NÍVEL 6: ULTRA - FOCO EM CONSISTÊNCIA (meta: ~15k, 3%)
+                # NÍVEL 6: ULTRA - FOCO EM CONSISTÊNCIA + consecutivos/gap máximo
                 # ESTRATÉGIA: Menos combinações, mas com maior taxa de 14 acertos
                 # AJUSTE: Soma baseada em análise (combos com 13-14 acertos: 176-208)
                 'soma_min': 185, 'soma_max': 205,  # Antes: 200-210 (eliminava jackpots!)
                 'pares_min': 6, 'pares_max': 9,    # Ampliado: 7-8 era muito restritivo
                 'primos_min': 4, 'primos_max': 7,  # Ampliado: jackpot tinha 4
+                'consecutivos_min': 7, 'consecutivos_max': 9,  # NOVO: mais restritivo
+                'gap_max': 4,  # NOVO: mais restritivo (76.7%)
                 'seq_max': 5,                       # Ampliado: mais flexível
                 'rep_min': 5, 'rep_max': 10,
                 'nucleo_min': 8,                    # Reduzido: jackpot tinha 9
@@ -12259,6 +12292,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'usar_improbabilidade_posicional': True,
                 'usar_debito_posicional': True,
                 'debito_min_matches': 3,  # Menos exigente
+                'usar_analise_anomalias': True,  # Filtro de anomalias MÁXIMO
+                'anomalias_max_quentes': 1,  # Máximo 1 número muito quente
+                'anomalias_min_frios': 2,  # Exige 2 números frios (tendência de voltar)
             },
         }
         
@@ -12770,6 +12806,51 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         print(f"         Nº{deb['numero']:02d} na N{deb['posicao']:02d} (déficit {deb['deficit']:.1f}%)")
         
             # ═══════════════════════════════════════════════════════════════════
+            # ANÁLISE DE ANOMALIAS v2.0 (validada historicamente)
+            # v2.0: Ausências consecutivas (4-5) = +3-4% chance voltar ✅
+            #       Consecutivas 8+ = -5% tendência parar
+            # ═══════════════════════════════════════════════════════════════════
+            anomalias_ativo = filtros.get('usar_analise_anomalias', False)
+            anomalias_max_quentes = filtros.get('anomalias_max_quentes', 3)
+            anomalias_min_frios = filtros.get('anomalias_min_frios', 0)
+            nums_evitar_anomalias = set()
+            nums_favorecer_anomalias = set()
+            
+            if anomalias_ativo:
+                try:
+                    # Import dinâmico do analisador de anomalias
+                    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'analisadores'))
+                    from analise_anomalias_frequencia import AnalisadorAnomalias
+                    
+                    # Preparar dados para o analisador
+                    dados_anomalias = []
+                    for r in resultados[:50]:  # Usar últimos 50 concursos
+                        dados_anomalias.append({'concurso': r['concurso'], 'numeros': r['numeros']})
+                    
+                    analisador_anomalias = AnalisadorAnomalias(dados_anomalias)
+                    nums_evitar_anomalias = analisador_anomalias.obter_numeros_a_evitar(tamanho_janela=10)
+                    nums_favorecer_anomalias = analisador_anomalias.obter_numeros_favorecidos(tamanho_janela=10)
+                    
+                    print(f"\n   🔬 ANÁLISE DE ANOMALIAS v2.0 (validada historicamente)")
+                    print(f"      Lógica: Números com 4-5 ausências consecutivas (+3-4% voltar) ✅")
+                    print(f"              Números com 8+ consecutivas (-5% tendência parar)")
+                    print(f"      Máx números com 8+ consec permitidos: {anomalias_max_quentes}")
+                    print(f"      Mín números com 4-5 ausências exigidos: {anomalias_min_frios}")
+                    
+                    if nums_evitar_anomalias:
+                        print(f"      ⚠️ Números com 8+ CONSECUTIVAS (evitar): {sorted(nums_evitar_anomalias)}")
+                    if nums_favorecer_anomalias:
+                        print(f"      ⭐ Números com 4-5 AUSÊNCIAS (favorecer): {sorted(nums_favorecer_anomalias)}")
+                    
+                    if not nums_evitar_anomalias and not nums_favorecer_anomalias:
+                        print(f"      ✅ Nenhuma anomalia detectada (padrão normal)")
+                        
+                except Exception as e:
+                    print(f"\n   ⚠️ Erro ao carregar análise de anomalias: {e}")
+                    print(f"      Continuando sem filtro de anomalias...")
+                    anomalias_ativo = False
+        
+            # ═══════════════════════════════════════════════════════════════════
             # PASSO 4.5: GERAR COMBINAÇÕES (com ou sem números fixos)
             # ═══════════════════════════════════════════════════════════════════
             print("\n" + "─"*78)
@@ -12831,6 +12912,10 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     print(f"      • Pares: {filtros['pares_min']}-{filtros['pares_max']}")
                 if 'primos_min' in filtros:
                     print(f"      • Primos: {filtros['primos_min']}-{filtros['primos_max']}")
+                if 'consecutivos_min' in filtros:
+                    print(f"      • ⭐Consecutivos: {filtros['consecutivos_min']}-{filtros['consecutivos_max']} (90% cobert.)")
+                if 'gap_max' in filtros:
+                    print(f"      • ⭐Gap máximo: {filtros['gap_max']} (93% cobert.)")
                 if 'seq_max' in filtros:
                     print(f"      • Sequência máx: {filtros['seq_max']}")
                 if 'rep_min' in filtros:
@@ -12845,6 +12930,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     print(f"      • Mapa térmico posicional: ATIVO (evitar improváveis)")
                 if debito_ativo and debitos_dict:
                     print(f"      • Débito posicional: ATIVO (mín {debito_min_matches} matches)")
+                if anomalias_ativo:
+                    print(f"      • 🔬 Anomalias de frequência: máx {anomalias_max_quentes} quentes, mín {anomalias_min_frios} frios")
                 if filtro_prob_obj:
                     print(f"      • 🎲 Filtro probabilístico: Acertos_11 >= {filtro_prob_limite}")
                 print()
@@ -12890,6 +12977,25 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     else:
                         atual_seq = 1
                 return max_seq
+            
+            def calcular_pares_consecutivos(combo):
+                """Retorna quantos pares de números consecutivos existem (ex: 3-4, 7-8)."""
+                combo_sorted = sorted(combo)
+                consecutivos = 0
+                for i in range(len(combo_sorted) - 1):
+                    if combo_sorted[i+1] - combo_sorted[i] == 1:
+                        consecutivos += 1
+                return consecutivos
+            
+            def calcular_maior_gap(combo):
+                """Retorna o maior gap (lacuna) entre números consecutivos."""
+                combo_sorted = sorted(combo)
+                maior_gap = 0
+                for i in range(len(combo_sorted) - 1):
+                    gap = combo_sorted[i+1] - combo_sorted[i]
+                    if gap > maior_gap:
+                        maior_gap = gap
+                return maior_gap
         
             combos_filtradas = []
             total = len(todas_combos)
@@ -12919,6 +13025,18 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 if 'primos_min' in filtros:
                     primos = len(combo_set & PRIMOS)
                     if primos < filtros['primos_min'] or primos > filtros['primos_max']:
+                        continue
+                
+                # Filtro CONSECUTIVOS ⭐ NOVO (90.5% cobertura com 7-10)
+                if 'consecutivos_min' in filtros:
+                    consec = calcular_pares_consecutivos(combo)
+                    if consec < filtros['consecutivos_min'] or consec > filtros['consecutivos_max']:
+                        continue
+                
+                # Filtro GAP MÁXIMO ⭐ NOVO (93.5% cobertura com ≤5)
+                if 'gap_max' in filtros:
+                    gap = calcular_maior_gap(combo)
+                    if gap > filtros['gap_max']:
                         continue
             
                 # Filtro SEQUÊNCIA
@@ -13023,6 +13141,24 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     
                     # Exigir mínimo de matches para passar
                     if matches_debito < debito_min_matches:
+                        continue
+                
+                # Filtro ANOMALIAS v2.0 (validado historicamente em 23/02/2026)
+                # - Números com 8+ consecutivas: -5% tendência parar (evitar)
+                # - Números com 4-5 ausências consecutivas: +3-4% voltar (favorecer)
+                if anomalias_ativo and (nums_evitar_anomalias or nums_favorecer_anomalias):
+                    # Contar números com 8+ consecutivas (a evitar) na combinação
+                    count_quentes = len(combo_set & nums_evitar_anomalias)
+                    
+                    # Contar números com 4-5 ausências (favorecidos) na combinação
+                    count_frios = len(combo_set & nums_favorecer_anomalias) if nums_favorecer_anomalias else anomalias_min_frios
+                    
+                    # Rejeitar se tiver MUITOS números com 8+ consecutivas
+                    if count_quentes > anomalias_max_quentes:
+                        continue
+                    
+                    # Rejeitar se tiver POUCOS números com 4-5 ausências (quando exigido)
+                    if nums_favorecer_anomalias and count_frios < anomalias_min_frios:
                         continue
             
                 combos_filtradas.append(combo)
@@ -13486,6 +13622,13 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Calcular débitos
         debitos, lista_debitos = self._calcular_debitos_posicionais(resultados, janela)
         
+        # Calcular frequência GERAL de cada número (para comparação)
+        from collections import Counter
+        freq_geral = Counter()
+        for r in resultados[:janela]:
+            for num in r['numeros']:
+                freq_geral[num] += 1
+        
         print(f"\n   📊 Analisando últimos {janela} concursos...")
         print(f"   📊 Comparando com média de {len(resultados) - janela} concursos históricos")
         
@@ -13499,13 +13642,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         # Mostrar top débitos
         print(f"\n   💰 TOP 20 DÉBITOS (maior potencial):")
-        print("   " + "─"*70)
-        print(f"   {'Nº':>4} | {'Posição':>7} | {'Média Hist':>10} | {'Freq Rec':>10} | {'Déficit':>8}")
-        print("   " + "─"*70)
+        print("   " + "─"*85)
+        print(f"   {'Nº':>4} | {'Posição':>7} | {'Freq Geral':>10} | {'Média Hist':>10} | {'Freq Pos':>8} | {'Déficit':>8}")
+        print(f"   {'':>4} | {'':>7} | {'(últimos)':>10} | {'(posição)':>10} | {'(recente)':>8} | {'':>8}")
+        print("   " + "─"*85)
         
         for deb in lista_debitos[:20]:
             barra = "█" * int(deb['deficit'] / 2)
-            print(f"   {deb['numero']:4d} |   N{deb['posicao']:<4d} | {deb['media_historica']:9.1f}% | {deb['freq_recente']:9.1f}% | {deb['deficit']:+7.1f}% {barra}")
+            fg = freq_geral[deb['numero']] / janela * 100
+            print(f"   {deb['numero']:4d} |   N{deb['posicao']:<4d} | {fg:9.1f}% | {deb['media_historica']:9.1f}% | {deb['freq_recente']:7.1f}% | {deb['deficit']:+7.1f}% {barra}")
         
         # Agrupar por número (quais números estão mais em débito)
         print(f"\n   🔢 NÚMEROS COM MAIS POSIÇÕES EM DÉBITO:")
@@ -14734,6 +14879,14 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"\n   📋 ANÁLISE DETALHADA POR NÍVEL:")
             print("   " + "─"*70)
             
+            # Calcular débito posicional do resultado para análise
+            debito_matches_resultado = 0
+            if debitos_dict:
+                for pos in range(1, 16):
+                    num_na_pos = resultado_lista[pos-1]
+                    if (num_na_pos, pos) in debitos_dict:
+                        debito_matches_resultado += 1
+            
             for nivel_analisar in range(1, 7):
                 tinha_jackpot_anterior = resultados_validacao[nivel_analisar - 1]['acertos'][15] > 0
                 tem_jackpot_nivel = resultados_validacao[nivel_analisar]['acertos'][15] > 0
@@ -14750,8 +14903,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 else:
                     print(f"\n   ⚪ NÍVEL {nivel_analisar}: Já não tinha jackpot")
                 
-                # Verificar cada filtro contra o resultado
+                # Verificar cada filtro contra o resultado - guardar todos
                 filtros_problematicos = []
+                filtros_ok = []
                 
                 if 'soma_min' in filtros_nivel:
                     soma_min = filtros_nivel['soma_min']
@@ -14761,59 +14915,91 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     elif filtros_nivel.get('usar_reversao_soma') and soma_ajuste:
                         soma_min, soma_max = soma_ajuste
                     
-                    status = "✅" if soma_min <= resultado_soma <= soma_max else "❌"
-                    print(f"      {status} Soma: {soma_min}-{soma_max} (resultado: {resultado_soma})")
-                    if resultado_soma < soma_min or resultado_soma > soma_max:
-                        filtros_problematicos.append(('SOMA', soma_min, soma_max, resultado_soma))
+                    if soma_min <= resultado_soma <= soma_max:
+                        filtros_ok.append(f"Soma: {soma_min}-{soma_max} (resultado: {resultado_soma})")
+                    else:
+                        filtros_problematicos.append(('SOMA', f"{soma_min}-{soma_max}", resultado_soma))
                 
                 if 'pares_min' in filtros_nivel:
-                    status = "✅" if filtros_nivel['pares_min'] <= pares_resultado <= filtros_nivel['pares_max'] else "❌"
-                    print(f"      {status} Pares: {filtros_nivel['pares_min']}-{filtros_nivel['pares_max']} (resultado: {pares_resultado})")
-                    if pares_resultado < filtros_nivel['pares_min'] or pares_resultado > filtros_nivel['pares_max']:
-                        filtros_problematicos.append(('PARES', filtros_nivel['pares_min'], filtros_nivel['pares_max'], pares_resultado))
+                    if filtros_nivel['pares_min'] <= pares_resultado <= filtros_nivel['pares_max']:
+                        filtros_ok.append(f"Pares: {filtros_nivel['pares_min']}-{filtros_nivel['pares_max']} (resultado: {pares_resultado})")
+                    else:
+                        filtros_problematicos.append(('PARES', f"{filtros_nivel['pares_min']}-{filtros_nivel['pares_max']}", pares_resultado))
                 
                 if 'primos_min' in filtros_nivel:
-                    status = "✅" if filtros_nivel['primos_min'] <= primos_resultado <= filtros_nivel['primos_max'] else "❌"
-                    print(f"      {status} Primos: {filtros_nivel['primos_min']}-{filtros_nivel['primos_max']} (resultado: {primos_resultado})")
-                    if primos_resultado < filtros_nivel['primos_min'] or primos_resultado > filtros_nivel['primos_max']:
-                        filtros_problematicos.append(('PRIMOS', filtros_nivel['primos_min'], filtros_nivel['primos_max'], primos_resultado))
+                    if filtros_nivel['primos_min'] <= primos_resultado <= filtros_nivel['primos_max']:
+                        filtros_ok.append(f"Primos: {filtros_nivel['primos_min']}-{filtros_nivel['primos_max']} (resultado: {primos_resultado})")
+                    else:
+                        filtros_problematicos.append(('PRIMOS', f"{filtros_nivel['primos_min']}-{filtros_nivel['primos_max']}", primos_resultado))
                 
                 if 'seq_max' in filtros_nivel:
-                    status = "✅" if seq_max_resultado <= filtros_nivel['seq_max'] else "❌"
-                    print(f"      {status} Seq.Máx: {filtros_nivel['seq_max']} (resultado: {seq_max_resultado})")
-                    if seq_max_resultado > filtros_nivel['seq_max']:
-                        filtros_problematicos.append(('SEQ_MAX', 0, filtros_nivel['seq_max'], seq_max_resultado))
+                    if seq_max_resultado <= filtros_nivel['seq_max']:
+                        filtros_ok.append(f"Seq.Máx: ≤{filtros_nivel['seq_max']} (resultado: {seq_max_resultado})")
+                    else:
+                        filtros_problematicos.append(('SEQ_MAX', f"≤{filtros_nivel['seq_max']}", seq_max_resultado))
                 
                 if 'rep_min' in filtros_nivel:
-                    status = "✅" if filtros_nivel['rep_min'] <= rep_ultimo <= filtros_nivel['rep_max'] else "❌"
-                    print(f"      {status} Repetição: {filtros_nivel['rep_min']}-{filtros_nivel['rep_max']} (resultado: {rep_ultimo})")
-                    if rep_ultimo < filtros_nivel['rep_min'] or rep_ultimo > filtros_nivel['rep_max']:
-                        filtros_problematicos.append(('REPETIÇÃO', filtros_nivel['rep_min'], filtros_nivel['rep_max'], rep_ultimo))
+                    if filtros_nivel['rep_min'] <= rep_ultimo <= filtros_nivel['rep_max']:
+                        filtros_ok.append(f"Repetição: {filtros_nivel['rep_min']}-{filtros_nivel['rep_max']} (resultado: {rep_ultimo})")
+                    else:
+                        filtros_problematicos.append(('REPETIÇÃO', f"{filtros_nivel['rep_min']}-{filtros_nivel['rep_max']}", rep_ultimo))
                 
                 if 'nucleo_min' in filtros_nivel:
-                    status = "✅" if nucleo_resultado >= filtros_nivel['nucleo_min'] else "❌"
-                    print(f"      {status} Núcleo: ≥{filtros_nivel['nucleo_min']} (resultado: {nucleo_resultado})")
-                    if nucleo_resultado < filtros_nivel['nucleo_min']:
-                        filtros_problematicos.append(('NÚCLEO', filtros_nivel['nucleo_min'], 17, nucleo_resultado))
+                    if nucleo_resultado >= filtros_nivel['nucleo_min']:
+                        filtros_ok.append(f"Núcleo: ≥{filtros_nivel['nucleo_min']} (resultado: {nucleo_resultado})")
+                    else:
+                        filtros_problematicos.append(('NÚCLEO', f"≥{filtros_nivel['nucleo_min']}", nucleo_resultado))
                 
                 if 'favorecidos_min' in filtros_nivel:
-                    status = "✅" if fav_resultado >= filtros_nivel['favorecidos_min'] else "❌"
-                    print(f"      {status} Favorecidos: ≥{filtros_nivel['favorecidos_min']} (resultado: {fav_resultado})")
-                    if fav_resultado < filtros_nivel['favorecidos_min']:
-                        filtros_problematicos.append(('FAVORECIDOS', filtros_nivel['favorecidos_min'], 15, fav_resultado))
+                    if fav_resultado >= filtros_nivel['favorecidos_min']:
+                        filtros_ok.append(f"Favorecidos: ≥{filtros_nivel['favorecidos_min']} (resultado: {fav_resultado})")
+                    else:
+                        filtros_problematicos.append(('FAVORECIDOS', f"≥{filtros_nivel['favorecidos_min']}", fav_resultado))
                 
                 if filtros_nivel.get('usar_compensacao') and compensacao_ativa:
                     # LÓGICA INVERTIDA: Tendência é oposta ao previsto
-                    status = "✅" if (tendencia_compensacao == 'SUBIR' and saldo_resultado <= 0) or (tendencia_compensacao == 'DESCER' and saldo_resultado >= 0) else "❌"
-                    print(f"      {status} Compensação: tendência {tendencia_compensacao} (saldo resultado: {saldo_resultado:+d})")
-                    if status == "❌":
-                        filtros_problematicos.append(('COMPENSAÇÃO', tendencia_compensacao, saldo_resultado, None))
+                    passou = (tendencia_compensacao == 'SUBIR' and saldo_resultado <= 0) or (tendencia_compensacao == 'DESCER' and saldo_resultado >= 0)
+                    if passou:
+                        filtros_ok.append(f"Compensação: tendência {tendencia_compensacao} (saldo resultado: {saldo_resultado:+d})")
+                    else:
+                        filtros_problematicos.append(('COMPENSAÇÃO', f"tendência {tendencia_compensacao}", f"saldo {saldo_resultado:+d}"))
                 
-                # Resumo dos problemas do nível
-                if filtros_problematicos and tinha_jackpot_anterior:
-                    print(f"      🔧 CULPADOS: ", end="")
-                    culpados = [fp[0] for fp in filtros_problematicos]
-                    print(", ".join(culpados))
+                # DÉBITO POSICIONAL - filtro oculto que pode ter eliminado o jackpot!
+                if filtros_nivel.get('usar_debito_posicional') and debitos_dict:
+                    debito_min = filtros_nivel.get('debito_min_matches', 1)
+                    if debito_matches_resultado >= debito_min:
+                        filtros_ok.append(f"Débito Posicional: ≥{debito_min} matches (resultado: {debito_matches_resultado})")
+                    else:
+                        filtros_problematicos.append(('DÉBITO_POSICIONAL', f"≥{debito_min} matches", debito_matches_resultado))
+                
+                # IMPROBABILIDADE POSICIONAL
+                if filtros_nivel.get('usar_improbabilidade_posicional') and evitar_por_posicao:
+                    violacoes = 0
+                    for pos in range(1, 16):
+                        num_na_pos = resultado_lista[pos-1]
+                        nums_evitar = evitar_por_posicao.get(pos, [])
+                        if num_na_pos in nums_evitar:
+                            violacoes += 1
+                    if violacoes <= 2:
+                        filtros_ok.append(f"Improbabilidade: ≤2 violações (resultado: {violacoes})")
+                    else:
+                        filtros_problematicos.append(('IMPROBABILIDADE', "≤2 violações", violacoes))
+                
+                # EXIBIÇÃO INTELIGENTE: só os culpados se houver, todos se passou
+                if filtros_problematicos:
+                    # Mostra apenas os filtros que falharam
+                    for nome, esperado, obtido in filtros_problematicos:
+                        print(f"      ❌ {nome}: esperado {esperado}, obtido {obtido}")
+                    if tinha_jackpot_anterior:
+                        if len(filtros_problematicos) == 1:
+                            print(f"      🔧 CULPADO: {filtros_problematicos[0][0]}")
+                        else:
+                            culpados = [fp[0] for fp in filtros_problematicos]
+                            print(f"      🔧 CULPADOS: {', '.join(culpados)}")
+                elif not tem_jackpot_nivel and tinha_jackpot_anterior:
+                    # Passou em tudo mas perdeu jackpot? Bug ou filtro não verificado
+                    print(f"      ⚠️ Todos os filtros verificados passaram!")
+                    print(f"      🔍 Verificar se há filtro adicional não catalogado.")
         
         # ═══════════════════════════════════════════════════════════════════
         # PASSO 9: PROPOSTAS DE AJUSTES DINÂMICOS (INTELIGENTES)
@@ -15061,7 +15247,24 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 if resultados_validacao[n]['acertos'][15] > 0:
                     historico['niveis_jackpot'][str(n)] = historico['niveis_jackpot'].get(str(n), 0) + 1
             
-            # Registrar filtros que falharam (analisar cada nível)
+            # Calcular débito posicional do resultado para análise
+            debito_matches_resultado = 0
+            if debitos_dict:
+                for pos in range(1, 16):
+                    num_na_pos = resultado_lista[pos-1]
+                    if (num_na_pos, pos) in debitos_dict:
+                        debito_matches_resultado += 1
+            
+            # Calcular violações de improbabilidade
+            violacoes_improbabilidade = 0
+            if evitar_por_posicao:
+                for pos in range(1, 16):
+                    num_na_pos = resultado_lista[pos-1]
+                    nums_evitar = evitar_por_posicao.get(pos, [])
+                    if num_na_pos in nums_evitar:
+                        violacoes_improbabilidade += 1
+            
+            # Registrar filtros que falharam (analisar cada nível) - COMPLETO!
             for nivel_analisar in range(1, 7):
                 tinha_jackpot_anterior = resultados_validacao[nivel_analisar - 1]['acertos'][15] > 0
                 tem_jackpot_nivel = resultados_validacao[nivel_analisar]['acertos'][15] > 0
@@ -15070,31 +15273,96 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 
                 # Se perdeu jackpot neste nível, registrar quais filtros falharam
                 if tinha_jackpot_anterior and not tem_jackpot_nivel:
-                    # Testar cada filtro
+                    # Testar TODOS os filtros do nível
+                    
+                    # SOMA
                     if 'soma_min' in filtros_nivel:
                         soma_min = filtros_nivel['soma_min']
                         soma_max = filtros_nivel['soma_max']
+                        if filtros_nivel.get('usar_reversao_soma_ultra') and soma_ajuste_ultra:
+                            soma_min, soma_max = soma_ajuste_ultra
+                        elif filtros_nivel.get('usar_reversao_soma') and soma_ajuste:
+                            soma_min, soma_max = soma_ajuste
+                        
+                        chave = f"N{nivel_analisar}_SOMA"
                         if resultado_soma < soma_min or resultado_soma > soma_max:
-                            chave = f"N{nivel_analisar}_SOMA"
                             historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
                         else:
-                            chave = f"N{nivel_analisar}_SOMA"
                             historico['filtros_acertos'][chave] = historico['filtros_acertos'].get(chave, 0) + 1
                     
+                    # PARES
                     if 'pares_min' in filtros_nivel:
+                        chave = f"N{nivel_analisar}_PARES"
                         if pares_resultado < filtros_nivel['pares_min'] or pares_resultado > filtros_nivel['pares_max']:
-                            chave = f"N{nivel_analisar}_PARES"
                             historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
+                        else:
+                            historico['filtros_acertos'][chave] = historico['filtros_acertos'].get(chave, 0) + 1
                     
+                    # PRIMOS
+                    if 'primos_min' in filtros_nivel:
+                        chave = f"N{nivel_analisar}_PRIMOS"
+                        if primos_resultado < filtros_nivel['primos_min'] or primos_resultado > filtros_nivel['primos_max']:
+                            historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
+                        else:
+                            historico['filtros_acertos'][chave] = historico['filtros_acertos'].get(chave, 0) + 1
+                    
+                    # SEQUÊNCIA
                     if 'seq_max' in filtros_nivel:
+                        chave = f"N{nivel_analisar}_SEQ"
                         if seq_max_resultado > filtros_nivel['seq_max']:
-                            chave = f"N{nivel_analisar}_SEQ"
                             historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
+                        else:
+                            historico['filtros_acertos'][chave] = historico['filtros_acertos'].get(chave, 0) + 1
                     
+                    # REPETIÇÃO
                     if 'rep_min' in filtros_nivel:
+                        chave = f"N{nivel_analisar}_REP"
                         if rep_ultimo < filtros_nivel['rep_min'] or rep_ultimo > filtros_nivel['rep_max']:
-                            chave = f"N{nivel_analisar}_REP"
                             historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
+                        else:
+                            historico['filtros_acertos'][chave] = historico['filtros_acertos'].get(chave, 0) + 1
+                    
+                    # NÚCLEO
+                    if 'nucleo_min' in filtros_nivel:
+                        chave = f"N{nivel_analisar}_NUCLEO"
+                        if nucleo_resultado < filtros_nivel['nucleo_min']:
+                            historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
+                        else:
+                            historico['filtros_acertos'][chave] = historico['filtros_acertos'].get(chave, 0) + 1
+                    
+                    # FAVORECIDOS
+                    if 'favorecidos_min' in filtros_nivel:
+                        chave = f"N{nivel_analisar}_FAVORECIDOS"
+                        if fav_resultado < filtros_nivel['favorecidos_min']:
+                            historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
+                        else:
+                            historico['filtros_acertos'][chave] = historico['filtros_acertos'].get(chave, 0) + 1
+                    
+                    # COMPENSAÇÃO POSICIONAL
+                    if filtros_nivel.get('usar_compensacao') and compensacao_ativa:
+                        chave = f"N{nivel_analisar}_COMPENSACAO"
+                        passou = (tendencia_compensacao == 'SUBIR' and saldo_resultado <= 0) or (tendencia_compensacao == 'DESCER' and saldo_resultado >= 0)
+                        if not passou:
+                            historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
+                        else:
+                            historico['filtros_acertos'][chave] = historico['filtros_acertos'].get(chave, 0) + 1
+                    
+                    # DÉBITO POSICIONAL
+                    if filtros_nivel.get('usar_debito_posicional') and debitos_dict:
+                        chave = f"N{nivel_analisar}_DEBITO_POSICIONAL"
+                        debito_min = filtros_nivel.get('debito_min_matches', 1)
+                        if debito_matches_resultado < debito_min:
+                            historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
+                        else:
+                            historico['filtros_acertos'][chave] = historico['filtros_acertos'].get(chave, 0) + 1
+                    
+                    # IMPROBABILIDADE POSICIONAL
+                    if filtros_nivel.get('usar_improbabilidade_posicional') and evitar_por_posicao:
+                        chave = f"N{nivel_analisar}_IMPROBABILIDADE"
+                        if violacoes_improbabilidade > 2:
+                            historico['filtros_falhas'][chave] = historico['filtros_falhas'].get(chave, 0) + 1
+                        else:
+                            historico['filtros_acertos'][chave] = historico['filtros_acertos'].get(chave, 0) + 1
             
             # Previsões
             if reversao_soma_ativa:
@@ -15153,7 +15421,110 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"\n   ⚠️ FILTROS QUE MAIS ELIMINAM JACKPOTS:")
                 falhas_ordenadas = sorted(historico['filtros_falhas'].items(), key=lambda x: x[1], reverse=True)[:5]
                 for filtro, count in falhas_ordenadas:
-                    print(f"      • {filtro}: {count} falhas")
+                    # Calcular taxa de erro
+                    acertos = historico['filtros_acertos'].get(filtro, 0)
+                    total = count + acertos
+                    taxa_erro = count / total * 100 if total > 0 else 0
+                    print(f"      • {filtro}: {count} falhas ({taxa_erro:.0f}% erro)")
+            
+            # ═══════════════════════════════════════════════════════════════════
+            # SUGESTÕES DE AJUSTES DINÂMICOS BASEADO NOS ERROS
+            # ═══════════════════════════════════════════════════════════════════
+            if historico['total_backtests'] >= 3:
+                print(f"\n   🔧 SUGESTÕES DE AJUSTES DINÂMICOS:")
+                print("   " + "─"*60)
+                
+                sugestoes = []
+                
+                # Analisar cada filtro problemático
+                for filtro, falhas in historico['filtros_falhas'].items():
+                    acertos = historico['filtros_acertos'].get(filtro, 0)
+                    total = falhas + acertos
+                    
+                    if total >= 2:  # Mínimo de dados para sugerir
+                        taxa_erro = falhas / total * 100
+                        
+                        # Se taxa de erro > 60%, sugerir ajuste
+                        if taxa_erro >= 60:
+                            nivel = filtro.split('_')[0]  # Ex: "N2"
+                            tipo_filtro = '_'.join(filtro.split('_')[1:])  # Ex: "DEBITO_POSICIONAL"
+                            
+                            if tipo_filtro == 'DEBITO_POSICIONAL':
+                                sugestoes.append({
+                                    'filtro': filtro,
+                                    'taxa_erro': taxa_erro,
+                                    'sugestao': f"💡 {nivel}: Reduzir debito_min_matches de 2→1 ou desativar",
+                                    'prioridade': 1
+                                })
+                            elif tipo_filtro == 'COMPENSACAO':
+                                sugestoes.append({
+                                    'filtro': filtro,
+                                    'taxa_erro': taxa_erro,
+                                    'sugestao': f"💡 {nivel}: Desativar compensação posicional (usar_compensacao=False)",
+                                    'prioridade': 2
+                                })
+                            elif tipo_filtro == 'IMPROBABILIDADE':
+                                sugestoes.append({
+                                    'filtro': filtro,
+                                    'taxa_erro': taxa_erro,
+                                    'sugestao': f"💡 {nivel}: Aumentar tolerância de violações (2→3 ou desativar)",
+                                    'prioridade': 3
+                                })
+                            elif tipo_filtro == 'SOMA':
+                                sugestoes.append({
+                                    'filtro': filtro,
+                                    'taxa_erro': taxa_erro,
+                                    'sugestao': f"💡 {nivel}: Ampliar range de soma (ex: ±10 nos limites)",
+                                    'prioridade': 4
+                                })
+                            elif tipo_filtro in ['PARES', 'PRIMOS', 'REP', 'SEQ']:
+                                sugestoes.append({
+                                    'filtro': filtro,
+                                    'taxa_erro': taxa_erro,
+                                    'sugestao': f"💡 {nivel}: Relaxar limites de {tipo_filtro.lower()}",
+                                    'prioridade': 5
+                                })
+                            elif tipo_filtro in ['NUCLEO', 'FAVORECIDOS']:
+                                sugestoes.append({
+                                    'filtro': filtro,
+                                    'taxa_erro': taxa_erro,
+                                    'sugestao': f"💡 {nivel}: Reduzir mínimo de {tipo_filtro.lower()} (-1)",
+                                    'prioridade': 6
+                                })
+                
+                # Exibir sugestões ordenadas por prioridade
+                if sugestoes:
+                    sugestoes.sort(key=lambda x: x['prioridade'])
+                    for sug in sugestoes[:3]:  # Top 3 sugestões
+                        print(f"      {sug['sugestao']}")
+                        print(f"         Taxa de erro: {sug['taxa_erro']:.0f}%")
+                else:
+                    print(f"      ✅ Nenhum filtro com taxa de erro crítica (>60%)")
+                
+                # Recomendação geral baseada no histórico
+                print(f"\n   📋 RECOMENDAÇÃO GERAL:")
+                
+                # Verificar se DEBITO_POSICIONAL é problemático globalmente
+                debito_falhas_total = sum(v for k, v in historico['filtros_falhas'].items() if 'DEBITO_POSICIONAL' in k)
+                debito_acertos_total = sum(v for k, v in historico['filtros_acertos'].items() if 'DEBITO_POSICIONAL' in k)
+                
+                if debito_falhas_total + debito_acertos_total >= 3:
+                    taxa_debito = debito_falhas_total / (debito_falhas_total + debito_acertos_total) * 100
+                    if taxa_debito >= 50:
+                        print(f"      ⚠️ DÉBITO_POSICIONAL tem {taxa_debito:.0f}% de erro!")
+                        print(f"         → Considere desativar este filtro nos níveis 2+")
+                    else:
+                        print(f"      ✅ DÉBITO_POSICIONAL está funcionando ({100-taxa_debito:.0f}% acerto)")
+                
+                # Verificar COMPENSACAO
+                comp_falhas_total = sum(v for k, v in historico['filtros_falhas'].items() if 'COMPENSACAO' in k)
+                comp_acertos_total = sum(v for k, v in historico['filtros_acertos'].items() if 'COMPENSACAO' in k)
+                
+                if comp_falhas_total + comp_acertos_total >= 3:
+                    taxa_comp = comp_falhas_total / (comp_falhas_total + comp_acertos_total) * 100
+                    if taxa_comp >= 50:
+                        print(f"      ⚠️ COMPENSAÇÃO tem {taxa_comp:.0f}% de erro!")
+                        print(f"         → Considere desativar ou inverter a lógica")
             
             # Taxa de acerto das previsões
             prev_soma = historico['previsoes']['soma']
@@ -15191,6 +15562,427 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         print("\n" + "═"*78)
         input("\n   Pressione ENTER para voltar ao menu...")
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # OPÇÃO 32: MAPA GRÁFICO DE RANKING
+    # ═══════════════════════════════════════════════════════════════════════════
+    def executar_mapa_grafico_ranking(self):
+        """
+        📊 MAPA GRÁFICO DE RANKING - QUINTETOS
+        
+        Visualização gráfica dos 25 números divididos em 5 grupos de 5.
+        Baseado no ranking otimizado do Pool 23 Híbrido.
+        """
+        while True:
+            print("\n" + "═"*78)
+            print("📊 MAPA GRÁFICO DE RANKING - QUINTETOS")
+            print("═"*78)
+            print("   Visualização dos 25 números divididos em 5 grupos")
+            print("   Baseado no ranking do Pool 23 Híbrido (débito + tendência)")
+            print("═"*78)
+            print()
+            print("1️⃣  Ver Ranking em TEXTO (console)")
+            print("2️⃣  Ver Ranking GRÁFICO (com círculos de frequência)")
+            print("0️⃣  Voltar")
+            print()
+            
+            escolha = input("🎯 Escolha uma opção: ").strip()
+            
+            if escolha == "1":
+                self._ver_ranking_texto_lotofacil()
+            elif escolha == "2":
+                self._ver_ranking_grafico_quintetos()
+            elif escolha == "0":
+                break
+            else:
+                print("❌ Opção inválida")
+    
+    def _ver_ranking_texto_lotofacil(self):
+        """Exibe ranking em formato texto no console"""
+        import pyodbc
+        from collections import Counter
+        
+        print("\n📊 RANKING OTIMIZADO DOS 25 NÚMEROS")
+        print("=" * 70)
+        
+        conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=Lotofacil;Trusted_Connection=yes;'
+        
+        try:
+            conn = pyodbc.connect(conn_str)
+            cursor = conn.cursor()
+            
+            # Carregar últimos resultados
+            cursor.execute("""
+                SELECT TOP 50 Concurso, N1, N2, N3, N4, N5, N6, N7, N8, N9, N10, N11, N12, N13, N14, N15
+                FROM Resultados_INT
+                ORDER BY Concurso DESC
+            """)
+            
+            resultados = []
+            for row in cursor.fetchall():
+                resultados.append({
+                    'concurso': row[0],
+                    'numeros': list(row[1:16]),
+                    'set': set(row[1:16])
+                })
+            
+            conn.close()
+            
+            if not resultados:
+                print("❌ Sem dados disponíveis!")
+                input("\nPressione ENTER...")
+                return
+            
+            ultimo_concurso = resultados[0]['concurso']
+            
+            # Calcular ranking usando mesma lógica do Pool 23 Híbrido
+            FREQ_ESPERADA = 60
+            
+            def freq_janela(tamanho):
+                freq = Counter()
+                for r in resultados[:min(tamanho, len(resultados))]:
+                    freq.update(r['numeros'])
+                return {n: freq.get(n, 0) / min(tamanho, len(resultados)) * 100 for n in range(1, 26)}
+            
+            freq_5 = freq_janela(5)
+            freq_15 = freq_janela(15)
+            freq_50 = freq_janela(50)
+            
+            ranking = []
+            for n in range(1, 26):
+                fc = freq_5[n]
+                fm = freq_15[n]
+                fl = freq_50[n]
+                
+                # Índice de Débito (positivo = está devendo = BOM)
+                indice_debito = fl - fc
+                
+                # Score de prioridade (números em débito têm MAIOR prioridade)
+                score = 0
+                
+                # Verificar se apareceu nos últimos 3 concursos
+                apareceu_recente = any(n in r['numeros'] for r in resultados[:3])
+                
+                if apareceu_recente:
+                    score += 2  # Bônus leve por aparecer recente (continuidade)
+                
+                # Débito positivo = favorável
+                if indice_debito >= 20:
+                    score += 6  # Débito alto = muito favorável
+                elif indice_debito >= 10:
+                    score += 4
+                elif indice_debito >= 0:
+                    score += 2
+                elif indice_debito > -15:
+                    score += 0  # Levemente em superávit
+                else:
+                    score -= 3  # Superávit alto = desfavorável
+                
+                # Frequência longa acima da média = base sólida
+                if fl >= FREQ_ESPERADA:
+                    score += 1
+                
+                ranking.append({
+                    'num': n,
+                    'score': score,
+                    'debito': indice_debito,
+                    'freq_curta': fc,
+                    'freq_longa': fl
+                })
+            
+            # Ordenar por score (maior = melhor)
+            ranking.sort(key=lambda x: (-x['score'], x['debito']))
+            
+            # Dividir em 5 quintetos
+            quintetos = {
+                'TOP 5': [r['num'] for r in ranking[:5]],
+                'ALTOS': [r['num'] for r in ranking[5:10]],
+                'MÉDIO': [r['num'] for r in ranking[10:15]],
+                'BAIXOS': [r['num'] for r in ranking[15:20]],
+                'PIORES 5': [r['num'] for r in ranking[20:25]]
+            }
+            
+            # Exibir
+            print(f"\n📅 Baseado em {len(resultados)} concursos | Último: {ultimo_concurso}")
+            print("─" * 70)
+            
+            freq_10 = Counter()
+            for r in resultados[:10]:
+                freq_10.update(r['numeros'])
+            
+            nums_ultimo = set(resultados[0]['numeros'])
+            
+            cores_terminal = {
+                'TOP 5': '\033[92m',      # Verde
+                'ALTOS': '\033[93m',      # Amarelo
+                'MÉDIO': '\033[97m',      # Branco
+                'BAIXOS': '\033[91m',     # Vermelho claro
+                'PIORES 5': '\033[31m'    # Vermelho
+            }
+            RESET = '\033[0m'
+            
+            for nome, nums in quintetos.items():
+                cor = cores_terminal.get(nome, '')
+                nums_str = ', '.join(f"{n:02d}" for n in sorted(nums))
+                
+                # Marcar números do último sorteio
+                marcados = []
+                for n in sorted(nums):
+                    if n in nums_ultimo:
+                        marcados.append(f"[{n:02d}]")  # Último sorteio
+                    else:
+                        marcados.append(f" {n:02d} ")
+                
+                print(f"{cor}■ {nome:12} │ {' '.join(marcados)}{RESET}")
+                
+                # Detalhes (frequência nos últimos 10)
+                detalhes = []
+                for n in sorted(nums):
+                    f10 = freq_10.get(n, 0)
+                    detalhes.append(f"{n:02d}({f10}x)")
+                print(f"  {'':12} │ {', '.join(detalhes)}")
+                print("─" * 70)
+            
+            print(f"\n🔴 Números entre [colchetes] = saíram no último sorteio ({ultimo_concurso})")
+            print(f"📊 (Nx) = frequência nos últimos 10 sorteios")
+            
+        except Exception as e:
+            print(f"❌ Erro: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        input("\nPressione ENTER...")
+    
+    def _ver_ranking_grafico_quintetos(self):
+        """Exibe ranking de quintetos em formato gráfico com círculos de frequência"""
+        try:
+            import matplotlib.pyplot as plt
+            import matplotlib.patches as mpatches
+            from collections import Counter
+            import pyodbc
+            
+            print("\n📊 Gerando gráfico de quintetos...")
+            print("   📊 Ranking otimizado baseado em débito + tendência")
+            print("   🔴 Círculos baseados nos últimos 10 sorteios")
+            print("   🔴 Números do último sorteio em VERMELHO")
+            print("   🟡 Números dos 4 anteriores em AMARELO")
+            
+            conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=Lotofacil;Trusted_Connection=yes;'
+            
+            conn = pyodbc.connect(conn_str)
+            cursor = conn.cursor()
+            
+            # Carregar últimos 50 resultados para ranking
+            cursor.execute("""
+                SELECT TOP 50 Concurso, N1, N2, N3, N4, N5, N6, N7, N8, N9, N10, N11, N12, N13, N14, N15
+                FROM Resultados_INT
+                ORDER BY Concurso DESC
+            """)
+            
+            resultados = []
+            for row in cursor.fetchall():
+                resultados.append({
+                    'concurso': row[0],
+                    'numeros': list(row[1:16])
+                })
+            
+            conn.close()
+            
+            if not resultados:
+                print("❌ Sem dados disponíveis!")
+                input("\nPressione ENTER...")
+                return
+            
+            ultimo_concurso = resultados[0]['concurso']
+            
+            # Calcular ranking usando mesma lógica
+            FREQ_ESPERADA = 60
+            
+            def freq_janela(tamanho):
+                freq = Counter()
+                for r in resultados[:min(tamanho, len(resultados))]:
+                    freq.update(r['numeros'])
+                return {n: freq.get(n, 0) / min(tamanho, len(resultados)) * 100 for n in range(1, 26)}
+            
+            freq_5 = freq_janela(5)
+            freq_15 = freq_janela(15)
+            freq_50 = freq_janela(50)
+            
+            ranking = []
+            for n in range(1, 26):
+                fc = freq_5[n]
+                fl = freq_50[n]
+                indice_debito = fl - fc
+                
+                score = 0
+                apareceu_recente = any(n in r['numeros'] for r in resultados[:3])
+                
+                if apareceu_recente:
+                    score += 2
+                
+                if indice_debito >= 20:
+                    score += 6
+                elif indice_debito >= 10:
+                    score += 4
+                elif indice_debito >= 0:
+                    score += 2
+                elif indice_debito > -15:
+                    score += 0
+                else:
+                    score -= 3
+                
+                if fl >= FREQ_ESPERADA:
+                    score += 1
+                
+                ranking.append({'num': n, 'score': score, 'debito': indice_debito})
+            
+            ranking.sort(key=lambda x: (-x['score'], x['debito']))
+            
+            # Dividir em 5 quintetos
+            quintetos = {
+                'TOP 5': [r['num'] for r in ranking[:5]],
+                'ALTOS': [r['num'] for r in ranking[5:10]],
+                'MÉDIO': [r['num'] for r in ranking[10:15]],
+                'BAIXOS': [r['num'] for r in ranking[15:20]],
+                'PIORES 5': [r['num'] for r in ranking[20:25]]
+            }
+            
+            # Carregar últimos 10 para círculos coloridos
+            freq_10 = Counter()
+            for r in resultados[:10]:
+                freq_10.update(r['numeros'])
+            
+            # Números do ÚLTIMO sorteio (vermelho)
+            nums_ultimo = set(resultados[0]['numeros'])
+            
+            # Números dos 4 anteriores ao último (amarelo)
+            nums_4_anteriores = set()
+            for idx in range(1, 5):
+                if idx < len(resultados):
+                    nums_4_anteriores.update(resultados[idx]['numeros'])
+            nums_4_anteriores -= nums_ultimo
+            
+            # Criar figura com fundo escuro
+            fig, ax = plt.subplots(figsize=(12, 8))
+            ax.set_xlim(0, 8)
+            ax.set_ylim(0, 8)
+            ax.axis('off')
+            ax.set_facecolor('#0c0c0c')
+            fig.patch.set_facecolor('#0c0c0c')
+            
+            # Título
+            ax.text(4, 7.5, f'RANKING POR QUINTETOS (5 grupos de 5 números)', 
+                    fontsize=14, fontweight='bold', color='white', ha='center', family='monospace')
+            ax.text(4, 7.1, f'Ranking Otimizado | Último concurso: {ultimo_concurso}', 
+                    fontsize=10, color='#888', ha='center', family='monospace')
+            
+            # Cores para círculos baseado na frequência
+            cores_circulos = ['#00ff00', '#7fff00', '#ffff00', '#ffa500', '#ff6347', '#ff0000']
+            
+            # Cores dos grupos
+            cores_grupos = {
+                'TOP 5': '#00ff00',
+                'ALTOS': '#7fff00',
+                'MÉDIO': '#ffff00',
+                'BAIXOS': '#ff6347',
+                'PIORES 5': '#ff0000'
+            }
+            
+            # Descrições
+            desc_grupos = {
+                'TOP 5': '(rank 1-5) - Os 5 melhores',
+                'ALTOS': '(rank 6-10)',
+                'MÉDIO': '(rank 11-15)',
+                'BAIXOS': '(rank 16-20)',
+                'PIORES 5': '(rank 21-25) - Os 5 piores'
+            }
+            
+            # Posições Y
+            y_positions = {
+                'TOP 5': 6.0,
+                'ALTOS': 5.0,
+                'MÉDIO': 4.0,
+                'BAIXOS': 3.0,
+                'PIORES 5': 2.0
+            }
+            
+            # Desenhar cada grupo
+            for nome_grupo, numeros in quintetos.items():
+                y = y_positions[nome_grupo]
+                cor_grupo = cores_grupos[nome_grupo]
+                desc = desc_grupos[nome_grupo]
+                
+                # Label do grupo
+                ax.text(0.1, y + 0.25, f'■ [{nome_grupo}] {desc}', fontsize=9, fontweight='bold', 
+                        color=cor_grupo, va='center', family='monospace')
+                
+                # Linha separadora
+                ax.plot([0.1, 7.9], [y - 0.15, y - 0.15], color='#333', linewidth=0.5)
+                
+                # Desenhar números
+                for i, num in enumerate(numeros):
+                    x = 0.6 + i * 1.45
+                    freq = freq_10.get(num, 0)
+                    
+                    # Círculos concêntricos baseados na frequência
+                    if freq > 0:
+                        for c in range(freq):
+                            raio = 0.15 + c * 0.10
+                            cor_idx = min(c, len(cores_circulos) - 1)
+                            circle = plt.Circle((x, y - 0.35), raio, fill=False, 
+                                               linewidth=2.5, color=cores_circulos[cor_idx], alpha=0.9)
+                            ax.add_patch(circle)
+                    
+                    # Cor do número
+                    if num in nums_ultimo:
+                        cor_num = '#ff0000'  # ÚLTIMO = VERMELHO
+                        fontweight = 'bold'
+                    elif num in nums_4_anteriores:
+                        cor_num = '#ffff00'  # 4 anteriores = AMARELO
+                        fontweight = 'bold'
+                    elif freq > 0:
+                        cor_num = 'white'
+                        fontweight = 'bold'
+                    else:
+                        cor_num = '#666'
+                        fontweight = 'normal'
+                    
+                    ax.text(x, y - 0.35, f'{num:02d}', fontsize=12, fontweight=fontweight,
+                            color=cor_num, ha='center', va='center', family='monospace')
+            
+            # Legenda
+            ax.text(0.3, 1.0, 'LEGENDA:', fontsize=9, fontweight='bold', 
+                    color='white', family='monospace')
+            
+            legend_items = [
+                ('Cinza = não saiu (10)', '#666'),
+                ('Branco = saiu (6-10)', 'white'),
+                ('🟡 Amarelo = 4 anteriores', '#ffff00'),
+                ('🔴 Vermelho = ÚLTIMO', '#ff0000'),
+            ]
+            
+            for i, (texto, cor) in enumerate(legend_items):
+                ax.text(0.3 + i * 2.0, 0.6, texto, fontsize=8, color=cor, family='monospace')
+            
+            ax.text(0.3, 0.2, 'Círculos concêntricos = frequência nos últimos 10 sorteios (mais círculos = mais frequente)', 
+                    fontsize=8, color='#888', family='monospace')
+            
+            plt.tight_layout()
+            plt.show()
+            
+            print("✅ Gráfico exibido!")
+            print(f"   🔴 Último sorteio ({ultimo_concurso}): {sorted(nums_ultimo)}")
+            print(f"   🟡 4 anteriores: {len(nums_4_anteriores)} números únicos")
+            
+        except ImportError as e:
+            print(f"❌ Erro ao importar módulo: {e}")
+            print("   Verifique se matplotlib está instalado: pip install matplotlib")
+        except Exception as e:
+            print(f"❌ Erro: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        input("\nPressione ENTER...")
 
 
 def main():

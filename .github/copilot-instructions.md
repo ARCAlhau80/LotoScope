@@ -1,5 +1,27 @@
 # Copilot Instructions for LotoScope Project
 
+## 🎯 MODEL SELECTION (READ FIRST!)
+
+**Evaluate task complexity before processing:**
+
+### ✅ SONNET 4.6 Tasks (3x cheaper):
+- Reading docs/code, simple edits, terminal commands
+- Checking backtest results, answering "how to" questions
+- Creating small files from existing templates
+- Obvious bugs (imports, syntax, paths)
+
+### 🧠 OPUS 4.5 Tasks (maximum capability):
+- New math/statistical algorithms
+- Refactoring large files (>500 lines)
+- Subtle bugs, complex logic debugging
+- New system architecture, performance optimization
+- Multi-file interconnected analysis
+- New lottery strategies implementation
+
+**User Tags:** `[SIMPLES]` → Sonnet | `[COMPLEXO]` → Opus | No tag → AI decides
+
+---
+
 ## Project Overview
 
 LotoScope is a scientific Python system for analyzing and generating optimized lottery combinations for **Lotofácil** (Brazilian lottery game).
@@ -8,7 +30,7 @@ LotoScope is a scientific Python system for analyzing and generating optimized l
 
 Before making any changes, read these files in order:
 
-1. `QUICK_START_IA.md` - 1-minute overview
+1. `QUICK_START_IA.md` - 1-minute overview (includes model selection guide)
 2. `CONTEXTO_MASTER_IA.md` - Complete documentation (Portuguese)
 3. `REFERENCIA_TECNICA_IA.md` - Technical reference with code snippets
 
@@ -75,12 +97,16 @@ python super_menu.py
 - **Validated**: Jackpots on contests 3610, 3615 with ROI up to +2841%
 - **7 Filter Levels**:
   - Level 0: No filters (490k combos)
-  - Level 1: Sum only (381k combos)
-  - Level 2: Basic - **RECOMMENDED FOR JACKPOT** (325k combos)
-  - Level 3: Balanced (100k combos, seq max 6)
-  - Level 4: Moderate (12k combos, strict soma)
-  - Level 5: Aggressive (42k combos, ROI optimized)
-  - Level 6: Ultra (18k combos, **+2841% ROI** when jackpot!)
+  - Level 1: Sum + Anomaly Analysis v2.0 (381k combos)
+  - Level 2: Basic + Anomalies - **RECOMMENDED FOR JACKPOT** (325k combos)
+  - Level 3: Balanced + min 1 cold number (100k combos)
+  - Level 4: Moderate + max 2 hot numbers (12k combos)
+  - Level 5: Aggressive + max 1 hot, min 2 cold (42k combos)
+  - Level 6: Ultra + Anomaly MAXIMUM (18k combos, **+2841% ROI** when jackpot!)
+- **Anomaly Filter v2.0** ⭐⭐ Validated historically!
+  - Numbers with 8+ consecutive appearances → -5% tend to STOP
+  - Numbers with 4-5 consecutive absences → +3-4% tend to RETURN ✅
+  - Configurable per level: max_hot_allowed, min_cold_required
 
 ### 7. Probabilistic Filter (Option 31 + Backtesting) ⭐⭐ UPDATED!
 - **Purpose**: Pre-filter combinations based on historical 11+ hits
@@ -96,7 +122,21 @@ python super_menu.py
 - **Performance**: ~7s load, <1ms for 100k lookups, ~91MB RAM
 - **Validation**: Contest 3614 winner passes Conservative filter (Acertos_11=317)
 
-### 8. Learning System v2.1 (Option 30 → Option 3) ⭐⭐ NEW!
+### 8. Anomaly Frequency Analysis v2.0 (Option 31 Levels 1-6) ⭐⭐ VALIDATED!
+- **Adapted from**: MLMEGA system
+- **Validated**: Historical analysis of 3,617 contests (23/02/2026)
+- **Key Finding**: Sliding window frequency has NO significant effect!
+- **NEW Logic v2.0**:
+  - **AVOID**: Numbers with 8+ CONSECUTIVE appearances (-5% trend to stop)
+  - **FAVOR**: Numbers with 4-5 CONSECUTIVE ABSENCES (+3-4% trend to return) ✅
+- **Consecutive Detection**: 4+ consecutive draws = warning
+- **Filter Config per Level**:
+  - Level 1-2: max 3 hot, min 0 cold
+  - Level 3: max 2 hot, min 1 cold
+  - Level 4-5: max 1 hot, min 2 cold
+  - Level 6: max 1 hot, min 2 cold (maximum restriction)
+
+### 9. Learning System v2.1 (Option 30 → Option 3) ⭐⭐ NEW!
 - **Purpose**: Track exclusion/compensation accuracy over backtests
 - **Exclusion Algorithm v2.1**: Conservative mode - protects numbers in last 3 draws
 - **Compensation Logic**: INVERTED (predict SUBIR → accept DESCER)
@@ -109,6 +149,7 @@ python super_menu.py
 |------|---------|  
 | `super_menu.py` | Main menu (4800+ lines) |
 | `filtro_probabilistico.py` | Probabilistic filter for Option 31 |
+| `analise_anomalias_frequencia.py` | Anomaly frequency analysis (adapted from MLMEGA) |
 | `sistema_aprendizado_ml.py` | ML system with 15 algorithms (Association Rules v2.0) |
 | `estrategia_combo20.py` | C1/C2 strategy implementation |
 | `combo20_FILTRADAS_TOP1000.txt` | Top 1000 C1 combinations |

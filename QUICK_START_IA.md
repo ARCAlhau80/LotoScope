@@ -7,6 +7,43 @@
 
 ---
 
+## 🎯 TRIAGEM DE MODELO (IMPORTANTE!)
+
+**Antes de processar qualquer solicitação, avalie qual modelo usar:**
+
+### ✅ Use SONNET 4.6 (economia 3x) para:
+```
+• Consultas sobre documentação ou código existente
+• Navegação e leitura de arquivos
+• Edições simples (trocar valores, adicionar prints, corrigir typos)
+• Executar comandos no terminal
+• Conferir resultados de backtests
+• Perguntas sobre como usar funcionalidades existentes
+• Criar arquivos pequenos baseados em templates existentes
+• Debugging de erros óbvios (imports, sintaxe, paths)
+```
+
+### 🧠 Use OPUS 4.5 (máxima capacidade) para:
+```
+• Criar novos algoritmos matemáticos/estatísticos
+• Refatorar arquivos grandes (>500 linhas)
+• Debugging de bugs sutis ou lógica complexa
+• Arquitetura de novos sistemas/módulos
+• Otimização de performance crítica
+• Análises que envolvam múltiplos arquivos interconectados
+• Decisões de design que impactam todo o sistema
+• Implementar novas estratégias de loteria
+• Quando Sonnet falhar ou der resposta incompleta
+```
+
+### 💡 Dica para o Usuário
+Ao fazer uma solicitação, adicione no início:
+- `[SIMPLES]` → Força uso de Sonnet (economia)
+- `[COMPLEXO]` → Força uso de Opus (precisão)
+- Sem tag → IA decide baseado na análise acima
+
+---
+
 ## O QUE É
 
 **LotoScope** = Sistema Python para gerar combinações otimizadas da **Lotofácil** (loteria BR)
