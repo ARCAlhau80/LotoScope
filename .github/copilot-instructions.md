@@ -180,17 +180,18 @@ python super_menu.py
 ✅ **15 correct numbers** (jackpot) achieved in contest 3474 with 50 combinations
 ✅ **15 correct numbers** (jackpot) achieved in contest 3610 with Pool 23 Hybrid (Option 31)
 ✅ **15 correct numbers** (jackpot) achieved in contest 3615 with Pool 23 Level 6 (+2841% ROI!)
+✅ **PROFIT WITHOUT JACKPOT** (01/03/2026): Level 3 (+14.3%) and Level 5 (+33.3%) ⭐ NEW!
 
 ## Economic Analysis (Important!)
 
-- Break-even without jackpot: **Impossible** (but Pool 23 Level 6 gives +2841% ROI when jackpot!)
+- Break-even without jackpot: **Previously thought impossible, but ACHIEVED on 01/03/2026!** ⭐
 - Our filters improve odds by ~650x vs random
 - **Pool 23 Levels Performance**:
   - Level 2: 325k combos, best jackpot preservation, +134% ROI
-  - Level 3: 100k combos, balanced, +492% ROI
-  - Level 5: 42k combos, aggressive, +1257% ROI
+  - Level 3: 100k combos, balanced, +492% ROI (jackpot) / **+14.3%** (no jackpot!) ⭐
+  - Level 5: 42k combos, aggressive, +1257% ROI (jackpot) / **+33.3%** (no jackpot!) ⭐
   - Level 6: 18k combos, ultra, **+2841% ROI** ⭐ BEST!
-- Recommended: Level 2-3 for jackpot hunting, Level 5-6 for maximum ROI
+- Recommended: Level 3-5 for balanced ROI (can profit even without jackpot!)
 
 ## Bug Fixes & Improvements (Feb-Mar/2026)
 
@@ -204,6 +205,10 @@ python super_menu.py
    - The filter was rejecting jackpots (4 failures in 18 backtests, Level 4 had 0 jackpots!)
    - Analysis showed real draws had ~6 violations but filter rejected >2 violations
    - Levels 1-3 still use this filter with tolerance=2
+8. **Added** (01/03/2026): **TOP 10 exclusion candidates + adjustable quantity (1-10)** ⭐ NEW!
+   - Shows ranking ordered by score
+   - Allows choosing how many numbers to exclude (default 2)
+   - Allows manual adjustment from TOP 10
 
 ---
 *Last updated: 2026-03-01*

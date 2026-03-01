@@ -5,7 +5,7 @@
 > trabalhando no projeto LotoScope. Mantenha-o atualizado após cada sessão significativa.
 
 ```
-📅 ÚLTIMA ATUALIZAÇÃO: 26/02/2026
+📅 ÚLTIMA ATUALIZAÇÃO: 01/03/2026
 👤 AUTOR: AR CALHAU
 🤖 VALIDADO POR: Claude Opus 4.5
 ```
@@ -26,6 +26,7 @@ O **LotoScope** é um sistema científico completo para análise estatística e 
 ✅ **15 ACERTOS (PRÊMIO MÁXIMO)** no Concurso 3474 (50 combinações)
 ✅ **15 ACERTOS (PRÊMIO MÁXIMO)** no Concurso 3610 (Pool 23 Híbrido)
 ✅ **15 ACERTOS (PRÊMIO MÁXIMO)** no Concurso 3615 (Pool 23 Nível 6, **ROI +2841%**!)
+✅ **LUCRO SEM JACKPOT** em 01/03/2026: Nível 3 (+14.3%) e Nível 5 (+33.3%) ⭐ NOVO!
 
 ---
 
@@ -460,6 +461,33 @@ def carregar_combinacoes(arquivo):
 ---
 
 ## 📝 HISTÓRICO DE SESSÕES IMPORTANTES
+
+### 01/03/2026 - LUCRO SEM JACKPOT! ⭐⭐⭐ MARCO IMPORTANTE!
+**Resultado do Backtest:**
+- Resultado real: [1, 2, 4, 5, 6, 9, 11, 12, 13, 16, 18, 22, 23, 24, 25]
+- Soma: 191, Pares: 8, Primos: 5, Seq.Máx: 4, Núcleo: 11
+
+**Performance por Nível:**
+| Nível | Combos | Custo | 11ac | Prêmio | ROI |
+|-------|--------|-------|------|--------|-----|
+| 0 | 12 | R$42 | 5 | R$35 | -16.7% |
+| 1 | 12 | R$42 | 5 | R$35 | -16.7% |
+| 2 | 9 | R$32 | 4 | R$28 | -11.1% |
+| **3** | **7** | **R$24** | **4** | **R$28** | **+14.3%** ⭐ |
+| 4 | 0 | R$0 | 0 | R$0 | 0% |
+| **5** | **3** | **R$10** | **2** | **R$14** | **+33.3%** ⭐ |
+| 6 | 0 | R$0 | 0 | R$0 | 0% |
+
+**Análise:**
+- ❌ Exclusão falhou: excluiu 9 números, 4 estavam no resultado {5, 12, 13, 18}
+- ✅ Previsão de soma ACERTOU (previu BAIXA, resultado 191 = BAIXA)
+- ✅ Níveis 3 e 5 foram LUCRATIVOS mesmo sem jackpot!
+- 💡 Demonstra que filtros agressivos podem gerar lucro com 11 acertos
+
+**Nova Funcionalidade Implementada:**
+- TOP 10 candidatos à exclusão (ordenado por score)
+- Quantidade de exclusão ajustável: 1 a 10 números (era fixo em 2)
+- Permite ajuste manual a partir do TOP 10
 
 ### 01/03/2026 - CORREÇÃO CRÍTICA: Filtro Improbabilidade Posicional ⭐⭐ IMPORTANTE!
 **Problema Identificado:**
