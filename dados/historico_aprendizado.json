@@ -1,38 +1,40 @@
 {
-  "total_backtests": 15,
+  "total_backtests": 18,
   "filtros_falhas": {
     "N4_SOMA": 1,
-    "N4_IMPROBABILIDADE": 1
+    "N4_IMPROBABILIDADE": 4,
+    "N4_PARES": 1
   },
   "filtros_acertos": {
     "N1_SOMA": 3,
     "N3_SOMA": 2,
     "N2_SOMA": 1,
-    "N4_SOMA": 1,
-    "N4_PARES": 1,
-    "N4_PRIMOS": 1,
-    "N4_SEQ": 1,
-    "N4_DEBITO_POSICIONAL": 1
+    "N4_SOMA": 4,
+    "N4_PARES": 3,
+    "N4_PRIMOS": 4,
+    "N4_SEQ": 4,
+    "N4_DEBITO_POSICIONAL": 4,
+    "N4_COMPENSACAO": 1
   },
   "niveis_jackpot": {
-    "0": 7,
-    "1": 5,
-    "2": 4,
-    "3": 2,
+    "0": 10,
+    "1": 8,
+    "2": 7,
+    "3": 5,
     "4": 0,
     "5": 1,
     "6": 1
   },
-  "exclusao_correta": 7,
+  "exclusao_correta": 10,
   "exclusao_errada": 8,
   "previsoes": {
     "soma": {
-      "acertos": 6,
+      "acertos": 9,
       "erros": 3
     },
     "compensacao": {
       "acertos": 5,
-      "erros": 7
+      "erros": 8
     }
   },
   "eventos_atipicos": [
@@ -80,6 +82,29 @@
       ],
       "padroes": [
         "⚠️ REPETIÇÃO ATÍPICA: 15 (normal: 5-10)"
+      ]
+    },
+    {
+      "data": "20260228_110645",
+      "resultado": [
+        2,
+        4,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        16,
+        19,
+        20,
+        22,
+        24
+      ],
+      "padroes": [
+        "⚠️ SEQUÊNCIA LONGA: 6 consecutivos!"
       ]
     }
   ],
@@ -548,6 +573,99 @@
       "ultimo_nivel_jackpot": 3,
       "melhor_roi_nivel": 3,
       "melhor_roi_valor": 523.59
+    },
+    {
+      "data": "20260226_142100",
+      "resultado": [
+        1,
+        2,
+        4,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        15,
+        18,
+        22,
+        23,
+        24,
+        25
+      ],
+      "excluidos": [
+        3,
+        17
+      ],
+      "exclusao_correta": true,
+      "soma": 190,
+      "seq_max": 4,
+      "pares": 7,
+      "ultimo_nivel_jackpot": 3,
+      "melhor_roi_nivel": 3,
+      "melhor_roi_valor": 215.66
+    },
+    {
+      "data": "20260228_110645",
+      "resultado": [
+        2,
+        4,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        16,
+        19,
+        20,
+        22,
+        24
+      ],
+      "excluidos": [
+        5,
+        17
+      ],
+      "exclusao_correta": true,
+      "soma": 189,
+      "seq_max": 6,
+      "pares": 10,
+      "ultimo_nivel_jackpot": 3,
+      "melhor_roi_nivel": 3,
+      "melhor_roi_valor": 792.26
+    },
+    {
+      "data": "20260301_140809",
+      "resultado": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        9,
+        11,
+        12,
+        13,
+        16,
+        18,
+        22,
+        23,
+        24,
+        25
+      ],
+      "excluidos": [
+        8,
+        17
+      ],
+      "exclusao_correta": true,
+      "soma": 191,
+      "seq_max": 4,
+      "pares": 8,
+      "ultimo_nivel_jackpot": 3,
+      "melhor_roi_nivel": 3,
+      "melhor_roi_valor": 186.67
     }
   ]
 }

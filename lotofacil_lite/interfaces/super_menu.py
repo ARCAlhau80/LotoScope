@@ -12156,31 +12156,29 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   │ NÍVEL 0: SEM FILTROS                                            │")
         print("   │          490.314 combinações (TODAS)                            │")
         print("   ├─────────────────────────────────────────────────────────────────┤")
-        print("   │ NÍVEL 1: SOMA DINÂMICA + MAPA TÉRMICO (SEGURO)                  │")
-        print("   │          SOMA: ajustada por reversão (82-97% assert.)           │")
-        print("   │          + IMPROBABILIDADE POSICIONAL (até 84% assert.)        │")
+        print("   │ NÍVEL 1: SOMA + QTDE 6-25 (SEGURO)                              │")
+        print("   │          SOMA: 175-235 | QTDE 6-25: 10-13 ⭐NOVO               │")
+        print("   │          + DÉBITO POSICIONAL (50.7% assert.)                   │")
         print("   ├─────────────────────────────────────────────────────────────────┤")
-        print("   │ NÍVEL 2: BÁSICO (RECOMENDADO PARA JACKPOT) ⭐                   │")
-        print("   │          SOMA DINÂMICA | PARES: 5-10 | PRIMOS: 3-8              │")
-        print("   │          CONSEC: 7-10 | GAP ≤5 ⭐NOVO                          │")
-        print("   │          + COMPENSAÇÃO POSICIONAL (64%)                         │")
+        print("   │ NÍVEL 2: BÁSICO + PIORES HISTÓRICO ⭐                           │")
+        print("   │          CONSEC: 7-10 | GAP ≤5 | QTDE 6-25: 10-13             │")
+        print("   │          + PIORES POSIÇÃO HISTÓRICO (tol=0) ⭐NOVO             │")
         print("   ├─────────────────────────────────────────────────────────────────┤")
-        print("   │ NÍVEL 3: EQUILIBRADO                                            │")
-        print("   │          SOMA DINÂMICA | PARES: 6-9 | PRIMOS: 4-7               │")
-        print("   │          CONSEC: 7-10 | GAP ≤5 | SEQ máx: 6                    │")
+        print("   │ NÍVEL 3: EQUILIBRADO + PIORES RECENTE                           │")
+        print("   │          PARES: 5-10 | PRIMOS: 3-8 | CONSEC: 7-10 | GAP ≤5    │")
+        print("   │          + PIORES HISTÓRICO (tol=0) + PIORES 30 (tol=1) ⭐NOVO │")
         print("   ├─────────────────────────────────────────────────────────────────┤")
-        print("   │ NÍVEL 4: MODERADO                                               │")
-        print("   │          SOMA DINÂMICA | PARES: 6-9 | PRIMOS: 4-7               │")
-        print("   │          CONSEC: 7-9 | GAP ≤4 | SEQ máx: 5 | REP: 4-11         │")
+        print("   │ NÍVEL 4: MODERADO (FILTROS MÁXIMOS)                             │")
+        print("   │          PARES: 6-9 | PRIMOS: 4-7 | CONSEC: 7-9 | GAP ≤4      │")
+        print("   │          PIORES HIST (tol=0) + PIORES 30 (tol=0) ⭐NOVO        │")
         print("   ├─────────────────────────────────────────────────────────────────┤")
         print("   │ NÍVEL 5: AGRESSIVO (ROI OTIMIZADO) 📈                           │")
         print("   │          SOMA: 180-210 | PARES: 6-9 | PRIMOS: 3-7               │")
-        print("   │          CONSEC: 7-9 | GAP ≤4 | SEQ máx: 5 | NÚCLEO ≥8         │")
+        print("   │          TODOS OS FILTROS POSICIONAIS ATIVOS                    │")
         print("   ├─────────────────────────────────────────────────────────────────┤")
         print("   │ NÍVEL 6: ULTRA (CONSISTÊNCIA) 🎯                                │")
         print("   │          SOMA: 185-205 | PARES: 6-9 | PRIMOS: 4-7               │")
-        print("   │          CONSEC: 7-9 | GAP ≤4 | SEQ máx: 5 | NÚCLEO ≥8         │")
-        print("   │          Foco em acertos 12-14 (não depende de jackpot)         │")
+        print("   │          TODOS OS FILTROS + NÚCLEO ≥8 + FAVORECIDOS ≥4         │")
         print("   └─────────────────────────────────────────────────────────────────┘")
         
         if compensacao_ativa:
@@ -12198,6 +12196,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Parâmetros por nível - AJUSTADOS para progressão suave
         # META: Cada nível deve reduzir ~30-50% do anterior (não 80%!)
         # NOVO: Débito posicional integrado (50.7% assertividade - 10x vs aleatório)
+        # NOVO: Filtros Posicionais Dinâmicos (piores números por posição)
+        # NOVO: Filtro Qtde 6-25 (10-13 números do intervalo 6-25)
         FILTROS_POR_NIVEL = {
             0: {},  # Sem filtros - 490k combos (100%) - PURO
             1: {
@@ -12208,6 +12208,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'usar_analise_anomalias': True,  # NOVO: Filtro de anomalias de frequência
                 'anomalias_max_quentes': 3,  # Máximo de números "muito quentes" permitidos
                 'anomalias_min_frios': 0,  # Mínimo de números "frios" exigidos
+                # NOVOS FILTROS POSICIONAIS
+                'usar_filtro_qtde_6_25': True,  # Filtro quantidade 6-25 (10-13)
+                'qtde_6_25_valores': [10, 11, 12, 13],  # Valores aceitos
             },
             2: {
                 # NÍVEL 2: BÁSICO - soma + reversão + débito + anomalias + NOVOS FILTROS
@@ -12220,6 +12223,11 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'usar_analise_anomalias': True,  # Filtro de anomalias
                 'anomalias_max_quentes': 3,  # Máximo de números "muito quentes"
                 'anomalias_min_frios': 0,  # Mínimo de números "frios"
+                # NOVOS FILTROS POSICIONAIS
+                'usar_filtro_qtde_6_25': True,
+                'qtde_6_25_valores': [10, 11, 12, 13],
+                'usar_filtro_piores_historico': True,  # Piores do histórico completo
+                'piores_tolerancia_historico': 0,  # 0 = nenhum número ruim na posição
             },
             3: {
                 # NÍVEL 3: EQUILIBRADO - adiciona pares/primos + consecutivos/gap
@@ -12235,6 +12243,13 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'usar_analise_anomalias': True,  # Filtro de anomalias
                 'anomalias_max_quentes': 2,  # Mais restritivo
                 'anomalias_min_frios': 1,  # Exige ao menos 1 número frio
+                # NOVOS FILTROS POSICIONAIS
+                'usar_filtro_qtde_6_25': True,
+                'qtde_6_25_valores': [10, 11, 12, 13],
+                'usar_filtro_piores_historico': True,
+                'piores_tolerancia_historico': 0,
+                'usar_filtro_piores_recente': True,  # Piores dos últimos 30
+                'piores_tolerancia_recente': 1,  # Máx 1 número ruim recente
             },
             4: {
                 # NÍVEL 4: MODERADO - adiciona sequência + gap mais restritivo
@@ -12246,12 +12261,19 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'seq_max': 5,
                 'usar_compensacao': True,
                 'usar_reversao_soma': True,
-                'usar_improbabilidade_posicional': True,
+                # 'usar_improbabilidade_posicional': True,  # DESATIVADO: estava eliminando jackpots (4 falhas em 18 backtests)
                 'usar_debito_posicional': True,
                 'debito_min_matches': 3,  # Mais exigente
                 'usar_analise_anomalias': True,  # Filtro de anomalias
                 'anomalias_max_quentes': 2,  # Restritivo
                 'anomalias_min_frios': 1,  # Exige 1 número frio
+                # NOVOS FILTROS POSICIONAIS
+                'usar_filtro_qtde_6_25': True,
+                'qtde_6_25_valores': [10, 11, 12, 13],
+                'usar_filtro_piores_historico': True,
+                'piores_tolerancia_historico': 0,
+                'usar_filtro_piores_recente': True,
+                'piores_tolerancia_recente': 0,  # Mais restritivo: 0 ruins recentes
             },
             5: {
                 # NÍVEL 5: AGRESSIVO - OTIMIZADO PARA ROI + consecutivos/gap restritivos
@@ -12267,12 +12289,19 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'nucleo_min': 8,  # Reduzido: jackpot tinha 9
                 'usar_compensacao': True,
                 'usar_reversao_soma': True,
-                'usar_improbabilidade_posicional': True,
+                # 'usar_improbabilidade_posicional': True,  # DESATIVADO: estava eliminando jackpots (4 falhas em 18 backtests)
                 'usar_debito_posicional': True,
                 'debito_min_matches': 3,
                 'usar_analise_anomalias': True,  # Filtro de anomalias
                 'anomalias_max_quentes': 1,  # Muito restritivo - máx 1 número quente
                 'anomalias_min_frios': 2,  # Exige 2 números frios (estão devendo)
+                # NOVOS FILTROS POSICIONAIS
+                'usar_filtro_qtde_6_25': True,
+                'qtde_6_25_valores': [10, 11, 12, 13],
+                'usar_filtro_piores_historico': True,
+                'piores_tolerancia_historico': 0,
+                'usar_filtro_piores_recente': True,
+                'piores_tolerancia_recente': 0,
             },
             6: {
                 # NÍVEL 6: ULTRA - FOCO EM CONSISTÊNCIA + consecutivos/gap máximo
@@ -12289,12 +12318,19 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'favorecidos_min': 4,               # Reduzido
                 'usar_compensacao': True,
                 'usar_reversao_soma_ultra': True,
-                'usar_improbabilidade_posicional': True,
+                # 'usar_improbabilidade_posicional': True,  # DESATIVADO: estava eliminando jackpots (4 falhas em 18 backtests)
                 'usar_debito_posicional': True,
                 'debito_min_matches': 3,  # Menos exigente
                 'usar_analise_anomalias': True,  # Filtro de anomalias MÁXIMO
                 'anomalias_max_quentes': 1,  # Máximo 1 número muito quente
                 'anomalias_min_frios': 2,  # Exige 2 números frios (tendência de voltar)
+                # NOVOS FILTROS POSICIONAIS
+                'usar_filtro_qtde_6_25': True,
+                'qtde_6_25_valores': [10, 11, 12, 13],
+                'usar_filtro_piores_historico': True,
+                'piores_tolerancia_historico': 0,
+                'usar_filtro_piores_recente': True,
+                'piores_tolerancia_recente': 0,
             },
         }
         
@@ -12851,6 +12887,57 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     anomalias_ativo = False
         
             # ═══════════════════════════════════════════════════════════════════
+            # CALCULAR PIORES NÚMEROS POR POSIÇÃO (Filtro Posicional Dinâmico)
+            # ═══════════════════════════════════════════════════════════════════
+            usar_filtro_qtde_6_25 = filtros.get('usar_filtro_qtde_6_25', False)
+            qtde_6_25_valores = filtros.get('qtde_6_25_valores', [10, 11, 12, 13])
+            
+            usar_filtro_piores_historico = filtros.get('usar_filtro_piores_historico', False)
+            piores_tolerancia_historico = filtros.get('piores_tolerancia_historico', 0)
+            piores_historico = {}
+            
+            usar_filtro_piores_recente = filtros.get('usar_filtro_piores_recente', False)
+            piores_tolerancia_recente = filtros.get('piores_tolerancia_recente', 1)
+            piores_recente = {}
+            
+            if usar_filtro_qtde_6_25:
+                print(f"\n   🎯 FILTRO QTDE 6-25 ATIVADO!")
+                print(f"      Valores aceitos: {qtde_6_25_valores}")
+                print(f"      Conceito: Combinações boas têm 10-13 números do intervalo 6-25")
+            
+            if usar_filtro_piores_historico:
+                piores_historico, freq_hist = self._calcular_piores_numeros_por_posicao(resultados, janela=None)
+                total_piores_hist = sum(len(p) for p in piores_historico.values())
+                print(f"\n   📊 FILTRO PIORES POSIÇÃO (HISTÓRICO COMPLETO) ATIVADO!")
+                print(f"      Base: {len(resultados)} concursos")
+                print(f"      Tolerância: {piores_tolerancia_historico} (máx números ruins aceitos)")
+                print(f"      Total de pares (número,posição) identificados como ruins: {total_piores_hist}")
+                
+                # Mostrar alguns exemplos
+                exemplos = []
+                for pos in [1, 8, 15]:
+                    if piores_historico.get(pos):
+                        exemplos.append(f"N{pos}: {sorted(piores_historico[pos])[:3]}")
+                if exemplos:
+                    print(f"      Exemplos: {' | '.join(exemplos)}")
+            
+            if usar_filtro_piores_recente:
+                piores_recente, freq_rec = self._calcular_piores_numeros_por_posicao(resultados, janela=30)
+                total_piores_rec = sum(len(p) for p in piores_recente.values())
+                print(f"\n   📊 FILTRO PIORES POSIÇÃO (ÚLTIMOS 30) ATIVADO!")
+                print(f"      Base: últimos 30 concursos")
+                print(f"      Tolerância: {piores_tolerancia_recente} (máx números ruins aceitos)")
+                print(f"      Total de pares (número,posição) identificados como ruins: {total_piores_rec}")
+                
+                # Mostrar alguns exemplos
+                exemplos = []
+                for pos in [1, 8, 15]:
+                    if piores_recente.get(pos):
+                        exemplos.append(f"N{pos}: {sorted(piores_recente[pos])[:3]}")
+                if exemplos:
+                    print(f"      Exemplos: {' | '.join(exemplos)}")
+
+            # ═══════════════════════════════════════════════════════════════════
             # PASSO 4.5: GERAR COMBINAÇÕES (com ou sem números fixos)
             # ═══════════════════════════════════════════════════════════════════
             print("\n" + "─"*78)
@@ -12934,6 +13021,13 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     print(f"      • 🔬 Anomalias de frequência: máx {anomalias_max_quentes} quentes, mín {anomalias_min_frios} frios")
                 if filtro_prob_obj:
                     print(f"      • 🎲 Filtro probabilístico: Acertos_11 >= {filtro_prob_limite}")
+                # NOVOS FILTROS POSICIONAIS
+                if usar_filtro_qtde_6_25:
+                    print(f"      • 🎯 Qtde 6-25: aceita {qtde_6_25_valores}")
+                if usar_filtro_piores_historico:
+                    print(f"      • 📊 Piores posição (histórico): tolerância={piores_tolerancia_historico}")
+                if usar_filtro_piores_recente:
+                    print(f"      • 📊 Piores posição (30 últimos): tolerância={piores_tolerancia_recente}")
                 print()
             print("─"*78)
             
@@ -13013,6 +13107,41 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 if 'soma_min' in filtros:
                     soma = sum(combo)
                     if soma < filtros['soma_min'] or soma > filtros['soma_max']:
+                        continue
+                
+                # ═══════════════════════════════════════════════════════════════════
+                # NOVOS FILTROS POSICIONAIS DINÂMICOS
+                # ═══════════════════════════════════════════════════════════════════
+                
+                # Filtro QTDE 6-25 (combinações boas têm 10-13 números do intervalo 6-25)
+                if usar_filtro_qtde_6_25:
+                    qtde_6_25 = self._contar_qtde_intervalo_6_25(combo)
+                    if qtde_6_25 not in qtde_6_25_valores:
+                        continue
+                
+                # Filtro PIORES POSIÇÃO (HISTÓRICO COMPLETO)
+                # Rejeita combinações com muitos números "ruins" nas posições erradas
+                if usar_filtro_piores_historico and piores_historico:
+                    combo_sorted = sorted(combo)
+                    violacoes_hist = 0
+                    for pos in range(1, 16):
+                        num_na_pos = combo_sorted[pos - 1]
+                        if num_na_pos in piores_historico.get(pos, set()):
+                            violacoes_hist += 1
+                    if violacoes_hist > piores_tolerancia_historico:
+                        continue
+                
+                # Filtro PIORES POSIÇÃO (ÚLTIMOS 30)
+                # Rejeita combinações com números "ruins" baseado nos últimos 30 concursos
+                if usar_filtro_piores_recente and piores_recente:
+                    if 'combo_sorted' not in locals():
+                        combo_sorted = sorted(combo)
+                    violacoes_rec = 0
+                    for pos in range(1, 16):
+                        num_na_pos = combo_sorted[pos - 1]
+                        if num_na_pos in piores_recente.get(pos, set()):
+                            violacoes_rec += 1
+                    if violacoes_rec > piores_tolerancia_recente:
                         continue
             
                 # Filtro PARES
@@ -13426,6 +13555,94 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             evitar_por_posicao[pos] = [c[0] for c in candidatos[:3]]
         
         return scores, evitar_por_posicao, soma_atual, saldo
+
+    def _calcular_piores_numeros_por_posicao(self, resultados, janela=None):
+        """
+        🎯 FILTRO POSICIONAL DINÂMICO
+        Calcula os números MENOS frequentes em cada posição (N1-N15).
+        
+        Baseado no conceito SQL:
+        - Números que RARAMENTE aparecem em determinada posição são ruins
+        - Aceita range de tolerância (0 = nenhum ruim, 1 = máx 1 ruim)
+        
+        Args:
+            resultados: Lista de dicts com 'numeros' (ordenados)
+            janela: Se None, usa todos. Se int, usa últimos N concursos.
+            
+        Retorna:
+            dict: {posicao: set(numeros_ruins), ...} - números a evitar por posição
+            dict: {posicao: {numero: frequencia, ...}, ...} - frequências para debug
+        """
+        from collections import Counter, defaultdict
+        
+        # Usar janela ou todos os resultados
+        dados = resultados[:janela] if janela else resultados
+        total_concursos = len(dados)
+        
+        # Contar frequência de cada número em cada posição
+        freq_por_posicao = defaultdict(Counter)
+        
+        for r in dados:
+            nums = r['numeros']  # Já ordenados (N1 a N15)
+            for pos in range(15):  # 0-14 para acessar lista
+                num = nums[pos]
+                freq_por_posicao[pos + 1][num] += 1  # Posição 1-15
+        
+        # Calcular média esperada por posição
+        # Em teoria, cada número aparece ~total/amplitude vezes
+        # Amplitude por posição (P10-P90 histórico)
+        AMPLITUDES = {
+            1: (1, 3), 2: (2, 5), 3: (3, 7), 4: (4, 9), 5: (6, 11),
+            6: (7, 12), 7: (9, 14), 8: (10, 16), 9: (12, 17), 10: (14, 19),
+            11: (15, 20), 12: (17, 22), 13: (19, 23), 14: (21, 24), 15: (23, 25)
+        }
+        
+        piores_por_posicao = {}
+        freq_detalhada = {}
+        
+        for pos in range(1, 16):
+            p10, p90 = AMPLITUDES[pos]
+            # Expandir amplitude para capturar outliers
+            min_val = max(1, p10 - 3)
+            max_val = min(25, p90 + 3)
+            
+            # Calcular limiar: números com frequência < 5% da média são "ruins"
+            amplitude = max_val - min_val + 1
+            freq_esperada = total_concursos / amplitude
+            limiar_ruim = freq_esperada * 0.15  # 15% da frequência esperada = muito raro
+            
+            piores = set()
+            freq_pos = {}
+            
+            for num in range(min_val, max_val + 1):
+                freq = freq_por_posicao[pos].get(num, 0)
+                freq_pos[num] = freq
+                
+                # Número é "ruim" se aparece muito pouco nessa posição
+                if freq < limiar_ruim:
+                    piores.add(num)
+            
+            piores_por_posicao[pos] = piores
+            freq_detalhada[pos] = freq_pos
+        
+        return piores_por_posicao, freq_detalhada
+
+    def _contar_qtde_intervalo_6_25(self, combo):
+        """
+        🎯 FILTRO QTDE 6-25
+        Conta quantos números do intervalo 6-25 estão na combinação.
+        
+        Baseado no conceito SQL:
+        - Combinações boas têm 10-13 números no intervalo 6-25
+        - Isso significa 2-5 números no intervalo 1-5
+        
+        Args:
+            combo: Tupla/lista de 15 números
+            
+        Retorna:
+            int: Quantidade de números no intervalo 6-25
+        """
+        return sum(1 for n in combo if 6 <= n <= 25)
 
     def _exibir_mapa_termico_posicional(self):
         """Exibe o mapa térmico de números menos prováveis por posição."""
@@ -14366,23 +14583,33 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Parâmetros por nível - SINCRONIZADO com Gerador Pool 23 (Opção 31)
         # META: Progressão suave de 100% → 1%
         # INCLUI: Débito posicional (50.7% assertividade - 10x vs aleatório)
+        # INCLUI: Filtros Posicionais Dinâmicos (piores números por posição) ⭐NOVO
+        # INCLUI: Filtro Qtde 6-25 (10-13 números do intervalo 6-25) ⭐NOVO
         FILTROS_POR_NIVEL = {
             0: {},  # Sem filtros - 490k combos (100%) - PURO
             1: {
-                # NÍVEL 1: SUAVE - soma + débito posicional (meta: ~350k, 70%)
+                # NÍVEL 1: SUAVE - soma + débito posicional + qtde 6-25 (meta: ~350k, 70%)
                 'soma_min': 175, 'soma_max': 235,
                 'usar_debito_posicional': True,
                 'debito_min_matches': 1,
+                # NOVOS FILTROS POSICIONAIS
+                'usar_filtro_qtde_6_25': True,
+                'qtde_6_25_valores': [10, 11, 12, 13],
             },
             2: {
-                # NÍVEL 2: BÁSICO - soma + reversão + débito (meta: ~250k, 50%)
+                # NÍVEL 2: BÁSICO - soma + reversão + débito + piores hist (meta: ~250k, 50%)
                 'soma_min': 180, 'soma_max': 230,
                 'usar_reversao_soma': True,
                 'usar_debito_posicional': True,
                 'debito_min_matches': 2,
+                # NOVOS FILTROS POSICIONAIS
+                'usar_filtro_qtde_6_25': True,
+                'qtde_6_25_valores': [10, 11, 12, 13],
+                'usar_filtro_piores_historico': True,
+                'piores_tolerancia_historico': 0,
             },
             3: {
-                # NÍVEL 3: EQUILIBRADO - adiciona pares/primos (meta: ~150k, 30%)
+                # NÍVEL 3: EQUILIBRADO - adiciona pares/primos + piores rec (meta: ~150k, 30%)
                 'soma_min': 185, 'soma_max': 225,
                 'pares_min': 5, 'pares_max': 10,
                 'primos_min': 3, 'primos_max': 8,
@@ -14390,18 +14617,32 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'usar_compensacao': True,
                 'usar_debito_posicional': True,
                 'debito_min_matches': 2,
+                # NOVOS FILTROS POSICIONAIS
+                'usar_filtro_qtde_6_25': True,
+                'qtde_6_25_valores': [10, 11, 12, 13],
+                'usar_filtro_piores_historico': True,
+                'piores_tolerancia_historico': 0,
+                'usar_filtro_piores_recente': True,
+                'piores_tolerancia_recente': 1,
             },
             4: {
-                # NÍVEL 4: MODERADO - adiciona sequência + improbabilidade (meta: ~80k, 16%)
+                # NÍVEL 4: MODERADO - filtros máximos (meta: ~80k, 16%)
                 'soma_min': 190, 'soma_max': 220,
                 'pares_min': 6, 'pares_max': 9,
                 'primos_min': 4, 'primos_max': 7,
                 'seq_max': 6,
                 'usar_compensacao': True,
                 'usar_reversao_soma': True,
-                'usar_improbabilidade_posicional': True,
+                # 'usar_improbabilidade_posicional': True,  # DESATIVADO: estava eliminando jackpots (4 falhas em 18 backtests)
                 'usar_debito_posicional': True,
                 'debito_min_matches': 3,
+                # NOVOS FILTROS POSICIONAIS
+                'usar_filtro_qtde_6_25': True,
+                'qtde_6_25_valores': [10, 11, 12, 13],
+                'usar_filtro_piores_historico': True,
+                'piores_tolerancia_historico': 0,
+                'usar_filtro_piores_recente': True,
+                'piores_tolerancia_recente': 0,
             },
             5: {
                 # NÍVEL 5: AGRESSIVO - OTIMIZADO PARA ROI (meta: ~30k, 6%)
@@ -14414,9 +14655,16 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'nucleo_min': 8,  # Reduzido
                 'usar_compensacao': True,
                 'usar_reversao_soma': True,
-                'usar_improbabilidade_posicional': True,
+                # 'usar_improbabilidade_posicional': True,  # DESATIVADO: estava eliminando jackpots (4 falhas em 18 backtests)
                 'usar_debito_posicional': True,
                 'debito_min_matches': 3,
+                # NOVOS FILTROS POSICIONAIS
+                'usar_filtro_qtde_6_25': True,
+                'qtde_6_25_valores': [10, 11, 12, 13],
+                'usar_filtro_piores_historico': True,
+                'piores_tolerancia_historico': 0,
+                'usar_filtro_piores_recente': True,
+                'piores_tolerancia_recente': 0,
             },
             6: {
                 # NÍVEL 6: ULTRA - FOCO EM CONSISTÊNCIA (meta: ~15k, 3%)
@@ -14430,11 +14678,28 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'favorecidos_min': 4,               # Reduzido
                 'usar_compensacao': True,
                 'usar_reversao_soma_ultra': True,
-                'usar_improbabilidade_posicional': True,
+                # 'usar_improbabilidade_posicional': True,  # DESATIVADO: estava eliminando jackpots (4 falhas em 18 backtests)
                 'usar_debito_posicional': True,
                 'debito_min_matches': 3,  # Menos exigente
+                # NOVOS FILTROS POSICIONAIS
+                'usar_filtro_qtde_6_25': True,
+                'qtde_6_25_valores': [10, 11, 12, 13],
+                'usar_filtro_piores_historico': True,
+                'piores_tolerancia_historico': 0,
+                'usar_filtro_piores_recente': True,
+                'piores_tolerancia_recente': 0,
             },
         }
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # CALCULAR PIORES NÚMEROS POR POSIÇÃO (para filtros posicionais)
+        # ═══════════════════════════════════════════════════════════════════
+        piores_historico, _ = self._calcular_piores_numeros_por_posicao(resultados, janela=None)
+        piores_recente, _ = self._calcular_piores_numeros_por_posicao(resultados, janela=30)
+        
+        print(f"\n   📊 Filtros posicionais calculados:")
+        print(f"      • Piores histórico: {sum(len(p) for p in piores_historico.values())} pares identificados")
+        print(f"      • Piores últimos 30: {sum(len(p) for p in piores_recente.values())} pares identificados")
         
         def calcular_sequencia_maxima(combo):
             combo_sorted = sorted(combo)
@@ -14552,6 +14817,38 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     if (num_na_pos, pos) in debitos_dict:
                         matches_debito += 1
                 if matches_debito < filtros.get('debito_min_matches', 1):
+                    return False
+            
+            # ═══════════════════════════════════════════════════════════════════
+            # NOVOS FILTROS POSICIONAIS DINÂMICOS ⭐NOVO
+            # ═══════════════════════════════════════════════════════════════════
+            
+            # Filtro QTDE 6-25 (combinações boas têm 10-13 números do intervalo 6-25)
+            if filtros.get('usar_filtro_qtde_6_25'):
+                qtde_6_25 = sum(1 for n in combo if 6 <= n <= 25)
+                if qtde_6_25 not in filtros.get('qtde_6_25_valores', [10, 11, 12, 13]):
+                    return False
+            
+            # Filtro PIORES POSIÇÃO (HISTÓRICO COMPLETO)
+            if filtros.get('usar_filtro_piores_historico') and piores_historico:
+                combo_sorted = sorted(combo)
+                violacoes_hist = 0
+                for pos in range(1, 16):
+                    num_na_pos = combo_sorted[pos - 1]
+                    if num_na_pos in piores_historico.get(pos, set()):
+                        violacoes_hist += 1
+                if violacoes_hist > filtros.get('piores_tolerancia_historico', 0):
+                    return False
+            
+            # Filtro PIORES POSIÇÃO (ÚLTIMOS 30)
+            if filtros.get('usar_filtro_piores_recente') and piores_recente:
+                combo_sorted = sorted(combo)
+                violacoes_rec = 0
+                for pos in range(1, 16):
+                    num_na_pos = combo_sorted[pos - 1]
+                    if num_na_pos in piores_recente.get(pos, set()):
+                        violacoes_rec += 1
+                if violacoes_rec > filtros.get('piores_tolerancia_recente', 1):
                     return False
             
             return True

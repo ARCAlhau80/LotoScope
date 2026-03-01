@@ -461,6 +461,62 @@ def carregar_combinacoes(arquivo):
 
 ## 📝 HISTÓRICO DE SESSÕES IMPORTANTES
 
+### 01/03/2026 - CORREÇÃO CRÍTICA: Filtro Improbabilidade Posicional ⭐⭐ IMPORTANTE!
+**Problema Identificado:**
+- Filtro de Improbabilidade Posicional estava eliminando jackpots nos níveis 4, 5 e 6
+- Análise de 18 backtests: **4 falhas** no N4_IMPROBABILIDADE
+- Nível 4 tinha **0 jackpots** preservados!
+- Sorteios reais tinham ~6 violações, mas filtro rejeitava >2
+
+**Solução Aplicada:**
+- ✅ DESATIVADO o filtro `usar_improbabilidade_posicional` nos níveis 4, 5 e 6
+- Mantido ativo nos níveis 1, 2 e 3 (com tolerância=2)
+
+**Arquivos Alterados:**
+- `lotofacil_lite/interfaces/super_menu.py` (Opção 31 - Gerador)
+- `lotofacil_lite/interfaces/super_menu.py` (Opção 30.2 - Backtesting)
+
+**Impacto:**
+- Níveis 4-6 agora preservarão mais jackpots
+- Outros filtros posicionais (Qtde 6-25, Piores Histórico, Piores Recente) continuam ativos
+
+### 26/02/2026 - Filtros Posicionais Dinâmicos (Opção 31 + 30.2) ⭐⭐ NOVO!
+**Conceito:**
+- Números que RARAMENTE aparecem em determinada posição (N1-N15) são "ruins"
+- Baseado em análise SQL que se mostrou muito eficiente
+- 3 filtros complementares implementados
+
+**Filtros Implementados:**
+1. **Qtde 6-25**: Conta quantos números do intervalo 6-25 estão na combinação
+   - Combinações boas têm 10-13 números de 6-25 (ou seja, 2-5 de 1-5)
+   - Valores aceitos: [10, 11, 12, 13]
+
+2. **Piores Histórico**: Números raramente vistos em posições específicas (todo histórico)
+   - Calculado dinamicamente a cada execução
+   - Tolerância configurável por nível (0 = sem violações)
+
+3. **Piores Recente**: Mesmo conceito, mas últimos 30 concursos
+   - Captura tendências recentes
+   - Tolerância: 0-1 dependendo do nível
+
+**Configuração por Nível:**
+| Nível | Qtde 6-25 | Piores Histórico | Piores Recente |
+|-------|-----------|------------------|----------------|
+| 1     | ✅ (10-13) | -               | -              |
+| 2     | ✅ (10-13) | ✅ tol=0        | -              |
+| 3     | ✅ (10-13) | ✅ tol=0        | ✅ tol=1       |
+| 4     | ✅ (10-13) | ✅ tol=0        | ✅ tol=0       |
+| 5     | ✅ (10-13) | ✅ tol=0        | ✅ tol=0       |
+| 6     | ✅ (10-13) | ✅ tol=0        | ✅ tol=0       |
+
+**Sincronização:**
+- ✅ Implementado na Opção 31 (Gerador Pool 23)
+- ✅ Implementado na Opção 30.2 (Backtesting Pool 23)
+
+**Funções Criadas:**
+- `_calcular_piores_numeros_por_posicao(resultados, janela=None)`: Calcula piores dinamicamente
+- `_contar_qtde_intervalo_6_25(combo)`: Conta números 6-25 na combinação
+
 ### 24/01/2026 - Filtro Noneto + Análise Econômica
 - Implementada opção 7 no submenu da opção 22: Filtro por Noneto
 - Noneto padrão: [1, 2, 4, 8, 10, 13, 20, 24, 25]

@@ -97,18 +97,31 @@ python super_menu.py
 - **Validated**: Jackpots on contests 3610, 3615 with ROI up to +2841%
 - **7 Filter Levels**:
   - Level 0: No filters (490k combos)
-  - Level 1: Sum + Anomaly Analysis v2.0 (381k combos)
-  - Level 2: Basic + Anomalies - **RECOMMENDED FOR JACKPOT** (325k combos)
-  - Level 3: Balanced + min 1 cold number (100k combos)
-  - Level 4: Moderate + max 2 hot numbers (12k combos)
-  - Level 5: Aggressive + max 1 hot, min 2 cold (42k combos)
-  - Level 6: Ultra + Anomaly MAXIMUM (18k combos, **+2841% ROI** when jackpot!)
+  - Level 1: Sum + Qtde 6-25 + Débito Posicional ⭐NEW
+  - Level 2: Basic + Piores Histórico (tol=0) ⭐NEW
+  - Level 3: Balanced + Piores Recente (tol=1) ⭐NEW
+  - Level 4: Moderate + Piores Recente (tol=0) - **NO Improbabilidade** ⭐FIXED
+  - Level 5: Aggressive + positional filters - **NO Improbabilidade** ⭐FIXED
+  - Level 6: Ultra + ALL filters + Núcleo ≥8 - **NO Improbabilidade** ⭐FIXED
+- **🔴 WARNING**: Improbabilidade Posicional filter DISABLED on levels 4-6 (was losing jackpots!)
 - **Anomaly Filter v2.0** ⭐⭐ Validated historically!
   - Numbers with 8+ consecutive appearances → -5% tend to STOP
   - Numbers with 4-5 consecutive absences → +3-4% tend to RETURN ✅
   - Configurable per level: max_hot_allowed, min_cold_required
 
-### 7. Probabilistic Filter (Option 31 + Backtesting) ⭐⭐ UPDATED!
+### 7. Positional Filters (Option 31 + Option 30.2) ⭐⭐⭐ NEW!
+- **Purpose**: Reject combinations with numbers in improbable positions
+- **3 Filters**:
+  - **Qtde 6-25**: Accept only combos with 10-13 numbers from range 6-25
+  - **Piores Histórico**: Dynamic - rejects numbers rarely appearing in specific positions (all history)
+  - **Piores Recente**: Dynamic - same concept, but based on last 30 contests
+- **Tolerance**:
+  - Level 2: Histórico tol=0 (no violations allowed)
+  - Level 3: Histórico tol=0, Recente tol=1 (max 1 violation)
+  - Level 4-6: Both tol=0 (maximum restriction)
+- **Dynamically calculated** at each execution based on real frequency data
+
+### 8. Probabilistic Filter (Option 31 + Backtesting) ⭐⭐ UPDATED!
 - **Purpose**: Pre-filter combinations based on historical 11+ hits
 - **Available in**: Option 31 (Generator) AND Option 30.2 (Backtesting) ⭐ NEW!
 - **Concept**: Combinations with more historical 11+ hits have HIGHER probability
@@ -122,7 +135,7 @@ python super_menu.py
 - **Performance**: ~7s load, <1ms for 100k lookups, ~91MB RAM
 - **Validation**: Contest 3614 winner passes Conservative filter (Acertos_11=317)
 
-### 8. Anomaly Frequency Analysis v2.0 (Option 31 Levels 1-6) ⭐⭐ VALIDATED!
+### 9. Anomaly Frequency Analysis v2.0 (Option 31 Levels 1-6) ⭐⭐ VALIDATED!
 - **Adapted from**: MLMEGA system
 - **Validated**: Historical analysis of 3,617 contests (23/02/2026)
 - **Key Finding**: Sliding window frequency has NO significant effect!
@@ -179,12 +192,18 @@ python super_menu.py
   - Level 6: 18k combos, ultra, **+2841% ROI** ⭐ BEST!
 - Recommended: Level 2-3 for jackpot hunting, Level 5-6 for maximum ROI
 
-## Bug Fixes & Improvements (Feb/2026)
+## Bug Fixes & Improvements (Feb-Mar/2026)
 
 1. **Fixed**: `_calcular_debitos_posicionais` tuple unpacking (levels 1-6 showed 0 combos)
 2. **Fixed**: Compensation logic was INVERTED (now: predict SUBIR → accept DESCER)
 3. **Improved**: Exclusion algorithm v2.1 (conservative mode, protects recent numbers)
 4. **Added**: Probabilistic filter now available in Backtesting (Option 30.2)
+5. **Added**: Positional Filters (Qtde 6-25, Piores Histórico, Piores Recente) ⭐⭐ NEW!
+6. **Synced**: Option 30.2 (Backtesting) now uses same filters as Option 31 (Generator)
+7. **Fixed** (01/03/2026): **DISABLED Improbabilidade Posicional filter on Levels 4-6** ⭐⭐ CRITICAL!
+   - The filter was rejecting jackpots (4 failures in 18 backtests, Level 4 had 0 jackpots!)
+   - Analysis showed real draws had ~6 violations but filter rejected >2 violations
+   - Levels 1-3 still use this filter with tolerance=2
 
 ---
-*Last updated: 2026-02-18*
+*Last updated: 2026-03-01*
