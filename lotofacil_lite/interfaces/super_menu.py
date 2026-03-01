@@ -12094,48 +12094,96 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Ordenar por score (maior = excluir)
         candidatos.sort(key=lambda x: -x['score'])
         
-        # Mostrar ranking com nova métrica
-        print("\n   📊 RANKING DE CANDIDATOS À EXCLUSÃO (Estratégia SUPERÁVIT v2.0):")
-        print("   ╔════════════════════════════════════════════════════════════════════════╗")
-        print("   ║ 💡 LÓGICA: Excluir números em SUPERÁVIT (curta > longa)               ║")
-        print("   ║    Números em DÉBITO (curta < longa) tendem a VOLTAR!                 ║")
+        # ═══════════════════════════════════════════════════════════════════
+        # MOSTRAR TOP 10 CANDIDATOS À EXCLUSÃO (destacado)
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n   ╔════════════════════════════════════════════════════════════════════════╗")
+        print("   ║           📊 TOP 10 CANDIDATOS À EXCLUSÃO                             ║")
+        print("   ║  💡 Estratégia: Excluir números em SUPERÁVIT (curta > longa)          ║")
+        print("   ║  💡 Números em DÉBITO (curta < longa) tendem a VOLTAR!                ║")
         print("   ╚════════════════════════════════════════════════════════════════════════╝")
         print()
-        print(f"   {'':2} {'Num':<4} {'Curta%':>8} {'Longa%':>8} {'Déb/Sup':>9} {'Status':>18} {'Score':>7}")
-        print("   " + "-"*70)
+        print(f"   {'Rank':>4} {'Num':>4} {'Curta%':>8} {'Longa%':>8} {'Déb/Sup':>9} {'Status':>18} {'Score':>7}")
+        print("   " + "─"*70)
         
-        for i, c in enumerate(candidatos):
-            marker = "❌" if i < 2 else "  "
+        # Só mostrar TOP 10
+        for i, c in enumerate(candidatos[:10]):
+            rank = f"{i+1}º"
             deb_str = f"{c['indice_debito']:+.1f}"
-            print(f"   {marker} {c['num']:2d} {c['freq_curta']:>8.1f} {c['freq_longa']:>8.1f} {deb_str:>9} {c['status']:>18} {c['score']:>7.2f}")
+            # Destaque visual para top 2 (default)
+            if i < 2:
+                print(f"   {rank:>4} {c['num']:>4d} {c['freq_curta']:>8.1f} {c['freq_longa']:>8.1f} {deb_str:>9} {c['status']:>18} {c['score']:>7.2f} ◀─ AUTO")
+            else:
+                print(f"   {rank:>4} {c['num']:>4d} {c['freq_curta']:>8.1f} {c['freq_longa']:>8.1f} {deb_str:>9} {c['status']:>18} {c['score']:>7.2f}")
         
-        # Os 2 a excluir
-        excluir = [candidatos[0]['num'], candidatos[1]['num']]
-        pool_23 = sorted([n for n in range(1, 26) if n not in excluir])
+        print("   " + "─"*70)
         
-        print(f"\n   🚫 EXCLUINDO: {sorted(excluir)}")
-        print(f"   ✅ POOL 23: {pool_23}")
+        # Score total dos top 2 (default)
+        score_top2 = candidatos[0]['score'] + candidatos[1]['score']
+        nums_top2 = [candidatos[0]['num'], candidatos[1]['num']]
+        print(f"\n   🎯 SELEÇÃO AUTOMÁTICA: {sorted(nums_top2)} (score total: {score_top2:.2f})")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # PERMITIR AJUSTE DA QUANTIDADE E SELEÇÃO
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n   ┌────────────────────────────────────────────────────────────────────┐")
+        print("   │ 📝 CONFIGURAÇÃO DA EXCLUSÃO                                        │")
+        print("   └────────────────────────────────────────────────────────────────────┘")
+        
+        # Perguntar quantidade
+        qtd_excluir = 2  # Default
+        try:
+            qtd_input = input(f"\n   Quantos números excluir? [1-5, ENTER=2]: ").strip()
+            if qtd_input:
+                qtd_excluir = int(qtd_input)
+                qtd_excluir = max(1, min(5, qtd_excluir))  # Limitar entre 1 e 5
+        except:
+            qtd_excluir = 2
+        
+        # Selecionar automaticamente os top N
+        excluir = [candidatos[i]['num'] for i in range(qtd_excluir)]
+        score_total = sum(candidatos[i]['score'] for i in range(qtd_excluir))
+        
+        if qtd_excluir != 2:
+            print(f"   ✅ Selecionados TOP {qtd_excluir}: {sorted(excluir)} (score: {score_total:.2f})")
         
         # Permitir ajuste manual
-        ajustar = input("\n   ⚙️ Deseja ajustar os números a excluir? [S/N]: ").strip().upper()
+        ajustar = input(f"\n   ⚙️ Deseja ajustar quais dos TOP 10 excluir? [S/N]: ").strip().upper()
         if ajustar == 'S':
+            print(f"\n   📋 TOP 10 disponíveis: {[c['num'] for c in candidatos[:10]]}")
+            print(f"   💡 Digite {qtd_excluir} números separados por vírgula")
             try:
-                nums_input = input("   Digite os 2 números a EXCLUIR (separados por vírgula): ")
+                nums_input = input(f"   Números a EXCLUIR ({qtd_excluir}): ")
                 nums_custom = [int(x.strip()) for x in nums_input.split(',')]
-                if len(nums_custom) == 2 and all(1 <= n <= 25 for n in nums_custom):
-                    excluir = nums_custom
-                    pool_23 = sorted([n for n in range(1, 26) if n not in excluir])
-                    print(f"   ✅ POOL 23 AJUSTADO: {pool_23}")
+                
+                # Validar
+                top10_nums = [c['num'] for c in candidatos[:10]]
+                nums_validos = [n for n in nums_custom if n in top10_nums or (1 <= n <= 25)]
+                
+                if len(nums_validos) >= 1:
+                    excluir = nums_validos[:qtd_excluir]  # Limitar à quantidade escolhida
+                    qtd_excluir = len(excluir)
+                    print(f"   ✅ EXCLUSÃO AJUSTADA: {sorted(excluir)}")
                 else:
-                    print("   ⚠️ Entrada inválida, mantendo sugestão original.")
+                    print("   ⚠️ Nenhum número válido, mantendo seleção automática.")
             except:
-                print("   ⚠️ Erro na entrada, mantendo sugestão original.")
+                print("   ⚠️ Erro na entrada, mantendo seleção automática.")
+        
+        # Calcular pool final
+        pool_final = sorted([n for n in range(1, 26) if n not in excluir])
+        
+        print(f"\n   ╔════════════════════════════════════════════════════════════════════════╗")
+        print(f"   ║  🚫 EXCLUINDO ({qtd_excluir}): {str(sorted(excluir)):40s}           ║")
+        print(f"   ║  ✅ POOL {25-qtd_excluir}: {str(pool_final):53s} ║")
+        print(f"   ╚════════════════════════════════════════════════════════════════════════╝")
+        
+        pool_23 = pool_final  # Manter compatibilidade com resto do código
         
         # ═══════════════════════════════════════════════════════════════════
-        # PASSO 3: GERAR TODAS AS COMBINAÇÕES DO POOL 23 (com fixos)
+        # PASSO 3: GERAR TODAS AS COMBINAÇÕES DO POOL (com fixos)
         # ═══════════════════════════════════════════════════════════════════
         print("\n" + "─"*78)
-        print("📦 PASSO 3: Gerando combinações do Pool 23")
+        print(f"📦 PASSO 3: Gerando combinações do Pool {25-qtd_excluir}")
         print("─"*78)
         
         # Verificar se há números fixos definidos (será definido depois, inicializar)
@@ -14302,35 +14350,94 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             if fc <= 40 and fl >= 55:
                 score -= 6  # Está devendo, vai voltar!
             
-            candidatos.append({'num': n, 'score': score, 'indice_debito': indice_debito})
+            candidatos.append({'num': n, 'score': score, 'indice_debito': indice_debito, 'freq_curta': fc, 'freq_longa': fl})
         
         candidatos.sort(key=lambda x: -x['score'])
-        excluir_padrao = [candidatos[0]['num'], candidatos[1]['num']]
         
-        print(f"\n   📊 SUGESTÃO AUTOMÁTICA (Estratégia SUPERÁVIT v2.0):")
-        print(f"   🚫 Excluir: {sorted(excluir_padrao)}")
-        print(f"   💡 Índices de débito: {candidatos[0]['num']}={candidatos[0]['indice_debito']:.1f}, {candidatos[1]['num']}={candidatos[1]['indice_debito']:.1f}")
+        # ═══════════════════════════════════════════════════════════════════
+        # MOSTRAR TOP 10 CANDIDATOS À EXCLUSÃO (destacado)
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n   ╔════════════════════════════════════════════════════════════════════════╗")
+        print("   ║           📊 TOP 10 CANDIDATOS À EXCLUSÃO                             ║")
+        print("   ║  💡 Estratégia: Excluir números em SUPERÁVIT (curta > longa)          ║")
+        print("   ║  💡 Números em DÉBITO (curta < longa) tendem a VOLTAR!                ║")
+        print("   ╚════════════════════════════════════════════════════════════════════════╝")
+        print()
+        print(f"   {'Rank':>4} {'Num':>4} {'Curta%':>8} {'Longa%':>8} {'Déb/Sup':>9} {'Score':>7}")
+        print("   " + "─"*50)
         
-        # Perguntar se quer ajustar
-        ajustar = input("\n   ⚙️ Deseja ajustar os números a excluir? [S/N]: ").strip().upper()
+        # Só mostrar TOP 10
+        for i, c in enumerate(candidatos[:10]):
+            rank = f"{i+1}º"
+            deb_str = f"{c['indice_debito']:+.1f}"
+            # Destaque visual para top 2 (default)
+            if i < 2:
+                print(f"   {rank:>4} {c['num']:>4d} {c['freq_curta']:>8.1f} {c['freq_longa']:>8.1f} {deb_str:>9} {c['score']:>7.2f} ◀─ AUTO")
+            else:
+                print(f"   {rank:>4} {c['num']:>4d} {c['freq_curta']:>8.1f} {c['freq_longa']:>8.1f} {deb_str:>9} {c['score']:>7.2f}")
+        
+        print("   " + "─"*50)
+        
+        # Score total dos top 2 (default)
+        score_top2 = candidatos[0]['score'] + candidatos[1]['score']
+        nums_top2 = [candidatos[0]['num'], candidatos[1]['num']]
+        print(f"\n   🎯 SELEÇÃO AUTOMÁTICA: {sorted(nums_top2)} (score total: {score_top2:.2f})")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # PERMITIR AJUSTE DA QUANTIDADE E SELEÇÃO
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n   ┌────────────────────────────────────────────────────────────────────┐")
+        print("   │ 📝 CONFIGURAÇÃO DA EXCLUSÃO                                        │")
+        print("   └────────────────────────────────────────────────────────────────────┘")
+        
+        # Perguntar quantidade
+        qtd_excluir = 2  # Default
+        try:
+            qtd_input = input(f"\n   Quantos números excluir? [1-5, ENTER=2]: ").strip()
+            if qtd_input:
+                qtd_excluir = int(qtd_input)
+                qtd_excluir = max(1, min(5, qtd_excluir))  # Limitar entre 1 e 5
+        except:
+            qtd_excluir = 2
+        
+        # Selecionar automaticamente os top N
+        excluir = [candidatos[i]['num'] for i in range(qtd_excluir)]
+        score_total = sum(candidatos[i]['score'] for i in range(qtd_excluir))
+        
+        if qtd_excluir != 2:
+            print(f"   ✅ Selecionados TOP {qtd_excluir}: {sorted(excluir)} (score: {score_total:.2f})")
+        
+        # Permitir ajuste manual
+        ajustar = input(f"\n   ⚙️ Deseja ajustar quais dos TOP 10 excluir? [S/N]: ").strip().upper()
         if ajustar == 'S':
+            print(f"\n   📋 TOP 10 disponíveis: {[c['num'] for c in candidatos[:10]]}")
+            print(f"   💡 Digite {qtd_excluir} números separados por vírgula")
             try:
-                nums_input = input("   Digite os 2 números a EXCLUIR (separados por vírgula): ")
+                nums_input = input(f"   Números a EXCLUIR ({qtd_excluir}): ")
                 nums_custom = [int(x.strip()) for x in nums_input.split(',')]
-                if len(nums_custom) == 2 and all(1 <= n <= 25 for n in nums_custom):
-                    excluir = nums_custom
-                    print(f"   ✅ Usando números personalizados: {sorted(excluir)}")
+                
+                # Validar
+                top10_nums = [c['num'] for c in candidatos[:10]]
+                nums_validos = [n for n in nums_custom if n in top10_nums or (1 <= n <= 25)]
+                
+                if len(nums_validos) >= 1:
+                    excluir = nums_validos[:qtd_excluir]  # Limitar à quantidade escolhida
+                    qtd_excluir = len(excluir)
+                    print(f"   ✅ EXCLUSÃO AJUSTADA: {sorted(excluir)}")
                 else:
-                    print("   ⚠️ Entrada inválida, usando sugestão automática.")
-                    excluir = excluir_padrao
+                    print("   ⚠️ Nenhum número válido, mantendo seleção automática.")
             except:
-                print("   ⚠️ Erro na entrada, usando sugestão automática.")
-                excluir = excluir_padrao
-        else:
-            excluir = excluir_padrao
+                print("   ⚠️ Erro na entrada, mantendo seleção automática.")
         
-        pool_23 = sorted([n for n in range(1, 26) if n not in excluir])
-        print(f"\n   ✅ POOL 23: {pool_23}")
+        # Calcular pool final
+        pool_final = sorted([n for n in range(1, 26) if n not in excluir])
+        
+        print(f"\n   ╔════════════════════════════════════════════════════════════════════════╗")
+        print(f"   ║  🚫 EXCLUINDO ({qtd_excluir}): {str(sorted(excluir)):40s}           ║")
+        print(f"   ║  ✅ POOL {25-qtd_excluir}: {str(pool_final):53s} ║")
+        print(f"   ╚════════════════════════════════════════════════════════════════════════╝")
+        
+        pool_23 = pool_final  # Manter compatibilidade com resto do código
         
         # ═══════════════════════════════════════════════════════════════════
         # PASSO 2.5: NÚMEROS FIXOS (opcional)
