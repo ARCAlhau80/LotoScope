@@ -12133,10 +12133,10 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Perguntar quantidade
         qtd_excluir = 2  # Default
         try:
-            qtd_input = input(f"\n   Quantos números excluir? [1-5, ENTER=2]: ").strip()
+            qtd_input = input(f"\n   Quantos números excluir? [1-10, ENTER=2]: ").strip()
             if qtd_input:
                 qtd_excluir = int(qtd_input)
-                qtd_excluir = max(1, min(5, qtd_excluir))  # Limitar entre 1 e 5
+                qtd_excluir = max(1, min(10, qtd_excluir))  # Limitar entre 1 e 10
         except:
             qtd_excluir = 2
         
@@ -14393,10 +14393,10 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Perguntar quantidade
         qtd_excluir = 2  # Default
         try:
-            qtd_input = input(f"\n   Quantos números excluir? [1-5, ENTER=2]: ").strip()
+            qtd_input = input(f"\n   Quantos números excluir? [1-10, ENTER=2]: ").strip()
             if qtd_input:
                 qtd_excluir = int(qtd_input)
-                qtd_excluir = max(1, min(5, qtd_excluir))  # Limitar entre 1 e 5
+                qtd_excluir = max(1, min(10, qtd_excluir))  # Limitar entre 1 e 10
         except:
             qtd_excluir = 2
         
