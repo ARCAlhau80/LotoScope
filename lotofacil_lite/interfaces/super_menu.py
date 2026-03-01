@@ -10997,8 +10997,10 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         🔬 BACKTESTING AUTOMATIZADO
         
         Menu com opções de backtesting:
-        1. Backtesting Gerador Mestre (original)
-        2. Backtesting Pool 23 Híbrido (NOVO)
+        1. Backtesting Gerador Mestre (filtros personalizados)
+        2. Backtesting Pool 23 Híbrido (concurso futuro - 1 teste)
+        3. Relatório de Aprendizado
+        4. Backtesting Pool 23 Histórico (NOVO - múltiplos concursos com níveis 0-6)
         """
         print("\n" + "═"*78)
         print("🔬 BACKTESTING AUTOMATIZADO - VALIDAÇÃO ESTATÍSTICA")
@@ -11008,9 +11010,11 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         print("\n   OPÇÕES DE BACKTESTING:")
         print("   ┌─────────────────────────────────────────────────────────────────┐")
-        print("   │ [1] 📊 Backtesting Gerador Mestre (histórico)                   │")
+        print("   │ [1] 📊 Backtesting Gerador Mestre (filtros personalizados)      │")
         print("   │ [2] 🎯 Backtesting Pool 23 Híbrido (concurso futuro)            │")
-        print("   │ [3] 🧠 Relatório de Aprendizado (erros/acertos) ⭐ NOVO         │")
+        print("   │ [3] 🧠 Relatório de Aprendizado (erros/acertos)                 │")
+        print("   │ [4] 🔬 Backtesting Pool 23 Histórico (níveis 0-6) ⭐ NOVO       │")
+        print("   │     └─ Usa mesmos filtros e aprendizado do Pool 23!             │")
         print("   │ [0] ↩️  Voltar                                                   │")
         print("   └─────────────────────────────────────────────────────────────────┘")
         
@@ -11023,6 +11027,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             return
         elif sub_opcao == '3':
             self._exibir_relatorio_aprendizado()
+            return
+        elif sub_opcao == '4':
+            self._executar_backtesting_pool23_historico()
             return
         elif sub_opcao != '1':
             print("   ⚠️ Opção inválida, usando Backtesting Gerador Mestre")
@@ -14224,6 +14231,461 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     print("   ✅ Histórico limpo! Novos backtests começarão do zero.")
                 except Exception as e:
                     print(f"   ❌ Erro ao limpar: {e}")
+        
+        input("\n   Pressione ENTER para voltar...")
+
+    def _executar_backtesting_pool23_historico(self):
+        """
+        🔬 BACKTESTING POOL 23 HISTÓRICO
+        
+        Igual ao Pool 23 Híbrido, mas testa em MÚLTIPLOS concursos históricos.
+        Usa os mesmos níveis (0-6), mesma estratégia SUPERÁVIT, e mesmo aprendizado.
+        """
+        print("\n" + "═"*78)
+        print("🔬 BACKTESTING POOL 23 HISTÓRICO - VALIDAÇÃO EM MASSA")
+        print("═"*78)
+        print("   Testa a estratégia Pool 23 em MÚLTIPLOS concursos")
+        print("   Usa mesmos níveis (0-6) e sistema de aprendizado")
+        print("   Verifica taxa de jackpots e ROI médio por nível")
+        print("═"*78)
+        
+        import pyodbc
+        from collections import Counter, defaultdict
+        from itertools import combinations
+        import time
+        import json
+        import os
+        
+        conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=Lotofacil;Trusted_Connection=yes;'
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # PASSO 1: CARREGAR DADOS
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n📥 PASSO 1: Carregando dados históricos...")
+        
+        try:
+            conn = pyodbc.connect(conn_str)
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                SELECT Concurso, N1, N2, N3, N4, N5, N6, N7, N8, N9, N10, N11, N12, N13, N14, N15
+                FROM Resultados_INT
+                ORDER BY Concurso ASC
+            """)
+            
+            todos_resultados = {}
+            for row in cursor.fetchall():
+                todos_resultados[row[0]] = {
+                    'concurso': row[0],
+                    'numeros': list(row[1:16]),
+                    'set': set(row[1:16])
+                }
+            
+            conn.close()
+            
+            concursos_disponiveis = sorted(todos_resultados.keys())
+            min_concurso = concursos_disponiveis[0]
+            max_concurso = concursos_disponiveis[-1]
+            
+            print(f"   ✅ {len(concursos_disponiveis)} concursos carregados")
+            print(f"   📅 Range disponível: {min_concurso} a {max_concurso}")
+            
+        except Exception as e:
+            print(f"   ❌ Erro ao carregar dados: {e}")
+            input("\nPressione ENTER...")
+            return
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # PASSO 2: DEFINIR RANGE DE TESTES
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n" + "─"*78)
+        print("📅 PASSO 2: DEFINIR RANGE DE CONCURSOS")
+        print("─"*78)
+        print(f"   Disponível: {min_concurso+100} a {max_concurso}")
+        print("   💡 Mínimo 100 concursos de histórico necessários")
+        print("   💡 Recomendado: 20-50 concursos para análise rápida")
+        
+        try:
+            inicio_input = input(f"\n   Concurso INICIAL [{max_concurso-30}]: ").strip()
+            concurso_inicio = int(inicio_input) if inicio_input else max_concurso - 30
+            concurso_inicio = max(min_concurso + 100, min(max_concurso, concurso_inicio))
+            
+            fim_input = input(f"   Concurso FINAL [{max_concurso}]: ").strip()
+            concurso_fim = int(fim_input) if fim_input else max_concurso
+            concurso_fim = max(concurso_inicio, min(max_concurso, concurso_fim))
+        except:
+            concurso_inicio = max_concurso - 30
+            concurso_fim = max_concurso
+        
+        total_testes = concurso_fim - concurso_inicio + 1
+        print(f"\n   ✅ Testando {total_testes} concursos: {concurso_inicio} a {concurso_fim}")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # PASSO 3: CONFIGURAÇÃO
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n" + "─"*78)
+        print("⚙️ PASSO 3: CONFIGURAÇÃO")
+        print("─"*78)
+        
+        # Quantidade a excluir
+        try:
+            qtd_input = input("   Quantos números excluir? [1-10, ENTER=2]: ").strip()
+            qtd_excluir = int(qtd_input) if qtd_input else 2
+            qtd_excluir = max(1, min(10, qtd_excluir))
+        except:
+            qtd_excluir = 2
+        
+        # Níveis a testar
+        print("\n   Níveis disponíveis: 0=Puro, 1=Suave, 2=Básico, 3=Equilibrado,")
+        print("                       4=Moderado, 5=Agressivo, 6=Ultra")
+        try:
+            niveis_input = input("   Níveis a testar? [0-6 separados por vírgula, ENTER=todos]: ").strip()
+            if niveis_input:
+                niveis_testar = [int(x.strip()) for x in niveis_input.split(',') if x.strip().isdigit()]
+                niveis_testar = [n for n in niveis_testar if 0 <= n <= 6]
+            else:
+                niveis_testar = list(range(7))
+        except:
+            niveis_testar = list(range(7))
+        
+        print(f"\n   ✅ Excluindo {qtd_excluir} números por concurso")
+        print(f"   ✅ Testando níveis: {niveis_testar}")
+        
+        confirmar = input("\n   ▶️ Iniciar backtesting? [S/N]: ").strip().upper()
+        if confirmar != 'S':
+            print("   ❌ Cancelado.")
+            return
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # DEFINIR FILTROS POR NÍVEL (mesmos do Pool 23 Híbrido)
+        # ═══════════════════════════════════════════════════════════════════
+        FILTROS_POR_NIVEL = {
+            0: {},  # Sem filtros
+            1: {
+                'soma_min': 175, 'soma_max': 235,
+            },
+            2: {
+                'soma_min': 180, 'soma_max': 230,
+            },
+            3: {
+                'soma_min': 185, 'soma_max': 225,
+                'pares_min': 5, 'pares_max': 10,
+                'primos_min': 3, 'primos_max': 8,
+            },
+            4: {
+                'soma_min': 190, 'soma_max': 220,
+                'pares_min': 6, 'pares_max': 9,
+                'primos_min': 4, 'primos_max': 7,
+                'seq_max': 6,
+            },
+            5: {
+                'soma_min': 180, 'soma_max': 210,
+                'pares_min': 6, 'pares_max': 9,
+                'primos_min': 3, 'primos_max': 7,
+                'seq_max': 5,
+                'rep_min': 4, 'rep_max': 11,
+                'nucleo_min': 8,
+            },
+            6: {
+                'soma_min': 185, 'soma_max': 205,
+                'pares_min': 6, 'pares_max': 9,
+                'primos_min': 4, 'primos_max': 7,
+                'seq_max': 5,
+                'rep_min': 5, 'rep_max': 10,
+                'nucleo_min': 8,
+                'favorecidos_min': 4,
+            },
+        }
+        
+        PRIMOS = {2, 3, 5, 7, 11, 13, 17, 19, 23}
+        NUCLEO_C1C2 = {2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 19, 20, 22, 24, 25}
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # PASSO 4: EXECUTAR BACKTESTING
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n" + "═"*78)
+        print("🔄 EXECUTANDO BACKTESTING...")
+        print("═"*78)
+        print("   ⏳ Isso pode demorar alguns minutos...")
+        
+        tempo_inicio = time.time()
+        
+        # Estatísticas por nível
+        stats_por_nivel = {n: {
+            'jackpots': 0,
+            'acertos_11_mais': 0,
+            'combos_total': 0,
+            'premio_total': 0,
+            'custo_total': 0,
+        } for n in niveis_testar}
+        
+        # Estatísticas globais
+        total_exclusao_correta = 0
+        total_exclusao_errada = 0
+        historico_exclusoes = []
+        
+        for idx, concurso_teste in enumerate(range(concurso_inicio, concurso_fim + 1)):
+            # Resultado REAL deste concurso
+            if concurso_teste not in todos_resultados:
+                continue
+            
+            resultado_real = todos_resultados[concurso_teste]
+            resultado_set = resultado_real['set']
+            
+            # Preparar dados ATÉ o concurso anterior (simulando que não conhecemos o resultado)
+            dados_ate_anterior = [todos_resultados[c] for c in sorted(todos_resultados.keys()) 
+                                  if c < concurso_teste]
+            dados_ate_anterior.sort(key=lambda x: x['concurso'], reverse=True)
+            
+            if len(dados_ate_anterior) < 50:
+                continue
+            
+            # ═══════════════════════════════════════════════════════════════════
+            # CALCULAR EXCLUSÃO (Estratégia SUPERÁVIT v2.0)
+            # ═══════════════════════════════════════════════════════════════════
+            def freq_janela(tamanho):
+                freq = Counter()
+                for r in dados_ate_anterior[:min(tamanho, len(dados_ate_anterior))]:
+                    freq.update(r['numeros'])
+                return {n: freq.get(n, 0) / min(tamanho, len(dados_ate_anterior)) * 100 for n in range(1, 26)}
+            
+            freq_5 = freq_janela(5)
+            freq_50 = freq_janela(50)
+            
+            candidatos = []
+            for n in range(1, 26):
+                fc = freq_5[n]
+                fl = freq_50[n]
+                indice_debito = fl - fc
+                
+                score = 0
+                apareceu_recente = any(n in r['numeros'] for r in dados_ate_anterior[:3])
+                
+                if apareceu_recente:
+                    score -= 10
+                elif indice_debito < -40 and fc >= 80:
+                    score += 5
+                elif indice_debito < -30 and not apareceu_recente:
+                    score += 4
+                elif indice_debito < -15 and not apareceu_recente:
+                    score += 2
+                elif indice_debito < 0:
+                    score += 0
+                elif indice_debito < 20:
+                    score -= 3
+                else:
+                    score -= 6
+                
+                if fl >= 60:
+                    score -= 2
+                
+                if fc <= 40 and fl >= 55:
+                    score -= 6
+                
+                candidatos.append({'num': n, 'score': score})
+            
+            candidatos.sort(key=lambda x: -x['score'])
+            excluir = set(candidatos[i]['num'] for i in range(qtd_excluir))
+            
+            # Verificar se exclusão foi correta
+            excluidos_no_resultado = excluir & resultado_set
+            if not excluidos_no_resultado:
+                total_exclusao_correta += 1
+            else:
+                total_exclusao_errada += 1
+                historico_exclusoes.append({
+                    'concurso': concurso_teste,
+                    'excluidos': sorted(excluir),
+                    'errados': sorted(excluidos_no_resultado)
+                })
+            
+            # Pool após exclusão
+            pool_disponivel = sorted([n for n in range(1, 26) if n not in excluir])
+            
+            # Dados auxiliares
+            ultimo_resultado = set(dados_ate_anterior[0]['numeros'])
+            
+            freq_30 = Counter()
+            for r in dados_ate_anterior[:30]:
+                freq_30.update(r['numeros'])
+            media_freq = sum(freq_30.values()) / 25
+            favorecidos = {n for n, f in freq_30.items() if f > media_freq}
+            
+            # ═══════════════════════════════════════════════════════════════════
+            # GERAR E FILTRAR PARA CADA NÍVEL
+            # ═══════════════════════════════════════════════════════════════════
+            for nivel in niveis_testar:
+                filtros = FILTROS_POR_NIVEL[nivel]
+                combos_nivel = []
+                
+                for combo in combinations(pool_disponivel, 15):
+                    combo_set = set(combo)
+                    combo_list = list(combo)
+                    
+                    # Soma
+                    soma = sum(combo)
+                    if 'soma_min' in filtros:
+                        if soma < filtros['soma_min'] or soma > filtros['soma_max']:
+                            continue
+                    
+                    # Pares
+                    pares = sum(1 for n in combo if n % 2 == 0)
+                    if 'pares_min' in filtros:
+                        if pares < filtros['pares_min'] or pares > filtros['pares_max']:
+                            continue
+                    
+                    # Primos
+                    primos = len(combo_set & PRIMOS)
+                    if 'primos_min' in filtros:
+                        if primos < filtros['primos_min'] or primos > filtros['primos_max']:
+                            continue
+                    
+                    # Sequências
+                    if 'seq_max' in filtros:
+                        max_seq = 1
+                        seq_atual = 1
+                        for i in range(1, 15):
+                            if combo_list[i] == combo_list[i-1] + 1:
+                                seq_atual += 1
+                                max_seq = max(max_seq, seq_atual)
+                            else:
+                                seq_atual = 1
+                        if max_seq > filtros['seq_max']:
+                            continue
+                    
+                    # Repetição
+                    if 'rep_min' in filtros:
+                        rep = len(combo_set & ultimo_resultado)
+                        if rep < filtros['rep_min'] or rep > filtros['rep_max']:
+                            continue
+                    
+                    # Núcleo
+                    if 'nucleo_min' in filtros:
+                        if len(combo_set & NUCLEO_C1C2) < filtros['nucleo_min']:
+                            continue
+                    
+                    # Favorecidos
+                    if 'favorecidos_min' in filtros:
+                        if len(combo_set & favorecidos) < filtros['favorecidos_min']:
+                            continue
+                    
+                    combos_nivel.append(combo_set)
+                
+                # Validar contra resultado
+                acertos = [len(c & resultado_set) for c in combos_nivel]
+                
+                tem_jackpot = any(a == 15 for a in acertos)
+                count_11_mais = sum(1 for a in acertos if a >= 11)
+                
+                custo = len(combos_nivel) * 3.50
+                premio = sum(7 if a == 11 else 14 if a == 12 else 35 if a == 13 else 1000 if a == 14 else 1800000 if a == 15 else 0 for a in acertos)
+                
+                stats_por_nivel[nivel]['combos_total'] += len(combos_nivel)
+                stats_por_nivel[nivel]['custo_total'] += custo
+                stats_por_nivel[nivel]['premio_total'] += premio
+                stats_por_nivel[nivel]['acertos_11_mais'] += count_11_mais
+                if tem_jackpot:
+                    stats_por_nivel[nivel]['jackpots'] += 1
+            
+            # Progresso
+            if (idx + 1) % 5 == 0 or idx == 0:
+                pct = (idx + 1) / total_testes * 100
+                print(f"   Progresso: {idx+1}/{total_testes} ({pct:.0f}%) - Concurso {concurso_teste}")
+        
+        tempo_total = time.time() - tempo_inicio
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # PASSO 5: RESULTADOS
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n" + "═"*78)
+        print("📊 RESULTADOS DO BACKTESTING POOL 23 HISTÓRICO")
+        print("═"*78)
+        print(f"   ⏱️ Tempo de execução: {tempo_total:.1f}s")
+        print(f"   📅 Concursos testados: {total_testes}")
+        
+        # Taxa de exclusão
+        total_exc = total_exclusao_correta + total_exclusao_errada
+        taxa_exc = total_exclusao_correta / total_exc * 100 if total_exc > 0 else 0
+        print(f"\n   🎯 ESTRATÉGIA DE EXCLUSÃO (SUPERÁVIT v2.0):")
+        print(f"      Taxa de acerto: {taxa_exc:.1f}% ({total_exclusao_correta}/{total_exc})")
+        
+        if historico_exclusoes:
+            print(f"      ⚠️ Erros recentes (última 5):")
+            for exc in historico_exclusoes[-5:]:
+                print(f"         Concurso {exc['concurso']}: excluiu {exc['excluidos']}, errou {exc['errados']}")
+        
+        # Tabela por nível
+        print(f"\n   📊 PERFORMANCE POR NÍVEL:")
+        print("   " + "─"*75)
+        print(f"   {'Nível':<8} {'Combos':>12} {'Custo':>12} {'Prêmio':>12} {'ROI':>10} {'Jackpots':>10}")
+        print("   " + "─"*75)
+        
+        for nivel in niveis_testar:
+            s = stats_por_nivel[nivel]
+            media_combos = s['combos_total'] / total_testes if total_testes > 0 else 0
+            roi = (s['premio_total'] / s['custo_total'] - 1) * 100 if s['custo_total'] > 0 else 0
+            taxa_jack = s['jackpots'] / total_testes * 100 if total_testes > 0 else 0
+            
+            roi_str = f"{roi:+.1f}%" if roi != 0 else "0%"
+            jack_str = f"{s['jackpots']}/{total_testes} ({taxa_jack:.0f}%)"
+            
+            print(f"   N{nivel:<7} {media_combos:>12,.0f} R${s['custo_total']:>10,.0f} R${s['premio_total']:>10,.0f} {roi_str:>10} {jack_str:>10}")
+        
+        print("   " + "─"*75)
+        
+        # Melhor nível
+        melhor_nivel = max(niveis_testar, key=lambda n: stats_por_nivel[n]['premio_total'] - stats_por_nivel[n]['custo_total'])
+        s_melhor = stats_por_nivel[melhor_nivel]
+        lucro_melhor = s_melhor['premio_total'] - s_melhor['custo_total']
+        print(f"\n   ⭐ MELHOR NÍVEL: N{melhor_nivel} (lucro total: R${lucro_melhor:,.2f})")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # PASSO 6: SALVAR APRENDIZADO
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n" + "─"*78)
+        salvar = input("   💾 Salvar resultados no histórico de aprendizado? [S/N]: ").strip().upper()
+        
+        if salvar == 'S':
+            base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            dados_path = os.path.join(base_path, 'dados')
+            historico_path = os.path.join(dados_path, 'historico_aprendizado.json')
+            
+            # Carregar histórico existente
+            historico = {
+                'total_backtests': 0,
+                'filtros_falhas': {},
+                'filtros_acertos': {},
+                'niveis_jackpot': {str(i): 0 for i in range(7)},
+                'exclusao_correta': 0,
+                'exclusao_errada': 0,
+                'previsoes': {'soma': {'acertos': 0, 'erros': 0}, 'compensacao': {'acertos': 0, 'erros': 0}},
+                'eventos_atipicos': [],
+                'historico_detalhado': []
+            }
+            
+            if os.path.exists(historico_path):
+                try:
+                    with open(historico_path, 'r', encoding='utf-8') as f:
+                        historico = json.load(f)
+                except:
+                    pass
+            
+            # Atualizar com resultados deste backtesting
+            historico['total_backtests'] += total_testes
+            historico['exclusao_correta'] += total_exclusao_correta
+            historico['exclusao_errada'] += total_exclusao_errada
+            
+            for nivel in niveis_testar:
+                nivel_str = str(nivel)
+                historico['niveis_jackpot'][nivel_str] = historico['niveis_jackpot'].get(nivel_str, 0) + stats_por_nivel[nivel]['jackpots']
+            
+            # Salvar
+            try:
+                with open(historico_path, 'w', encoding='utf-8') as f:
+                    json.dump(historico, f, indent=2)
+                print(f"   ✅ Aprendizado salvo! Total de backtests: {historico['total_backtests']}")
+            except Exception as e:
+                print(f"   ❌ Erro ao salvar: {e}")
         
         input("\n   Pressione ENTER para voltar...")
 
