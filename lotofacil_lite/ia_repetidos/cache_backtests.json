@@ -1,0 +1,30 @@
+{
+  "versao": "1.0",
+  "criado_em": "2026-03-02T14:16:50.555407",
+  "ultima_atualizacao": "2026-03-02T14:16:50.557531",
+  "estatisticas_globais": {
+    "total_backtests": 1,
+    "hits_totais": 1,
+    "tempo_total_economizado_ms": 5000
+  },
+  "entradas": {
+    "b80db2f7818d0e7e": {
+      "config": {
+        "tipo": "pool23_historico",
+        "concurso_inicio": 3600,
+        "concurso_fim": 3610,
+        "nivel": 3,
+        "qtd_exclusoes": 2,
+        "filtro_probabilistico": 1
+      },
+      "resultado": {
+        "roi_medio": 14.5,
+        "jackpots": 1,
+        "total_concursos": 10
+      },
+      "criado_em": "2026-03-02T14:16:50.555712",
+      "tempo_execucao_ms": 5000,
+      "acessos": 0
+    }
+  }
+}

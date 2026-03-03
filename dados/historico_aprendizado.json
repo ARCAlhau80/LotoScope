@@ -1,5 +1,5 @@
 {
-  "total_backtests": 18,
+  "total_backtests": 142,
   "filtros_falhas": {
     "N4_SOMA": 1,
     "N4_IMPROBABILIDADE": 4,
@@ -17,16 +17,16 @@
     "N4_COMPENSACAO": 1
   },
   "niveis_jackpot": {
-    "0": 10,
-    "1": 8,
-    "2": 7,
-    "3": 5,
-    "4": 0,
-    "5": 1,
-    "6": 1
+    "0": 27,
+    "1": 24,
+    "2": 23,
+    "3": 19,
+    "4": 10,
+    "5": 10,
+    "6": 8
   },
-  "exclusao_correta": 10,
-  "exclusao_errada": 8,
+  "exclusao_correta": 27,
+  "exclusao_errada": 115,
   "previsoes": {
     "soma": {
       "acertos": 9,
@@ -58,7 +58,7 @@
         25
       ],
       "padroes": [
-        "⚠️ SEQUÊNCIA LONGA: 6 consecutivos!"
+        "\u26a0\ufe0f SEQU\u00caNCIA LONGA: 6 consecutivos!"
       ]
     },
     {
@@ -81,7 +81,7 @@
         24
       ],
       "padroes": [
-        "⚠️ REPETIÇÃO ATÍPICA: 15 (normal: 5-10)"
+        "\u26a0\ufe0f REPETI\u00c7\u00c3O AT\u00cdPICA: 15 (normal: 5-10)"
       ]
     },
     {
@@ -104,7 +104,7 @@
         24
       ],
       "padroes": [
-        "⚠️ SEQUÊNCIA LONGA: 6 consecutivos!"
+        "\u26a0\ufe0f SEQU\u00caNCIA LONGA: 6 consecutivos!"
       ]
     }
   ],

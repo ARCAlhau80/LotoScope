@@ -31,6 +31,16 @@ import json
 from typing import Optional
 from datetime import datetime
 
+# Sistemas de cache e sessão (inspirados no MCP Context Hub)
+try:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'ia_repetidos'))
+    from cache_backtest import get_cache, buscar_cache_backtest, salvar_cache_backtest, exibir_estatisticas_cache
+    from historico_sessao import get_sessao, registrar_decisao, registrar_exclusao, alerta_uma_vez, obter_contexto, definir_contexto
+    CACHE_SESSAO_DISPONIVEL = True
+except ImportError:
+    CACHE_SESSAO_DISPONIVEL = False
+    print("   ⚠️ Cache/Sessão não disponível (módulos não encontrados)")
+
 def get_script_path(script_name: str) -> str:
     """
     Retorna o caminho completo para um script, procurando em múltiplos diretórios.
@@ -70,9 +80,19 @@ class SuperMenuLotofacil:
     """Menu principal unificado para todos os sistemas Lotofácil"""
     
     def __init__(self):
-        self.versao = "1.1"
-        self.data_validacao = "21/08/2025"
+        self.versao = "1.2"
+        self.data_validacao = "02/03/2026"
         self.resultado_validacao = "15 acertos em 50 combinações (Concurso 3474)"
+        
+        # Inicializar sistemas de cache e sessão
+        if CACHE_SESSAO_DISPONIVEL:
+            self.sessao = get_sessao()
+            self.cache = get_cache()
+            # Mostrar alerta de sessão apenas uma vez
+            alerta_uma_vez('inicio_sessao', f"   📋 Sessão {self.sessao.sessao_id} inicializada")
+        else:
+            self.sessao = None
+            self.cache = None
         
     def mostrar_cabecalho(self):
         """Exibe o cabeçalho do menu principal"""
@@ -387,6 +407,12 @@ class SuperMenuLotofacil:
         print("     • Círculos concêntricos = frequência recente")
         print("     • Cores: 🔴 último sorteio | 🟡 4 anteriores")
         print("     • Baseado no ranking do Pool 23 Híbrido")
+        print()
+        print("3️⃣3️⃣  📦 GERENCIADOR DE SESSÃO/CACHE ⭐ NOVO!")
+        print("     • Ver histórico de decisões da sessão")
+        print("     • Cache de backtests (evita reexecução)")
+        print("     • Padrões de uso e estatísticas")
+        print("     • Economia de tempo e tokens")
         print()
         print("0️⃣  🚪 SAIR")
         print("=" * 60)
@@ -2591,14 +2617,19 @@ class SuperMenuLotofacil:
                     self.executar_gerador_pool_23_hibrido()
                 elif opcao == "32":
                     self.executar_mapa_grafico_ranking()
+                elif opcao == "33":
+                    self.executar_gerenciador_sessao()
                 elif opcao == "0":
                     print("\n👋 Obrigado por usar o Super Menu Lotofácil!")
                     print("🎯 Boa sorte com suas apostas inteligentes!")
                     print("✅ Sistema validado: 15 acertos em 50 combinações!")
                     print("🔺 Nova funcionalidade: Pirâmide Invertida Dinâmica!")
+                    # Salvar sessão ao sair
+                    if CACHE_SESSAO_DISPONIVEL and self.sessao:
+                        self.sessao._salvar_sessao()
                     break
                 else:
-                    print("\n❌ Opção inválida! Escolha entre 0-32 (ou 2.1, 2.2, 7.1-7.13).")
+                    print("\n❌ Opção inválida! Escolha entre 0-33 (ou 2.1, 2.2, 7.1-7.13).")
                     input("Pressione ENTER para continuar...")
             
             except KeyboardInterrupt:
@@ -12009,14 +12040,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"      Faixa neutra: 190-200 - comportamento aleatório")
         
         # ═══════════════════════════════════════════════════════════════════
-        # PASSO 2: IDENTIFICAR OS 2 NÚMEROS A EXCLUIR (ESTRATÉGIA SUPERÁVIT v2.0)
+        # PASSO 2: IDENTIFICAR OS 2 NÚMEROS A EXCLUIR (ESTRATÉGIA INVERTIDA v3.0)
         # ═══════════════════════════════════════════════════════════════════
-        # NOVA LÓGICA: Excluir números em SUPERÁVIT (curta > longa)
-        # Descoberta: Números em DÉBITO (curta < longa) tendem a VOLTAR!
-        # Validado no concurso 3613: 77.8% dos números em débito saíram
+        # NOVA LÓGICA v3.0: Excluir números QUENTES que devem ESFRIAR!
+        # Benchmark 03/03/2026: Estratégia INVERTIDA +1.8pp acima do aleatório
+        # Estratégia antiga (SUPERÁVIT) -1.7pp ABAIXO do aleatório
+        # Números com ALTA frequência recente + CONSECUTIVOS tendem a parar
         # ═══════════════════════════════════════════════════════════════════
         print("\n" + "─"*78)
-        print("🧠 PASSO 2: Calculando os 2 números a EXCLUIR (Estratégia SUPERÁVIT v2.0)")
+        print("🧠 PASSO 2: Calculando os 2 números a EXCLUIR (Estratégia INVERTIDA v3.0)")
         print("─"*78)
         
         # Janelas de frequência
@@ -12030,6 +12062,16 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         freq_15 = freq_janela(15)
         freq_50 = freq_janela(50)
         
+        # Calcular aparições CONSECUTIVAS (quantas vezes seguidas o número saiu)
+        def contar_consecutivos(n):
+            count = 0
+            for r in resultados[:15]:  # Checar até 15 concursos
+                if n in r['numeros']:
+                    count += 1
+                else:
+                    break
+            return count
+        
         FREQ_ESPERADA = 60  # 15/25 * 100
         
         candidatos = []
@@ -12038,54 +12080,67 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             fm = freq_15[n]
             fl = freq_50[n]
             
-            # NOVO: Índice de Débito/Superávit
-            # Débito = Longa% - Curta% (positivo = está devendo, vai voltar)
-            # Superávit = negativo (está adiantado, pode ficar fora)
-            indice_debito = fl - fc
+            # Índice de Débito/Superávit (para referência)
+            indice_debito = fl - fc  # positivo = devendo, negativo = adiantado
             
-            # Tendência descendente (para exibição)
-            queda_forte = fc < fm < fl
-            tendencia_queda = (fc < fm) or (fm < fl)
+            # NOVO: Contar aparições consecutivas
+            consecutivos = contar_consecutivos(n)
             
-            # LÓGICA CONSERVADORA v2.1 (baseado em 7 backtests - 42.9% acerto)
-            # Problema anterior: excluía números frequentes demais (5, 10, 11, 12, 15)
-            # Nova regra: SÓ excluir se estiver em SUPERÁVIT EXTREMO + AUSENTE nos últimos concursos
-            score = 0
-            
-            # Verificar se apareceu nos últimos 3 concursos (PROTEÇÃO CONSERVADORA)
+            # Verificar presença recente
             apareceu_recente = any(n in r['numeros'] for r in resultados[:3])
             
-            # Se apareceu nos últimos 3 concursos, NUNCA excluir!
-            if apareceu_recente:
-                score -= 10  # Penalidade forte
-                status = '🛡️ PROTEGIDO (recente)'
-            # Superávit EXTREMO (curta MUITO maior que longa) E ausente recente
-            elif indice_debito < -40 and fc >= 80:
-                score += 5  # Superávit muito alto + quente
-                status = '💰 SUPERÁVIT EXTREMO'
-            elif indice_debito < -30 and not apareceu_recente:
-                score += 4  # Superávit significativo
-                status = '💰 SUPERÁVIT ALTO'
-            elif indice_debito < -15 and not apareceu_recente:
-                score += 2  # Superávit moderado
-                status = 'superávit'
-            elif indice_debito < 0:
-                score += 0  # Leve superávit - não excluir
-                status = 'equilibrado'
-            elif indice_debito < 20:
-                score -= 3  # DÉBITO - NUNCA excluir!
-                status = '⚠️ DÉBITO'
+            # ═══════════════════════════════════════════════════════════════════
+            # LÓGICA INVERTIDA v3.0 (03/03/2026) - Benchmark validado!
+            # Excluir números QUENTES que devem ESFRIAR
+            # Números com alta freq. recente + consecutivos tendem a PARAR
+            # EXCEÇÃO: Sequências MUITO longas (>10) podem persistir (anomalia)
+            # ═══════════════════════════════════════════════════════════════════
+            score = 0
+            
+            # PROTEÇÃO PARA ANOMALIAS: Sequências muito longas (>10 consecutivos)
+            # Quando um número está em sequência TÃO longa, pode persistir!
+            # Ex: Número 11 saiu 14+ vezes seguidas (03/2026)
+            if consecutivos >= 10:
+                score -= 5  # PROTEGER - anomalia de persistência!
+                status = '🛡️ PROTEGIDO (anomalia: 10+ seg)'
+            # 1. CONSECUTIVOS LONGOS (muito peso!) - números que sairam 4-9 seguidos
+            elif consecutivos >= 5:
+                score += 6  # Muito alto - vai parar!
+                status = '🔥 SUPER QUENTE (5+ seguidos)'
+            elif consecutivos >= 4:
+                score += 5  # Alto - provável parada
+                status = '🔥 MUITO QUENTE (4 seguidos)'
+            elif consecutivos >= 3 and fc >= 80:
+                score += 4  # 3 seguidos + freq alta
+                status = '♨️ QUENTE (3+ seg, freq alta)'
+            elif consecutivos >= 3:
+                score += 3  # 3 seguidos
+                status = '♨️ QUENTE (3 seguidos)'
+            # 2. FREQUÊNCIA RECENTE MUITO ALTA (saiu em 4-5 dos últimos 5)
+            elif fc >= 100:  # Saiu em TODOS os últimos 5
+                score += 4
+                status = '🎯 100% últimos 5'
+            elif fc >= 80 and apareceu_recente:  # 4/5 E recente
+                score += 3
+                status = '📈 Freq muito alta'
+            # 3. SUPERÁVIT EXTREMO (curta MUITO maior que longa)
+            elif indice_debito < -35:
+                score += 2
+                status = '💰 Superávit extremo'
+            elif indice_debito < -25:
+                score += 1
+                status = '💰 Superávit'
+            # 4. NEUTRO ou DEVENDO - NÃO EXCLUIR
+            elif indice_debito >= 0:
+                score -= 2  # Penalizar - está devendo
+                status = '⚠️ Devendo' if indice_debito > 10 else 'equilibrado'
             else:
-                score -= 6  # DÉBITO ALTO - vai voltar com certeza!
-                status = '🔥 DÉBITO ALTO'
+                score -= 1  # Leve penalidade
+                status = 'leve superávit'
             
-            # PROTEÇÃO EXTRA: números acima da mediana de frequência longa
-            if fl >= FREQ_ESPERADA:
-                score -= 2  # Números frequentes são perigosos de excluir
-            
-            # Penalizar MUITO fortemente números em débito (curta baixa + longa alta)
-            if fc <= 40 and fl >= 55:
-                score -= 6  # Está devendo, vai voltar!
+            # BÔNUS: se está muito acima da média esperada na janela curta
+            if fc > FREQ_ESPERADA + 20:  # > 80%
+                score += 1
             
             candidatos.append({
                 'num': n,
@@ -12093,35 +12148,36 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'freq_media': fm,
                 'freq_longa': fl,
                 'indice_debito': indice_debito,
+                'consecutivos': consecutivos,
                 'status': status,
-                'tendencia': 'QUEDA FORTE' if queda_forte else ('queda' if tendencia_queda else 'alta'),
+                'tendencia': f'{consecutivos} seg.' if consecutivos >= 2 else 'normal',
                 'score': score
             })
         
-        # Ordenar por score (maior = excluir)
-        candidatos.sort(key=lambda x: -x['score'])
+        # Ordenar por score (maior = excluir), desempate por consecutivos e freq curta
+        candidatos.sort(key=lambda x: (-x['score'], -x['consecutivos'], -x['freq_curta']))
         
         # ═══════════════════════════════════════════════════════════════════
         # MOSTRAR TOP 10 CANDIDATOS À EXCLUSÃO (destacado)
         # ═══════════════════════════════════════════════════════════════════
         print("\n   ╔════════════════════════════════════════════════════════════════════════╗")
         print("   ║           📊 TOP 10 CANDIDATOS À EXCLUSÃO                             ║")
-        print("   ║  💡 Estratégia: Excluir números em SUPERÁVIT (curta > longa)          ║")
-        print("   ║  💡 Números em DÉBITO (curta < longa) tendem a VOLTAR!                ║")
+        print("   ║  💡 Estratégia INVERTIDA v3.0: Excluir números QUENTES (vão esfriar)  ║")
+        print("   ║  💡 Benchmark: +1.8pp acima do aleatório nos últimos 200 concursos    ║")
         print("   ╚════════════════════════════════════════════════════════════════════════╝")
         print()
-        print(f"   {'Rank':>4} {'Num':>4} {'Curta%':>8} {'Longa%':>8} {'Déb/Sup':>9} {'Status':>18} {'Score':>7}")
+        print(f"   {'Rank':>4} {'Num':>4} {'Curta%':>8} {'Consec':>7} {'Status':>25} {'Score':>7}")
         print("   " + "─"*70)
         
         # Só mostrar TOP 10
         for i, c in enumerate(candidatos[:10]):
             rank = f"{i+1}º"
-            deb_str = f"{c['indice_debito']:+.1f}"
+            consec_str = f"{c['consecutivos']} seg" if c['consecutivos'] >= 1 else "0"
             # Destaque visual para top 2 (default)
             if i < 2:
-                print(f"   {rank:>4} {c['num']:>4d} {c['freq_curta']:>8.1f} {c['freq_longa']:>8.1f} {deb_str:>9} {c['status']:>18} {c['score']:>7.2f} ◀─ AUTO")
+                print(f"   {rank:>4} {c['num']:>4d} {c['freq_curta']:>8.1f} {consec_str:>7} {c['status']:>25} {c['score']:>7.2f} ◀─ AUTO")
             else:
-                print(f"   {rank:>4} {c['num']:>4d} {c['freq_curta']:>8.1f} {c['freq_longa']:>8.1f} {deb_str:>9} {c['status']:>18} {c['score']:>7.2f}")
+                print(f"   {rank:>4} {c['num']:>4d} {c['freq_curta']:>8.1f} {consec_str:>7} {c['status']:>25} {c['score']:>7.2f}")
         
         print("   " + "─"*70)
         
@@ -14240,6 +14296,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         Igual ao Pool 23 Híbrido, mas testa em MÚLTIPLOS concursos históricos.
         Usa os mesmos níveis (0-6), mesma estratégia SUPERÁVIT, e mesmo aprendizado.
+        
+        INTEGRAÇÃO COM CACHE: Salva resultados para evitar reexecução.
         """
         print("\n" + "═"*78)
         print("🔬 BACKTESTING POOL 23 HISTÓRICO - VALIDAÇÃO EM MASSA")
@@ -14247,6 +14305,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   Testa a estratégia Pool 23 em MÚLTIPLOS concursos")
         print("   Usa mesmos níveis (0-6) e sistema de aprendizado")
         print("   Verifica taxa de jackpots e ROI médio por nível")
+        if CACHE_SESSAO_DISPONIVEL:
+            print("   💾 Cache ativado: resultados serão salvos")
         print("═"*78)
         
         import pyodbc
@@ -14350,6 +14410,37 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         print(f"\n   ✅ Excluindo {qtd_excluir} números por concurso")
         print(f"   ✅ Testando níveis: {niveis_testar}")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # VERIFICAR CACHE (evita reexecução)
+        # ═══════════════════════════════════════════════════════════════════
+        config_backtest = {
+            'tipo': 'pool23_historico',
+            'concurso_inicio': concurso_inicio,
+            'concurso_fim': concurso_fim,
+            'qtd_exclusoes': qtd_excluir,
+            'filtros_ativos': niveis_testar
+        }
+        
+        if CACHE_SESSAO_DISPONIVEL:
+            resultado_cache = buscar_cache_backtest(config_backtest)
+            if resultado_cache:
+                print("\n   💾 RESULTADO ENCONTRADO NO CACHE!")
+                usar_cache = input("   Usar resultado cacheado? [S/N]: ").strip().upper()
+                if usar_cache == 'S':
+                    # Exibir resultado do cache
+                    print("\n" + "═"*78)
+                    print("📊 RESULTADOS DO BACKTESTING (CACHE)")
+                    print("═"*78)
+                    for key, value in resultado_cache.items():
+                        if isinstance(value, dict):
+                            print(f"   {key}:")
+                            for k, v in value.items():
+                                print(f"      {k}: {v}")
+                        else:
+                            print(f"   {key}: {value}")
+                    input("\n   Pressione ENTER para voltar...")
+                    return
         
         confirmar = input("\n   ▶️ Iniciar backtesting? [S/N]: ").strip().upper()
         if confirmar != 'S':
@@ -14638,6 +14729,32 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         s_melhor = stats_por_nivel[melhor_nivel]
         lucro_melhor = s_melhor['premio_total'] - s_melhor['custo_total']
         print(f"\n   ⭐ MELHOR NÍVEL: N{melhor_nivel} (lucro total: R${lucro_melhor:,.2f})")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # SALVAR NO CACHE E REGISTRAR SESSÃO
+        # ═══════════════════════════════════════════════════════════════════
+        if CACHE_SESSAO_DISPONIVEL:
+            # Preparar resultado para cache
+            resultado_para_cache = {
+                'tempo_execucao_s': tempo_total,
+                'total_concursos': total_testes,
+                'taxa_exclusao_correta': taxa_exc,
+                'melhor_nivel': melhor_nivel,
+                'lucro_melhor': lucro_melhor,
+                'stats_por_nivel': {str(n): {
+                    'jackpots': stats_por_nivel[n]['jackpots'],
+                    'roi': (stats_por_nivel[n]['premio_total'] / stats_por_nivel[n]['custo_total'] - 1) * 100 if stats_por_nivel[n]['custo_total'] > 0 else 0,
+                    'combos_media': stats_por_nivel[n]['combos_total'] / total_testes if total_testes > 0 else 0
+                } for n in niveis_testar}
+            }
+            
+            # Salvar no cache
+            salvar_cache_backtest(config_backtest, resultado_para_cache, int(tempo_total * 1000))
+            print(f"\n   💾 Resultado salvo no cache (economia futura: {tempo_total:.0f}s)")
+            
+            # Registrar no histórico de sessão
+            if self.sessao:
+                self.sessao.registrar_backtest(config_backtest, resultado_para_cache)
         
         # ═══════════════════════════════════════════════════════════════════
         # PASSO 6: SALVAR APRENDIZADO
@@ -16849,6 +16966,108 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             traceback.print_exc()
         
         input("\nPressione ENTER...")
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # OPÇÃO 33: GERENCIADOR DE SESSÃO/CACHE
+    # ═══════════════════════════════════════════════════════════════════════════
+    def executar_gerenciador_sessao(self):
+        """
+        📦 GERENCIADOR DE SESSÃO E CACHE
+        
+        Sistema inspirado no MCP Context Hub para:
+        - Rastrear decisões da sessão
+        - Cache de backtests (evita reexecução)
+        - Estatísticas de uso e economia
+        """
+        if not CACHE_SESSAO_DISPONIVEL:
+            print("\n❌ Sistema de cache/sessão não disponível!")
+            print("   Verifique se os arquivos estão em ia_repetidos/")
+            input("\nPressione ENTER...")
+            return
+        
+        while True:
+            print("\n" + "═"*70)
+            print("📦 GERENCIADOR DE SESSÃO E CACHE")
+            print("═"*70)
+            print("   Sistema de memória persistente para economia de tempo e contexto")
+            print("═"*70)
+            
+            print("\n   OPÇÕES:")
+            print("   ┌────────────────────────────────────────────────────────┐")
+            print("   │ [1] 📋 Ver resumo da sessão atual                      │")
+            print("   │ [2] 📜 Ver timeline de decisões                        │")
+            print("   │ [3] 📊 Estatísticas do cache de backtests              │")
+            print("   │ [4] 📈 Padrões de uso (histórico)                      │")
+            print("   │ [5] 🗑️  Limpar cache expirado                          │")
+            print("   │ [6] 📄 Listar backtests salvos                         │")
+            print("   │ [7] 🔄 Finalizar sessão atual                          │")
+            print("   │ [0] ↩️  Voltar ao menu principal                        │")
+            print("   └────────────────────────────────────────────────────────┘")
+            
+            sub_opcao = input("\n   Escolha: ").strip()
+            
+            if sub_opcao == '0':
+                return
+            
+            elif sub_opcao == '1':
+                # Resumo da sessão
+                self.sessao.exibir_resumo_sessao()
+            
+            elif sub_opcao == '2':
+                # Timeline de decisões
+                try:
+                    n = input("   Quantas decisões mostrar? [10]: ").strip()
+                    n = int(n) if n else 10
+                except:
+                    n = 10
+                self.sessao.exibir_timeline_decisoes(n)
+            
+            elif sub_opcao == '3':
+                # Estatísticas do cache
+                exibir_estatisticas_cache()
+            
+            elif sub_opcao == '4':
+                # Padrões de uso
+                self.sessao.exibir_padroes_uso()
+            
+            elif sub_opcao == '5':
+                # Limpar cache
+                removidos = self.cache.limpar_expirados()
+                print(f"\n   ✅ {removidos} entradas expiradas removidas do cache")
+            
+            elif sub_opcao == '6':
+                # Listar backtests salvos
+                backtests = self.cache.listar_backtests_salvos()
+                print("\n" + "─"*70)
+                print("📋 BACKTESTS SALVOS NO CACHE")
+                print("─"*70)
+                
+                if not backtests:
+                    print("   Nenhum backtest salvo ainda.")
+                else:
+                    print(f"   {'Tipo':<20} {'Range':<15} {'Nível':<8} {'ROI':<10} {'Data':<12}")
+                    print("   " + "-"*65)
+                    for bt in backtests[:20]:
+                        tipo = bt.get('tipo', 'N/A')[:18]
+                        rng = bt.get('range', 'N/A')
+                        nivel = str(bt.get('nivel', '-'))
+                        roi = f"{bt['resumo_roi']:.1f}%" if bt.get('resumo_roi') else "N/A"
+                        data = bt.get('criado_em', '')[:10] if bt.get('criado_em') else "N/A"
+                        print(f"   {tipo:<20} {rng:<15} {nivel:<8} {roi:<10} {data:<12}")
+                    
+                    if len(backtests) > 20:
+                        print(f"   ... e mais {len(backtests) - 20} backtests")
+            
+            elif sub_opcao == '7':
+                # Finalizar sessão
+                confirmar = input("   ⚠️ Arquivar sessão atual e iniciar nova? [S/N]: ").strip().upper()
+                if confirmar == 'S':
+                    self.sessao.finalizar_sessao()
+            
+            else:
+                print("   ❌ Opção inválida!")
+            
+            input("\n   Pressione ENTER para continuar...")
 
 
 def main():

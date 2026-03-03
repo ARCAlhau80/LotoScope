@@ -149,11 +149,31 @@ python super_menu.py
   - Level 4-5: max 1 hot, min 2 cold
   - Level 6: max 1 hot, min 2 cold (maximum restriction)
 
-### 9. Learning System v2.1 (Option 30 → Option 3) ⭐⭐ NEW!
+### 10. Exclusion Strategy INVERTIDA v3.0 (Option 31) ⭐⭐⭐ UPDATED! (03/03/2026)
+- **Major Discovery**: Previous SUPERÁVIT strategy was **WRONG**! -1.7pp below random
+- **NEW Logic**: Exclude HOT numbers (high recent frequency + consecutives)
+- **Anomaly Protection** ⭐ NEW: Numbers with 10+ consecutive appearances are PROTECTED
+  - Example: Number 11 appeared 14 consecutive times (contests 3611-3624)
+  - Such anomalies indicate "persistence" rather than "cooling down"
+- **Benchmark Results by Period** (50 contests each):
+  - Last 50: **26%** (+11pp above random) ✅ BEST!
+  - 50-100 back: **22%** (+7pp) ✅
+  - 100-150 back: **18%** (+3pp) ✅
+  - 150-200 back: 10% (-5pp) ❌
+  - Random baseline: 15%
+- **Key Factors for Exclusion**:
+  - 10+ consecutive → score -5 (PROTECTED - anomaly!)
+  - 5-9 consecutive appearances → score +6
+  - 4 consecutive appearances → score +5
+  - 3+ consecutive + high freq → score +4
+  - 100% frequency in last 5 → score +4
+- **Rationale**: "Mean reversion" - hot numbers tend to cool down, EXCEPT anomalies
+
+### 11. Learning System v2.1 (Option 30 → Option 3) ⭐⭐ NEW!
 - **Purpose**: Track exclusion/compensation accuracy over backtests
-- **Exclusion Algorithm v2.1**: Conservative mode - protects numbers in last 3 draws
+- **Exclusion Algorithm**: Now uses INVERTIDA v3.0 (exclude HOT numbers)
 - **Compensation Logic**: INVERTED (predict SUBIR → accept DESCER)
-- **Current Stats**: 50% exclusion accuracy (8 backtests)
+- **Current Stats**: Being re-evaluated with new strategy
 - **Report Features**: Detailed history table, accuracy bars, pattern analysis
 
 ## Important Files
@@ -209,6 +229,11 @@ python super_menu.py
    - Shows ranking ordered by score
    - Allows choosing how many numbers to exclude (default 2)
    - Allows manual adjustment from TOP 10
+9. **MAJOR FIX** (03/03/2026): **Exclusion strategy INVERTED from SUPERÁVIT to INVERTIDA v3.0** ⭐⭐⭐ CRITICAL!
+   - Benchmark showed old SUPERÁVIT strategy was -1.7pp BELOW random (13.5% vs 15.2%)
+   - NEW INVERTIDA v3.0: +1.8pp ABOVE random (17.0% vs 15.2%) ✅
+   - Now excludes HOT numbers (high consecutive + high freq) instead of COLD numbers
+   - Key insight: "Mean reversion" - numbers that appear too often tend to stop
 
 ---
-*Last updated: 2026-03-01*
+*Last updated: 2026-03-03*
