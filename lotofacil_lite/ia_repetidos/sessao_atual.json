@@ -1,12 +1,30 @@
 {
   "sessao_id": "e415271a",
   "inicio": "2026-03-03T09:02:56.970112",
-  "ultima_atividade": "2026-03-03T09:02:56.971459",
+  "ultima_atividade": "2026-03-03T10:02:16.473395",
   "decisoes": [],
   "alertas_mostrados": [
     "inicio_sessao"
   ],
-  "backtests_executados": [],
+  "backtests_executados": [
+    {
+      "timestamp": "2026-03-03T10:02:16.473380",
+      "config": {
+        "tipo": "pool23_historico",
+        "concurso_inicio": 3600,
+        "concurso_fim": 3625,
+        "qtd_exclusoes": 2,
+        "filtros_ativos": [
+          0
+        ]
+      },
+      "resultado_resumo": {
+        "roi_medio": null,
+        "jackpots": null,
+        "lucro_total": null
+      }
+    }
+  ],
   "contexto": {},
   "metricas": {
     "opcoes_acessadas": [],

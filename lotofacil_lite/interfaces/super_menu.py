@@ -14934,12 +14934,82 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         candidatos.sort(key=lambda x: -x['score'])
         
         # ═══════════════════════════════════════════════════════════════════
-        # MOSTRAR TOP 10 CANDIDATOS À EXCLUSÃO (destacado)
+        # CALCULAR TAMBÉM RANKING DE QUENTES (INVERTIDA v3.0) para comparação
+        # ═══════════════════════════════════════════════════════════════════
+        def contar_consecutivos(n):
+            count = 0
+            for r in resultados[:15]:
+                if n in r['numeros']:
+                    count += 1
+                else:
+                    break
+            return count
+        
+        cand_quentes = []
+        for n in range(1, 26):
+            fc = freq_5[n]
+            fl = freq_50[n]
+            indice_debito = fl - fc
+            consecutivos = contar_consecutivos(n)
+            apareceu_recente = any(n in r['numeros'] for r in resultados[:3])
+            
+            score_q = 0
+            status_q = ''
+            
+            # PROTEÇÃO: Sequências muito longas (>10)
+            if consecutivos >= 10:
+                score_q -= 5
+                status_q = 'PROTEGIDO (10+ seg)'
+            elif consecutivos >= 5:
+                score_q += 6
+                status_q = 'SUPER QUENTE (5+ seg)'
+            elif consecutivos >= 4:
+                score_q += 5
+                status_q = 'MUITO QUENTE (4 seg)'
+            elif consecutivos >= 3 and fc >= 80:
+                score_q += 4
+                status_q = 'QUENTE (3+ seg, freq)'
+            elif consecutivos >= 3:
+                score_q += 3
+                status_q = 'QUENTE (3 seg)'
+            elif fc >= 100:
+                score_q += 4
+                status_q = '100% últimos 5'
+            elif fc >= 80 and apareceu_recente:
+                score_q += 3
+                status_q = 'Freq muito alta'
+            elif indice_debito < -35:
+                score_q += 2
+                status_q = 'Superávit extremo'
+            elif indice_debito < -25:
+                score_q += 1
+                status_q = 'Superávit'
+            elif indice_debito >= 0:
+                score_q -= 2
+                status_q = 'Devendo' if indice_debito > 10 else 'equilibrado'
+            else:
+                score_q -= 1
+                status_q = 'leve superávit'
+            
+            if fc > 80:
+                score_q += 1
+            
+            cand_quentes.append({
+                'num': n, 
+                'score': score_q, 
+                'consec': consecutivos,
+                'freq_curta': fc,
+                'status': status_q
+            })
+        
+        cand_quentes.sort(key=lambda x: (-x['score'], -x['consec'], -x['freq_curta']))
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # MOSTRAR TOP 10 CANDIDATOS À EXCLUSÃO - ESTRATÉGIA ANTIGA (FRIOS)
         # ═══════════════════════════════════════════════════════════════════
         print("\n   ╔════════════════════════════════════════════════════════════════════════╗")
-        print("   ║           📊 TOP 10 CANDIDATOS À EXCLUSÃO                             ║")
-        print("   ║  💡 Estratégia: Excluir números em SUPERÁVIT (curta > longa)          ║")
-        print("   ║  💡 Números em DÉBITO (curta < longa) tendem a VOLTAR!                ║")
+        print("   ║  ❄️  TOP 10 FRIOS (Estratégia antiga - SUPERÁVIT)                      ║")
+        print("   ║  💡 Excluir números em SUPERÁVIT (curta > longa)                       ║")
         print("   ╚════════════════════════════════════════════════════════════════════════╝")
         print()
         print(f"   {'Rank':>4} {'Num':>4} {'Curta%':>8} {'Longa%':>8} {'Déb/Sup':>9} {'Score':>7}")
@@ -14949,18 +15019,43 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         for i, c in enumerate(candidatos[:10]):
             rank = f"{i+1}º"
             deb_str = f"{c['indice_debito']:+.1f}"
-            # Destaque visual para top 2 (default)
-            if i < 2:
-                print(f"   {rank:>4} {c['num']:>4d} {c['freq_curta']:>8.1f} {c['freq_longa']:>8.1f} {deb_str:>9} {c['score']:>7.2f} ◀─ AUTO")
-            else:
-                print(f"   {rank:>4} {c['num']:>4d} {c['freq_curta']:>8.1f} {c['freq_longa']:>8.1f} {deb_str:>9} {c['score']:>7.2f}")
+            print(f"   {rank:>4} {c['num']:>4d} {c['freq_curta']:>8.1f} {c['freq_longa']:>8.1f} {deb_str:>9} {c['score']:>7.2f}")
         
         print("   " + "─"*50)
         
-        # Score total dos top 2 (default)
-        score_top2 = candidatos[0]['score'] + candidatos[1]['score']
-        nums_top2 = [candidatos[0]['num'], candidatos[1]['num']]
-        print(f"\n   🎯 SELEÇÃO AUTOMÁTICA: {sorted(nums_top2)} (score total: {score_top2:.2f})")
+        # ═══════════════════════════════════════════════════════════════════
+        # MOSTRAR TOP 10 CANDIDATOS À EXCLUSÃO - ESTRATÉGIA NOVA (QUENTES)
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n   ╔════════════════════════════════════════════════════════════════════════╗")
+        print("   ║  🔥 TOP 10 QUENTES (Estratégia INVERTIDA v3.0) ⭐ RECOMENDADO         ║")
+        print("   ║  💡 Excluir números QUENTES que vão ESFRIAR (+11pp vs aleatório)      ║")
+        print("   ╚════════════════════════════════════════════════════════════════════════╝")
+        print()
+        print(f"   {'Rank':>4} {'Num':>4} {'Curta%':>8} {'Consec':>7} {'Score':>7} {'Status':<25}")
+        print("   " + "─"*70)
+        
+        for i, c in enumerate(cand_quentes[:10]):
+            rank = f"{i+1}º"
+            consec_str = f"{c['consec']} seg" if c['consec'] >= 1 else "0"
+            if i < 2:
+                print(f"   {rank:>4} {c['num']:>4d} {c['freq_curta']:>8.1f} {consec_str:>7} {c['score']:>7.2f} {c['status']:<25} ◀─ RECOMENDADO")
+            else:
+                print(f"   {rank:>4} {c['num']:>4d} {c['freq_curta']:>8.1f} {consec_str:>7} {c['score']:>7.2f} {c['status']:<25}")
+        
+        print("   " + "─"*70)
+        
+        # Mostrar comparação
+        nums_frios = [candidatos[0]['num'], candidatos[1]['num']]
+        nums_quentes = [cand_quentes[0]['num'], cand_quentes[1]['num']]
+        
+        print(f"\n   📊 COMPARAÇÃO:")
+        print(f"      ❄️  FRIOS (antigo):    {sorted(nums_frios)}")
+        print(f"      🔥 QUENTES (novo):    {sorted(nums_quentes)} ⭐ +11pp benchmark")
+        
+        # Score total dos top 2 (default) - usar QUENTES como recomendado
+        score_top2 = cand_quentes[0]['score'] + cand_quentes[1]['score']
+        nums_top2 = nums_quentes  # Usar QUENTES como default
+        print(f"\n   🎯 SELEÇÃO AUTOMÁTICA (QUENTES): {sorted(nums_top2)} (score total: {score_top2:.2f})")
         
         # ═══════════════════════════════════════════════════════════════════
         # PERMITIR AJUSTE DA QUANTIDADE E SELEÇÃO
@@ -14979,9 +15074,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         except:
             qtd_excluir = 2
         
-        # Selecionar automaticamente os top N
-        excluir = [candidatos[i]['num'] for i in range(qtd_excluir)]
-        score_total = sum(candidatos[i]['score'] for i in range(qtd_excluir))
+        # Selecionar automaticamente os top N (usando QUENTES - estratégia validada)
+        excluir = [cand_quentes[i]['num'] for i in range(qtd_excluir)]
+        score_total = sum(cand_quentes[i]['score'] for i in range(qtd_excluir))
         
         if qtd_excluir != 2:
             print(f"   ✅ Selecionados TOP {qtd_excluir}: {sorted(excluir)} (score: {score_total:.2f})")
@@ -14989,15 +15084,17 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Permitir ajuste manual
         ajustar = input(f"\n   ⚙️ Deseja ajustar quais dos TOP 10 excluir? [S/N]: ").strip().upper()
         if ajustar == 'S':
-            print(f"\n   📋 TOP 10 disponíveis: {[c['num'] for c in candidatos[:10]]}")
-            print(f"   💡 Digite {qtd_excluir} números separados por vírgula")
+            print(f"\n   📋 TOP 10 QUENTES: {[c['num'] for c in cand_quentes[:10]]}")
+            print(f"   📋 TOP 10 FRIOS:   {[c['num'] for c in candidatos[:10]]}")
+            print(f"   💡 Digite {qtd_excluir} números separados por vírgula (aceita de ambos os rankings)")
             try:
                 nums_input = input(f"   Números a EXCLUIR ({qtd_excluir}): ")
                 nums_custom = [int(x.strip()) for x in nums_input.split(',')]
                 
-                # Validar
-                top10_nums = [c['num'] for c in candidatos[:10]]
-                nums_validos = [n for n in nums_custom if n in top10_nums or (1 <= n <= 25)]
+                # Validar - aceitar de ambos os rankings
+                top10_quentes = [c['num'] for c in cand_quentes[:10]]
+                top10_frios = [c['num'] for c in candidatos[:10]]
+                nums_validos = [n for n in nums_custom if n in top10_quentes or n in top10_frios or (1 <= n <= 25)]
                 
                 if len(nums_validos) >= 1:
                     excluir = nums_validos[:qtd_excluir]  # Limitar à quantidade escolhida
