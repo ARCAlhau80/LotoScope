@@ -169,6 +169,15 @@ python super_menu.py
   - 100% frequency in last 5 → score +4
 - **Rationale**: "Mean reversion" - hot numbers tend to cool down, EXCEPT anomalies
 
+#### Tested but NOT Implemented: Hybrid Strategy (1 Hot + 1 Cold)
+- **Benchmark Date**: 03/03/2026
+- **Results**: INFERIOR to 2 QUENTES in recent periods
+  - 2 QUENTES: 19% average (+4pp) - BEST in recent 100 contests
+  - HÍBRIDA: 17.5% average (+2.5pp) - More stable but lower
+  - 2 FRIOS: 12% average (-3pp) - WORST
+- **Decision**: Keep 2 QUENTES as default, HÍBRIDA archived for reference
+- **File**: `benchmark_hibrida.py` contains full comparison code
+
 ### 11. Learning System v2.1 (Option 30 → Option 3) ⭐⭐ NEW!
 - **Purpose**: Track exclusion/compensation accuracy over backtests
 - **Exclusion Algorithm**: Now uses INVERTIDA v3.0 (exclude HOT numbers)
@@ -183,6 +192,7 @@ python super_menu.py
 | `super_menu.py` | Main menu (4800+ lines) |
 | `filtro_probabilistico.py` | Probabilistic filter for Option 31 |
 | `analise_anomalias_frequencia.py` | Anomaly frequency analysis (adapted from MLMEGA) |
+| `benchmark_hibrida.py` | Hybrid strategy comparison (archived knowledge) |
 | `sistema_aprendizado_ml.py` | ML system with 15 algorithms (Association Rules v2.0) |
 | `estrategia_combo20.py` | C1/C2 strategy implementation |
 | `combo20_FILTRADAS_TOP1000.txt` | Top 1000 C1 combinations |

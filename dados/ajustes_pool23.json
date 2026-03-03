@@ -1,0 +1,25 @@
+{
+  "SOMA_MAX": {
+    "valor": 230,
+    "anterior": 220,
+    "motivo": "Resultado teve soma 223 (faixa semi-comum)",
+    "data": "20260303_090642",
+    "concurso_base": [
+      1,
+      4,
+      8,
+      9,
+      10,
+      13,
+      15,
+      16,
+      17,
+      18,
+      19,
+      21,
+      23,
+      24,
+      25
+    ]
+  }
+}

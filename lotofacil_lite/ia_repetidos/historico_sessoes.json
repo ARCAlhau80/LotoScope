@@ -1,0 +1,24 @@
+{
+  "versao": "1.0",
+  "criado_em": "2026-03-03T09:02:56.969014",
+  "ultima_atualizacao": "2026-03-03T09:02:56.969100",
+  "total_sessoes": 1,
+  "sessoes": [
+    {
+      "sessao_id": "e0fa344b",
+      "data": "2026-03-02",
+      "inicio": "14:17",
+      "duracao_minutos": 0,
+      "total_decisoes": 3,
+      "total_backtests": 0,
+      "combinacoes_geradas": 1000,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [
+          null
+        ],
+        "filtros_usados": []
+      }
+    }
+  ]
+}

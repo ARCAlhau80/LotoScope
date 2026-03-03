@@ -1,52 +1,17 @@
 {
-  "sessao_id": "e0fa344b",
-  "inicio": "2026-03-02T14:17:02.568732",
-  "ultima_atividade": "2026-03-02T14:17:43.016526",
-  "decisoes": [
-    {
-      "timestamp": "2026-03-02T14:17:02.569647",
-      "tipo": "exclusao",
-      "descricao": "Excluídos: [2, 5] (Fora de ambas as combos)",
-      "dados": {
-        "numeros": [
-          2,
-          5
-        ],
-        "motivo": "Fora de ambas as combos"
-      }
-    },
-    {
-      "timestamp": "2026-03-02T14:17:02.570564",
-      "tipo": "nivel",
-      "descricao": "Nível 3 selecionado (100,000 combos)",
-      "dados": {
-        "valor": 3,
-        "combinacoes": 100000
-      }
-    },
-    {
-      "timestamp": "2026-03-02T14:17:02.571445",
-      "tipo": "geracao",
-      "descricao": "Geradas 1,000 combinações (Nível 3)",
-      "dados": {
-        "quantidade": 1000,
-        "arquivo": "pool23_nivel3_20260302.txt",
-        "nivel": 3
-      }
-    }
-  ],
+  "sessao_id": "e415271a",
+  "inicio": "2026-03-03T09:02:56.970112",
+  "ultima_atividade": "2026-03-03T09:02:56.971459",
+  "decisoes": [],
   "alertas_mostrados": [
-    "inicio_sessao",
-    "teste_alerta_1"
+    "inicio_sessao"
   ],
   "backtests_executados": [],
   "contexto": {},
   "metricas": {
     "opcoes_acessadas": [],
     "tempo_total_minutos": 0,
-    "combinacoes_geradas": 1000,
-    "arquivos_exportados": [
-      "pool23_nivel3_20260302.txt"
-    ]
+    "combinacoes_geradas": 0,
+    "arquivos_exportados": []
   }
 }
