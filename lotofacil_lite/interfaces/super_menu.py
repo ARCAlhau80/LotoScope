@@ -12161,6 +12161,151 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         cand_frios = sorted(candidatos, key=lambda x: (x['score'], x['consecutivos'], x['freq_curta']))
         
         # ═══════════════════════════════════════════════════════════════════
+        # INDICADOR DE ALTERNÂNCIA - HISTÓRICO RECENTE
+        # Analisa qual estratégia foi melhor nos últimos concursos
+        # ═══════════════════════════════════════════════════════════════════
+        def analisar_historico_estrategias(resultados_hist, n_ultimos=10):
+            """Analisa qual estratégia (QUENTES/FRIOS) foi melhor nos últimos N concursos"""
+            vitorias = {'QUENTES': 0, 'FRIOS': 0, 'EMPATE': 0}
+            historico = []
+            
+            for i in range(n_ultimos):
+                if i + 51 >= len(resultados_hist):
+                    break
+                
+                # Resultado do concurso atual
+                resultado_atual = resultados_hist[i]
+                concurso = resultado_atual['concurso']
+                numeros_sorteados = resultado_atual['set']
+                
+                # Calcular rankings com dados ANTERIORES
+                res_anteriores = resultados_hist[i+1:i+51]
+                
+                # Janelas de frequência
+                def freq_j(tamanho, res):
+                    freq = Counter()
+                    for r in res[:min(tamanho, len(res))]:
+                        freq.update(r['set'])
+                    return {n: freq.get(n, 0) / min(tamanho, len(res)) * 100 for n in range(1, 26)}
+                
+                freq_5 = freq_j(5, res_anteriores)
+                freq_50 = freq_j(50, res_anteriores)
+                
+                # Consecutivos
+                def consec(n, res):
+                    count = 0
+                    for r in res[:15]:
+                        if n in r['set']:
+                            count += 1
+                        else:
+                            break
+                    return count
+                
+                # Calcular scores
+                cand_local = []
+                for n in range(1, 26):
+                    fc = freq_5[n]
+                    fl = freq_50[n]
+                    consecutivos = consec(n, res_anteriores)
+                    indice_debito = fl - fc
+                    apareceu_recente = any(n in r['set'] for r in res_anteriores[:3])
+                    
+                    score = 0
+                    if consecutivos >= 10:
+                        score -= 5
+                    elif consecutivos >= 5:
+                        score += 6
+                    elif consecutivos >= 4:
+                        score += 5
+                    elif consecutivos >= 3 and fc >= 80:
+                        score += 4
+                    elif consecutivos >= 3:
+                        score += 3
+                    elif fc >= 100:
+                        score += 4
+                    elif fc >= 80 and apareceu_recente:
+                        score += 3
+                    elif indice_debito < -35:
+                        score += 2
+                    elif indice_debito < -25:
+                        score += 1
+                    elif indice_debito >= 0:
+                        score -= 2
+                    else:
+                        score -= 1
+                    
+                    cand_local.append({'num': n, 'score': score, 'consecutivos': consecutivos, 'freq_curta': fc})
+                
+                quentes = sorted(cand_local, key=lambda x: (-x['score'], -x['consecutivos'], -x['freq_curta']))
+                frios = sorted(cand_local, key=lambda x: (x['score'], x['consecutivos'], x['freq_curta']))
+                
+                top2_q = [quentes[0]['num'], quentes[1]['num']]
+                top2_f = [frios[0]['num'], frios[1]['num']]
+                
+                # Quantos NÃO saíram (sucesso)
+                q_ok = sum(1 for n in top2_q if n not in numeros_sorteados)
+                f_ok = sum(1 for n in top2_f if n not in numeros_sorteados)
+                
+                if q_ok > f_ok:
+                    vitorias['QUENTES'] += 1
+                    melhor = 'Q'
+                elif f_ok > q_ok:
+                    vitorias['FRIOS'] += 1
+                    melhor = 'F'
+                else:
+                    vitorias['EMPATE'] += 1
+                    melhor = '-'
+                
+                historico.append({'concurso': concurso, 'melhor': melhor, 'q': top2_q, 'f': top2_f, 'q_ok': q_ok, 'f_ok': f_ok})
+            
+            return vitorias, historico
+        
+        vitorias, hist_recente = analisar_historico_estrategias(resultados, 10)
+        
+        # Exibir indicador de histórico
+        print("\n   ┌────────────────────────────────────────────────────────────────────┐")
+        print("   │  📊 HISTÓRICO ÚLTIMOS 10 CONCURSOS - Qual estratégia venceu?       │")
+        print("   └────────────────────────────────────────────────────────────────────┘")
+        
+        seq_visual = []
+        for h in hist_recente[:10]:
+            if h['melhor'] == 'Q':
+                seq_visual.append('🔥')
+            elif h['melhor'] == 'F':
+                seq_visual.append('❄️')
+            else:
+                seq_visual.append('⚖️')
+        
+        print(f"   Sequência: {' '.join(seq_visual)}")
+        print(f"   🔥 QUENTES: {vitorias['QUENTES']} | ❄️ FRIOS: {vitorias['FRIOS']} | ⚖️ Empate: {vitorias['EMPATE']}")
+        
+        # Detectar alternância
+        if hist_recente:
+            ultimo_vencedor = hist_recente[0]['melhor']
+            
+            # Verificar se há tendência de alternância
+            alternancias = 0
+            for i in range(len(hist_recente)-1):
+                if hist_recente[i]['melhor'] != '-' and hist_recente[i+1]['melhor'] != '-':
+                    if hist_recente[i]['melhor'] != hist_recente[i+1]['melhor']:
+                        alternancias += 1
+            
+            taxa_alternancia = alternancias / max(1, len(hist_recente)-1) * 100
+            
+            # Recomendação baseada em padrão
+            if ultimo_vencedor == 'F':
+                print(f"\n   💡 ÚLTIMO: FRIOS venceu → 67% de chance de QUENTES no próximo!")
+                print(f"      ⭐ RECOMENDAÇÃO: Usar QUENTES (tendência de alternância)")
+            elif ultimo_vencedor == 'Q':
+                print(f"\n   💡 ÚLTIMO: QUENTES venceu → Padrão imprevisível (52% de repetir)")
+                print(f"      ✅ RECOMENDAÇÃO: Manter QUENTES (estratégia dominante)")
+            else:
+                print(f"\n   💡 ÚLTIMO: Empate → Manter estratégia padrão")
+                print(f"      ✅ RECOMENDAÇÃO: Usar QUENTES")
+            
+            print(f"   📈 Taxa de alternância: {taxa_alternancia:.0f}%")
+        
+        # ═══════════════════════════════════════════════════════════════════
         # MOSTRAR TOP 10 CANDIDATOS À EXCLUSÃO (destacado)
         # ═══════════════════════════════════════════════════════════════════
         print("\n   ╔════════════════════════════════════════════════════════════════════════╗")
@@ -15025,6 +15170,138 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             })
         
         cand_quentes.sort(key=lambda x: (-x['score'], -x['consec'], -x['freq_curta']))
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # INDICADOR DE ALTERNÂNCIA - HISTÓRICO RECENTE
+        # Analisa qual estratégia foi melhor nos últimos concursos
+        # ═══════════════════════════════════════════════════════════════════
+        def analisar_historico_bt(resultados_hist, n_ultimos=10):
+            """Analisa qual estratégia (QUENTES/FRIOS) foi melhor nos últimos N concursos"""
+            vitorias = {'QUENTES': 0, 'FRIOS': 0, 'EMPATE': 0}
+            historico = []
+            
+            for i in range(n_ultimos):
+                if i + 51 >= len(resultados_hist):
+                    break
+                
+                resultado_atual = resultados_hist[i]
+                concurso = resultado_atual['concurso']
+                numeros_sorteados = set(resultado_atual['numeros'])
+                
+                res_anteriores = resultados_hist[i+1:i+51]
+                
+                def freq_j(tamanho, res):
+                    freq = Counter()
+                    for r in res[:min(tamanho, len(res))]:
+                        freq.update(r['numeros'])
+                    return {n: freq.get(n, 0) / min(tamanho, len(res)) * 100 for n in range(1, 26)}
+                
+                freq_5_h = freq_j(5, res_anteriores)
+                freq_50_h = freq_j(50, res_anteriores)
+                
+                def consec_h(n, res):
+                    count = 0
+                    for r in res[:15]:
+                        if n in r['numeros']:
+                            count += 1
+                        else:
+                            break
+                    return count
+                
+                cand_local = []
+                for n in range(1, 26):
+                    fc_h = freq_5_h[n]
+                    fl_h = freq_50_h[n]
+                    consecutivos_h = consec_h(n, res_anteriores)
+                    indice_debito_h = fl_h - fc_h
+                    apareceu_h = any(n in r['numeros'] for r in res_anteriores[:3])
+                    
+                    score_h = 0
+                    if consecutivos_h >= 10:
+                        score_h -= 5
+                    elif consecutivos_h >= 5:
+                        score_h += 6
+                    elif consecutivos_h >= 4:
+                        score_h += 5
+                    elif consecutivos_h >= 3 and fc_h >= 80:
+                        score_h += 4
+                    elif consecutivos_h >= 3:
+                        score_h += 3
+                    elif fc_h >= 100:
+                        score_h += 4
+                    elif fc_h >= 80 and apareceu_h:
+                        score_h += 3
+                    elif indice_debito_h < -35:
+                        score_h += 2
+                    elif indice_debito_h < -25:
+                        score_h += 1
+                    elif indice_debito_h >= 0:
+                        score_h -= 2
+                    else:
+                        score_h -= 1
+                    
+                    cand_local.append({'num': n, 'score': score_h, 'consec': consecutivos_h, 'fc': fc_h})
+                
+                quentes_h = sorted(cand_local, key=lambda x: (-x['score'], -x['consec'], -x['fc']))
+                frios_h = sorted(cand_local, key=lambda x: (x['score'], x['consec'], x['fc']))
+                
+                top2_q = [quentes_h[0]['num'], quentes_h[1]['num']]
+                top2_f = [frios_h[0]['num'], frios_h[1]['num']]
+                
+                q_ok = sum(1 for n in top2_q if n not in numeros_sorteados)
+                f_ok = sum(1 for n in top2_f if n not in numeros_sorteados)
+                
+                if q_ok > f_ok:
+                    vitorias['QUENTES'] += 1
+                    melhor = 'Q'
+                elif f_ok > q_ok:
+                    vitorias['FRIOS'] += 1
+                    melhor = 'F'
+                else:
+                    vitorias['EMPATE'] += 1
+                    melhor = '-'
+                
+                historico.append({'concurso': concurso, 'melhor': melhor})
+            
+            return vitorias, historico
+        
+        vitorias_bt, hist_bt = analisar_historico_bt(resultados, 10)
+        
+        print("\n   ┌────────────────────────────────────────────────────────────────────┐")
+        print("   │  📊 HISTÓRICO ÚLTIMOS 10 CONCURSOS - Qual estratégia venceu?       │")
+        print("   └────────────────────────────────────────────────────────────────────┘")
+        
+        seq_visual = []
+        for h in hist_bt[:10]:
+            if h['melhor'] == 'Q':
+                seq_visual.append('🔥')
+            elif h['melhor'] == 'F':
+                seq_visual.append('❄️')
+            else:
+                seq_visual.append('⚖️')
+        
+        print(f"   Sequência: {' '.join(seq_visual)}")
+        print(f"   🔥 QUENTES: {vitorias_bt['QUENTES']} | ❄️ FRIOS: {vitorias_bt['FRIOS']} | ⚖️ Empate: {vitorias_bt['EMPATE']}")
+        
+        if hist_bt:
+            ultimo_venc = hist_bt[0]['melhor']
+            alternancias_bt = 0
+            for i in range(len(hist_bt)-1):
+                if hist_bt[i]['melhor'] != '-' and hist_bt[i+1]['melhor'] != '-':
+                    if hist_bt[i]['melhor'] != hist_bt[i+1]['melhor']:
+                        alternancias_bt += 1
+            taxa_alt = alternancias_bt / max(1, len(hist_bt)-1) * 100
+            
+            if ultimo_venc == 'F':
+                print(f"\n   💡 ÚLTIMO: FRIOS venceu → 67% de chance de QUENTES no próximo!")
+                print(f"      ⭐ RECOMENDAÇÃO: Usar QUENTES")
+            elif ultimo_venc == 'Q':
+                print(f"\n   💡 ÚLTIMO: QUENTES venceu → Imprevisível (52% de repetir)")
+                print(f"      ✅ RECOMENDAÇÃO: Manter QUENTES")
+            else:
+                print(f"\n   💡 ÚLTIMO: Empate → Manter estratégia padrão")
+            
+            print(f"   📈 Taxa de alternância: {taxa_alt:.0f}%")
         
         # ═══════════════════════════════════════════════════════════════════
         # MOSTRAR TOP 10 CANDIDATOS À EXCLUSÃO - ESTRATÉGIA ANTIGA (FRIOS)
