@@ -15207,6 +15207,46 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         input("\n   Pressione ENTER para voltar...")
 
+    def _gravar_comparacao_aprendizado_304(self, comparacao_dict):
+        """
+        Grava comparação de estratégias ou probabilísticos no histórico de aprendizado.
+        
+        Args:
+            comparacao_dict: dicionário com {timestamp, tipo, nivel, range, resultados, vencedora, ...}
+        
+        Returns:
+            True se salvou, False se houve erro
+        """
+        try:
+            base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            dados_path = os.path.join(base_path, 'dados')
+            historico_path = os.path.join(dados_path, 'historico_aprendizado.json')
+            
+            # Carregar histórico existente ou criar novo
+            historico = {"comparacoes": []}
+            if os.path.exists(historico_path):
+                try:
+                    with open(historico_path, 'r', encoding='utf-8') as f:
+                        historico = json.load(f)
+                except:
+                    pass
+            
+            # Garantir que "comparacoes" existe
+            if "comparacoes" not in historico:
+                historico["comparacoes"] = []
+            
+            # Agredir nova comparação
+            historico["comparacoes"].append(comparacao_dict)
+            
+            # Salvar
+            with open(historico_path, 'w', encoding='utf-8') as f:
+                json.dump(historico, f, indent=2, ensure_ascii=False)
+            
+            return True
+        except Exception as e:
+            print(f"   ⚠️ Erro ao gravar aprendizado: {e}")
+            return False
+
     def _executar_backtesting_pool23_historico(self):
         """
         🔬 BACKTESTING POOL 23 HISTÓRICO
@@ -16166,6 +16206,70 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             if not _comparar_estr_hist:
                 print(f"\n  💡 DICA: Filtros mais agressivos reduzem custo mas podem perder jackpots.")
                 print(f"           Verifique a preservação de jackpots antes de escolher o modo.")
+
+            # ═══════════════════════════════════════════════════════════════════
+            # GRAVAR COMPARAÇÃO NO APRENDIZADO
+            # ═══════════════════════════════════════════════════════════════════
+            print("\n   💾 Gravando comparação no histórico de aprendizado...")
+            
+            comparacao_para_gravar = {
+                "timestamp": datetime.now().isoformat(),
+                "tipo": "estrategia" if _comparar_estr_hist else "probabilistico",
+                "nivel": niveis_testar[0] if len(niveis_testar) > 0 else 0,  # Primeiro nível testado
+                "range": {
+                    "inicio": concurso_inicio,
+                    "fim": concurso_fim,
+                    "qtd": total_testes
+                },
+                "estrategias_testadas": [_v[0] for _v in _variantes_comp] if _comparar_estr_hist else [],
+                "filtros_testados": [_v[3].strip() for _v in _variantes_comp] if not _comparar_estr_hist else [],
+                "resultados": [],
+                "vencedora": {
+                    "indice": _melhor_vi,
+                    "nome": _rod_m['label_est'] if _comparar_estr_hist else _rod_m['label_prob'].strip(),
+                    "taxa_exclusao": _rod_m['taxa_exc'],
+                    "jackpots": {str(_nv): _rod_m['stats'][_nv]['jackpots'] for _nv in niveis_testar},
+                    "roi_medio": max([
+                        (_rodadas_comp[_vi]['stats'][_nv]['premio_total'] / _rodadas_comp[_vi]['stats'][_nv]['custo_total'] - 1) * 100
+                        if _rodadas_comp[_vi]['stats'][_nv]['custo_total'] > 0 else 0
+                        for _nv in niveis_testar
+                    ]) if niveis_testar else 0,
+                },
+                "notas": f"Comparação automática de {'estratégias' if _comparar_estr_hist else 'filtros probabilísticos'}"
+            }
+            
+            # Montar resultados de cada variante
+            for _vi_c, (_rod_key, _rod_data) in enumerate(_rodadas_comp.items()):
+                _res_item = {
+                    "indice": _vi_c,
+                    "taxa_exclusao": _rod_data['taxa_exc'],
+                    "jackpots_por_nivel": {
+                        str(_nv): {
+                            "quantidade": _rod_data['stats'][_nv]['jackpots'],
+                            "taxa": _rod_data['stats'][_nv]['jackpots'] / total_testes * 100 if total_testes > 0 else 0
+                        }
+                        for _nv in niveis_testar
+                    },
+                    "roi_medio": max([
+                        (_rod_data['stats'][_nv]['premio_total'] / _rod_data['stats'][_nv]['custo_total'] - 1) * 100
+                        if _rod_data['stats'][_nv]['custo_total'] > 0 else 0
+                        for _nv in niveis_testar
+                    ]) if niveis_testar else 0,
+                }
+                
+                if _comparar_estr_hist:
+                    _res_item['estrategia'] = _rod_key
+                    _res_item['nome'] = _rod_data['label_est']
+                else:
+                    _res_item['filtro_prob'] = _rod_data['label_prob'].strip()
+                
+                comparacao_para_gravar['resultados'].append(_res_item)
+            
+            # Gravar
+            if self._gravar_comparacao_aprendizado_304(comparacao_para_gravar):
+                print("   ✅ Comparação gravada no histórico!")
+            else:
+                print("   ⚠️ Erro ao gravar comparação")
 
             input("\n   Pressione ENTER para voltar...")
             return  # <<< early return — PASSO 5 não executa no modo comparação
