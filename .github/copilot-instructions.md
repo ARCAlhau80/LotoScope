@@ -95,7 +95,7 @@ python super_menu.py
 - **Strategy**: Exclude 2 numbers using hybrid analysis (median + downward trend)
 - **Jackpot Rate**: 21% (vs 15% traditional methods)
 - **Validated**: Jackpots on contests 3610, 3615 with ROI up to +2841%
-- **7 Filter Levels**:
+- **9 Filter Levels**:
   - Level 0: No filters (490k combos)
   - Level 1: Sum + Qtde 6-25 + Débito Posicional ⭐NEW
   - Level 2: Basic + Piores Histórico (tol=0) ⭐NEW
@@ -103,6 +103,8 @@ python super_menu.py
   - Level 4: Moderate + Piores Recente (tol=0) - **NO Improbabilidade** ⭐FIXED
   - Level 5: Aggressive + positional filters - **NO Improbabilidade** ⭐FIXED
   - Level 6: Ultra + ALL filters + Núcleo ≥8 - **NO Improbabilidade** ⭐FIXED
+  - Level 7: Level 0 + Cold Positions filter (tol=4, window=6) ⭐NEW
+  - Level 8: Cascade 6→1 + Cold Positions filter (tol=3, window=6) ⭐NEW
 - **🔴 WARNING**: Improbabilidade Posicional filter DISABLED on levels 4-6 (was losing jackpots!)
 - **Anomaly Filter v2.0** ⭐⭐ Validated historically!
   - Numbers with 8+ consecutive appearances → -5% tend to STOP
@@ -121,7 +123,17 @@ python super_menu.py
   - Level 4-6: Both tol=0 (maximum restriction)
 - **Dynamically calculated** at each execution based on real frequency data
 
-### 8. Probabilistic Filter (Option 31 + Backtesting) ⭐⭐ UPDATED!
+### 8. Cold Positions Filter (Option 31 Levels 7-8 + Backtesting) ⭐⭐⭐ NEW!
+- **Purpose**: Reject combinations with numbers at positions where they had 0% frequency recently
+- **Concept**: For each (number, position) pair, check frequency in last 6 contests
+  - If frequency = 0% → that pair is "cold" (number never appeared at that position recently)
+  - The number is NOT removed entirely — only prohibited at that specific position
+- **Level 7**: Level 0 (no other filters) + Cold Positions filter (tolerance=4, window=6)
+- **Level 8**: Cascade 6→1 (highest level with ≥1 combo) + Cold Positions (tolerance=3, window=6)
+- **Diagnostic**: Real draws average 4.0 violations (min 1, max 8) → tolerance 0 impossible
+- **Available in**: Option 31 (Generator) AND Option 30.2 (Backtesting)
+
+### 9. Probabilistic Filter (Option 31 + Backtesting) ⭐⭐ UPDATED!
 - **Purpose**: Pre-filter combinations based on historical 11+ hits
 - **Available in**: Option 31 (Generator) AND Option 30.2 (Backtesting) ⭐ NEW!
 - **Concept**: Combinations with more historical 11+ hits have HIGHER probability
@@ -135,7 +147,7 @@ python super_menu.py
 - **Performance**: ~7s load, <1ms for 100k lookups, ~91MB RAM
 - **Validation**: Contest 3614 winner passes Conservative filter (Acertos_11=317)
 
-### 9. Anomaly Frequency Analysis v2.0 (Option 31 Levels 1-6) ⭐⭐ VALIDATED!
+### 10. Anomaly Frequency Analysis v2.0 (Option 31 Levels 1-6) ⭐⭐ VALIDATED!
 - **Adapted from**: MLMEGA system
 - **Validated**: Historical analysis of 3,617 contests (23/02/2026)
 - **Key Finding**: Sliding window frequency has NO significant effect!
@@ -149,7 +161,7 @@ python super_menu.py
   - Level 4-5: max 1 hot, min 2 cold
   - Level 6: max 1 hot, min 2 cold (maximum restriction)
 
-### 10. Exclusion Strategy INVERTIDA v3.0 (Option 31) ⭐⭐⭐ UPDATED! (03/03/2026)
+### 11. Exclusion Strategy INVERTIDA v3.0 (Option 31) ⭐⭐⭐ UPDATED! (03/03/2026)
 - **Major Discovery**: Previous SUPERÁVIT strategy was **WRONG**! -1.7pp below random
 - **NEW Logic**: Exclude HOT numbers (high recent frequency + consecutives)
 - **Anomaly Protection** ⭐ NEW: Numbers with 10+ consecutive appearances are PROTECTED
@@ -178,7 +190,7 @@ python super_menu.py
 - **Decision**: Keep 2 QUENTES as default, HÍBRIDA archived for reference
 - **File**: `benchmark_hibrida.py` contains full comparison code
 
-### 11. Learning System v2.1 (Option 30 → Option 3) ⭐⭐ NEW!
+### 12. Learning System v2.1 (Option 30 → Option 3) ⭐⭐ NEW!
 - **Purpose**: Track exclusion/compensation accuracy over backtests
 - **Exclusion Algorithm**: Now uses INVERTIDA v3.0 (exclude HOT numbers)
 - **Compensation Logic**: INVERTED (predict SUBIR → accept DESCER)
@@ -244,6 +256,65 @@ python super_menu.py
    - NEW INVERTIDA v3.0: +1.8pp ABOVE random (17.0% vs 15.2%) ✅
    - Now excludes HOT numbers (high consecutive + high freq) instead of COLD numbers
    - Key insight: "Mean reversion" - numbers that appear too often tend to stop
+10. **Fixed** (20/03/2026): **Probabilistic filter was SILENTLY DISABLED in Option 30.2** ⭐⭐ CRITICAL!
+    - Called non-existent methods: `carregar_dados()` and `verificar_combinacao()`
+    - Exception was caught silently → filter always disabled regardless of user selection
+    - Fix: replaced with correct API: `.carregar(min_acertos_11=...)` and `.filtrar_lista()`
+    - Also added missing `sys.path.insert()` for module import resolution
+    - Options 30.4 and 31 were already correct
 
 ---
-*Last updated: 2026-03-03*
+*Last updated: 2026-03-20*
+
+<!-- mcp-graph:start -->
+## mcp-graph — LotoScope
+
+Este projeto usa **mcp-graph** para gestão de execução via grafo persistente.
+Dados em `workflow-graph/graph.db`.
+
+### 🚀 Quick Start - Iniciar Dashboard
+
+```powershell
+# Opção 1: Script batch (recomendado)
+.\start-mcp-graph.bat
+
+# Opção 2: Comando direto
+$env:Path = "C:\Program Files\nodejs;" + $env:Path
+npx -y @mcp-graph-workflow/mcp-graph serve --port 3000
+```
+
+**Dashboard**: http://localhost:3000
+
+### Ferramentas MCP (principais)
+
+| Tool | Uso |
+|------|-----|
+| `next` | Próxima task recomendada |
+| `context` | Contexto comprimido (token-efficient) |
+| `update_status` | Mudar status (backlog→ready→in_progress→done) |
+| `import_prd` | Importar PRD para o grafo |
+| `plan_sprint` | Planejamento de sprint |
+| `decompose` | Decompor tasks grandes |
+| `validate_task` | Validar com Playwright |
+
+### Fluxo: `next → context → [TDD] → update_status → next`
+
+### Lifecycle (8 fases)
+
+1. **ANALYZE** — Criar PRD, definir requisitos (`import_prd`, `add_node`)
+2. **DESIGN** — Arquitetura, decisões técnicas (`add_node`, `edge`, `decompose`)
+3. **PLAN** — Sprint planning, decomposição (`plan_sprint`, `decompose`, `sync_stack_docs`)
+4. **IMPLEMENT** — TDD Red→Green→Refactor (`next`, `context`, `update_status`)
+5. **VALIDATE** — Testes E2E, critérios de aceitação (`validate_task`, `velocity`)
+6. **REVIEW** — Code review, blast radius (`export`, `stats`)
+7. **HANDOFF** — PR, documentação, entrega (`export`, `snapshot`)
+8. **LISTENING** — Feedback, novo ciclo (`add_node`, `import_prd`)
+
+### Princípios XP Anti-Vibe-Coding
+
+- **TDD obrigatório** — Teste antes do código. Sem teste = sem implementação.
+- **Anti-one-shot** — Nunca gere sistemas inteiros em um prompt. Decomponha em tasks atômicas.
+- **Decomposição atômica** — Cada task deve ser completável em ≤2h.
+- **Code detachment** — Se a IA errou, explique o erro via prompt. Nunca edite manualmente.
+- **CLAUDE.md como spec evolutiva** — Documente padrões e decisões aqui.
+<!-- mcp-graph:end -->

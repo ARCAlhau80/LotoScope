@@ -57,10 +57,15 @@ def menu_principal():
         print("     • Validação com concursos históricos")
         print("     • Estratégias de treino -> validação")
         print()
-        print("4️⃣  🧠 AGENTE COMPLETO - Neurônios Evolutivos")
-        print("     • Sistema neural evolutivo")
+        print("4️⃣  🧠 AGENTE COMPLETO - Neurônios Evolutivos v2.0")
+        print("     • Sistema neural evolutivo com dados reais")
         print("     • Padrões adaptativos")
         print("     • Estratégias self-learning")
+        print()
+        print("4️⃣H 🧬 AGENTE HÍBRIDO v3.0 - Pool 23 + Neurônios")
+        print("     • COMBINA Pool 23 + Seleção Neural")
+        print("     • Filtros validados com jackpots reais")
+        print("     • Exclusão INVERTIDA v3.0 (+11pp)")
         print()
         print("5️⃣  🎯 DETECTOR DE PADRÕES - Análise Estatística")
         print("     • Padrões baseados em 68 achados significativos")
@@ -95,7 +100,7 @@ def menu_principal():
         print("0️⃣  🚪 SAIR")
         print("=" * 60)
         
-        opcao = input("\n🎯 Escolha uma opção (0-10): ").strip()
+        opcao = input("\n🎯 Escolha uma opção (0-10, ou 4H para Híbrido): ").strip().upper()
         
         if opcao == "1":
             executar_super_menu()
@@ -105,6 +110,8 @@ def menu_principal():
             executar_auto_treino_real()
         elif opcao == "4":
             executar_agente_completo()
+        elif opcao == "4H":
+            executar_agente_hibrido()
         elif opcao == "5":
             executar_detector_padroes()
         elif opcao == "6":
@@ -173,21 +180,58 @@ def executar_auto_treino_real():
             input("\nPressione Enter para voltar...")
 
 def executar_agente_completo():
-    """🧠 Executa o Agente Completo"""
-    print("\n🚀 Iniciando Agente Completo...")
+    """🧠 Executa o Agente Completo v2.0 (Neurônios Evolutivos)"""
+    print("\n🚀 Iniciando Agente Neurônios Evolutivo v2.0...")
     try:
-        from ia.agente_completo import AgenteNeuroniosCompleto
-        agente = AgenteNeuroniosCompleto()
+        # Tentar v2.0 primeiro (com dados reais)
+        from ia.agente_completo_v2 import AgenteNeuroniosEvolutivo
+        agente = AgenteNeuroniosEvolutivo()
         agente.menu_interativo()
     except ImportError:
         try:
             sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'ia'))
-            from agente_completo import AgenteNeuroniosCompleto
-            agente = AgenteNeuroniosCompleto()
+            from agente_completo_v2 import AgenteNeuroniosEvolutivo
+            agente = AgenteNeuroniosEvolutivo()
+            agente.menu_interativo()
+        except ImportError:
+            # Fallback para v1.0 (dados simulados)
+            print("⚠️ v2.0 não disponível, usando v1.0 (dados simulados)")
+            try:
+                from ia.agente_completo import AgenteNeuroniosCompleto
+                agente = AgenteNeuroniosCompleto()
+                agente.menu_interativo()
+            except Exception as e:
+                print(f"\n❌ Erro ao executar Agente: {e}")
+                input("\nPressione Enter para voltar...")
+        except Exception as e:
+            print(f"\n❌ Erro ao executar Agente v2.0: {e}")
+            import traceback
+            traceback.print_exc()
+            input("\nPressione Enter para voltar...")
+
+def executar_agente_hibrido():
+    """🧠 Executa o Agente Híbrido v3.0 (Pool 23 + Neurônios)"""
+    print("\n🚀 Iniciando Agente Híbrido v3.0...")
+    try:
+        from ia.agente_hibrido_v3 import AgenteHibridoV3
+        agente = AgenteHibridoV3()
+        agente.menu_interativo()
+    except ImportError:
+        try:
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'ia'))
+            from agente_hibrido_v3 import AgenteHibridoV3
+            agente = AgenteHibridoV3()
             agente.menu_interativo()
         except Exception as e:
-            print(f"\n❌ Erro ao executar Agente Completo: {e}")
+            print(f"\n❌ Erro ao executar Agente Híbrido v3.0: {e}")
+            import traceback
+            traceback.print_exc()
             input("\nPressione Enter para voltar...")
+    except Exception as e:
+        print(f"\n❌ Erro ao executar Agente Híbrido: {e}")
+        import traceback
+        traceback.print_exc()
+        input("\nPressione Enter para voltar...")
 
 def executar_detector_padroes():
     """🎯 Executa o Detector de Padrões"""

@@ -5,7 +5,7 @@
 > trabalhando no projeto LotoScope. Mantenha-o atualizado após cada sessão significativa.
 
 ```
-📅 ÚLTIMA ATUALIZAÇÃO: 01/03/2026
+📅 ÚLTIMA ATUALIZAÇÃO: 20/03/2026
 👤 AUTOR: AR CALHAU
 🤖 VALIDADO POR: Claude Opus 4.5
 ```
@@ -27,6 +27,34 @@ O **LotoScope** é um sistema científico completo para análise estatística e 
 ✅ **15 ACERTOS (PRÊMIO MÁXIMO)** no Concurso 3610 (Pool 23 Híbrido)
 ✅ **15 ACERTOS (PRÊMIO MÁXIMO)** no Concurso 3615 (Pool 23 Nível 6, **ROI +2841%**!)
 ✅ **LUCRO SEM JACKPOT** em 01/03/2026: Nível 3 (+14.3%) e Nível 5 (+33.3%) ⭐ NOVO!
+
+---
+
+## 📊 MCP-GRAPH WORKFLOW (11/03/2026)
+
+Sistema de gestão de tasks via grafo visual instalado para organizar sprints e desenvolvimento.
+
+### Iniciar Dashboard
+```powershell
+.\start-mcp-graph.bat
+# ou
+$env:Path = "C:\Program Files\nodejs;" + $env:Path
+npx -y @mcp-graph-workflow/mcp-graph serve --port 3000
+```
+
+**Dashboard**: http://localhost:3000
+
+### Dados Importados
+- **24 nodes** criados a partir do CONTEXTO_MASTER_IA.md
+- **4 edges** (dependências)
+- Grafo em: `workflow-graph/graph.db`
+
+### Fluxo de Trabalho
+```
+next → context → [implementar] → update_status → next
+```
+
+Ver `CLAUDE.md` e `.github/copilot-instructions.md` para documentação completa.
 
 ---
 
@@ -462,6 +490,30 @@ def carregar_combinacoes(arquivo):
 
 ## 📝 HISTÓRICO DE SESSÕES IMPORTANTES
 
+### 20/03/2026 - CORREÇÃO: Filtro Probabilístico na Opção 30.2 ⭐⭐ IMPORTANTE!
+**Problema:**
+- Filtro probabilístico NUNCA funcionava na Opção 30→2 (Backtesting Pool 23)
+- Código chamava métodos inexistentes: `carregar_dados()` e `verificar_combinacao()`
+- Exceção era capturada silenciosamente → filtro sempre desativado
+- Usuário selecionava modo 1-4 mas filtro nunca era aplicado
+
+**Causa Raiz:**
+- A classe `FiltroProbabilistico` tem API: `.carregar()`, `.filtrar_lista()`, `.passa()`
+- Opção 30→2 usava nomes errados (provavelmente copy-paste incompleto)
+- Adicionalmente faltava `sys.path.insert()` para resolução do módulo
+
+**Correção:**
+- `carregar_dados()` → `carregar(min_acertos_11=filtro_prob_limite, max_concursos_sem_11=None)`
+- `verificar_combinacao()` → `filtrar_lista(todas_combos, verbose=True)`
+- Adicionado `sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))` antes do import
+
+**Status das 3 funções:**
+| Função | Status |
+|--------|--------|
+| Opção 30→4 (Backtesting Histórico) | ✅ Já estava correto |
+| Opção 30→2 (Backtesting Pool 23) | ✅ Corrigido |
+| Opção 31 (Gerador) | ✅ Usa mesma função da 30→4 |
+
 ### 01/03/2026 - LUCRO SEM JACKPOT! ⭐⭐⭐ MARCO IMPORTANTE!
 **Resultado do Backtest:**
 - Resultado real: [1, 2, 4, 5, 6, 9, 11, 12, 13, 16, 18, 22, 23, 24, 25]
@@ -488,6 +540,43 @@ def carregar_combinacoes(arquivo):
 - TOP 10 candidatos à exclusão (ordenado por score)
 - Quantidade de exclusão ajustável: 1 a 10 números (era fixo em 2)
 - Permite ajuste manual a partir do TOP 10
+
+### 12/03/2026 - Níveis 7 e 8: Filtro Posições Frias (Opção 31 + 30.2) ⭐⭐⭐ NOVO!
+**Conceito:**
+- Identifica pares (número, posição) com **0% de frequência** nos últimos 6 concursos
+- Exemplo: Se número 14 NUNCA apareceu na posição N3 nos últimos 6 sorteios → par (14, N3) é "frio"
+- O número NÃO é removido inteiramente — apenas proibido naquela posição específica
+- Combinações com muitas violações (número em posição fria) são rejeitadas
+
+**Diagnóstico Histórico:**
+- Média de 4.0 violações por sorteio real (min 1, max 8)
+- Tolerância 0 = impossível (elimina todos os jackpots)
+- Tolerância 4-5 = filtragem eficaz sem perder jackpots
+
+**Níveis Implementados:**
+| Nível | Base | Filtro Posições Frias | Tolerância | Janela |
+|-------|------|-----------------------|------------|--------|
+| **7** | Nível 0 (sem filtros) | ✅ Somente freq=0% | **4** | 6 concursos |
+| **8** | Cascata 6→1 (melhor nível com ≥1 combo) | ✅ Somente freq=0% | **3** | 6 concursos |
+
+**Nível 8 - Lógica Cascata:**
+1. Calcula posições frias (janela=6, apenas 0%)
+2. Tenta Nível 6 + posições frias (tol=3) → se ≥1 combo, usa esse
+3. Se 0 combos, tenta Nível 5 + posições frias → e assim por diante até Nível 1
+4. Se nenhum nível funciona, usa Nível 0 + posições frias (tol=3)
+
+**Resultados do Backtesting (131 concursos, 3508-3638):**
+- N7: Muitas combinações (~340k), 2 jackpots em 31 testes iniciais
+- N8: Melhor ROI (-53.0%), ~68.9k combos, 1 jackpot em 31 testes iniciais
+- Taxa de exclusão geral: 22.1%
+
+**Sincronização:**
+- ✅ Implementado na Opção 31 (Gerador Pool 23)
+- ✅ Implementado na Opção 30.2 (Backtesting Pool 23)
+
+**Funções Utilizadas:**
+- `_calcular_debitos_posicionais(resultados, janela=6, limiar=0.3)`: Calcula débitos posicionais
+- `_aplicar_filtros_com_posicoes_frias(combos, filtros, ..., posicoes_frias_tolerancia=3)`: Aplica filtros + posições frias
 
 ### 01/03/2026 - CORREÇÃO CRÍTICA: Filtro Improbabilidade Posicional ⭐⭐ IMPORTANTE!
 **Problema Identificado:**
