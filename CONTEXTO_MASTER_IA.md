@@ -5,9 +5,9 @@
 > trabalhando no projeto LotoScope. Mantenha-o atualizado após cada sessão significativa.
 
 ```
-📅 ÚLTIMA ATUALIZAÇÃO: 20/03/2026
+📅 ÚLTIMA ATUALIZAÇÃO: 24/03/2026
 👤 AUTOR: AR CALHAU
-🤖 VALIDADO POR: Claude Opus 4.5
+🤖 VALIDADO POR: Claude Sonnet 4.6
 ```
 
 ---
@@ -489,6 +489,38 @@ def carregar_combinacoes(arquivo):
 ---
 
 ## 📝 HISTÓRICO DE SESSÕES IMPORTANTES
+
+### 24/03/2026 - NOVA FEATURE: Seleção de Estratégia de Exclusão na Opção 30.2 ⭐⭐⭐ NOVO!
+**Descrição:**
+O Backtesting Pool 23 (Opção 30 → 2) ganhou seleção de estratégia de exclusão com diagnóstico comparativo.
+
+**PASSO 1 — Menu de Estratégia (exibido antes da geração):**
+```
+[0] Comparar todas   [1] Débito   [2] Invertida v3.0 (padrão)   [3] Q1-Q5   [4] Híbrido Inv+Q   [5] Híbrido TODOS
+```
+
+**As 5 Estratégias:**
+| # | Nome | Lógica |
+|---|------|--------|
+| 1 | Débito | Exclui números com maior excedente posicional |
+| 2 | Invertida v3.0 (QUENTES) | Padrão — exclui os mais quentes (inversão de tendência) |
+| 3 | Q1-Q5 Quadrantes | Exclui do pior quadrante (Q1) |
+| 4 | Híbrido Invertida + Q1-Q5 | Média ponderada: 60% Invertida + 40% Quadrante |
+| 5 | Híbrido TODOS | Débito (25%) + Invertida (50%) + Quadrante (25%) |
+
+**Comportamento da Opção 0 (Comparar todas):**
+- Gera as combinações usando a estratégia 2 (Invertida v3.0) normalmente
+- Após o PASSO 4 (usuário informa o resultado real sorteado), exibe tabela comparativa
+- A tabela mostra qual teria sido a exclusão de cada estratégia e se o número excluído saiu de fato
+- Objetivo: avaliar retrospectivamente qual estratégia teria excluído melhor no concurso
+
+**Variáveis de controle:**
+- `comparar_estrategias_302` — flag booleana ativada pela opção 0
+- `NOMES_ESTRATEGIA_302` — dicionário com nomes exibíveis das 5 estratégias
+- `ranking_ativo_302` — ranking da estratégia escolhida para geração
+- `rankings_estrategias_302` — dict com rankings de todas as estratégias (para comparativo)
+
+---
 
 ### 20/03/2026 - CORREÇÃO: Filtro Probabilístico na Opção 30.2 ⭐⭐ IMPORTANTE!
 **Problema:**

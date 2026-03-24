@@ -190,7 +190,19 @@ python super_menu.py
 - **Decision**: Keep 2 QUENTES as default, HÍBRIDA archived for reference
 - **File**: `benchmark_hibrida.py` contains full comparison code
 
-### 12. Learning System v2.1 (Option 30 → Option 3) ⭐⭐ NEW!
+### 12. Exclusion Strategy Selection in Backtesting (Option 30.2) ⭐⭐⭐ NEW! (24/03/2026)
+- **When**: STEP 1, before generating combinations
+- **Menu**: `[0] Compare all | [1] Débito | [2] Invertida v3.0 (default) | [3] Q1-Q5 | [4] Hybrid Inv+Q | [5] Hybrid ALL`
+- **5 strategies**:
+  - 1 `Débito` — excludes numbers with highest positional surplus
+  - 2 `Invertida v3.0 (QUENTES)` — default; excludes hottest numbers (mean reversion)
+  - 3 `Q1-Q5 Quadrantes` — excludes from worst quadrant (Q1)
+  - 4 `Hybrid Invertida + Q1-Q5` — weighted average (60% inv + 40% quadrant)
+  - 5 `Hybrid ALL` — débito (25%) + invertida (50%) + quadrant (25%)
+- **Option 0 behavior**: generates using strategy 2 → at STEP 4 (after user enters real result) displays a comparative table showing which strategy would have excluded best
+- **Key variables**: `comparar_estrategias_302`, `NOMES_ESTRATEGIA_302`, `ranking_ativo_302`, `rankings_estrategias_302`
+
+### 13. Learning System v2.1 (Option 30 → Option 3) ⭐⭐ NEW!
 - **Purpose**: Track exclusion/compensation accuracy over backtests
 - **Exclusion Algorithm**: Now uses INVERTIDA v3.0 (exclude HOT numbers)
 - **Compensation Logic**: INVERTED (predict SUBIR → accept DESCER)
@@ -262,9 +274,15 @@ python super_menu.py
     - Fix: replaced with correct API: `.carregar(min_acertos_11=...)` and `.filtrar_lista()`
     - Also added missing `sys.path.insert()` for module import resolution
     - Options 30.4 and 31 were already correct
+11. **Added** (24/03/2026): **Exclusion strategy selection with comparative diagnosis in Option 30.2** ⭐⭐⭐ NEW!
+    - User now selects exclusion strategy BEFORE generating (STEP 1): [0-5]
+    - 5 strategies: Débito, Invertida v3.0, Q1-Q5, Hybrid Inv+Q, Hybrid ALL
+    - Option 0 = "Compare all": generates with strategy 2 but shows full comparative table at STEP 4
+    - Comparative table shows which strategy would have best excluded numbers for that draw
+    - Method: `_executar_backtesting_pool23` in `lotofacil_lite/interfaces/super_menu.py`
 
 ---
-*Last updated: 2026-03-20*
+*Last updated: 2026-03-24*
 
 <!-- mcp-graph:start -->
 ## mcp-graph — LotoScope

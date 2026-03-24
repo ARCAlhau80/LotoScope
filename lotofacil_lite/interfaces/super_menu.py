@@ -12486,9 +12486,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print(f"      • Excluir do Q1: {sorted(q1_nums[:2])} (top 2 do grupo mais quente)")
         print(f"      • Ou diversificar: [{q1_nums[0]}, {q2_nums[0]}] (1 de cada Q1+Q2)")
         print(f"      • Q1 inteiro (agressivo): {sorted(q1_nums)} → Pool 20 (15.504 combos)")
-        
+
         # ═══════════════════════════════════════════════════════════════════
         # PERMITIR AJUSTE DA QUANTIDADE E SELEÇÃO
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n   ┌────────────────────────────────────────────────────────────────────┐")
+        print("   │ 📝 CONFIGURAÇÃO DA EXCLUSÃO                                        │")
         print("   └────────────────────────────────────────────────────────────────────┘")
         
         # Perguntar quantidade
@@ -13955,6 +13958,17 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     if violacoes_frias > posicoes_frias_tolerancia:
                         continue
             
+                # Filtro POSIÇÕES-CHAVE (N5/N10/N12 - faixas naturais históricas)
+                # Análise 3641 draws: N5=[5-14], N10=[10-20], N12=[13-22] | Custo: 0% jackpots
+                if nivel > 0:
+                    _pk = sorted(combo)
+                    if _pk[4] < 5 or _pk[4] > 14:    # N5
+                        continue
+                    if _pk[9] < 10 or _pk[9] > 20:   # N10
+                        continue
+                    if _pk[11] < 13 or _pk[11] > 22: # N12
+                        continue
+            
                 combos_filtradas.append(combo)
         
             tempo_filtro = time.time() - inicio
@@ -14624,6 +14638,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         violacoes_frias += 1
                 if violacoes_frias > posicoes_frias_tolerancia:
                     continue
+            
+            # Filtro POSIÇÕES-CHAVE (N5/N10/N12 - faixas naturais históricas)
+            # Análise 3641 draws: N5=[5-14], N10=[10-20], N12=[13-22] | Custo: 0% jackpots
+            if combo_sorted[4] < 5 or combo_sorted[4] > 14:    # N5
+                continue
+            if combo_sorted[9] < 10 or combo_sorted[9] > 20:   # N10
+                continue
+            if combo_sorted[11] < 13 or combo_sorted[11] > 22: # N12
+                continue
             
             combos_filtradas.append(combo)
         
@@ -15318,22 +15341,28 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   │ [3] 🗺️  Q1-Q5 Quadrantes (excluir do Q1 — pior quadrante)      │")
         print("   │ [4] 🔀 Híbrido Invertida + Q1-Q5 (média dos scores)            │")
         print("   │ [5] 🌀 Híbrido TODOS (débito + invertida + Q1-Q5 combinados)   │")
+        print("   │ [0] 🔄 Comparar TODAS — executa 1→5 e mostra ranking de jackpots│")
         print("   └─────────────────────────────────────────────────────────────────┘")
         try:
-            est_input = input("   Estratégia? [1-5, ENTER=2]: ").strip()
+            est_input = input("   Estratégia? [0-5, ENTER=2]: ").strip()
             estrategia_excl = int(est_input) if est_input else 2
-            estrategia_excl = max(1, min(5, estrategia_excl))
+            estrategia_excl = max(0, min(5, estrategia_excl))
         except:
             estrategia_excl = 2
         
+        _comparar_estr_hist = (estrategia_excl == 0)
         NOMES_ESTRATEGIA = {
+            0: "Comparar TODAS",
             1: "Débito (superávit)",
             2: "Invertida v3.0 (QUENTES)",
             3: "Q1-Q5 Quadrantes",
             4: "Híbrido Invertida + Q1-Q5",
             5: "Híbrido TODOS"
         }
-        print(f"   ✅ Estratégia: {NOMES_ESTRATEGIA[estrategia_excl]}")
+        if _comparar_estr_hist:
+            print(f"   ✅ Estratégia: COMPARAÇÃO DE TODAS (rodadas 1→5, pode demorar)")
+        else:
+            print(f"   ✅ Estratégia: {NOMES_ESTRATEGIA[estrategia_excl]}")
         
         # ═══════════════════════════════════════════════════════════════════
         # VERIFICAR CACHE (evita reexecução)
@@ -15476,10 +15505,81 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         except Exception:
             pass  # Não bloqueia o backtesting se falhar
         
+        # ═══════════════════════════════════════════════════════════════════
+        # FILTRO PROBABILÍSTICO (opcional)
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n" + "─"*78)
+        print("🎲 FILTRO PROBABILÍSTICO (opcional)")
+        print("─"*78)
+        print("   Baseado em análise de frequência histórica (Acertos_11).")
+        print("   Combinações com mais 11-acertos têm MAIOR probabilidade.")
+        print()
+        print("   📊 Modos disponíveis:")
+        print("   [1] Conservador: Acertos_11 >= 313 (58% das combos, +11% chance)")
+        print("   [2] Moderado:    Acertos_11 >= 320 (45% das combos, +15% chance)")
+        print("   [3] Agressivo:   Acertos_11 >= 330 (35% das combos, +18% chance)")
+        print("   [4] Personalizado: Definir limite manualmente")
+        print("   [0] Desativado:  Sem filtro probabilístico")
+        print("   [5] 🔄 Comparar TODOS modos — executa 0→4 e mostra ranking de ROI")
+        
+        _comparar_todos_prob_hist = False
+        filtro_prob_ativo_hist = False
+        filtro_prob_limite_hist = 0
+        filtro_prob_obj_hist = None
+        
+        try:
+            modo_prob = input("\n   Modo do filtro probabilístico [0-4]: ").strip()
+            
+            if modo_prob == '1':
+                filtro_prob_ativo_hist = True
+                filtro_prob_limite_hist = 313
+            elif modo_prob == '2':
+                filtro_prob_ativo_hist = True
+                filtro_prob_limite_hist = 320
+            elif modo_prob == '3':
+                filtro_prob_ativo_hist = True
+                filtro_prob_limite_hist = 330
+            elif modo_prob == '4':
+                try:
+                    filtro_prob_limite_hist = int(input("   Digite o limite mínimo de Acertos_11 (300-350): ").strip())
+                    if 300 <= filtro_prob_limite_hist <= 350:
+                        filtro_prob_ativo_hist = True
+                    else:
+                        print("   ⚠️ Valor fora do range! Filtro desativado.")
+                except:
+                    print("   ⚠️ Valor inválido! Filtro desativado.")
+            elif modo_prob == '5':
+                _comparar_todos_prob_hist = True
+                print(f"\n   🔄 Modo comparação: testará 4 configurações (desativado + ≥313 + ≥320 + ≥330)")
+            
+            if filtro_prob_ativo_hist:
+                print(f"\n   ✅ Filtro probabilístico ATIVADO:")
+                print(f"      • Limite mínimo: Acertos_11 >= {filtro_prob_limite_hist}")
+            elif not _comparar_todos_prob_hist:
+                print(f"\n   ⏭️ Filtro probabilístico DESATIVADO")
+        except Exception as e:
+            print(f"   ⚠️ Erro: {e}. Filtro probabilístico desativado.")
+        
         confirmar = input("\n   ▶️ Iniciar backtesting? [S/N]: ").strip().upper()
         if confirmar != 'S':
             print("   ❌ Cancelado.")
             return
+        
+        # Carregar filtro probabilístico se ativado
+        if filtro_prob_ativo_hist:
+            try:
+                sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+                from filtro_probabilistico import FiltroProbabilistico
+                print(f"\n   ⏳ Carregando dados do filtro probabilístico...")
+                _fp = FiltroProbabilistico()
+                _fp.carregar(min_acertos_11=filtro_prob_limite_hist, max_concursos_sem_11=None)
+                filtro_prob_obj_hist = _fp
+                print(f"   ✅ Filtro probabilístico carregado ({_fp.combinacoes_filtradas:,} combinações válidas)")
+            except Exception as e:
+                print(f"   ⚠️ Erro ao carregar filtro probabilístico: {e}")
+                print(f"   ⏭️ Continuando SEM filtro probabilístico...")
+                filtro_prob_ativo_hist = False
+                filtro_prob_obj_hist = None
         
         # ═══════════════════════════════════════════════════════════════════
         # SISTEMA DE APRENDIZADO ADAPTATIVO - CARREGAR AJUSTES ANTERIORES
@@ -15597,13 +15697,480 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"\n   ⚙️ Ajustes aplicados: {len(ajustes_aplicados_log)}")
         
         # ═══════════════════════════════════════════════════════════════════
+        # FUNÇÃO INTERNA: uma rodada completa do backtesting histórico
+        # Usada pelo modo comparação ([0] estratégias / [5] filtros prob)
+        # ═══════════════════════════════════════════════════════════════════
+        def _executar_rodada_hist(v_est, v_fp, prefixo=""):
+            """Executa um ciclo completo do backtesting histórico.
+            v_est: estratégia de exclusão (1-5)
+            v_fp:  FiltroProbabilistico instance ou None
+            prefixo: string exibida antes do indicador de progresso
+            Retorna (stats, exc_ok, exc_err, hist_exc, erros_det, tempo_segundos)
+            """
+            _consec_thr = ajustes_ativos.get('CONSEC_MIN', {}).get('novo', 3)
+            _s = {n: {
+                'jackpots': 0,
+                'acertos_11_mais': 0,
+                'combos_total': 0,
+                'premio_total': 0,
+                'custo_total': 0,
+            } for n in niveis_testar}
+            _ok = 0
+            _err = 0
+            _hist = []
+            _erros = {
+                'exclusao': {'total': 0, 'erros': 0, 'numeros_errados': []},
+                'soma': {'fora_min': 0, 'fora_max': 0, 'valores': []},
+                'pares': {'fora_min': 0, 'fora_max': 0},
+                'primos': {'fora_min': 0, 'fora_max': 0},
+                'sequencia': {'fora_max': 0},
+                'repeticao': {'fora_min': 0, 'fora_max': 0},
+                'consecutivos_excludos': [],
+            }
+            _t0 = time.time()
+            for idx, concurso_teste in enumerate(range(concurso_inicio, concurso_fim + 1)):
+                if concurso_teste not in todos_resultados:
+                    continue
+                resultado_real = todos_resultados[concurso_teste]
+                resultado_set = resultado_real['set']
+                dados_ate_anterior = [todos_resultados[c] for c in sorted(todos_resultados.keys())
+                                      if c < concurso_teste]
+                dados_ate_anterior.sort(key=lambda x: x['concurso'], reverse=True)
+                if len(dados_ate_anterior) < 50:
+                    continue
+
+                def freq_janela(tamanho):
+                    freq = Counter()
+                    for r in dados_ate_anterior[:min(tamanho, len(dados_ate_anterior))]:
+                        freq.update(r['numeros'])
+                    return {n: freq.get(n, 0) / min(tamanho, len(dados_ate_anterior)) * 100 for n in range(1, 26)}
+
+                def contar_consecutivos(n):
+                    count = 0
+                    for r in dados_ate_anterior[:15]:
+                        if n in r['numeros']:
+                            count += 1
+                        else:
+                            break
+                    return count
+
+                freq_5 = freq_janela(5)
+                freq_50 = freq_janela(50)
+                dados_num = {}
+                for n in range(1, 26):
+                    fc = freq_5[n]
+                    fl = freq_50[n]
+                    dados_num[n] = {
+                        'fc': fc, 'fl': fl,
+                        'debito': fl - fc,
+                        'consec': contar_consecutivos(n),
+                        'recente': any(n in r['numeros'] for r in dados_ate_anterior[:3])
+                    }
+
+                def calc_score_debito(n):
+                    d = dados_num[n]
+                    return -d['debito']
+
+                def calc_score_invertida(n):
+                    d = dados_num[n]
+                    fc, consec, rec = d['fc'], d['consec'], d['recente']
+                    ind = d['debito']
+                    sc = 0
+                    if consec >= 10:
+                        sc -= 5
+                    elif consec >= _consec_thr + 2:
+                        sc += 6
+                    elif consec >= _consec_thr + 1:
+                        sc += 5
+                    elif consec >= _consec_thr and fc >= 80:
+                        sc += 4
+                    elif consec >= _consec_thr:
+                        sc += 3
+                    elif fc >= 100:
+                        sc += 4
+                    elif fc >= 80 and rec:
+                        sc += 3
+                    elif ind < -35:
+                        sc += 2
+                    elif ind < -25:
+                        sc += 1
+                    elif ind >= 0:
+                        sc -= 2
+                    else:
+                        sc -= 1
+                    if fc > 80:
+                        sc += 1
+                    return sc
+
+                inv_ranking = sorted(range(1, 26), key=lambda n: (-calc_score_invertida(n), -dados_num[n]['consec']))
+
+                def calc_score_quadrante(n):
+                    pos = inv_ranking.index(n)
+                    qi = pos // 5
+                    return 5 - qi
+
+                candidatos = []
+                for n in range(1, 26):
+                    d = dados_num[n]
+                    if v_est == 1:
+                        score = calc_score_debito(n)
+                    elif v_est == 2:
+                        score = calc_score_invertida(n)
+                    elif v_est == 3:
+                        score = calc_score_quadrante(n)
+                    elif v_est == 4:
+                        s_inv = calc_score_invertida(n)
+                        s_q = calc_score_quadrante(n)
+                        score = s_inv * 0.6 + s_q * 0.4
+                    elif v_est == 5:
+                        s_deb = calc_score_debito(n)
+                        s_inv = calc_score_invertida(n)
+                        s_q = calc_score_quadrante(n)
+                        deb_norm = max(-5, min(7, s_deb / 10))
+                        score = deb_norm * 0.25 + s_inv * 0.50 + s_q * 0.25
+                    else:
+                        score = calc_score_invertida(n)
+                    candidatos.append({'num': n, 'score': score, 'consec': d['consec']})
+
+                candidatos.sort(key=lambda x: (-x['score'], -x['consec']))
+                excluir = set(candidatos[i]['num'] for i in range(qtd_excluir))
+
+                excluidos_no_resultado = excluir & resultado_set
+                _erros['exclusao']['total'] += 1
+                if not excluidos_no_resultado:
+                    _ok += 1
+                else:
+                    _err += 1
+                    _erros['exclusao']['erros'] += 1
+                    for c in candidatos[:qtd_excluir]:
+                        if c['num'] in excluidos_no_resultado:
+                            _erros['consecutivos_excludos'].append(c['consec'])
+                            _erros['exclusao']['numeros_errados'].append(c['num'])
+                    _hist.append({
+                        'concurso': concurso_teste,
+                        'excluidos': sorted(excluir),
+                        'errados': sorted(excluidos_no_resultado)
+                    })
+
+                ultimo_resultado_anterior = set(dados_ate_anterior[0]['numeros'])
+                soma_real = sum(resultado_set)
+                pares_real = len([n for n in resultado_set if n % 2 == 0])
+                primos_real = len(resultado_set & PRIMOS)
+                rep_real = len(resultado_set & ultimo_resultado_anterior)
+                filtros_ref = FILTROS_POR_NIVEL.get(3, {})
+                if 'soma_min' in filtros_ref:
+                    if soma_real < filtros_ref['soma_min']:
+                        _erros['soma']['fora_min'] += 1
+                        _erros['soma']['valores'].append(soma_real)
+                    elif soma_real > filtros_ref.get('soma_max', 999):
+                        _erros['soma']['fora_max'] += 1
+                        _erros['soma']['valores'].append(soma_real)
+                if 'pares_min' in filtros_ref:
+                    if pares_real < filtros_ref['pares_min']:
+                        _erros['pares']['fora_min'] += 1
+                    elif pares_real > filtros_ref.get('pares_max', 15):
+                        _erros['pares']['fora_max'] += 1
+                if 'primos_min' in filtros_ref:
+                    if primos_real < filtros_ref['primos_min']:
+                        _erros['primos']['fora_min'] += 1
+                    elif primos_real > filtros_ref.get('primos_max', 15):
+                        _erros['primos']['fora_max'] += 1
+                if 'rep_min' in filtros_ref:
+                    if rep_real < filtros_ref['rep_min']:
+                        _erros['repeticao']['fora_min'] += 1
+                    elif rep_real > filtros_ref.get('rep_max', 15):
+                        _erros['repeticao']['fora_max'] += 1
+
+                pool_disponivel = sorted([n for n in range(1, 26) if n not in excluir])
+                ultimo_resultado = set(dados_ate_anterior[0]['numeros'])
+                freq_30 = Counter()
+                for r in dados_ate_anterior[:30]:
+                    freq_30.update(r['numeros'])
+                media_freq = sum(freq_30.values()) / 25
+                favorecidos = {n for n, f in freq_30.items() if f > media_freq}
+
+                posicoes_frias_rejeitar = {}
+                niveis_com_frias = [n for n in niveis_testar if FILTROS_POR_NIVEL[n].get('usar_filtro_posicoes_frias')]
+                if niveis_com_frias:
+                    janela_frias = FILTROS_POR_NIVEL[niveis_com_frias[0]].get('posicoes_frias_janela', 6)
+                    debitos_frias, lista_debitos_frias = self._calcular_debitos_posicionais(
+                        dados_ate_anterior, janela=janela_frias
+                    )
+                    for (num, pos), dados_deb in debitos_frias.items():
+                        if dados_deb['freq_recente'] > 0:
+                            continue
+                        if pos not in posicoes_frias_rejeitar:
+                            posicoes_frias_rejeitar[pos] = set()
+                        posicoes_frias_rejeitar[pos].add(num)
+
+                for nivel in niveis_testar:
+                    filtros = FILTROS_POR_NIVEL[nivel]
+                    combos_nivel = []
+
+                    if nivel == 8 and filtros.get('nivel_base') == 'cascata':
+                        tolerancia_8 = filtros.get('posicoes_frias_tolerancia', 4)
+                        nivel_usado = 0
+                        for nivel_tentativa in range(6, 0, -1):
+                            filtros_base = FILTROS_POR_NIVEL[nivel_tentativa]
+                            combos_tentativa = self._aplicar_filtros_com_posicoes_frias(
+                                combinations(pool_disponivel, 15),
+                                filtros_base,
+                                dados_ate_anterior,
+                                posicoes_frias_rejeitar,
+                                PRIMOS,
+                                NUCLEO_C1C2,
+                                ultimo_resultado,
+                                favorecidos,
+                                False, {}, False, 0, 0, {},
+                                posicoes_frias_tolerancia=tolerancia_8
+                            )
+                            if len(combos_tentativa) > 0:
+                                combos_nivel = [set(c) for c in combos_tentativa]
+                                nivel_usado = nivel_tentativa
+                                break
+                        if not combos_nivel:
+                            for combo in combinations(pool_disponivel, 15):
+                                combo_sorted = sorted(combo)
+                                violacoes = sum(1 for pos in range(1, 16)
+                                               if combo_sorted[pos - 1] in posicoes_frias_rejeitar.get(pos, set()))
+                                if violacoes <= tolerancia_8:
+                                    combos_nivel.append(set(combo))
+                        acertos = [len(c & resultado_set) for c in combos_nivel]
+                        tem_jackpot = any(a == 15 for a in acertos)
+                        count_11_mais = sum(1 for a in acertos if a >= 11)
+                        custo = len(combos_nivel) * 3.50
+                        premio = sum(7 if a == 11 else 14 if a == 12 else 35 if a == 13 else 1000 if a == 14 else 1800000 if a == 15 else 0 for a in acertos)
+                        _s[nivel]['combos_total'] += len(combos_nivel)
+                        _s[nivel]['custo_total'] += custo
+                        _s[nivel]['premio_total'] += premio
+                        _s[nivel]['acertos_11_mais'] += count_11_mais
+                        if tem_jackpot:
+                            _s[nivel]['jackpots'] += 1
+                        continue
+
+                    if nivel == 7 and filtros.get('usar_filtro_posicoes_frias'):
+                        tolerancia_7 = filtros.get('posicoes_frias_tolerancia', 5)
+                        for combo in combinations(pool_disponivel, 15):
+                            if v_fp and not v_fp.passa(combo):
+                                continue
+                            combo_sorted = sorted(combo)
+                            violacoes = sum(1 for pos in range(1, 16)
+                                           if combo_sorted[pos - 1] in posicoes_frias_rejeitar.get(pos, set()))
+                            if violacoes <= tolerancia_7:
+                                if combo_sorted[4] < 5 or combo_sorted[4] > 14: continue
+                                if combo_sorted[9] < 10 or combo_sorted[9] > 20: continue
+                                if combo_sorted[11] < 13 or combo_sorted[11] > 22: continue
+                                combos_nivel.append(set(combo))
+                        acertos = [len(c & resultado_set) for c in combos_nivel]
+                        tem_jackpot = any(a == 15 for a in acertos)
+                        count_11_mais = sum(1 for a in acertos if a >= 11)
+                        custo = len(combos_nivel) * 3.50
+                        premio = sum(7 if a == 11 else 14 if a == 12 else 35 if a == 13 else 1000 if a == 14 else 1800000 if a == 15 else 0 for a in acertos)
+                        _s[nivel]['combos_total'] += len(combos_nivel)
+                        _s[nivel]['custo_total'] += custo
+                        _s[nivel]['premio_total'] += premio
+                        _s[nivel]['acertos_11_mais'] += count_11_mais
+                        if tem_jackpot:
+                            _s[nivel]['jackpots'] += 1
+                        continue
+
+                    # Níveis 0-6: filtros normais
+                    for combo in combinations(pool_disponivel, 15):
+                        if v_fp and not v_fp.passa(combo):
+                            continue
+                        combo_set = set(combo)
+                        combo_list = list(combo)
+                        soma = sum(combo)
+                        if 'soma_min' in filtros:
+                            if soma < filtros['soma_min'] or soma > filtros['soma_max']:
+                                continue
+                        pares = sum(1 for n in combo if n % 2 == 0)
+                        if 'pares_min' in filtros:
+                            if pares < filtros['pares_min'] or pares > filtros['pares_max']:
+                                continue
+                        primos = len(combo_set & PRIMOS)
+                        if 'primos_min' in filtros:
+                            if primos < filtros['primos_min'] or primos > filtros['primos_max']:
+                                continue
+                        if 'seq_max' in filtros:
+                            max_seq = 1
+                            seq_atual = 1
+                            for i in range(1, 15):
+                                if combo_list[i] == combo_list[i-1] + 1:
+                                    seq_atual += 1
+                                    max_seq = max(max_seq, seq_atual)
+                                else:
+                                    seq_atual = 1
+                            if max_seq > filtros['seq_max']:
+                                continue
+                        if 'rep_min' in filtros:
+                            rep = len(combo_set & ultimo_resultado)
+                            if rep < filtros['rep_min'] or rep > filtros['rep_max']:
+                                continue
+                        if 'nucleo_min' in filtros:
+                            if len(combo_set & NUCLEO_C1C2) < filtros['nucleo_min']:
+                                continue
+                        if 'favorecidos_min' in filtros:
+                            if len(combo_set & favorecidos) < filtros['favorecidos_min']:
+                                continue
+                        if nivel > 0:
+                            if combo_list[4] < 5 or combo_list[4] > 14:
+                                continue
+                            if combo_list[9] < 10 or combo_list[9] > 20:
+                                continue
+                            if combo_list[11] < 13 or combo_list[11] > 22:
+                                continue
+                        combos_nivel.append(combo_set)
+
+                    acertos = [len(c & resultado_set) for c in combos_nivel]
+                    tem_jackpot = any(a == 15 for a in acertos)
+                    count_11_mais = sum(1 for a in acertos if a >= 11)
+                    custo = len(combos_nivel) * 3.50
+                    premio = sum(7 if a == 11 else 14 if a == 12 else 35 if a == 13 else 1000 if a == 14 else 1800000 if a == 15 else 0 for a in acertos)
+                    _s[nivel]['combos_total'] += len(combos_nivel)
+                    _s[nivel]['custo_total'] += custo
+                    _s[nivel]['premio_total'] += premio
+                    _s[nivel]['acertos_11_mais'] += count_11_mais
+                    if tem_jackpot:
+                        _s[nivel]['jackpots'] += 1
+
+                if (idx + 1) % 5 == 0 or idx == 0:
+                    pct = (idx + 1) / total_testes * 100
+                    print(f"   {prefixo}Progresso: {idx+1}/{total_testes} ({pct:.0f}%) - Concurso {concurso_teste}")
+
+            return _s, _ok, _err, _hist, _erros, time.time() - _t0
+
+        # ═══════════════════════════════════════════════════════════════════
         # PASSO 4: EXECUTAR BACKTESTING
         # ═══════════════════════════════════════════════════════════════════
         print("\n" + "═"*78)
         print("🔄 EXECUTANDO BACKTESTING...")
         print("═"*78)
         print("   ⏳ Isso pode demorar alguns minutos...")
-        
+
+        # ═══════════════════════════════════════════════════════════════════
+        # MODO COMPARAÇÃO — executa N rodadas e exibe ranking (early return)
+        # ═══════════════════════════════════════════════════════════════════
+        if _comparar_estr_hist or _comparar_todos_prob_hist:
+            _tempo_comp_inicio = time.time()
+
+            # ── Montar lista de variantes ────────────────────────────────
+            _variantes_comp = []
+            if _comparar_estr_hist:
+                _fp0 = filtro_prob_obj_hist
+                _plbl0 = "desativado" if not filtro_prob_ativo_hist else f">={filtro_prob_limite_hist}"
+                print(f"\n   🔄 COMPARAÇÃO DE ESTRATÉGIAS: 5 rodadas × {len(niveis_testar)} níveis")
+                print(f"   ⚠️  Pode demorar muito — {len(niveis_testar) * 5} passos de geração C(23,15)")
+                for _e in range(1, 6):
+                    _variantes_comp.append((_e, _fp0, NOMES_ESTRATEGIA[_e], _plbl0))
+            else:  # _comparar_todos_prob_hist
+                print(f"\n   🔄 COMPARAÇÃO DE FILTROS PROB: 4 rodadas × {len(niveis_testar)} níveis")
+                print(f"   ⏳ Carregando filtros probabilísticos...")
+                _fp_dict_c = {}
+                for _plim_c in [313, 320, 330]:
+                    try:
+                        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+                        from filtro_probabilistico import FiltroProbabilistico as _FPC
+                        _fp_tmp_c = _FPC()
+                        _fp_tmp_c.carregar(min_acertos_11=_plim_c)
+                        _fp_dict_c[_plim_c] = _fp_tmp_c
+                        print(f"   ✅ Filtro ≥{_plim_c}: {_fp_tmp_c.combinacoes_filtradas:,} combos válidas")
+                    except Exception as _ec:
+                        print(f"   ⚠️  Erro filtro ≥{_plim_c}: {_ec}")
+                        _fp_dict_c[_plim_c] = None
+                _prob_cfgs_c = [
+                    (None,                   "Desativado      "),
+                    (_fp_dict_c.get(313),    "Conserv. (≥313) "),
+                    (_fp_dict_c.get(320),    "Moderado (≥320) "),
+                    (_fp_dict_c.get(330),    "Agressivo(≥330) "),
+                ]
+                for _fp_c, _plbl_c in _prob_cfgs_c:
+                    _variantes_comp.append((estrategia_excl, _fp_c, NOMES_ESTRATEGIA.get(estrategia_excl, "?"), _plbl_c))
+
+            # ── Executar cada variante ───────────────────────────────────
+            _rodadas_comp = {}
+            for _vi_c, (_v_est_c, _v_fp_c, _lbl_est_c, _lbl_prob_c) in enumerate(_variantes_comp):
+                print(f"\n{'─'*78}")
+                _lbl_fp_short = _lbl_prob_c.strip() if _comparar_todos_prob_hist else ""
+                if _comparar_estr_hist:
+                    print(f"   ▶️  Rodada {_vi_c+1}/{len(_variantes_comp)}: [{_v_est_c}] {_lbl_est_c}")
+                else:
+                    print(f"   ▶️  Rodada {_vi_c+1}/{len(_variantes_comp)}: Filtro {_lbl_fp_short}")
+                print(f"{'─'*78}")
+                _st_c, _ok_c, _err_c, _hist_c, _erros_c, _t_c = _executar_rodada_hist(
+                    _v_est_c, _v_fp_c,
+                    prefixo=f"[{_vi_c+1}/{len(_variantes_comp)}] "
+                )
+                _tot_exc_c = _ok_c + _err_c
+                _taxa_exc_c = _ok_c / _tot_exc_c * 100 if _tot_exc_c > 0 else 0
+                _rodadas_comp[_vi_c] = {
+                    'label_est':  _lbl_est_c,
+                    'label_prob': _lbl_prob_c,
+                    'stats':      _st_c,
+                    'taxa_exc':   _taxa_exc_c,
+                    'tempo':      _t_c,
+                }
+                print(f"   ✅ Concluído em {_t_c:.1f}s — excl. correta: {_taxa_exc_c:.1f}%")
+
+            # ── Tabela comparativa ───────────────────────────────────────
+            print("\n" + "═"*78)
+            if _comparar_estr_hist:
+                print("🏆 COMPARAÇÃO FINAL — ESTRATÉGIAS DE EXCLUSÃO")
+            else:
+                print("🏆 COMPARAÇÃO FINAL — MODOS DO FILTRO PROBABILÍSTICO")
+            print("═"*78)
+
+            # Colunas de níveis para exibição (máximo 4 para caber na tela)
+            _niveis_exib = sorted(niveis_testar)[:4]
+
+            # Pré-computar somatório de jackpot rate por variante (para encontrar vencedor)
+            _jack_sums = {}
+            for _vi_c, _rod in _rodadas_comp.items():
+                _st = _rod['stats']
+                _s_j = sum(_st[_nv]['jackpots'] / total_testes * 100 for _nv in _niveis_exib if total_testes > 0)
+                _jack_sums[_vi_c] = _s_j
+            _melhor_vi = max(_jack_sums, key=lambda k: _jack_sums[k])
+
+            # Cabeçalho
+            _hdr = f"  {'Variante':<26} {'Excl%':>6}"
+            for _nv in _niveis_exib:
+                _hdr += f"  {'N'+str(_nv)+'Jack%':>8}"
+            _hdr += f"  {'MelhorROI':>10}"
+            print(_hdr)
+            print("  " + "─" * (len(_hdr) - 2))
+
+            for _vi_c, _rod in _rodadas_comp.items():
+                _st = _rod['stats']
+                _lbl = _rod['label_est'] if _comparar_estr_hist else _rod['label_prob'].strip()
+                _linha = f"  {_lbl:<26} {_rod['taxa_exc']:>5.1f}%"
+                for _nv in _niveis_exib:
+                    _jp = _st[_nv]['jackpots'] / total_testes * 100 if total_testes > 0 else 0
+                    _linha += f"  {_jp:>7.1f}%"
+                _roi_vals = []
+                for _nv in niveis_testar:
+                    if _st[_nv]['custo_total'] > 0:
+                        _roi_vals.append((_st[_nv]['premio_total'] / _st[_nv]['custo_total'] - 1) * 100)
+                _melhor_roi = max(_roi_vals) if _roi_vals else 0
+                _linha += f"  {_melhor_roi:>+9.0f}%"
+                _linha += "  ⭐" if _vi_c == _melhor_vi else "   "
+                print(_linha)
+
+            print("  " + "─" * (len(_hdr) - 2))
+            _rod_m = _rodadas_comp[_melhor_vi]
+            _lbl_m = _rod_m['label_est'] if _comparar_estr_hist else _rod_m['label_prob'].strip()
+            print(f"\n  ⭐ VENCEDOR: {_lbl_m}")
+            print(f"     Exclusão correta: {_rod_m['taxa_exc']:.1f}%")
+            _jp_max = {_nv: _rod_m['stats'][_nv]['jackpots'] / total_testes * 100 for _nv in _niveis_exib if total_testes > 0}
+            print(f"     Jackpots (níveis exibidos): {', '.join(f'N{_nv}={_jp_max[_nv]:.1f}%' for _nv in _niveis_exib)}")
+            print(f"\n  ⏱️  Tempo total de comparação: {time.time() - _tempo_comp_inicio:.1f}s")
+            if not _comparar_estr_hist:
+                print(f"\n  💡 DICA: Filtros mais agressivos reduzem custo mas podem perder jackpots.")
+                print(f"           Verifique a preservação de jackpots antes de escolher o modo.")
+
+            input("\n   Pressione ENTER para voltar...")
+            return  # <<< early return — PASSO 5 não executa no modo comparação
+        # ─── Fim do bloco modo comparação ───────────────────────────────
+
         tempo_inicio = time.time()
         
         # Estatísticas por nível
@@ -15922,10 +16489,16 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 if nivel == 7 and filtros.get('usar_filtro_posicoes_frias'):
                     tolerancia_7 = filtros.get('posicoes_frias_tolerancia', 5)
                     for combo in combinations(pool_disponivel, 15):
+                        if filtro_prob_obj_hist and not filtro_prob_obj_hist.passa(combo):
+                            continue
                         combo_sorted = sorted(combo)
                         violacoes = sum(1 for pos in range(1, 16)
                                        if combo_sorted[pos - 1] in posicoes_frias_rejeitar.get(pos, set()))
                         if violacoes <= tolerancia_7:
+                            # Filtro POSIÇÕES-CHAVE (N5/N10/N12)
+                            if combo_sorted[4] < 5 or combo_sorted[4] > 14: continue
+                            if combo_sorted[9] < 10 or combo_sorted[9] > 20: continue
+                            if combo_sorted[11] < 13 or combo_sorted[11] > 22: continue
                             combos_nivel.append(set(combo))
                     
                     # Validar contra resultado
@@ -15946,6 +16519,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 # NÍVEIS 0-6: Filtros normais
                 # ═══════════════════════════════════════════════════════════
                 for combo in combinations(pool_disponivel, 15):
+                    if filtro_prob_obj_hist and not filtro_prob_obj_hist.passa(combo):
+                        continue
                     combo_set = set(combo)
                     combo_list = list(combo)
                     
@@ -15994,6 +16569,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     # Favorecidos
                     if 'favorecidos_min' in filtros:
                         if len(combo_set & favorecidos) < filtros['favorecidos_min']:
+                            continue
+                    
+                    # Filtro POSIÇÕES-CHAVE (N5/N10/N12 - faixas naturais históricas)
+                    if nivel > 0:
+                        if combo_list[4] < 5 or combo_list[4] > 14:    # N5
+                            continue
+                        if combo_list[9] < 10 or combo_list[9] > 20:   # N10
+                            continue
+                        if combo_list[11] < 13 or combo_list[11] > 22: # N12
                             continue
                     
                     combos_nivel.append(combo_set)
@@ -16729,6 +17313,100 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print(f"      • Excluir do Q1: {sorted(q1_nums[:2])} (top 2 do grupo mais quente)")
         print(f"      • Ou diversificar: [{q1_nums[0]}, {q2_nums[0]}] (1 de cada Q1+Q2)")
         print(f"      • Q1 inteiro (agressivo): {sorted(q1_nums)} → Pool 20 (15.504 combos)")
+
+        # ═══════════════════════════════════════════════════════════════════
+        # ESTRATÉGIA DE EXCLUSÃO
+        # ═══════════════════════════════════════════════════════════════════
+        print("\n" + "─"*78)
+        print("🧠 ESTRATÉGIA DE EXCLUSÃO — Escolha a regra para excluir números")
+        print("─"*78)
+        print("   ┌─────────────────────────────────────────────────────────────────┐")
+        print("   │ [1] 📉 Débito (superávit longo prazo, excluir quem está acima) │")
+        print("   │ [2] 🔥 Invertida v3.0 (excluir QUENTES, mean reversion) ⭐     │")
+        print("   │ [3] 🗺️  Q1-Q5 Quadrantes (excluir do Q1 — pior quadrante)      │")
+        print("   │ [4] 🔀 Híbrido Invertida + Q1-Q5 (média dos scores)            │")
+        print("   │ [5] 🌀 Híbrido TODOS (débito + invertida + Q1-Q5 combinados)   │")
+        print("   │ [0] 🔄 Comparar TODAS (diagnóstico no PASSO 4)                 │")
+        print("   └─────────────────────────────────────────────────────────────────┘")
+
+        try:
+            est_input = input("   Estratégia? [0-5, ENTER=2]: ").strip()
+            estrategia_excl_302 = int(est_input) if est_input else 2
+            estrategia_excl_302 = max(0, min(5, estrategia_excl_302))
+        except:
+            estrategia_excl_302 = 2
+
+        comparar_estrategias_302 = (estrategia_excl_302 == 0)
+        estrategia_execucao_302 = 2 if comparar_estrategias_302 else estrategia_excl_302
+        NOMES_ESTRATEGIA_302 = {
+            0: "Comparar TODAS",
+            1: "Débito (superávit)",
+            2: "Invertida v3.0 (QUENTES)",
+            3: "Q1-Q5 Quadrantes",
+            4: "Híbrido Invertida + Q1-Q5",
+            5: "Híbrido TODOS"
+        }
+
+        dados_num_estr = {
+            c['num']: {
+                'fc': c['freq_curta'],
+                'debito': c['indice_debito'],
+                'consec': c['consec']
+            }
+            for c in candidatos
+        }
+        score_inv_map_302 = {c['num']: c['score'] for c in candidatos}
+        inv_ranking_nums_302 = [c['num'] for c in candidatos]
+
+        def _score_debito_302(n):
+            return -dados_num_estr[n]['debito']
+
+        def _score_invertida_302(n):
+            return score_inv_map_302.get(n, 0)
+
+        def _score_quadrante_302(n):
+            pos = inv_ranking_nums_302.index(n)
+            qi = pos // 5
+            return 5 - qi
+
+        def _score_estrategia_302(n, estrategia):
+            if estrategia == 1:
+                return _score_debito_302(n)
+            if estrategia == 2:
+                return _score_invertida_302(n)
+            if estrategia == 3:
+                return _score_quadrante_302(n)
+            if estrategia == 4:
+                s_inv = _score_invertida_302(n)
+                s_q = _score_quadrante_302(n)
+                return s_inv * 0.6 + s_q * 0.4
+            if estrategia == 5:
+                s_deb = _score_debito_302(n)
+                s_inv = _score_invertida_302(n)
+                s_q = _score_quadrante_302(n)
+                deb_norm = max(-5, min(7, s_deb / 10))
+                return deb_norm * 0.25 + s_inv * 0.50 + s_q * 0.25
+            return _score_invertida_302(n)
+
+        def _ranking_estrategia_302(estrategia):
+            ranking = []
+            for n in range(1, 26):
+                ranking.append({
+                    'num': n,
+                    'score': _score_estrategia_302(n, estrategia),
+                    'consec': dados_num_estr[n]['consec']
+                })
+            ranking.sort(key=lambda x: (-x['score'], -x['consec']))
+            return ranking
+
+        rankings_estrategias_302 = {e: _ranking_estrategia_302(e) for e in range(1, 6)}
+        ranking_ativo_302 = rankings_estrategias_302[estrategia_execucao_302]
+
+        if comparar_estrategias_302:
+            print("   ✅ Estratégia: COMPARAR TODAS (diagnóstico será exibido no PASSO 4)")
+            print("   ℹ️ Geração seguirá com estratégia [2] Invertida v3.0 para manter performance.")
+        else:
+            print(f"   ✅ Estratégia: {NOMES_ESTRATEGIA_302[estrategia_execucao_302]}")
         
         # ═══════════════════════════════════════════════════════════════════
         # PERMITIR AJUSTE DA QUANTIDADE E SELEÇÃO
@@ -16747,9 +17425,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         except:
             qtd_excluir = 2
         
-        # Selecionar automaticamente os top N (usando QUENTES - estratégia validada)
-        excluir = [candidatos[i]['num'] for i in range(qtd_excluir)]
-        score_total = sum(candidatos[i]['score'] for i in range(qtd_excluir))
+        # Selecionar automaticamente os top N da estratégia ativa
+        excluir = [ranking_ativo_302[i]['num'] for i in range(qtd_excluir)]
+        score_total = sum(ranking_ativo_302[i]['score'] for i in range(qtd_excluir))
         
         if qtd_excluir != 2:
             print(f"   ✅ Selecionados TOP {qtd_excluir}: {sorted(excluir)} (score: {score_total:.2f})")
@@ -16757,17 +17435,17 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Permitir ajuste manual
         ajustar = input(f"\n   ⚙️ Deseja ajustar quais dos TOP 10 excluir? [S/N]: ").strip().upper()
         if ajustar == 'S':
-            print(f"\n   📋 TOP 10 QUENTES: {[c['num'] for c in candidatos[:10]]}")
-            print(f"   📋 TOP 10 FRIOS:   {[c['num'] for c in cand_frios[:10]]}")
-            print(f"   💡 Digite {qtd_excluir} números separados por vírgula (aceita de ambos os rankings)")
+            top10_ativos = [c['num'] for c in ranking_ativo_302[:10]]
+            print(f"\n   📋 TOP 10 estratégia ativa: {top10_ativos}")
+            print(f"   📋 TOP 10 QUENTES (ref):    {[c['num'] for c in candidatos[:10]]}")
+            print(f"   📋 TOP 10 FRIOS (ref):      {[c['num'] for c in cand_frios[:10]]}")
+            print(f"   💡 Digite {qtd_excluir} números separados por vírgula")
             try:
                 nums_input = input(f"   Números a EXCLUIR ({qtd_excluir}): ")
                 nums_custom = [int(x.strip()) for x in nums_input.split(',')]
                 
-                # Validar - aceitar de ambos os rankings
-                top10_quentes = [c['num'] for c in candidatos[:10]]
-                top10_frios = [c['num'] for c in cand_frios[:10]]
-                nums_validos = [n for n in nums_custom if n in top10_quentes or n in top10_frios or (1 <= n <= 25)]
+                # Validar (aceita de 1..25 para permitir ajuste manual total)
+                nums_validos = [n for n in nums_custom if 1 <= n <= 25]
                 
                 if len(nums_validos) >= 1:
                     excluir = nums_validos[:qtd_excluir]  # Limitar à quantidade escolhida
@@ -17337,6 +18015,17 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 if violacoes_rec > filtros.get('piores_tolerancia_recente', 1):
                     return False
             
+            # Filtro POSIÇÕES-CHAVE (N5/N10/N12 - faixas naturais históricas)
+            # Análise 3641 draws: N5=[5-14], N10=[10-20], N12=[13-22] | Custo: 0% jackpots
+            if nivel > 0:
+                combo_sorted = sorted(combo)
+                if combo_sorted[4] < 5 or combo_sorted[4] > 14:    # N5
+                    return False
+                if combo_sorted[9] < 10 or combo_sorted[9] > 20:   # N10
+                    return False
+                if combo_sorted[11] < 13 or combo_sorted[11] > 22: # N12
+                    return False
+            
             return True
         
         # Gerar para cada nível
@@ -17406,6 +18095,10 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     violacoes = sum(1 for pos in range(1, 16)
                                    if combo_sorted[pos - 1] in posicoes_frias_rejeitar.get(pos, set()))
                     if violacoes <= tolerancia_7:
+                        # Filtro POSIÇÕES-CHAVE (N5/N10/N12)
+                        if combo_sorted[4] < 5 or combo_sorted[4] > 14: continue
+                        if combo_sorted[9] < 10 or combo_sorted[9] > 20: continue
+                        if combo_sorted[11] < 13 or combo_sorted[11] > 22: continue
                         combos_nivel.append(c)
                 print(f"      (Nível 0 + posições frias, tol={tolerancia_7})")
             
@@ -17491,6 +18184,47 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 
             except:
                 print("   ⚠️ Formato inválido! Use: 01,02,05,06,08,10,11,13,15,17,18,20,22,24,25")
+
+        if comparar_estrategias_302:
+            print("\n" + "═"*78)
+            print("🏆 COMPARAÇÃO DE ESTRATÉGIAS (PASSO 4 - DIAGNÓSTICO DE EXCLUSÃO)")
+            print("═"*78)
+            print(f"   Resultado informado: {sorted(resultado_validacao)}")
+            print(f"   Quantidade de exclusões usada: {qtd_excluir}")
+
+            comp_estr_302 = []
+            for estr_id in range(1, 6):
+                ranking_estr = rankings_estrategias_302[estr_id]
+                excl_estr = [ranking_estr[i]['num'] for i in range(qtd_excluir)]
+                errados = sorted(set(excl_estr) & resultado_validacao)
+                acerto_exc = 0 if errados else 1
+                score_total_estr = sum(ranking_estr[i]['score'] for i in range(qtd_excluir))
+                comp_estr_302.append({
+                    'id': estr_id,
+                    'nome': NOMES_ESTRATEGIA_302[estr_id],
+                    'excluidos': excl_estr,
+                    'errados': errados,
+                    'acerto': acerto_exc,
+                    'score_total': score_total_estr,
+                })
+
+            comp_estr_302.sort(key=lambda x: (-x['acerto'], len(x['errados']), -x['score_total']))
+
+            print("\n   " + "─"*75)
+            print(f"   {'Estratégia':<34} {'Excluídos':<18} {'Status':<20}")
+            print("   " + "─"*75)
+            for item in comp_estr_302:
+                excl_str = str(sorted(item['excluidos']))
+                if item['acerto'] == 1:
+                    status = "✅ Excluiu corretamente"
+                else:
+                    status = f"❌ Errou {item['errados']}"
+                print(f"   {item['nome']:<34} {excl_str:<18} {status:<20}")
+            print("   " + "─"*75)
+
+            vencedora_302 = comp_estr_302[0]
+            print(f"\n   ⭐ Melhor no resultado informado: {vencedora_302['nome']}")
+            print("   ℹ️ Este ranking avalia EXCLUSÃO correta para este concurso (diagnóstico pontual).")
         
         # ═══════════════════════════════════════════════════════════════════
         # PASSO 5: VALIDAR TODOS OS NÍVEIS
