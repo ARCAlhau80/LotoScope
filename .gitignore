@@ -58,6 +58,24 @@ temp_*.py
 
 # Benchmark e testes locais
 teste_benchmark.txt
+benchmark_quadrantes.py
+
+# Scripts ad-hoc de análise pontual (não devem ser rastreados)
+temp_*.py
+analise_final_*.py
+analise_pool23_*.py
+analise_probabilidade_*.py
+analisar_resultado_*.py
+verificar_recentes.py
+verificar_vencedora.py
+resultado_analise_*.txt
+ORQUESTRACAO_IA.txt
+
+# Pastas ISGT template genéricas (não aplicam ao LotoScope)
+patterns/
+prompts/
+skills/
+docs/
 
 # Arquivos do Windows
 Thumbs.db
