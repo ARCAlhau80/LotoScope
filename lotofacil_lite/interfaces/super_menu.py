@@ -14930,6 +14930,13 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             return
         
         total_backtests = historico.get('total_backtests', 0)
+        comparacoes = historico.get('comparacoes', [])
+
+        # Compatibilidade: novo formato grava em "comparacoes" mesmo sem agregados legados
+        if total_backtests == 0 and comparacoes:
+            total_backtests = sum(int(c.get('range', {}).get('qtd', 0) or 0) for c in comparacoes)
+            if total_backtests <= 0:
+                total_backtests = len(comparacoes)
         
         if total_backtests == 0:
             print("\n   ⚠️ Histórico vazio! Execute alguns backtests primeiro.")
@@ -15231,12 +15238,21 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 except:
                     pass
             
-            # Garantir que "comparacoes" existe
+            # Garantir que chaves essenciais existem
             if "comparacoes" not in historico:
                 historico["comparacoes"] = []
+            if "total_backtests" not in historico:
+                historico["total_backtests"] = 0
             
             # Agredir nova comparação
             historico["comparacoes"].append(comparacao_dict)
+
+            # Compatibilidade com relatório legado (opção 30.3)
+            try:
+                qtd_backtests = int(comparacao_dict.get("range", {}).get("qtd", 1) or 1)
+            except Exception:
+                qtd_backtests = 1
+            historico["total_backtests"] = int(historico.get("total_backtests", 0)) + max(1, qtd_backtests)
             
             # Salvar
             with open(historico_path, 'w', encoding='utf-8') as f:
@@ -15568,7 +15584,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         filtro_prob_obj_hist = None
         
         try:
-            modo_prob = input("\n   Modo do filtro probabilístico [0-4]: ").strip()
+            modo_prob = input("\n   Modo do filtro probabilístico [0-5]: ").strip()
             
             if modo_prob == '1':
                 filtro_prob_ativo_hist = True
