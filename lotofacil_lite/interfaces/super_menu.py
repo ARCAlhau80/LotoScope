@@ -16230,8 +16230,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     "taxa_exclusao": _rod_m['taxa_exc'],
                     "jackpots": {str(_nv): _rod_m['stats'][_nv]['jackpots'] for _nv in niveis_testar},
                     "roi_medio": max([
-                        (_rodadas_comp[_vi]['stats'][_nv]['premio_total'] / _rodadas_comp[_vi]['stats'][_nv]['custo_total'] - 1) * 100
-                        if _rodadas_comp[_vi]['stats'][_nv]['custo_total'] > 0 else 0
+                        (_rod_m['stats'][_nv]['premio_total'] / _rod_m['stats'][_nv]['custo_total'] - 1) * 100
+                        if _rod_m['stats'][_nv]['custo_total'] > 0 else 0
                         for _nv in niveis_testar
                     ]) if niveis_testar else 0,
                 },
