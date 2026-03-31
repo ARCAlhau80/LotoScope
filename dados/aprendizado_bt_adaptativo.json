@@ -1,15 +1,21 @@
 {
-  "ultima_execucao": "2026-03-21 02:04:45",
-  "concurso_inicio": 3639,
-  "concurso_fim": 3640,
-  "total_testes": 2,
-  "taxa_exclusao": 0.0,
+  "ultima_execucao": "2026-03-26 01:43:52",
+  "concurso_inicio": 3000,
+  "concurso_fim": 3642,
+  "total_testes": 643,
+  "taxa_exclusao": 5.287713841368585,
   "erros_detalhados": {
-    "exclusao_erros": 2,
-    "soma_fora": 0,
-    "pares_fora": 0
+    "exclusao_erros": 609,
+    "soma_fora": 61,
+    "pares_fora": 8
   },
-  "ajustes_propostos": {},
-  "performance_anterior": 3.225806451612903,
-  "melhorou": false
+  "ajustes_propostos": {
+    "SOMA_MIN": {
+      "anterior": 164,
+      "novo": 143,
+      "motivo": "35 resultados abaixo do mínimo"
+    }
+  },
+  "performance_anterior": 0.0,
+  "melhorou": true
 }

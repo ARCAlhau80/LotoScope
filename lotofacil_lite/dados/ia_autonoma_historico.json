@@ -2240,6 +2240,286 @@
         "parametros": {
           "janela": 20
         }
+      },
+      {
+        "iteracao": 161,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.2,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 50
+        }
+      },
+      {
+        "iteracao": 162,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.0,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 7,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 30
+        }
+      },
+      {
+        "iteracao": 163,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.2,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 50
+        }
+      },
+      {
+        "iteracao": 164,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.0,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 7,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 30
+        }
+      },
+      {
+        "iteracao": 165,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.0,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 7,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 30
+        }
+      },
+      {
+        "iteracao": 166,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.0,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 7,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 30
+        }
+      },
+      {
+        "iteracao": 167,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.04,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 7,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 100
+        }
+      },
+      {
+        "iteracao": 168,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.15,
+        "max_acertos": 12,
+        "min_acertos": 5,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 20
+        }
+      },
+      {
+        "iteracao": 169,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.0,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 7,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 30
+        }
+      },
+      {
+        "iteracao": 170,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.15,
+        "max_acertos": 12,
+        "min_acertos": 5,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 20
+        }
+      },
+      {
+        "iteracao": 171,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.0,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 7,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 30
+        }
+      },
+      {
+        "iteracao": 172,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.15,
+        "max_acertos": 12,
+        "min_acertos": 5,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 20
+        }
+      },
+      {
+        "iteracao": 173,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.04,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 7,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 100
+        }
+      },
+      {
+        "iteracao": 174,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.15,
+        "max_acertos": 12,
+        "min_acertos": 5,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 20
+        }
+      },
+      {
+        "iteracao": 175,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.04,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 7,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 100
+        }
+      },
+      {
+        "iteracao": 176,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.15,
+        "max_acertos": 12,
+        "min_acertos": 5,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 20
+        }
+      },
+      {
+        "iteracao": 177,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.15,
+        "max_acertos": 12,
+        "min_acertos": 5,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 20
+        }
+      },
+      {
+        "iteracao": 178,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.15,
+        "max_acertos": 12,
+        "min_acertos": 5,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 20
+        }
+      },
+      {
+        "iteracao": 179,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.04,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 7,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 100
+        }
+      },
+      {
+        "iteracao": 180,
+        "algoritmo": "frequencia",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.0,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 7,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "janela": 30
+        }
       }
     ],
     "atraso": [
@@ -4162,6 +4442,246 @@
         "acertos_14_mais": 0,
         "tempo_segundos": 0,
         "parametros": {}
+      },
+      {
+        "iteracao": 161,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 162,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 163,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 164,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 165,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 166,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 167,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 168,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 169,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 170,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 171,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 172,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 173,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 174,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 175,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 176,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 177,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 178,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 179,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 180,
+        "algoritmo": "atraso",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
       }
     ],
     "pares_impares": [
@@ -6078,6 +6598,246 @@
         "algoritmo": "pares_impares",
         "combinacoes_geradas": 100,
         "media_acertos": 9.04,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 161,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.09,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 162,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.89,
+        "max_acertos": 13,
+        "min_acertos": 7,
+        "acertos_11_mais": 7,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 163,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.07,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 164,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.7,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 165,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.98,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 166,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 9,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 167,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.1,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 168,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.03,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 14,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 169,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.85,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 170,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.1,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 14,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 171,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.98,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 172,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.66,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 6,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 173,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.85,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 174,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.99,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 17,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 175,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.8,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 6,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 176,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.87,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 177,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.93,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 9,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 178,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.0,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 9,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 179,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.92,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 180,
+        "algoritmo": "pares_impares",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
         "max_acertos": 12,
         "min_acertos": 6,
         "acertos_11_mais": 11,
@@ -8006,6 +8766,246 @@
         "acertos_14_mais": 0,
         "tempo_segundos": 0,
         "parametros": {}
+      },
+      {
+        "iteracao": 161,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 162,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 163,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 164,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 165,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 166,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 167,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 168,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 169,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 170,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 171,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 172,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 173,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 174,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 175,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 176,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 177,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 178,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 179,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 180,
+        "algoritmo": "posicional",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
       }
     ],
     "association_rules": [
@@ -9925,6 +10925,246 @@
         "max_acertos": 13,
         "min_acertos": 6,
         "acertos_11_mais": 12,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 161,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 162,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 163,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 164,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 165,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 166,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 167,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 168,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 169,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 170,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 171,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 172,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 173,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 174,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 175,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 176,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 177,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 178,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 179,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 180,
+        "algoritmo": "association_rules",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
         "acertos_14_mais": 0,
         "tempo_segundos": 0,
         "parametros": {}
@@ -11850,6 +13090,246 @@
         "acertos_14_mais": 0,
         "tempo_segundos": 0,
         "parametros": {}
+      },
+      {
+        "iteracao": 161,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 162,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 163,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 164,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 165,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 166,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 167,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 168,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 169,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 170,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 171,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 172,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 173,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 174,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 175,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 176,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 177,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 178,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 179,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 180,
+        "algoritmo": "transicoes",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.06,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
       }
     ],
     "neural": [
@@ -13769,6 +15249,246 @@
         "max_acertos": 12,
         "min_acertos": 7,
         "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 161,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.92,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 162,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.91,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 163,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.83,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 164,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.91,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 165,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.91,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 166,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.92,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 167,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.91,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 168,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.83,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 169,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.91,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 170,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.91,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 171,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.92,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 172,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.91,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 173,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.83,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 174,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.91,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 175,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.91,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 176,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.92,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 177,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.91,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 178,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.83,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 179,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.91,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 180,
+        "algoritmo": "neural",
+        "combinacoes_geradas": 100,
+        "media_acertos": 8.91,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
         "acertos_14_mais": 0,
         "tempo_segundos": 0,
         "parametros": {}
@@ -16014,6 +17734,286 @@
         "parametros": {
           "geracoes": 20
         }
+      },
+      {
+        "iteracao": 161,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.13,
+        "max_acertos": 11,
+        "min_acertos": 7,
+        "acertos_11_mais": 9,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 20
+        }
+      },
+      {
+        "iteracao": 162,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.01,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 9,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 50
+        }
+      },
+      {
+        "iteracao": 163,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.1,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 14,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 50
+        }
+      },
+      {
+        "iteracao": 164,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.12,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 10
+        }
+      },
+      {
+        "iteracao": 165,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.12,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 9,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 50
+        }
+      },
+      {
+        "iteracao": 166,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.14,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 20
+        }
+      },
+      {
+        "iteracao": 167,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.18,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 50
+        }
+      },
+      {
+        "iteracao": 168,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.08,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 14,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 10
+        }
+      },
+      {
+        "iteracao": 169,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.11,
+        "max_acertos": 12,
+        "min_acertos": 5,
+        "acertos_11_mais": 14,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 20
+        }
+      },
+      {
+        "iteracao": 170,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.11,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 10
+        }
+      },
+      {
+        "iteracao": 171,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.02,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 8,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 10
+        }
+      },
+      {
+        "iteracao": 172,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.16,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 9,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 20
+        }
+      },
+      {
+        "iteracao": 173,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.07,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 10,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 10
+        }
+      },
+      {
+        "iteracao": 174,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.23,
+        "max_acertos": 12,
+        "min_acertos": 5,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 10
+        }
+      },
+      {
+        "iteracao": 175,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.1,
+        "max_acertos": 12,
+        "min_acertos": 7,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 50
+        }
+      },
+      {
+        "iteracao": 176,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.21,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 20
+        }
+      },
+      {
+        "iteracao": 177,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.15,
+        "max_acertos": 12,
+        "min_acertos": 5,
+        "acertos_11_mais": 9,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 20
+        }
+      },
+      {
+        "iteracao": 178,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.04,
+        "max_acertos": 12,
+        "min_acertos": 6,
+        "acertos_11_mais": 12,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 20
+        }
+      },
+      {
+        "iteracao": 179,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.05,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 13,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 10
+        }
+      },
+      {
+        "iteracao": 180,
+        "algoritmo": "genetico",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.17,
+        "max_acertos": 11,
+        "min_acertos": 6,
+        "acertos_11_mais": 7,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {
+          "geracoes": 50
+        }
       }
     ],
     "ensemble": [
@@ -17936,12 +19936,252 @@
         "acertos_14_mais": 0,
         "tempo_segundos": 0,
         "parametros": {}
+      },
+      {
+        "iteracao": 161,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 162,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 163,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 164,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 165,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 166,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 167,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 168,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 169,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 170,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 171,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 172,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 173,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 174,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 175,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 176,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 177,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 178,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 179,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
+      },
+      {
+        "iteracao": 180,
+        "algoritmo": "ensemble",
+        "combinacoes_geradas": 100,
+        "media_acertos": 9.24,
+        "max_acertos": 13,
+        "min_acertos": 6,
+        "acertos_11_mais": 11,
+        "acertos_14_mais": 0,
+        "tempo_segundos": 0,
+        "parametros": {}
       }
     ]
   },
   "melhor_algoritmo": "pares_impares",
   "melhor_score": 9.73,
-  "iteracao": 160,
+  "iteracao": 180,
   "pesos_algoritmos": {
     "posicional": 0.6344000000000001,
     "pares_impares": 0.87
@@ -18992,5 +21232,5 @@
       "timestamp": "2026-01-28T16:07:41.119904"
     }
   ],
-  "timestamp": "2026-02-02T18:29:12.137532"
+  "timestamp": "2026-03-30T22:54:40.445318"
 }

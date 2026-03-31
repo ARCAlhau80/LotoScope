@@ -1,9 +1,9 @@
 {
   "versao": "1.0",
   "criado_em": "2026-03-02T14:16:50.555407",
-  "ultima_atualizacao": "2026-03-21T02:04:45.826585",
+  "ultima_atualizacao": "2026-03-26T01:43:52.312886",
   "estatisticas_globais": {
-    "total_backtests": 42,
+    "total_backtests": 46,
     "hits_totais": 12,
     "tempo_total_economizado_ms": 11886025
   },
@@ -1978,6 +1978,170 @@
       },
       "criado_em": "2026-03-21T02:04:45.826568",
       "tempo_execucao_ms": 25725,
+      "acessos": 0
+    },
+    "ade62d4d31f63063": {
+      "config": {
+        "tipo": "pool23_historico",
+        "concurso_inicio": 101,
+        "concurso_fim": 120,
+        "qtd_exclusoes": 2,
+        "filtros_ativos": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "estrategia_exclusao": 2
+      },
+      "resultado": {
+        "tempo_execucao_s": 864.7843873500824,
+        "total_concursos": 20,
+        "taxa_exclusao_correta": 15.0,
+        "melhor_nivel": 8,
+        "lucro_melhor": -1972426.5,
+        "stats_por_nivel": {
+          "0": {
+            "jackpots": 2,
+            "roi": -54.80699932782902,
+            "combos_media": 274951.3
+          },
+          "1": {
+            "jackpots": 1,
+            "roi": -62.14992372079548,
+            "combos_media": 236677.5
+          },
+          "2": {
+            "jackpots": 1,
+            "roi": -61.00277155759514,
+            "combos_media": 214678.15
+          },
+          "3": {
+            "jackpots": 1,
+            "roi": -58.661009627478144,
+            "combos_media": 181705.35
+          },
+          "4": {
+            "jackpots": 0,
+            "roi": -72.571365623907,
+            "combos_media": 110749.85
+          },
+          "5": {
+            "jackpots": 1,
+            "roi": -48.36509021748975,
+            "combos_media": 108673.1
+          },
+          "6": {
+            "jackpots": 0,
+            "roi": -71.5133496134921,
+            "combos_media": 71413.25
+          },
+          "7": {
+            "jackpots": 1,
+            "roi": -55.27569302697961,
+            "combos_media": 142479.25
+          },
+          "8": {
+            "jackpots": 0,
+            "roi": -70.68581412754776,
+            "combos_media": 39863.05
+          }
+        }
+      },
+      "criado_em": "2026-03-25T13:10:21.831418",
+      "tempo_execucao_ms": 864784,
+      "acessos": 0
+    },
+    "901df5d3f20dc327": {
+      "config": {
+        "tipo": "pool23_historico",
+        "concurso_inicio": 121,
+        "concurso_fim": 141,
+        "qtd_exclusoes": 2,
+        "filtros_ativos": [
+          0
+        ],
+        "estrategia_exclusao": 2
+      },
+      "resultado": {
+        "tempo_execucao_s": 109.09691071510315,
+        "total_concursos": 21,
+        "taxa_exclusao_correta": 14.285714285714285,
+        "melhor_nivel": 0,
+        "lucro_melhor": -9686597.5,
+        "stats_por_nivel": {
+          "0": {
+            "jackpots": 3,
+            "roi": -44.03736789803436,
+            "combos_media": 299269.5714285714
+          }
+        }
+      },
+      "criado_em": "2026-03-25T14:16:55.734581",
+      "tempo_execucao_ms": 109096,
+      "acessos": 0
+    },
+    "f0a2743b9db48400": {
+      "config": {
+        "tipo": "pool23_historico",
+        "concurso_inicio": 3642,
+        "concurso_fim": 3642,
+        "qtd_exclusoes": 3,
+        "filtros_ativos": [
+          0
+        ],
+        "estrategia_exclusao": 5
+      },
+      "resultado": {
+        "tempo_execucao_s": 1.232191801071167,
+        "total_concursos": 1,
+        "taxa_exclusao_correta": 0.0,
+        "melhor_nivel": 0,
+        "lucro_melhor": -100642.5,
+        "stats_por_nivel": {
+          "0": {
+            "jackpots": 0,
+            "roi": -94.96680867928266,
+            "combos_media": 30279.0
+          }
+        }
+      },
+      "criado_em": "2026-03-26T01:21:09.670508",
+      "tempo_execucao_ms": 1232,
+      "acessos": 0
+    },
+    "20756f951a9e0ca1": {
+      "config": {
+        "tipo": "pool23_historico",
+        "concurso_inicio": 3000,
+        "concurso_fim": 3642,
+        "qtd_exclusoes": 3,
+        "filtros_ativos": [
+          0
+        ],
+        "estrategia_exclusao": 2
+      },
+      "resultado": {
+        "tempo_execucao_s": 1042.149712562561,
+        "total_concursos": 643,
+        "taxa_exclusao_correta": 5.287713841368585,
+        "melhor_nivel": 0,
+        "lucro_melhor": -105447791.5,
+        "stats_por_nivel": {
+          "0": {
+            "jackpots": 16,
+            "roi": -56.530350962216716,
+            "combos_media": 82885.16174183515
+          }
+        }
+      },
+      "criado_em": "2026-03-26T01:43:52.312868",
+      "tempo_execucao_ms": 1042149,
       "acessos": 0
     }
   }

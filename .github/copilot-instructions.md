@@ -280,9 +280,35 @@ python super_menu.py
     - Option 0 = "Compare all": generates with strategy 2 but shows full comparative table at STEP 4
     - Comparative table shows which strategy would have best excluded numbers for that draw
     - Method: `_executar_backtesting_pool23` in `lotofacil_lite/interfaces/super_menu.py`
+12. **Added** (30/03/2026): **Option 30→[6] Retrain Neural Network + Benchmark** ⭐⭐ NEW!
+    - New sub-option in Backtesting menu (Option 30): `_executar_retreino_neural_benchmark()`
+    - Modes: [T] Train from scratch | [C] Continue training | [B] Benchmark only
+    - Predefined periods: last 500/1000/2000, all, custom
+    - Final summary: Neural vs INVERTIDA with emoji diagnostic 🎉/📊/🤝
+    - Architecture: 150→256→128→64→25 (81,433 params) | ReLU hidden, Sigmoid output
+    - 150 features = 6 per number: freq_30, atraso, consecutividade, tendência, freq_10, score_INVERTIDA
+    - Same network shared with Option 30→[5] (Neural Disputa) and Option 31 (Pool 23 Hybrid)
+    - 🔴 IN RADAR: overfitting risk ~40:1 params/samples ratio; gap treino=25.3% vs validação=18.6%
+    - PENDING DECISION: reduce to 150→64→32→25 + L2 + Dropout after more training runs
+    - **FRIOS diagnostic** added (31/03/2026): after benchmark summary, loads neural fresh and shows cold candidates table (see item 13)
+13. **Added** (31/03/2026): **Neural FRIOS Diagnostic — "FRIOS FAVORECIDOS PELA NEURAL"** ⭐ NEW!
+    - Diagnostic block added in TWO places in `super_menu.py`:
+      - **Option 31** (~line 12537): after neural hybrid ranking, shows cold numbers (absent ≥ 2 draws) sorted by ascending neural score
+      - **Option 30→[6]** (~line 15470): after benchmark summary, loads neural fresh, calls `_extrair_features(idx_ultimo)` + `obter_scores()`, shows same table
+    - Rating system: ⭐ FORTE (score < 0.30), candidato (< 0.45), neutro
+    - Shows up to 5 cold candidates — **diagnostic only, does not change generation logic**
+    - Validated: last run identified {3, 6, 23} with scores 0.400, 0.404, 0.443
+14. **Added** (31/03/2026): **Neural PURO strategy — new default in Option 31** ⭐⭐ NEW!
+    - Option 31 strategy menu now has THREE choices:
+      - **[N] Neural PURO ⭐⭐ MELHOR!** — NEW, now default (ENTER = N)
+      - **[H] Híbrido Neural+INVERTIDA** — old default (+3.3pp above INVERTIDA)
+      - **[I] INVERTIDA v3.0** — classic fallback
+    - Default changed from [H] to [N]: benchmark Neural PURO = **22.9%** vs INVERTIDA 15.2% = **+7.7pp** ✅
+    - Pure neural uses `scores_neural` dict directly (all 25 numbers ranked by descending score)
+    - Manual adjustment screen now also shows TOP 10 NEURAL list
 
 ---
-*Last updated: 2026-03-24*
+*Last updated: 2026-03-31*
 
 <!-- mcp-graph:start -->
 ## mcp-graph — LotoScope

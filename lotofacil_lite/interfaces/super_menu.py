@@ -3661,14 +3661,14 @@ class SuperMenuLotofacil:
             combinacoes_filtradas = []
             
             for combo in todas_combinacoes:
-                # Filtro 1: Paridade (6-9 pares)
+                # Filtro 1: Paridade (5-10 pares) - CALIBRADO 28/03/2026
                 pares = sum(1 for n in combo if n % 2 == 0)
-                if pares < 6 or pares > 9:
+                if pares < 5 or pares > 10:
                     continue
                 
-                # Filtro 2: Soma (180-220)
+                # Filtro 2: Soma (160-245) - CALIBRADO 28/03/2026
                 soma = sum(combo)
-                if soma < 180 or soma > 220:
+                if soma < 160 or soma > 245:
                     continue
                 
                 # Filtro 3: Sequências máximas (max 4 consecutivos)
@@ -7287,14 +7287,14 @@ class SuperMenuLotofacil:
             combinacoes_filtradas = []
             
             for combo in todas_combinacoes:
-                # Filtro 1: Paridade (6-9 pares)
+                # Filtro 1: Paridade (5-10 pares) - CALIBRADO 28/03/2026
                 pares = sum(1 for n in combo if n % 2 == 0)
-                if pares < 6 or pares > 9:
+                if pares < 5 or pares > 10:
                     continue
                 
-                # Filtro 2: Soma (180-220)
+                # Filtro 2: Soma (160-245) - CALIBRADO 28/03/2026
                 soma = sum(combo)
-                if soma < 180 or soma > 220:
+                if soma < 160 or soma > 245:
                     continue
                 
                 # Filtro 3: Sequências máximas (max 4 consecutivos)
@@ -8953,13 +8953,13 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print(f"   📊 Pares: média={media_pares:.1f}")
         print(f"   📊 Primos: média={media_primos:.1f}")
         
-        # Faixas ideais
-        soma_min_ideal = int(media_soma - 15)
-        soma_max_ideal = int(media_soma + 15)
+        # Faixas ideais - CALIBRADO 28/03/2026 (expandido para não rejeitar resultados reais)
+        soma_min_ideal = int(media_soma - 40)  # Era -15, expandido para cobrir 162-241
+        soma_max_ideal = int(media_soma + 45)  # Era +15, expandido para cobrir 162-241
         pares_min = max(5, int(media_pares - 2))
         pares_max = min(10, int(media_pares + 2))
-        primos_min = max(2, int(media_primos - 1))
-        primos_max = min(6, int(media_primos + 1))
+        primos_min = max(3, int(media_primos - 2))  # Era max(2, -1), expandido para cobrir 3-8
+        primos_max = min(8, int(media_primos + 2))  # Era min(6, +1), expandido para cobrir 3-8
         
         # ═══════════════════════════════════════════════════════════════════
         # PASSO 7.1: ANÁLISE DE NÚMEROS ATRASADOS (NOVO!)
@@ -11044,8 +11044,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   │ [1] 📊 Backtesting Gerador Mestre (filtros personalizados)      │")
         print("   │ [2] 🎯 Backtesting Pool 23 Híbrido (concurso futuro)            │")
         print("   │ [3] 🧠 Relatório de Aprendizado (erros/acertos)                 │")
-        print("   │ [4] 🔬 Backtesting Pool 23 Histórico (níveis 0-8) ⭐ NOVO       │")
+        print("   │ [4] 🔬 Backtesting Pool 23 Histórico (níveis 0-8) ⭐             │")
         print("   │     └─ Usa mesmos filtros e aprendizado do Pool 23!             │")
+        print("   │ [5] 🥊 Disputa Neural vs Pool 23 ⭐⭐                             │")
+        print("   │     └─ Treina rede neural para aprender exclusão INVERTIDA      │")
+        print("   │ [6] 🔥 Retreinar Rede Neural + Benchmark ⭐ NOVO!               │")
+        print("   │     └─ Retreina e compara Neural vs INVERTIDA diretamente       │")
         print("   │ [0] ↩️  Voltar                                                   │")
         print("   └─────────────────────────────────────────────────────────────────┘")
         
@@ -11061,6 +11065,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             return
         elif sub_opcao == '4':
             self._executar_backtesting_pool23_historico()
+            return
+        elif sub_opcao == '5':
+            self._executar_disputa_neural_pool23()
+            return
+        elif sub_opcao == '6':
+            self._executar_retreino_neural_benchmark()
             return
         elif sub_opcao != '1':
             print("   ⚠️ Opção inválida, usando Backtesting Gerador Mestre")
@@ -12406,6 +12416,167 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   " + "─"*70)
         
         # ═══════════════════════════════════════════════════════════════════
+        # 🧠 RANKING NEURAL HÍBRIDO - Combina INVERTIDA + Rede Neural
+        # Benchmark 30/03/2026: Neural +3.3pp acima de INVERTIDA (18.6% vs 15.3%)
+        # ═══════════════════════════════════════════════════════════════════
+        neural_disponivel = False
+        scores_neural = {}
+        ranking_hibrido = []
+        
+        try:
+            from sistemas.disputa_neural_pool23 import RedeNeuralExclusao
+            neural_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
+                                        'dados', 'neural_exclusao.pkl')
+            
+            if os.path.exists(neural_path):
+                # Carregar modelo neural treinado
+                neural = RedeNeuralExclusao.carregar(neural_path)
+                
+                # Extrair features da situação atual (150 features)
+                import numpy as np
+                features = np.zeros(150)
+                
+                # Features 0-24: Frequência 30 concursos
+                for n in range(1, 26):
+                    freq_30 = sum(1 for r in resultados[:30] if n in r['set']) / 30
+                    features[n-1] = freq_30
+                
+                # Features 25-49: Atraso (quantos concursos desde última aparição)
+                for n in range(1, 26):
+                    atraso = 0
+                    for r in resultados[:30]:
+                        if n in r['set']:
+                            break
+                        atraso += 1
+                    features[24 + n] = atraso / 30
+                
+                # Features 50-74: Consecutividade
+                for n in range(1, 26):
+                    cons = 0
+                    for r in resultados[:30]:
+                        if n in r['set']:
+                            cons += 1
+                        else:
+                            break
+                    features[49 + n] = cons / 30
+                
+                # Features 75-99: Tendência (freq últimos 10 vs anteriores 10)
+                freq_10 = Counter()
+                for r in resultados[:10]:
+                    freq_10.update(r['set'])
+                freq_anterior = Counter()
+                for r in resultados[10:20]:
+                    freq_anterior.update(r['set'])
+                
+                for n in range(1, 26):
+                    tend = (freq_10[n] / 10) - (freq_anterior[n] / 10) if len(resultados) >= 20 else 0
+                    features[74 + n] = (tend + 1) / 2
+                
+                # Features 100-124: Frequência 10 concursos
+                for n in range(1, 26):
+                    features[99 + n] = freq_10[n] / 10
+                
+                # Features 125-149: Score INVERTIDA (para a neural aprender)
+                max_score_inv = max(c['score'] for c in candidatos) if candidatos else 1
+                for n in range(1, 26):
+                    score_n = next((c['score'] for c in candidatos if c['num'] == n), 0)
+                    features[124 + n] = score_n / max(1, max_score_inv) if max_score_inv != 0 else 0
+                
+                # Obter scores da neural
+                scores_neural = neural.obter_scores(features)
+                neural_disponivel = True
+                
+                # Criar ranking híbrido (60% Neural + 40% INVERTIDA)
+                max_score_inv = max(c['score'] for c in candidatos) if candidatos else 1
+                max_score_neu = max(scores_neural.values()) if scores_neural else 1
+                
+                for c in candidatos:
+                    n = c['num']
+                    score_inv_norm = c['score'] / max(1, max_score_inv)
+                    score_neu_norm = scores_neural.get(n, 0) / max(0.001, max_score_neu)
+                    
+                    # Peso 60% Neural + 40% INVERTIDA (neural é superior)
+                    score_hibrido = 0.6 * score_neu_norm + 0.4 * score_inv_norm
+                    
+                    ranking_hibrido.append({
+                        'num': n,
+                        'score_inv': c['score'],
+                        'score_neu': scores_neural.get(n, 0),
+                        'score_hibrido': score_hibrido,
+                        'freq_curta': c['freq_curta'],
+                        'consecutivos': c['consecutivos'],
+                        'status': c['status']
+                    })
+                
+                ranking_hibrido.sort(key=lambda x: -x['score_hibrido'])
+                
+                # Exibir ranking híbrido
+                print("\n   ╔════════════════════════════════════════════════════════════════════════╗")
+                print("   ║  🧠 RANKING HÍBRIDO: NEURAL (60%) + INVERTIDA (40%)   ⭐⭐ MELHOR!   ║")
+                print("   ║  📊 Benchmark: Neural +3.3pp acima INVERTIDA (18.6% vs 15.3%)        ║")
+                print("   ╚════════════════════════════════════════════════════════════════════════╝")
+                print()
+                print(f"   {'Rank':>4} {'Num':>4} {'Neural':>8} {'INVERT':>8} {'HÍBRIDO':>8} {'Status':>22}")
+                print("   " + "─"*70)
+                
+                for i, h in enumerate(ranking_hibrido[:10]):
+                    rank = f"{i+1}º"
+                    if i < 2:
+                        print(f"   {rank:>4} {h['num']:>4d} {h['score_neu']:>8.3f} {h['score_inv']:>+8.2f} {h['score_hibrido']:>8.3f} {h['status'][:22]:>22} ◀─ TOP")
+                    else:
+                        print(f"   {rank:>4} {h['num']:>4d} {h['score_neu']:>8.3f} {h['score_inv']:>+8.2f} {h['score_hibrido']:>8.3f} {h['status'][:22]:>22}")
+                
+                print("   " + "─"*70)
+                print(f"   💡 TOP 2 HÍBRIDO: {sorted([ranking_hibrido[0]['num'], ranking_hibrido[1]['num']])} (recomendado!)")
+                
+        except Exception as e:
+            # Silencioso se não conseguir carregar neural
+            pass
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # FRIOS FAVORECIDOS PELA NEURAL (diagnóstico — só se neural disponível)
+        # ═══════════════════════════════════════════════════════════════════
+        if neural_disponivel and scores_neural:
+            try:
+                # Calcular atraso de cada número
+                _atrasos = {}
+                for _n in range(1, 26):
+                    _atraso = 0
+                    for _h in reversed(historico[-30:]):
+                        if _n in _h['set']:
+                            break
+                        _atraso += 1
+                    _atrasos[_n] = _atraso
+
+                # Frios ausentes >= 2 com score neural BAIXO (rede diz: vai voltar)
+                _frios_neural = [
+                    {'num': _n, 'score': scores_neural[_n], 'atraso': _atrasos[_n]}
+                    for _n in range(1, 26)
+                    if _atrasos[_n] >= 2
+                ]
+                _frios_neural.sort(key=lambda x: x['score'])
+
+                if _frios_neural:
+                    print("\n   ╔════════════════════════════════════════════════════════════════════════╗")
+                    print("   ║  ❄️  FRIOS FAVORECIDOS PELA NEURAL — candidatos a RETORNAR  🔍         ║")
+                    print("   ║  Score BAIXO = Neural prevê que vai sair no próximo sorteio           ║")
+                    print("   ╚════════════════════════════════════════════════════════════════════════╝")
+                    print(f"   {'Rank':>4} {'Num':>4} {'Atraso':>7} {'Score Neural':>13} {'Indicação':>20}")
+                    print("   " + "─"*60)
+                    for _i, _f in enumerate(_frios_neural[:5]):
+                        if _f['score'] < 0.3:
+                            _ind = "⭐ FORTE candidato"
+                        elif _f['score'] < 0.45:
+                            _ind = "candidato"
+                        else:
+                            _ind = "neutro"
+                        print(f"   {_i+1:>4}º {_f['num']:>4d} {_f['atraso']:>6}x  {_f['score']:>13.3f} {_ind:>20}")
+                    print("   " + "─"*60)
+                    print(f"   💡 Diagnóstico — anote e valide nos próximos sorteios")
+            except Exception:
+                pass
+
+        # ═══════════════════════════════════════════════════════════════════
         # MOSTRAR TOP 10 FRIOS (para referência - estratégia antiga)
         # ═══════════════════════════════════════════════════════════════════
         print("\n   ┌────────────────────────────────────────────────────────────────────┐")
@@ -12504,17 +12675,53 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         except:
             qtd_excluir = 2
         
-        # Selecionar automaticamente os top N (usando QUENTES - estratégia validada)
-        excluir = [candidatos[i]['num'] for i in range(qtd_excluir)]
-        score_total = sum(candidatos[i]['score'] for i in range(qtd_excluir))
-        
-        if qtd_excluir != 2:
-            print(f"   ✅ Selecionados TOP {qtd_excluir}: {sorted(excluir)} (score: {score_total:.2f})")
+        # ═══════════════════════════════════════════════════════════════════
+        # ESCOLHA DE ESTRATÉGIA: Neural puro, Híbrida ou INVERTIDA clássica
+        # ═══════════════════════════════════════════════════════════════════
+        usar_hibrido = False
+        usar_neural_puro = False
+        ranking_neural_puro = []
+        if neural_disponivel and scores_neural:
+            # Ranking neural puro: todos os 25 números por score decrescente
+            ranking_neural_puro = sorted(range(1, 26), key=lambda n: -scores_neural.get(n, 0))
+
+        if neural_disponivel and ranking_hibrido:
+            print(f"\n   🧠 MODELO NEURAL DISPONÍVEL!")
+            print(f"      [N] Neural PURO ⭐⭐ MELHOR! (benchmark: +7.7pp acima random)")
+            print(f"      [H] Usar HÍBRIDO Neural+INVERTIDA (+3.3pp)")
+            print(f"      [I] Usar só INVERTIDA v3.0 (clássico)")
+            escolha_estrategia = input("   Escolha [N/H/I, ENTER=N]: ").strip().upper()
+            if escolha_estrategia == 'I':
+                pass  # sem neural
+            elif escolha_estrategia == 'H':
+                usar_hibrido = True
+            else:  # N ou ENTER
+                usar_neural_puro = True
+
+        # Selecionar automaticamente os top N
+        if usar_neural_puro and ranking_neural_puro:
+            excluir = ranking_neural_puro[:qtd_excluir]
+            score_total = sum(scores_neural.get(n, 0) for n in excluir)
+            print(f"   ✅ Usando NEURAL PURO (benchmark: 22.9% vs 15.2% INVERTIDA)")
+        elif usar_hibrido and ranking_hibrido:
+            excluir = [ranking_hibrido[i]['num'] for i in range(min(qtd_excluir, len(ranking_hibrido)))]
+            score_total = sum(ranking_hibrido[i]['score_hibrido'] for i in range(min(qtd_excluir, len(ranking_hibrido))))
+            print(f"   ✅ Usando RANKING HÍBRIDO (Neural 60% + INVERTIDA 40%)")
+        else:
+            excluir = [candidatos[i]['num'] for i in range(qtd_excluir)]
+            score_total = sum(candidatos[i]['score'] for i in range(qtd_excluir))
+            print(f"   ✅ Usando RANKING INVERTIDA v3.0")
+
+        print(f"   📊 Selecionados TOP {qtd_excluir}: {sorted(excluir)} (score: {score_total:.2f})")
         
         # Permitir ajuste manual
         ajustar = input(f"\n   ⚙️ Deseja ajustar quais dos TOP 10 excluir? [S/N]: ").strip().upper()
         if ajustar == 'S':
             print(f"\n   📋 TOP 10 QUENTES: {[c['num'] for c in candidatos[:10]]}")
+            if ranking_neural_puro:
+                print(f"   📋 TOP 10 NEURAL:  {ranking_neural_puro[:10]}")
+            if ranking_hibrido:
+                print(f"   📋 TOP 10 HÍBRIDO: {[h['num'] for h in ranking_hibrido[:10]]}")
             print(f"   📋 TOP 10 FRIOS:   {[c['num'] for c in cand_frios[:10]]}")
             print(f"   💡 Digite {qtd_excluir} números separados por vírgula (aceita de qualquer ranking)")
             try:
@@ -12524,7 +12731,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 # Validar - aceitar de ambos os rankings ou qualquer número 1-25
                 top10_quentes = [c['num'] for c in candidatos[:10]]
                 top10_frios = [c['num'] for c in cand_frios[:10]]
-                nums_validos = [n for n in nums_custom if n in top10_quentes or n in top10_frios or (1 <= n <= 25)]
+                top10_hibrido = [h['num'] for h in ranking_hibrido[:10]] if ranking_hibrido else []
+                nums_validos = [n for n in nums_custom if n in top10_quentes or n in top10_frios or n in top10_hibrido or (1 <= n <= 25)]
                 
                 if len(nums_validos) >= 1:
                     excluir = nums_validos[:qtd_excluir]  # Limitar à quantidade escolhida
@@ -12607,165 +12815,36 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"      → Nível 6 ULTRA: soma ajustada para {soma_ajuste_ultra[0]}-{soma_ajuste_ultra[1]}")
         print()
         
-        # Parâmetros por nível - AJUSTADOS para progressão suave
-        # META: Cada nível deve reduzir ~30-50% do anterior (não 80%!)
-        # NOVO: Débito posicional integrado (50.7% assertividade - 10x vs aleatório)
-        # NOVO: Filtros Posicionais Dinâmicos (piores números por posição)
-        # NOVO: Filtro Qtde 6-25 (10-13 números do intervalo 6-25)
-        FILTROS_POR_NIVEL = {
-            0: {},  # Sem filtros - 490k combos (100%) - PURO
-            1: {
-                # NÍVEL 1: SUAVE - soma + débito posicional + anomalias (meta: ~350k, 70%)
-                'soma_min': 175, 'soma_max': 235,
-                'usar_debito_posicional': True,  # NOVO: 50.7% assertividade
-                'debito_min_matches': 1,  # Mínimo 1 número em posição de débito
-                'usar_analise_anomalias': True,  # NOVO: Filtro de anomalias de frequência
-                'anomalias_max_quentes': 3,  # Máximo de números "muito quentes" permitidos
-                'anomalias_min_frios': 0,  # Mínimo de números "frios" exigidos
-                # NOVOS FILTROS POSICIONAIS
-                'usar_filtro_qtde_6_25': True,  # Filtro quantidade 6-25 (10-13)
-                'qtde_6_25_valores': [10, 11, 12, 13],  # Valores aceitos
-            },
-            2: {
-                # NÍVEL 2: BÁSICO - soma + reversão + débito + anomalias + NOVOS FILTROS
-                'soma_min': 180, 'soma_max': 230,
-                'consecutivos_min': 7, 'consecutivos_max': 10,  # NOVO: 90.5% cobertura
-                'gap_max': 5,  # NOVO: 93.5% cobertura
-                'usar_reversao_soma': True,
-                'usar_debito_posicional': True,
-                'debito_min_matches': 2,  # Mínimo 2 números em posições de débito
-                'usar_analise_anomalias': True,  # Filtro de anomalias
-                'anomalias_max_quentes': 3,  # Máximo de números "muito quentes"
-                'anomalias_min_frios': 0,  # Mínimo de números "frios"
-                # NOVOS FILTROS POSICIONAIS
-                'usar_filtro_qtde_6_25': True,
-                'qtde_6_25_valores': [10, 11, 12, 13],
-                'usar_filtro_piores_historico': True,  # Piores do histórico completo
-                'piores_tolerancia_historico': 0,  # 0 = nenhum número ruim na posição
-            },
-            3: {
-                # NÍVEL 3: EQUILIBRADO - adiciona pares/primos + consecutivos/gap
-                'soma_min': 185, 'soma_max': 225,
-                'pares_min': 5, 'pares_max': 10,
-                'primos_min': 3, 'primos_max': 8,
-                'consecutivos_min': 7, 'consecutivos_max': 10,  # NOVO
-                'gap_max': 5,  # NOVO
-                'usar_reversao_soma': True,
-                # 'usar_compensacao': True,  # DESATIVADO: eliminou jackpot (saldo +9 rejeitado)
-                'usar_debito_posicional': True,
-                'debito_min_matches': 2,
-                'usar_analise_anomalias': True,  # Filtro de anomalias
-                'anomalias_max_quentes': 2,  # Mais restritivo
-                'anomalias_min_frios': 1,  # Exige ao menos 1 número frio
-                # NOVOS FILTROS POSICIONAIS
-                'usar_filtro_qtde_6_25': True,
-                'qtde_6_25_valores': [10, 11, 12, 13],
-                'usar_filtro_piores_historico': True,
-                'piores_tolerancia_historico': 0,
-                'usar_filtro_piores_recente': True,  # Piores dos últimos 30
-                'piores_tolerancia_recente': 5,  # Aumentado: 3→5 (gradiente 5→4→3→2)
-            },
-            4: {
-                # NÍVEL 4: MODERADO - adiciona sequência + gap mais restritivo
-                'soma_min': 190, 'soma_max': 220,
-                'pares_min': 6, 'pares_max': 9,
-                'primos_min': 4, 'primos_max': 7,
-                'consecutivos_min': 7, 'consecutivos_max': 9,  # NOVO: mais restritivo
-                'gap_max': 4,  # NOVO: mais restritivo
-                'seq_max': 5,
-                # 'usar_compensacao': True,  # DESATIVADO: eliminou jackpot (saldo +9 rejeitado)
-                'usar_reversao_soma': True,
-                # 'usar_improbabilidade_posicional': True,  # DESATIVADO: estava eliminando jackpots (4 falhas em 18 backtests)
-                'usar_debito_posicional': True,
-                'debito_min_matches': 3,  # Mais exigente
-                'usar_analise_anomalias': True,  # Filtro de anomalias
-                'anomalias_max_quentes': 2,  # Restritivo
-                'anomalias_min_frios': 1,  # Exige 1 número frio
-                # NOVOS FILTROS POSICIONAIS
-                'usar_filtro_qtde_6_25': True,
-                'qtde_6_25_valores': [10, 11, 12, 13],
-                'usar_filtro_piores_historico': True,
-                'piores_tolerancia_historico': 0,
-                'usar_filtro_piores_recente': True,
-                'piores_tolerancia_recente': 4,  # Aumentado: 2→4 (gradiente 5→4→3→2)
-            },
-            5: {
-                # NÍVEL 5: AGRESSIVO - OTIMIZADO PARA ROI + consecutivos/gap restritivos
-                # AJUSTE: Soma ampliada baseado em análise de 14 acertos (176-205)
-                # Combinações com 14+ acertos têm soma média de 189.9
-                'soma_min': 180, 'soma_max': 210,  # Antes: 195-215 (muito apertado!)
-                'pares_min': 6, 'pares_max': 9,
-                'primos_min': 3, 'primos_max': 7,  # Ampliado: jackpot tinha 4
-                'consecutivos_min': 7, 'consecutivos_max': 9,  # NOVO: 76.9% cobertura
-                'gap_max': 4,  # NOVO: 76.7% cobertura
-                'seq_max': 5,
-                'rep_min': 4, 'rep_max': 11,
-                'nucleo_min': 8,  # Reduzido: jackpot tinha 9
-                # 'usar_compensacao': True,  # DESATIVADO: eliminou jackpot (saldo +9 rejeitado)
-                'usar_reversao_soma': True,
-                # 'usar_improbabilidade_posicional': True,  # DESATIVADO: estava eliminando jackpots (4 falhas em 18 backtests)
-                'usar_debito_posicional': True,
-                'debito_min_matches': 3,
-                'usar_analise_anomalias': True,  # Filtro de anomalias
-                'anomalias_max_quentes': 1,  # Muito restritivo - máx 1 número quente
-                'anomalias_min_frios': 2,  # Exige 2 números frios (estão devendo)
-                # NOVOS FILTROS POSICIONAIS
-                'usar_filtro_qtde_6_25': True,
-                'qtde_6_25_valores': [10, 11, 12, 13],
-                'usar_filtro_piores_historico': True,
-                'piores_tolerancia_historico': 0,
-                'usar_filtro_piores_recente': True,
-                'piores_tolerancia_recente': 3,  # Aumentado: 1→3 (gradiente 5→4→3→2)
-            },
-            6: {
-                # NÍVEL 6: ULTRA - FOCO EM PRECISÃO (meta: <N5 combos, melhor ROI)
-                # ESTRATÉGIA: N5 + soma mais estreita + piores_recente=1 + rep_min=5
-                'soma_min': 185, 'soma_max': 208,  # Mais estreita que N5 (180-210)
-                'pares_min': 6, 'pares_max': 9,
-                'primos_min': 3, 'primos_max': 7,
-                'consecutivos_min': 7, 'consecutivos_max': 9,
-                'gap_max': 4,
-                'seq_max': 5,
-                'rep_min': 5, 'rep_max': 11,        # Mais restritivo que N5 (rep_min=4)
-                'nucleo_min': 8,
-                # 'usar_compensacao': True,  # DESATIVADO
-                'usar_reversao_soma': True,
-                # 'usar_improbabilidade_posicional': True,  # DESATIVADO
-                'usar_debito_posicional': True,
-                'debito_min_matches': 3,
-                'usar_analise_anomalias': True,
-                'anomalias_max_quentes': 1,
-                'anomalias_min_frios': 2,
-                # NOVOS FILTROS POSICIONAIS
-                'usar_filtro_qtde_6_25': True,
-                'qtde_6_25_valores': [10, 11, 12, 13],
-                'usar_filtro_piores_historico': True,
-                'piores_tolerancia_historico': 0,
-                'usar_filtro_piores_recente': True,
-                'piores_tolerancia_recente': 1,  # Mais apertado que N5 (tol=3): garante redução
-            },
-            7: {
-                # NÍVEL 7: REMOVE POSIÇÕES FRIAS (Nível 0 + filtro posicional frio)
-                # ESTRATÉGIA: Pega TODAS as 490k combos (nível 0) e remove as que têm
-                # números com freq=0% em posições específicas (janela=6 concursos).
-                # Conceito: se um número NÃO apareceu numa posição nos últimos 6, provavelmente NÃO sairá lá.
-                # Tolerância: permite até N violações (resultado real tem ~4/15 em média)
-                'usar_filtro_posicoes_frias': True,
-                'posicoes_frias_janela': 6,
-                'posicoes_frias_tolerancia': 4,  # Permitir até 4 posições frias
-                'nivel_base': 0,  # Aplica sobre o nível 0 (sem outros filtros)
-            },
-            8: {
-                # NÍVEL 8: REMOVE POSIÇÕES FRIAS (Cascata adaptativa)
-                # ESTRATÉGIA: Começa no nível 6 + filtro posicional frio.
-                # Se restar ≥1 combo → usa. Senão desce para 5, 4, 3, 2, 1.
-                # Resultado: O maior nível possível com pelo menos 1 combo.
-                'usar_filtro_posicoes_frias': True,
-                'posicoes_frias_janela': 6,
-                'posicoes_frias_tolerancia': 3,  # Mais restritivo que N7
-                'nivel_base': 'cascata',  # Cascata do 6 ao 1
-            },
-        }
+        # ═══════════════════════════════════════════════════════════════════
+        # CARREGAR FILTROS DO MÓDULO CENTRALIZADO (28/03/2026)
+        # Nova estrutura otimizada com análise de seletividade + trios
+        # ═══════════════════════════════════════════════════════════════════
+        import copy
+        import sys
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if base_path not in sys.path:
+            sys.path.insert(0, base_path)
+        
+        try:
+            from configuracao_filtros_pool23 import FILTROS_POR_NIVEL as FILTROS_BASE, FiltroTrios
+            FILTROS_POR_NIVEL = copy.deepcopy(FILTROS_BASE)
+            filtro_trios_instancia = FiltroTrios()  # Singleton - carrega trios uma vez
+            print("   ✅ Filtros carregados do módulo centralizado")
+        except ImportError as e:
+            print(f"   ⚠️ Módulo centralizado não encontrado ({e}), usando fallback")
+            # FALLBACK: Definição local se módulo não estiver disponível
+            FILTROS_POR_NIVEL = {
+                0: {},
+                1: {'soma_min': 170, 'soma_max': 235, 'usar_debito_posicional': True, 'debito_min_matches': 1},
+                2: {'soma_min': 175, 'soma_max': 230, 'pares_min': 6, 'pares_max': 9, 'usar_debito_posicional': True, 'debito_min_matches': 2},
+                3: {'soma_min': 180, 'soma_max': 225, 'pares_min': 6, 'pares_max': 9, 'seq_max': 6, 'usar_debito_posicional': True, 'debito_min_matches': 2},
+                4: {'soma_min': 180, 'soma_max': 220, 'pares_min': 6, 'pares_max': 9, 'seq_max': 5, 'usar_debito_posicional': True, 'debito_min_matches': 3},
+                5: {'soma_min': 180, 'soma_max': 215, 'pares_min': 6, 'pares_max': 9, 'seq_max': 5, 'nucleo_min': 8, 'usar_debito_posicional': True, 'debito_min_matches': 3},
+                6: {'soma_min': 185, 'soma_max': 210, 'pares_min': 7, 'pares_max': 8, 'seq_max': 5, 'nucleo_min': 8, 'usar_debito_posicional': True, 'debito_min_matches': 3},
+                7: {'usar_filtro_posicoes_frias': True, 'posicoes_frias_janela': 6, 'posicoes_frias_tolerancia': 4, 'nivel_base': 0},
+                8: {'usar_filtro_posicoes_frias': True, 'posicoes_frias_janela': 6, 'posicoes_frias_tolerancia': 3, 'nivel_base': 'cascata'},
+            }
+            filtro_trios_instancia = None
         
         # ═══════════════════════════════════════════════════════════════════
         # CARREGAR HISTÓRICO DE APRENDIZADO (melhoria contínua)
@@ -15263,7 +15342,243 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"   ⚠️ Erro ao gravar aprendizado: {e}")
             return False
 
-    def _executar_backtesting_pool23_historico(self):
+    def _executar_retreino_neural_benchmark(self):
+        """
+        🔥 RETREINAR REDE NEURAL + BENCHMARK
+
+        Interface direta para retreinar a rede neural e comparar com
+        INVERTIDA v3.0 em qualquer período histórico.
+
+        Modos:
+          [T] Treinar do zero (resetar + treinar)
+          [C] Continuar treinando (sem resetar)
+          [B] Benchmark apenas (sem treinar)
+        """
+        print("\n" + "═"*78)
+        print("🔥 RETREINAR REDE NEURAL + BENCHMARK")
+        print("═"*78)
+
+        try:
+            sistemas_path = os.path.join(os.path.dirname(__file__), '..', 'sistemas')
+            if sistemas_path not in sys.path:
+                sys.path.insert(0, sistemas_path)
+
+            from disputa_neural_pool23 import DisputaNeuralPool23
+
+            disputa = DisputaNeuralPool23()
+            if not disputa.carregar_historico():
+                input("\n   Pressione ENTER para voltar...")
+                return
+
+            concursos = [h['concurso'] for h in disputa.historico]
+            min_c = min(concursos)
+            max_c = max(concursos)
+            total = len(concursos)
+
+            print(f"\n   📊 Base carregada: {total} concursos ({min_c} a {max_c})")
+
+            # --- status do modelo salvo ---
+            modelo_path = os.path.join(os.path.dirname(__file__), '..', 'dados', 'neural_exclusao.pkl')
+            modelo_existe = os.path.exists(modelo_path)
+            if modelo_existe:
+                import time as _time
+                mtime = os.path.getmtime(modelo_path)
+                data_treino = _time.strftime('%d/%m/%Y %H:%M', _time.localtime(mtime))
+                print(f"   💾 Modelo salvo: {data_treino}")
+            else:
+                print(f"   ⚠️  Nenhum modelo salvo encontrado")
+
+            # --- Escolher ação ---
+            print("\n   AÇÃO:")
+            print("   ┌──────────────────────────────────────────────────────┐")
+            print("   │ [T] 🔄 Treinar do zero (resetar + treinar)            │")
+            print("   │ [C] ➕ Continuar treinando (sem resetar)              │")
+            print("   │ [B] 📊 Benchmark apenas (sem treinar)                 │")
+            print("   │ [0]  Voltar                                           │")
+            print("   └──────────────────────────────────────────────────────┘")
+
+            acao = input("\n   Escolha [T/C/B/0]: ").strip().upper()
+            if acao == '0':
+                return
+            if acao not in ('T', 'C', 'B'):
+                print("   ⚠️  Opção inválida, usando Benchmark")
+                acao = 'B'
+
+            # --- Período de avaliação ---
+            print("\n   PERÍODO DE AVALIAÇÃO/TREINAMENTO:")
+            print(f"   💡 Base disponível: concurso {min_c} a {max_c} ({total} concursos)")
+            print(f"      [1] Últimos 500  (#{max_c - 499} a #{max_c})")
+            print(f"      [2] Últimos 1000 (#{max_c - 999} a #{max_c})")
+            print(f"      [3] Últimos 2000 (#{max_c - 1999} a #{max_c})")
+            print(f"      [4] Todos desde #{min_c}")
+            print(f"      [5] Personalizado")
+
+            try:
+                preset = input("\n   Escolha [1-5, ENTER=1]: ").strip()
+                if preset == '2':
+                    c_inicio, c_fim = max_c - 999, max_c
+                elif preset == '3':
+                    c_inicio, c_fim = max_c - 1999, max_c
+                elif preset == '4':
+                    c_inicio, c_fim = min_c, max_c
+                elif preset == '5':
+                    c_inicio_str = input(f"   Início [{max_c - 499}]: ").strip()
+                    c_inicio = int(c_inicio_str) if c_inicio_str else max_c - 499
+                    c_fim_str = input(f"   Fim [{max_c}]: ").strip()
+                    c_fim = int(c_fim_str) if c_fim_str else max_c
+                else:
+                    c_inicio, c_fim = max_c - 499, max_c
+            except Exception:
+                c_inicio, c_fim = max_c - 499, max_c
+
+            c_inicio = max(min_c, c_inicio)
+            c_fim = min(max_c, c_fim)
+            print(f"\n   ✅ Período: #{c_inicio} a #{c_fim}")
+
+            # --- Executar ---
+            if acao == 'B':
+                # Benchmark sem treinar
+                disputa.executar_disputa(c_inicio, c_fim, treinar_durante=False)
+
+            else:
+                # Parâmetros de treinamento
+                print("\n   PARÂMETROS DE TREINAMENTO (ENTER = valores recomendados):")
+                try:
+                    iter_str = input("   Iterações [5]: ").strip()
+                    iteracoes = int(iter_str) if iter_str else 5
+
+                    epochs_str = input("   Épocas por amostra [10]: ").strip()
+                    epochs = int(epochs_str) if epochs_str else 10
+
+                    lr_str = input("   Learning rate [0.01]: ").strip()
+                    lr = float(lr_str) if lr_str else 0.01
+                except Exception:
+                    iteracoes, epochs, lr = 5, 10, 0.01
+
+                resetar = (acao == 'T')
+                resultado = disputa.retreinar_automatico(
+                    concurso_inicio=c_inicio,
+                    concurso_fim=c_fim,
+                    iteracoes=iteracoes,
+                    lr_inicial=lr,
+                    epochs_por_amostra=epochs,
+                    resetar=resetar
+                )
+
+                # Resumo final
+                print("\n" + "═"*78)
+                print("📊 RESUMO FINAL DO RETREINAMENTO")
+                print("═"*78)
+                melhor = resultado.get('melhor_taxa', 0)
+                taxa_inv = resultado.get('taxa_invertida', 0)
+                diff = resultado.get('diferenca', 0)
+
+                if diff > 2:
+                    status = "🎉 NEURAL VENCEU! (+{:.1f}pp)".format(diff)
+                elif diff < -2:
+                    status = "📊 INVERTIDA ainda superior ({:.1f}pp)".format(diff)
+                else:
+                    status = "🤝 Empate técnico ({:+.1f}pp)".format(diff)
+
+                print(f"\n   Neural (melhor):  {melhor:.1f}%")
+                print(f"   INVERTIDA v3.0:   {taxa_inv:.1f}%")
+                print(f"   Resultado:        {status}")
+
+            # ───────────────────────────────────────────────
+            # FRIOS FAVORECIDOS PELA NEURAL (diagnóstico)
+            # Números com MENOR score = rede prevê que VÃO SAIR
+            # ───────────────────────────────────────────────
+            try:
+                import numpy as np
+                from disputa_neural_pool23 import RedeNeuralExclusao
+
+                neural_diag = RedeNeuralExclusao.carregar(disputa.modelo_path)
+                idx_atual = len(disputa.historico) - 1
+                features_diag = disputa._extrair_features(idx_atual)
+                scores_diag = neural_diag.obter_scores(features_diag)
+
+                # Calcular atraso de cada número (quantos concursos sem aparecer)
+                atrasos = {}
+                for n in range(1, 26):
+                    atraso = 0
+                    for h in reversed(disputa.historico[-30:]):
+                        if n in h['set']:
+                            break
+                        atraso += 1
+                    atrasos[n] = atraso
+
+                # Frios = ausentes em >= 2 concursos recentes com score BAIXO
+                frios_neural = [
+                    {'num': n, 'score': scores_diag[n], 'atraso': atrasos[n]}
+                    for n in range(1, 26)
+                    if atrasos[n] >= 2
+                ]
+                frios_neural.sort(key=lambda x: x['score'])  # menor score = mais favorecido
+
+                if frios_neural:
+                    print("\n" + "═"*78)
+                    print("❄️  FRIOS FAVORECIDOS PELA REDE NEURAL (diagnóstico)")
+                    print("═"*78)
+                    print("   Números ausentes que a Neural considera mais prováveis de RETORNAR")
+                    print(f"   {'Rank':>4} {'Num':>4} {'Atraso':>7} {'Score Neural':>13} {'Indicação':>20}")
+                    print("   " + "─"*60)
+                    for i, f in enumerate(frios_neural[:5]):
+                        if f['score'] < 0.3:
+                            indicacao = "⭐ FORTE candidato"
+                        elif f['score'] < 0.45:
+                            indicacao = "candidato"
+                        else:
+                            indicacao = "neutro"
+                        print(f"   {i+1:>4}º {f['num']:>4d} {f['atraso']:>6}x  {f['score']:>13.3f} {indicacao:>20}")
+                    print("   " + "─"*60)
+                    print(f"   💡 Score < 0.30 = Neural favorece retorno | Score > 0.50 = Neural desconfia")
+                    print(f"   ⚠️  Diagnóstico apenas — valide nos próximos sorteios antes de usar como filtro")
+            except Exception:
+                pass  # Silencioso se neural não disponível
+
+        except ImportError as e:
+            print(f"\n❌ Erro ao importar módulo neural: {e}")
+            print("💡 Verifique se disputa_neural_pool23.py está em sistemas/")
+        except Exception as e:
+            print(f"\n❌ Erro inesperado: {e}")
+            import traceback
+            traceback.print_exc()
+
+        input("\n   Pressione ENTER para voltar...")
+
+    def _executar_disputa_neural_pool23(self):
+        """
+        🥊 DISPUTA NEURAL vs POOL 23
+        
+        Sistema de benchmark que compara:
+        - INVERTIDA v3.0 (regras manuais para exclusão)
+        - Rede Neural (aprende padrão de exclusão)
+        
+        A neural é treinada para prever quais 2 números NÃO vão sair,
+        usando as mesmas features que a estratégia INVERTIDA.
+        """
+        print("\n" + "═"*78)
+        print("🥊 DISPUTA NEURAL vs POOL 23 - BENCHMARK")
+        print("═"*78)
+        
+        try:
+            # Adiciona path do sistemas se necessário
+            sistemas_path = os.path.join(os.path.dirname(__file__), '..', 'sistemas')
+            if sistemas_path not in sys.path:
+                sys.path.insert(0, sistemas_path)
+            
+            from disputa_neural_pool23 import menu_disputa
+            menu_disputa()
+            
+        except ImportError as e:
+            print(f"\n❌ Erro ao importar módulo de disputa: {e}")
+            print("💡 Verifique se o arquivo disputa_neural_pool23.py está em sistemas/")
+        except Exception as e:
+            print(f"\n❌ Erro: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        input("\n   Pressione ENTER para voltar...")
         """
         🔬 BACKTESTING POOL 23 HISTÓRICO
         
@@ -15407,6 +15722,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             estrategia_excl = 2
         
         _comparar_estr_hist = (estrategia_excl == 0)
+        _modo_composto_hist = None  # None | 'estrategia_x_prob' | 'todos_x_todos'
+        _estrategia_base_prob_hist = estrategia_excl if estrategia_excl in [1, 2, 3, 4, 5] else 2
         NOMES_ESTRATEGIA = {
             0: "Comparar TODAS",
             1: "Débito (superávit)",
@@ -15615,6 +15932,25 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"\n   ⏭️ Filtro probabilístico DESATIVADO")
         except Exception as e:
             print(f"   ⚠️ Erro: {e}. Filtro probabilístico desativado.")
+
+        # Modo composto: quando usuário escolhe comparar estratégias (0) E probabilístico (5).
+        if _comparar_estr_hist and _comparar_todos_prob_hist:
+            print("\n   🧪 MODO COMPOSTO DETECTADO: estratégias + probabilístico")
+            print("   [1] Estratégia fixa × TODOS probabilísticos (4 rodadas)")
+            print("   [2] TODOS × TODOS (5 estratégias × 4 probabilísticos = 20 rodadas)")
+            escolha_comp = input("   Escolha [1-2, ENTER=1]: ").strip()
+            _modo_composto_hist = 'todos_x_todos' if escolha_comp == '2' else 'estrategia_x_prob'
+
+            if _modo_composto_hist == 'estrategia_x_prob':
+                try:
+                    est_base_in = input("   Estratégia base [1-5, ENTER=2]: ").strip()
+                    _estrategia_base_prob_hist = int(est_base_in) if est_base_in else 2
+                except Exception:
+                    _estrategia_base_prob_hist = 2
+                _estrategia_base_prob_hist = max(1, min(5, _estrategia_base_prob_hist))
+                print(f"   ✅ Composto: [{_estrategia_base_prob_hist}] {NOMES_ESTRATEGIA.get(_estrategia_base_prob_hist, '?')} × probabilísticos")
+            else:
+                print("   ⚠️ Composto TODOS × TODOS selecionado (20 rodadas, pode demorar bastante).")
         
         confirmar = input("\n   ▶️ Iniciar backtesting? [S/N]: ").strip().upper()
         if confirmar != 'S':
@@ -15671,57 +16007,33 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"   ⚠️ Erro ao carregar aprendizado: {e}")
         
         # ═══════════════════════════════════════════════════════════════════
-        # DEFINIR FILTROS POR NÍVEL (mesmos do Pool 23 Híbrido)
+        # CARREGAR FILTROS DO MÓDULO CENTRALIZADO (28/03/2026)
+        # Sincronizado com Option 31 e 30.2
         # ═══════════════════════════════════════════════════════════════════
-        FILTROS_POR_NIVEL = {
-            0: {},  # Sem filtros
-            1: {
-                'soma_min': 175, 'soma_max': 235,
-            },
-            2: {
-                'soma_min': 180, 'soma_max': 230,
-            },
-            3: {
-                'soma_min': 185, 'soma_max': 225,
-                'pares_min': 5, 'pares_max': 10,
-                'primos_min': 3, 'primos_max': 8,
-            },
-            4: {
-                'soma_min': 190, 'soma_max': 220,
-                'pares_min': 6, 'pares_max': 9,
-                'primos_min': 4, 'primos_max': 7,
-                'seq_max': 6,
-            },
-            5: {
-                'soma_min': 180, 'soma_max': 210,
-                'pares_min': 6, 'pares_max': 9,
-                'primos_min': 3, 'primos_max': 7,
-                'seq_max': 5,
-                'rep_min': 4, 'rep_max': 11,
-                'nucleo_min': 8,
-            },
-            6: {
-                'soma_min': 185, 'soma_max': 205,
-                'pares_min': 6, 'pares_max': 9,
-                'primos_min': 4, 'primos_max': 7,
-                'seq_max': 5,
-                'rep_min': 5, 'rep_max': 10,
-                'nucleo_min': 8,
-                'favorecidos_min': 4,
-            },
-            7: {
-                'usar_filtro_posicoes_frias': True,
-                'posicoes_frias_janela': 6,
-                'posicoes_frias_tolerancia': 4,
-                'nivel_base': 0,
-            },
-            8: {
-                'usar_filtro_posicoes_frias': True,
-                'posicoes_frias_janela': 6,
-                'posicoes_frias_tolerancia': 3,
-                'nivel_base': 'cascata',
-            },
-        }
+        import copy
+        import sys
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if base_path not in sys.path:
+            sys.path.insert(0, base_path)
+        
+        try:
+            from configuracao_filtros_pool23 import FILTROS_POR_NIVEL as FILTROS_BASE, FiltroTrios
+            FILTROS_POR_NIVEL = copy.deepcopy(FILTROS_BASE)
+            filtro_trios_instancia = FiltroTrios()
+            print("   ✅ Filtros carregados do módulo centralizado")
+        except ImportError as e:
+            print(f"   ⚠️ Módulo centralizado não encontrado ({e}), usando fallback")
+            FILTROS_POR_NIVEL = {
+                0: {}, 1: {'soma_min': 170, 'soma_max': 235},
+                2: {'soma_min': 175, 'soma_max': 230, 'pares_min': 6, 'pares_max': 9},
+                3: {'soma_min': 180, 'soma_max': 225, 'pares_min': 6, 'pares_max': 9, 'seq_max': 6},
+                4: {'soma_min': 180, 'soma_max': 220, 'pares_min': 6, 'pares_max': 9, 'seq_max': 5},
+                5: {'soma_min': 180, 'soma_max': 215, 'pares_min': 6, 'pares_max': 9, 'seq_max': 5, 'nucleo_min': 8},
+                6: {'soma_min': 185, 'soma_max': 210, 'pares_min': 7, 'pares_max': 8, 'seq_max': 5, 'nucleo_min': 8},
+                7: {'usar_filtro_posicoes_frias': True, 'posicoes_frias_janela': 6, 'posicoes_frias_tolerancia': 4, 'nivel_base': 0},
+                8: {'usar_filtro_posicoes_frias': True, 'posicoes_frias_janela': 6, 'posicoes_frias_tolerancia': 3, 'nivel_base': 'cascata'},
+            }
+            filtro_trios_instancia = None
         
         PRIMOS = {2, 3, 5, 7, 11, 13, 17, 19, 23}
         NUCLEO_C1C2 = {2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 19, 20, 22, 24, 25}
@@ -16112,15 +16424,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
 
             # ── Montar lista de variantes ────────────────────────────────
             _variantes_comp = []
-            if _comparar_estr_hist:
-                _fp0 = filtro_prob_obj_hist
-                _plbl0 = "desativado" if not filtro_prob_ativo_hist else f">={filtro_prob_limite_hist}"
-                print(f"\n   🔄 COMPARAÇÃO DE ESTRATÉGIAS: 5 rodadas × {len(niveis_testar)} níveis")
-                print(f"   ⚠️  Pode demorar muito — {len(niveis_testar) * 5} passos de geração C(23,15)")
-                for _e in range(1, 6):
-                    _variantes_comp.append((_e, _fp0, NOMES_ESTRATEGIA[_e], _plbl0))
-            else:  # _comparar_todos_prob_hist
-                print(f"\n   🔄 COMPARAÇÃO DE FILTROS PROB: 4 rodadas × {len(niveis_testar)} níveis")
+
+            def _carregar_prob_cfgs_comp():
                 print(f"   ⏳ Carregando filtros probabilísticos...")
                 _fp_dict_c = {}
                 for _plim_c in [313, 320, 330]:
@@ -16134,12 +16439,38 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     except Exception as _ec:
                         print(f"   ⚠️  Erro filtro ≥{_plim_c}: {_ec}")
                         _fp_dict_c[_plim_c] = None
-                _prob_cfgs_c = [
-                    (None,                   "Desativado      "),
-                    (_fp_dict_c.get(313),    "Conserv. (≥313) "),
-                    (_fp_dict_c.get(320),    "Moderado (≥320) "),
-                    (_fp_dict_c.get(330),    "Agressivo(≥330) "),
+                return [
+                    (None,                "Desativado      "),
+                    (_fp_dict_c.get(313), "Conserv. (≥313) "),
+                    (_fp_dict_c.get(320), "Moderado (≥320) "),
+                    (_fp_dict_c.get(330), "Agressivo(≥330) "),
                 ]
+
+            if _comparar_estr_hist and _comparar_todos_prob_hist:
+                if _modo_composto_hist == 'todos_x_todos':
+                    _prob_cfgs_c = _carregar_prob_cfgs_comp()
+                    print(f"\n   🔄 COMPARAÇÃO COMPOSTA TODOS × TODOS: 20 rodadas × {len(niveis_testar)} níveis")
+                    print(f"   ⚠️  Pode demorar muito — {len(niveis_testar) * 20} passos de geração C(23,15)")
+                    for _e in range(1, 6):
+                        for _fp_c, _plbl_c in _prob_cfgs_c:
+                            _variantes_comp.append((_e, _fp_c, NOMES_ESTRATEGIA[_e], _plbl_c))
+                else:
+                    _prob_cfgs_c = _carregar_prob_cfgs_comp()
+                    print(f"\n   🔄 COMPARAÇÃO COMPOSTA: Estratégia fixa × 4 filtros prob")
+                    print(f"   🎯 Estratégia base: [{_estrategia_base_prob_hist}] {NOMES_ESTRATEGIA.get(_estrategia_base_prob_hist, '?')}")
+                    for _fp_c, _plbl_c in _prob_cfgs_c:
+                        _variantes_comp.append((_estrategia_base_prob_hist, _fp_c, NOMES_ESTRATEGIA.get(_estrategia_base_prob_hist, "?"), _plbl_c))
+            elif _comparar_estr_hist:
+                _fp0 = filtro_prob_obj_hist
+                _plbl0 = "desativado" if not filtro_prob_ativo_hist else f">={filtro_prob_limite_hist}"
+                print(f"\n   🔄 COMPARAÇÃO DE ESTRATÉGIAS: 5 rodadas × {len(niveis_testar)} níveis")
+                print(f"   ⚠️  Pode demorar muito — {len(niveis_testar) * 5} passos de geração C(23,15)")
+                for _e in range(1, 6):
+                    _variantes_comp.append((_e, _fp0, NOMES_ESTRATEGIA[_e], _plbl0))
+            else:  # _comparar_todos_prob_hist
+                print(f"\n   🔄 COMPARAÇÃO DE FILTROS PROB: 4 rodadas × {len(niveis_testar)} níveis")
+                print(f"   🎯 Estratégia de exclusão fixa: [{estrategia_excl}] {NOMES_ESTRATEGIA.get(estrategia_excl, '?')}")
+                _prob_cfgs_c = _carregar_prob_cfgs_comp()
                 for _fp_c, _plbl_c in _prob_cfgs_c:
                     _variantes_comp.append((estrategia_excl, _fp_c, NOMES_ESTRATEGIA.get(estrategia_excl, "?"), _plbl_c))
 
@@ -16148,7 +16479,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             for _vi_c, (_v_est_c, _v_fp_c, _lbl_est_c, _lbl_prob_c) in enumerate(_variantes_comp):
                 print(f"\n{'─'*78}")
                 _lbl_fp_short = _lbl_prob_c.strip() if _comparar_todos_prob_hist else ""
-                if _comparar_estr_hist:
+                if _comparar_estr_hist and _comparar_todos_prob_hist:
+                    print(f"   ▶️  Rodada {_vi_c+1}/{len(_variantes_comp)}: [{_v_est_c}] {_lbl_est_c} + {_lbl_fp_short}")
+                elif _comparar_estr_hist:
                     print(f"   ▶️  Rodada {_vi_c+1}/{len(_variantes_comp)}: [{_v_est_c}] {_lbl_est_c}")
                 else:
                     print(f"   ▶️  Rodada {_vi_c+1}/{len(_variantes_comp)}: Filtro {_lbl_fp_short}")
@@ -16170,7 +16503,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
 
             # ── Tabela comparativa ───────────────────────────────────────
             print("\n" + "═"*78)
-            if _comparar_estr_hist:
+            if _comparar_estr_hist and _comparar_todos_prob_hist:
+                print("🏆 COMPARAÇÃO FINAL — FILTRO COMPOSTO (ESTRATÉGIA + PROBABILÍSTICO)")
+            elif _comparar_estr_hist:
                 print("🏆 COMPARAÇÃO FINAL — ESTRATÉGIAS DE EXCLUSÃO")
             else:
                 print("🏆 COMPARAÇÃO FINAL — MODOS DO FILTRO PROBABILÍSTICO")
@@ -16188,7 +16523,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             _melhor_vi = max(_jack_sums, key=lambda k: _jack_sums[k])
 
             # Cabeçalho
-            _hdr = f"  {'Variante':<26} {'Excl%':>6}"
+            _col_variante = 40 if (_comparar_estr_hist and _comparar_todos_prob_hist) else 26
+            _hdr = f"  {'Variante':<{_col_variante}} {'Excl%':>6}"
             for _nv in _niveis_exib:
                 _hdr += f"  {'N'+str(_nv)+'Jack%':>8}"
             _hdr += f"  {'MelhorROI':>10}"
@@ -16197,8 +16533,13 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
 
             for _vi_c, _rod in _rodadas_comp.items():
                 _st = _rod['stats']
-                _lbl = _rod['label_est'] if _comparar_estr_hist else _rod['label_prob'].strip()
-                _linha = f"  {_lbl:<26} {_rod['taxa_exc']:>5.1f}%"
+                if _comparar_estr_hist and _comparar_todos_prob_hist:
+                    _lbl = f"{_rod['label_est']} + {_rod['label_prob'].strip()}"
+                elif _comparar_estr_hist:
+                    _lbl = _rod['label_est']
+                else:
+                    _lbl = _rod['label_prob'].strip()
+                _linha = f"  {_lbl:<{_col_variante}} {_rod['taxa_exc']:>5.1f}%"
                 for _nv in _niveis_exib:
                     _jp = _st[_nv]['jackpots'] / total_testes * 100 if total_testes > 0 else 0
                     _linha += f"  {_jp:>7.1f}%"
@@ -16213,13 +16554,18 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
 
             print("  " + "─" * (len(_hdr) - 2))
             _rod_m = _rodadas_comp[_melhor_vi]
-            _lbl_m = _rod_m['label_est'] if _comparar_estr_hist else _rod_m['label_prob'].strip()
+            if _comparar_estr_hist and _comparar_todos_prob_hist:
+                _lbl_m = f"{_rod_m['label_est']} + {_rod_m['label_prob'].strip()}"
+            elif _comparar_estr_hist:
+                _lbl_m = _rod_m['label_est']
+            else:
+                _lbl_m = _rod_m['label_prob'].strip()
             print(f"\n  ⭐ VENCEDOR: {_lbl_m}")
             print(f"     Exclusão correta: {_rod_m['taxa_exc']:.1f}%")
             _jp_max = {_nv: _rod_m['stats'][_nv]['jackpots'] / total_testes * 100 for _nv in _niveis_exib if total_testes > 0}
             print(f"     Jackpots (níveis exibidos): {', '.join(f'N{_nv}={_jp_max[_nv]:.1f}%' for _nv in _niveis_exib)}")
             print(f"\n  ⏱️  Tempo total de comparação: {time.time() - _tempo_comp_inicio:.1f}s")
-            if not _comparar_estr_hist:
+            if _comparar_todos_prob_hist:
                 print(f"\n  💡 DICA: Filtros mais agressivos reduzem custo mas podem perder jackpots.")
                 print(f"           Verifique a preservação de jackpots antes de escolher o modo.")
 
@@ -16228,21 +16574,25 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             # ═══════════════════════════════════════════════════════════════════
             print("\n   💾 Gravando comparação no histórico de aprendizado...")
             
+            _tipo_comp = "estrategia" if _comparar_estr_hist else "probabilistico"
+            if _comparar_estr_hist and _comparar_todos_prob_hist:
+                _tipo_comp = "composto_todos_x_todos" if _modo_composto_hist == 'todos_x_todos' else "composto_estrategia_x_prob"
+
             comparacao_para_gravar = {
                 "timestamp": datetime.now().isoformat(),
-                "tipo": "estrategia" if _comparar_estr_hist else "probabilistico",
+                "tipo": _tipo_comp,
                 "nivel": niveis_testar[0] if len(niveis_testar) > 0 else 0,  # Primeiro nível testado
                 "range": {
                     "inicio": concurso_inicio,
                     "fim": concurso_fim,
                     "qtd": total_testes
                 },
-                "estrategias_testadas": [_v[0] for _v in _variantes_comp] if _comparar_estr_hist else [],
-                "filtros_testados": [_v[3].strip() for _v in _variantes_comp] if not _comparar_estr_hist else [],
+                "estrategias_testadas": sorted(list(set([_v[0] for _v in _variantes_comp]))) if (_comparar_estr_hist or (_comparar_estr_hist and _comparar_todos_prob_hist)) else [],
+                "filtros_testados": sorted(list(set([_v[3].strip() for _v in _variantes_comp]))) if (_comparar_todos_prob_hist or (_comparar_estr_hist and _comparar_todos_prob_hist)) else [],
                 "resultados": [],
                 "vencedora": {
                     "indice": _melhor_vi,
-                    "nome": _rod_m['label_est'] if _comparar_estr_hist else _rod_m['label_prob'].strip(),
+                    "nome": _lbl_m,
                     "taxa_exclusao": _rod_m['taxa_exc'],
                     "jackpots": {str(_nv): _rod_m['stats'][_nv]['jackpots'] for _nv in niveis_testar},
                     "roi_medio": max([
@@ -16251,7 +16601,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         for _nv in niveis_testar
                     ]) if niveis_testar else 0,
                 },
-                "notas": f"Comparação automática de {'estratégias' if _comparar_estr_hist else 'filtros probabilísticos'}"
+                "notas": "Comparação automática de filtro composto" if (_comparar_estr_hist and _comparar_todos_prob_hist) else f"Comparação automática de {'estratégias' if _comparar_estr_hist else 'filtros probabilísticos'}"
             }
             
             # Montar resultados de cada variante
@@ -16273,8 +16623,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     ]) if niveis_testar else 0,
                 }
                 
-                if _comparar_estr_hist:
-                    _res_item['estrategia'] = _rod_key
+                if _comparar_estr_hist and _comparar_todos_prob_hist:
+                    _res_item['estrategia'] = _rod_data['label_est']
+                    _res_item['filtro_prob'] = _rod_data['label_prob'].strip()
+                    _res_item['nome'] = f"{_rod_data['label_est']} + {_rod_data['label_prob'].strip()}"
+                elif _comparar_estr_hist:
+                    _res_item['estrategia'] = _rod_data['label_est']
                     _res_item['nome'] = _rod_data['label_est']
                 else:
                     _res_item['filtro_prob'] = _rod_data['label_prob'].strip()
@@ -17836,128 +18190,34 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             todas_combos = list(combinations(pool_23, 15))
             print(f"   ✅ {len(todas_combos):,} combinações em {time.time()-inicio:.1f}s")
         
-        # Parâmetros por nível - SINCRONIZADO com Gerador Pool 23 (Opção 31)
-        # META: Progressão suave de 100% → 1%
-        # INCLUI: Débito posicional (50.7% assertividade - 10x vs aleatório)
-        # INCLUI: Filtros Posicionais Dinâmicos (piores números por posição) ⭐NOVO
-        # INCLUI: Filtro Qtde 6-25 (10-13 números do intervalo 6-25) ⭐NOVO
-        FILTROS_POR_NIVEL = {
-            0: {},  # Sem filtros - 490k combos (100%) - PURO
-            1: {
-                # NÍVEL 1: SUAVE - soma + débito posicional + qtde 6-25 (meta: ~350k, 70%)
-                'soma_min': 175, 'soma_max': 235,
-                'usar_debito_posicional': True,
-                'debito_min_matches': 1,
-                # NOVOS FILTROS POSICIONAIS
-                'usar_filtro_qtde_6_25': True,
-                'qtde_6_25_valores': [10, 11, 12, 13],
-            },
-            2: {
-                # NÍVEL 2: BÁSICO - soma + reversão + débito + piores hist (meta: ~250k, 50%)
-                'soma_min': 180, 'soma_max': 230,
-                'usar_reversao_soma': True,
-                'usar_debito_posicional': True,
-                'debito_min_matches': 2,
-                # NOVOS FILTROS POSICIONAIS
-                'usar_filtro_qtde_6_25': True,
-                'qtde_6_25_valores': [10, 11, 12, 13],
-                'usar_filtro_piores_historico': True,
-                'piores_tolerancia_historico': 0,
-            },
-            3: {
-                # NÍVEL 3: EQUILIBRADO - adiciona pares/primos + piores rec (meta: ~150k, 30%)
-                'soma_min': 185, 'soma_max': 225,
-                'pares_min': 5, 'pares_max': 10,
-                'primos_min': 3, 'primos_max': 8,
-                'usar_reversao_soma': True,
-                # 'usar_compensacao': True,  # DESATIVADO: eliminou jackpot (saldo +9 rejeitado)
-                'usar_debito_posicional': True,
-                'debito_min_matches': 2,
-                # NOVOS FILTROS POSICIONAIS
-                'usar_filtro_qtde_6_25': True,
-                'qtde_6_25_valores': [10, 11, 12, 13],
-                'usar_filtro_piores_historico': True,
-                'piores_tolerancia_historico': 0,
-                'usar_filtro_piores_recente': True,
-                'piores_tolerancia_recente': 5,  # Aumentado: 3→5 (gradiente 5→4→3→2)
-            },
-            4: {
-                # NÍVEL 4: MODERADO - filtros máximos (meta: ~80k, 16%)
-                'soma_min': 190, 'soma_max': 220,
-                'pares_min': 6, 'pares_max': 9,
-                'primos_min': 4, 'primos_max': 7,
-                'seq_max': 6,
-                # 'usar_compensacao': True,  # DESATIVADO: eliminou jackpot (saldo +9 rejeitado)
-                'usar_reversao_soma': True,
-                # 'usar_improbabilidade_posicional': True,  # DESATIVADO: estava eliminando jackpots (4 falhas em 18 backtests)
-                'usar_debito_posicional': True,
-                'debito_min_matches': 3,
-                # NOVOS FILTROS POSICIONAIS
-                'usar_filtro_qtde_6_25': True,
-                'qtde_6_25_valores': [10, 11, 12, 13],
-                'usar_filtro_piores_historico': True,
-                'piores_tolerancia_historico': 0,
-                'usar_filtro_piores_recente': True,
-                'piores_tolerancia_recente': 4,  # Aumentado: 2→4 (gradiente 5→4→3→2)
-            },
-            5: {
-                # NÍVEL 5: AGRESSIVO - OTIMIZADO PARA ROI (meta: ~30k, 6%)
-                # AJUSTE: Soma ampliada baseado em análise de 14 acertos (176-205)
-                'soma_min': 180, 'soma_max': 210,  # Antes: 195-215
-                'pares_min': 6, 'pares_max': 9,
-                'primos_min': 3, 'primos_max': 7,  # Ampliado
-                'seq_max': 5,
-                'rep_min': 4, 'rep_max': 11,
-                'nucleo_min': 8,  # Reduzido
-                # 'usar_compensacao': True,  # DESATIVADO: eliminou jackpot (saldo +9 rejeitado)
-                'usar_reversao_soma': True,
-                # 'usar_improbabilidade_posicional': True,  # DESATIVADO: estava eliminando jackpots (4 falhas em 18 backtests)
-                'usar_debito_posicional': True,
-                'debito_min_matches': 3,
-                # NOVOS FILTROS POSICIONAIS
-                'usar_filtro_qtde_6_25': True,
-                'qtde_6_25_valores': [10, 11, 12, 13],
-                'usar_filtro_piores_historico': True,
-                'piores_tolerancia_historico': 0,
-                'usar_filtro_piores_recente': True,
-                'piores_tolerancia_recente': 3,  # Aumentado: 1→3 (gradiente 5→4→3→2)
-            },
-            6: {
-                # NÍVEL 6: ULTRA - FOCO EM PRECISÃO (meta: <N5 combos, melhor ROI)
-                # ESTRATÉGIA: N5 + soma mais estreita + piores_recente=1 + rep_min=5
-                # N6 filtra A PARTIR das combos do N5 (garante N6 ⊆ N5)
-                'soma_min': 185, 'soma_max': 208,  # Mais estreita que N5 (180-210)
-                'pares_min': 6, 'pares_max': 9,
-                'primos_min': 3, 'primos_max': 7,
-                'seq_max': 5,
-                'rep_min': 5, 'rep_max': 11,        # Mais restritivo que N5 (rep_min=4)
-                'nucleo_min': 8,
-                # 'usar_compensacao': True,  # DESATIVADO
-                'usar_reversao_soma': True,
-                # 'usar_improbabilidade_posicional': True,  # DESATIVADO
-                'usar_debito_posicional': True,
-                'debito_min_matches': 3,
-                # NOVOS FILTROS POSICIONAIS
-                'usar_filtro_qtde_6_25': True,
-                'qtde_6_25_valores': [10, 11, 12, 13],
-                'usar_filtro_piores_historico': True,
-                'piores_tolerancia_historico': 0,
-                'usar_filtro_piores_recente': True,
-                'piores_tolerancia_recente': 1,  # Mais apertado que N5 (tol=3): garante redução
-            },
-            7: {
-                'usar_filtro_posicoes_frias': True,
-                'posicoes_frias_janela': 6,
-                'posicoes_frias_tolerancia': 4,
-                'nivel_base': 0,
-            },
-            8: {
-                'usar_filtro_posicoes_frias': True,
-                'posicoes_frias_janela': 6,
-                'posicoes_frias_tolerancia': 3,
-                'nivel_base': 'cascata',
-            },
-        }
+        # ═══════════════════════════════════════════════════════════════════
+        # CARREGAR FILTROS DO MÓDULO CENTRALIZADO (28/03/2026)
+        # Sincronizado com Option 31 e 30.4
+        # ═══════════════════════════════════════════════════════════════════
+        import copy
+        import sys
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if base_path not in sys.path:
+            sys.path.insert(0, base_path)
+        
+        try:
+            from configuracao_filtros_pool23 import FILTROS_POR_NIVEL as FILTROS_BASE, FiltroTrios
+            FILTROS_POR_NIVEL = copy.deepcopy(FILTROS_BASE)
+            filtro_trios_instancia = FiltroTrios()
+            print("   ✅ Filtros carregados do módulo centralizado")
+        except ImportError as e:
+            print(f"   ⚠️ Módulo centralizado não encontrado ({e}), usando fallback")
+            FILTROS_POR_NIVEL = {
+                0: {}, 1: {'soma_min': 170, 'soma_max': 235},
+                2: {'soma_min': 175, 'soma_max': 230, 'pares_min': 6, 'pares_max': 9},
+                3: {'soma_min': 180, 'soma_max': 225, 'pares_min': 6, 'pares_max': 9, 'seq_max': 6},
+                4: {'soma_min': 180, 'soma_max': 220, 'pares_min': 6, 'pares_max': 9, 'seq_max': 5},
+                5: {'soma_min': 180, 'soma_max': 215, 'pares_min': 6, 'pares_max': 9, 'seq_max': 5, 'nucleo_min': 8},
+                6: {'soma_min': 185, 'soma_max': 210, 'pares_min': 7, 'pares_max': 8, 'seq_max': 5, 'nucleo_min': 8},
+                7: {'usar_filtro_posicoes_frias': True, 'posicoes_frias_janela': 6, 'posicoes_frias_tolerancia': 4, 'nivel_base': 0},
+                8: {'usar_filtro_posicoes_frias': True, 'posicoes_frias_janela': 6, 'posicoes_frias_tolerancia': 3, 'nivel_base': 'cascata'},
+            }
+            filtro_trios_instancia = None
         
         # ═══════════════════════════════════════════════════════════════════
         # CALCULAR PIORES NÚMEROS POR POSIÇÃO (para filtros posicionais)
@@ -18559,7 +18819,24 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             
             if not tem_jackpot_n0:
                 print(f"\n   ⚠️ ANOMALIA: Pool 23 correto mas Nível 0 não tem jackpot?")
-                print(f"      Verificar se a combinação vencedora estava no arquivo.")
+                
+                # Verificar se o problema foi causado por números fixos incorretos
+                if numeros_fixos:
+                    fixos_fora_resultado = numeros_fixos - resultado_validacao
+                    fixos_no_resultado = numeros_fixos & resultado_validacao
+                    
+                    if fixos_fora_resultado:
+                        print(f"\n   🚨 CAUSA IDENTIFICADA: NÚMEROS FIXOS INCORRETOS!")
+                        print(f"      Você fixou: {sorted(numeros_fixos)}")
+                        print(f"      ✅ Acertou: {sorted(fixos_no_resultado)} ({len(fixos_no_resultado)}/{len(numeros_fixos)})")
+                        print(f"      ❌ Errou:   {sorted(fixos_fora_resultado)}")
+                        print(f"      → Esses números NÃO saíram, eliminando a combinação vencedora!")
+                        print(f"      💡 Solução: Rodar novamente SEM números fixos ou fixar apenas números certos.")
+                    else:
+                        print(f"      Verificar se a combinação vencedora estava no arquivo.")
+                        print(f"      (Números fixos OK: {sorted(numeros_fixos)} - todos no resultado)")
+                else:
+                    print(f"      Verificar se a combinação vencedora estava no arquivo.")
             else:
                 print(f"\n   ✅ Nível 0 tem {resultados_validacao[0]['acertos'][15]} jackpot(s) - ESPERADO!")
         

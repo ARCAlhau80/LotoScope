@@ -142,29 +142,29 @@ class AnalisadorCombinacoesGeradas:
         '3_impares': 0.808,
     }
     
-    # Configuração padrão dos filtros
+    # Configuração padrão dos filtros - CALIBRADO via benchmark_inteligente_filtros (28/03/2026)
     FILTROS_PADRAO = {
-        'soma_min': 180,
-        'soma_max': 220,
-        'pares_min': 6,
-        'pares_max': 9,
-        'primos_min': 4,
-        'primos_max': 7,
-        'fibonacci_min': 3,
+        'soma_min': 160,               # EXPANDIDO: reais chegam a 162
+        'soma_max': 245,               # EXPANDIDO: reais chegam a 241
+        'pares_min': 5,                # EXPANDIDO: reais incluem 5
+        'pares_max': 10,               # EXPANDIDO: reais incluem 10
+        'primos_min': 3,               # EXPANDIDO: reais chegam a 3
+        'primos_max': 8,               # EXPANDIDO: reais chegam a 8
+        'fibonacci_min': 2,            # EXPANDIDO: reais incluem 2
         'fibonacci_max': 6,
         'sequencias_max': 15,          # DESATIVADO (era 4) - eliminava 57% das boas
-        'faixa_min': 2,
-        'faixa_max': 5,
+        'faixa_min': 1,                # EXPANDIDO: benchmark mostrou 34% rejeição com 2-5
+        'faixa_max': 6,                # EXPANDIDO: permite distribuições extremas reais
         'linha_min': 1,
         'linha_max': 5,                # RELAXADO (era 2-4) - eliminava 42% das boas
         'coluna_min': 1,
         'coluna_max': 5,               # RELAXADO (era 2-4) - eliminava 44% das boas
         'quentes_min': 4,
         'frios_max': 15,               # DESATIVADO (era 5) - eliminava 65% das boas
-        'repeticoes_min': 7,           # ATUALIZADO: 96.6% dos sorteios têm 7-11 repetidos
-        'repeticoes_max': 11,          # ATUALIZADO: baseado em análise estatística real
+        'repeticoes_min': 7,           # CALIBRADO: 96.6% dos sorteios têm 7-11 repetidos
+        'repeticoes_max': 12,          # EXPANDIDO: benchmark mostrou valores até 12
         'repeticoes_mesma_posicao_min': 0,   # NOVO: repetidos na MESMA posição
-        'repeticoes_mesma_posicao_max': 5,   # NOVO: 84.6% dos sorteios têm 0-5
+        'repeticoes_mesma_posicao_max': 9,   # Expandido: benchmark mostrou valores reais até 9
         'trios_quentes_min': 0,        # DESATIVADO (era 20) - eliminava 53% das boas
         'trios_frios_max': 500,        # DESATIVADO (era 10) - eliminava 75% das boas
         'trios_atrasados_min': 3,      # mínimo de trios atrasados (bonus)
@@ -2063,6 +2063,378 @@ class AnalisadorCombinacoesGeradas:
         
         return soma / len(resultados)
 
+    def benchmark_inteligente_filtros(self, ultimos_n: int = 100) -> Dict:
+        """
+        🧠 BENCHMARK INTELIGENTE DE FILTROS
+        
+        Analisa os últimos N concursos e verifica:
+        1. Quais combinações vencedoras SERIAM REJEITADAS pelos filtros atuais
+        2. Para cada rejeição, identifica QUAL FILTRO foi responsável
+        3. Gera ranking de filtros mais "assassinos" de jackpots
+        
+        Isso permite ajustar os filtros para não eliminar combinações vencedoras!
+        
+        Returns:
+            Dict com estatísticas detalhadas de cada filtro
+        """
+        print("\n" + "=" * 80)
+        print("🧠 BENCHMARK INTELIGENTE DE FILTROS")
+        print("=" * 80)
+        print(f"📊 Analisando últimos {ultimos_n} concursos REAIS...")
+        print("🎯 Objetivo: Identificar quais filtros REJEITARIAM os resultados reais")
+        print()
+        
+        if not HAS_PYODBC:
+            print("❌ PyODBC não disponível - não é possível conectar ao banco")
+            return {}
+        
+        # Carregar resultados históricos do banco
+        try:
+            conn = pyodbc.connect(self.CONN_STR)
+            cursor = conn.cursor()
+            
+            # Buscar últimos N concursos COM dados de repetição
+            cursor.execute(f"""
+                SELECT TOP {ultimos_n + 1}
+                    r1.Concurso, 
+                    r1.N1, r1.N2, r1.N3, r1.N4, r1.N5, 
+                    r1.N6, r1.N7, r1.N8, r1.N9, r1.N10, 
+                    r1.N11, r1.N12, r1.N13, r1.N14, r1.N15,
+                    r1.QtdeRepetidos,
+                    r1.RepetidosMesmaPosicao
+                FROM Resultados_INT r1
+                ORDER BY r1.Concurso DESC
+            """)
+            
+            rows = cursor.fetchall()
+            conn.close()
+            
+            if len(rows) < 2:
+                print("❌ Dados insuficientes no banco")
+                return {}
+            
+            print(f"✅ {len(rows)} concursos carregados do banco")
+            
+        except Exception as e:
+            print(f"❌ Erro ao conectar ao banco: {e}")
+            return {}
+        
+        # Estatísticas por filtro
+        filtros_stats = {
+            'soma': {'rejeitou': 0, 'valores_rejeitados': [], 'limite': f"{self.filtros['soma_min']}-{self.filtros['soma_max']}"},
+            'pares': {'rejeitou': 0, 'valores_rejeitados': [], 'limite': f"{self.filtros['pares_min']}-{self.filtros['pares_max']}"},
+            'primos': {'rejeitou': 0, 'valores_rejeitados': [], 'limite': f"{self.filtros['primos_min']}-{self.filtros['primos_max']}"},
+            'fibonacci': {'rejeitou': 0, 'valores_rejeitados': [], 'limite': f"{self.filtros['fibonacci_min']}-{self.filtros['fibonacci_max']}"},
+            'sequencias': {'rejeitou': 0, 'valores_rejeitados': [], 'limite': f"≤{self.filtros['sequencias_max']}"},
+            'faixas': {'rejeitou': 0, 'valores_rejeitados': [], 'limite': f"{self.filtros['faixa_min']}-{self.filtros['faixa_max']}/faixa"},
+            'linhas': {'rejeitou': 0, 'valores_rejeitados': [], 'limite': f"{self.filtros['linha_min']}-{self.filtros['linha_max']}/linha"},
+            'colunas': {'rejeitou': 0, 'valores_rejeitados': [], 'limite': f"{self.filtros['coluna_min']}-{self.filtros['coluna_max']}/coluna"},
+            'repeticoes': {'rejeitou': 0, 'valores_rejeitados': [], 'limite': f"{self.filtros['repeticoes_min']}-{self.filtros['repeticoes_max']}"},
+            'repeticoes_mesma_posicao': {'rejeitou': 0, 'valores_rejeitados': [], 'limite': f"{self.filtros['repeticoes_mesma_posicao_min']}-{self.filtros['repeticoes_mesma_posicao_max']}"},
+        }
+        
+        concursos_rejeitados = []
+        concursos_aprovados = 0
+        
+        # Processar cada concurso (exceto o primeiro que não tem anterior)
+        for i in range(len(rows) - 1):
+            row = rows[i]
+            row_anterior = rows[i + 1]
+            
+            concurso = row[0]
+            numeros = [row[j] for j in range(1, 16)]
+            qtde_repetidos_real = row[16]  # Do banco
+            rep_mesma_posicao_real = row[17]  # Do banco
+            numeros_anterior = [row_anterior[j] for j in range(1, 16)]
+            
+            # Calcular métricas da combinação vencedora
+            soma = sum(numeros)
+            pares = sum(1 for n in numeros if n % 2 == 0)
+            primos = sum(1 for n in numeros if n in self.PRIMOS)
+            fibonacci = sum(1 for n in numeros if n in self.FIBONACCI)
+            
+            # Sequências
+            nums_ord = sorted(numeros)
+            max_seq = 1
+            seq_atual = 1
+            for j in range(1, len(nums_ord)):
+                if nums_ord[j] == nums_ord[j-1] + 1:
+                    seq_atual += 1
+                    max_seq = max(max_seq, seq_atual)
+                else:
+                    seq_atual = 1
+            sequencias = max_seq
+            
+            # Faixas
+            faixas = {
+                'f1': sum(1 for n in numeros if 1 <= n <= 5),
+                'f2': sum(1 for n in numeros if 6 <= n <= 10),
+                'f3': sum(1 for n in numeros if 11 <= n <= 15),
+                'f4': sum(1 for n in numeros if 16 <= n <= 20),
+                'f5': sum(1 for n in numeros if 21 <= n <= 25),
+            }
+            
+            # Linhas/Colunas
+            linhas = {}
+            colunas = {}
+            for num_linha, nums in self.LINHAS.items():
+                linhas[num_linha] = len(set(numeros) & set(nums))
+            for num_coluna, nums in self.COLUNAS.items():
+                colunas[num_coluna] = len(set(numeros) & set(nums))
+            
+            # Repetições (calcular mesmo se tiver no banco para comparar)
+            repeticoes = len(set(numeros) & set(numeros_anterior))
+            
+            # Repetições mesma posição
+            rep_mesma_pos = 0
+            for j in range(15):
+                if numeros[j] == numeros_anterior[j]:
+                    rep_mesma_pos += 1
+            
+            # Verificar cada filtro
+            rejeitado = False
+            filtros_falha = []
+            
+            # Soma
+            if not (self.filtros['soma_min'] <= soma <= self.filtros['soma_max']):
+                filtros_stats['soma']['rejeitou'] += 1
+                filtros_stats['soma']['valores_rejeitados'].append(soma)
+                filtros_falha.append(f"soma={soma}")
+                rejeitado = True
+            
+            # Pares
+            if not (self.filtros['pares_min'] <= pares <= self.filtros['pares_max']):
+                filtros_stats['pares']['rejeitou'] += 1
+                filtros_stats['pares']['valores_rejeitados'].append(pares)
+                filtros_falha.append(f"pares={pares}")
+                rejeitado = True
+            
+            # Primos
+            if not (self.filtros['primos_min'] <= primos <= self.filtros['primos_max']):
+                filtros_stats['primos']['rejeitou'] += 1
+                filtros_stats['primos']['valores_rejeitados'].append(primos)
+                filtros_falha.append(f"primos={primos}")
+                rejeitado = True
+            
+            # Fibonacci
+            if not (self.filtros['fibonacci_min'] <= fibonacci <= self.filtros['fibonacci_max']):
+                filtros_stats['fibonacci']['rejeitou'] += 1
+                filtros_stats['fibonacci']['valores_rejeitados'].append(fibonacci)
+                filtros_falha.append(f"fibonacci={fibonacci}")
+                rejeitado = True
+            
+            # Sequências
+            if sequencias > self.filtros['sequencias_max']:
+                filtros_stats['sequencias']['rejeitou'] += 1
+                filtros_stats['sequencias']['valores_rejeitados'].append(sequencias)
+                filtros_falha.append(f"sequencias={sequencias}")
+                rejeitado = True
+            
+            # Faixas
+            faixa_falhou = False
+            for f, v in faixas.items():
+                if not (self.filtros['faixa_min'] <= v <= self.filtros['faixa_max']):
+                    faixa_falhou = True
+                    filtros_stats['faixas']['valores_rejeitados'].append(f"{f}={v}")
+            if faixa_falhou:
+                filtros_stats['faixas']['rejeitou'] += 1
+                filtros_falha.append("faixas")
+                rejeitado = True
+            
+            # Linhas
+            linha_falhou = False
+            for l, v in linhas.items():
+                if not (self.filtros['linha_min'] <= v <= self.filtros['linha_max']):
+                    linha_falhou = True
+                    filtros_stats['linhas']['valores_rejeitados'].append(f"L{l}={v}")
+            if linha_falhou:
+                filtros_stats['linhas']['rejeitou'] += 1
+                filtros_falha.append("linhas")
+                rejeitado = True
+            
+            # Colunas
+            coluna_falhou = False
+            for c, v in colunas.items():
+                if not (self.filtros['coluna_min'] <= v <= self.filtros['coluna_max']):
+                    coluna_falhou = True
+                    filtros_stats['colunas']['valores_rejeitados'].append(f"C{c}={v}")
+            if coluna_falhou:
+                filtros_stats['colunas']['rejeitou'] += 1
+                filtros_falha.append("colunas")
+                rejeitado = True
+            
+            # Repetições
+            if not (self.filtros['repeticoes_min'] <= repeticoes <= self.filtros['repeticoes_max']):
+                filtros_stats['repeticoes']['rejeitou'] += 1
+                filtros_stats['repeticoes']['valores_rejeitados'].append(repeticoes)
+                filtros_falha.append(f"repeticoes={repeticoes}")
+                rejeitado = True
+            
+            # Repetições mesma posição
+            if not (self.filtros['repeticoes_mesma_posicao_min'] <= rep_mesma_pos <= self.filtros['repeticoes_mesma_posicao_max']):
+                filtros_stats['repeticoes_mesma_posicao']['rejeitou'] += 1
+                filtros_stats['repeticoes_mesma_posicao']['valores_rejeitados'].append(rep_mesma_pos)
+                filtros_falha.append(f"mesma_pos={rep_mesma_pos}")
+                rejeitado = True
+            
+            if rejeitado:
+                concursos_rejeitados.append({
+                    'concurso': concurso,
+                    'numeros': numeros,
+                    'filtros_falha': filtros_falha,
+                    'metricas': {
+                        'soma': soma, 'pares': pares, 'primos': primos,
+                        'fibonacci': fibonacci, 'sequencias': sequencias,
+                        'repeticoes': repeticoes, 'rep_mesma_pos': rep_mesma_pos
+                    }
+                })
+            else:
+                concursos_aprovados += 1
+        
+        total_analisados = len(rows) - 1
+        total_rejeitados = len(concursos_rejeitados)
+        
+        # Exibir resultados
+        print("\n" + "-" * 80)
+        print("📊 RESULTADO DA ANÁLISE DOS CONCURSOS REAIS:")
+        print("-" * 80)
+        print(f"   Total analisado: {total_analisados} concursos")
+        print(f"   ✅ APROVADOS pelos filtros: {concursos_aprovados} ({concursos_aprovados/total_analisados*100:.1f}%)")
+        print(f"   ❌ REJEITADOS pelos filtros: {total_rejeitados} ({total_rejeitados/total_analisados*100:.1f}%)")
+        
+        print("\n" + "-" * 80)
+        print("🎯 RANKING DE FILTROS QUE MAIS REJEITAM RESULTADOS REAIS:")
+        print("-" * 80)
+        
+        # Ordenar por quantidade de rejeições
+        filtros_ordenados = sorted(filtros_stats.items(), 
+                                   key=lambda x: x[1]['rejeitou'], 
+                                   reverse=True)
+        
+        print(f"{'Filtro':<25} {'Rejeitou':<12} {'%':<8} {'Limite Atual':<20} {'Impacto'}")
+        print("-" * 80)
+        
+        for filtro, stats in filtros_ordenados:
+            rejeitou = stats['rejeitou']
+            pct = rejeitou / total_analisados * 100 if total_analisados > 0 else 0
+            limite = stats['limite']
+            
+            if pct > 10:
+                impacto = "🔴 CRÍTICO - Ajustar!"
+            elif pct > 5:
+                impacto = "🟡 MODERADO"
+            elif pct > 0:
+                impacto = "🟢 ACEITÁVEL"
+            else:
+                impacto = "✅ PERFEITO"
+            
+            print(f"{filtro:<25} {rejeitou:<12} {pct:>5.1f}%   {limite:<20} {impacto}")
+            
+            # Mostrar valores problemáticos
+            if stats['valores_rejeitados'] and pct > 0:
+                valores = stats['valores_rejeitados'][:10]  # Limitar a 10
+                if isinstance(valores[0], int):
+                    valores_unicos = list(set(valores))
+                    valores_unicos.sort()
+                    print(f"   └─ Valores rejeitados: {valores_unicos}")
+        
+        # Mostrar exemplos de concursos rejeitados
+        if concursos_rejeitados:
+            print("\n" + "-" * 80)
+            print("❌ EXEMPLOS DE CONCURSOS REAIS QUE SERIAM REJEITADOS:")
+            print("-" * 80)
+            
+            for i, conc in enumerate(concursos_rejeitados[:10], 1):
+                numeros_str = " - ".join(f"{n:02d}" for n in conc['numeros'])
+                print(f"\n   {i}. Concurso {conc['concurso']}:")
+                print(f"      Números: {numeros_str}")
+                print(f"      Métricas: soma={conc['metricas']['soma']}, pares={conc['metricas']['pares']}, "
+                      f"primos={conc['metricas']['primos']}, rep={conc['metricas']['repeticoes']}, "
+                      f"mesma_pos={conc['metricas']['rep_mesma_pos']}")
+                print(f"      ❌ Falhou em: {', '.join(conc['filtros_falha'])}")
+        
+        # Sugestões de ajuste
+        print("\n" + "-" * 80)
+        print("💡 SUGESTÕES DE AJUSTE:")
+        print("-" * 80)
+        
+        sugestoes = []
+        
+        for filtro, stats in filtros_ordenados:
+            if stats['rejeitou'] > 0 and stats['valores_rejeitados']:
+                valores = [v for v in stats['valores_rejeitados'] if isinstance(v, int)]
+                if valores:
+                    min_val = min(valores)
+                    max_val = max(valores)
+                    print(f"   • {filtro}: valores reais variam de {min_val} a {max_val}")
+                    print(f"     Sugestão: expandir limite para incluir essa faixa")
+                    
+                    # Gerar sugestões estruturadas
+                    if filtro in ['soma', 'repeticoes', 'repeticoes_mesma_posicao']:
+                        # Filtros com min/max
+                        filtro_min = f"{filtro}_min"
+                        filtro_max = f"{filtro}_max"
+                        if filtro_min in self.filtros and min_val < self.filtros[filtro_min]:
+                            sugestoes.append({
+                                'filtro': filtro_min,
+                                'tipo': 'expandir_min',
+                                'valor_atual': self.filtros[filtro_min],
+                                'valor_sugerido': min_val,
+                                'motivo': f"Valores reais chegam a {min_val}"
+                            })
+                        if filtro_max in self.filtros and max_val > self.filtros[filtro_max]:
+                            sugestoes.append({
+                                'filtro': filtro_max,
+                                'tipo': 'expandir_max',
+                                'valor_atual': self.filtros[filtro_max],
+                                'valor_sugerido': max_val,
+                                'motivo': f"Valores reais chegam a {max_val}"
+                            })
+                    elif filtro in ['pares', 'primos', 'fibonacci']:
+                        # Filtros numéricos com min/max
+                        filtro_min = f"{filtro}_min"
+                        filtro_max = f"{filtro}_max"
+                        if filtro_min in self.filtros and min_val < self.filtros[filtro_min]:
+                            sugestoes.append({
+                                'filtro': filtro_min,
+                                'tipo': 'expandir_min',
+                                'valor_atual': self.filtros[filtro_min],
+                                'valor_sugerido': min_val,
+                                'motivo': f"Valores reais chegam a {min_val}"
+                            })
+                        if filtro_max in self.filtros and max_val > self.filtros[filtro_max]:
+                            sugestoes.append({
+                                'filtro': filtro_max,
+                                'tipo': 'expandir_max',
+                                'valor_atual': self.filtros[filtro_max],
+                                'valor_sugerido': max_val,
+                                'motivo': f"Valores reais chegam a {max_val}"
+                            })
+                    elif filtro == 'sequencias':
+                        filtro_max = "sequencias_max"
+                        if max_val > self.filtros[filtro_max]:
+                            sugestoes.append({
+                                'filtro': filtro_max,
+                                'tipo': 'expandir_max',
+                                'valor_atual': self.filtros[filtro_max],
+                                'valor_sugerido': max_val,
+                                'motivo': f"Sequências reais chegam a {max_val}"
+                            })
+        
+        if sugestoes:
+            print(f"\n   📋 {len(sugestoes)} ajustes sugeridos para aplicação automática")
+        
+        print("\n" + "=" * 80)
+        
+        return {
+            'total_analisados': total_analisados,
+            'aprovados': concursos_aprovados,
+            'rejeitados': total_rejeitados,
+            'filtros_stats': filtros_stats,
+            'concursos_rejeitados': concursos_rejeitados,
+            'sugestoes': sugestoes
+        }
+
 
 def main():
     """Função principal interativa v2.0"""
@@ -2164,11 +2536,12 @@ def main():
         print("   1. Benchmark AUTOMÁTICO (últimos 100 concursos)")
         print("   2. Benchmark CONCURSO ESPECÍFICO (informar número)")
         print("   3. Benchmark MANUAL (digitar 15 números)")
-        print("   4. Benchmark COMPARATIVO (valida eficácia dos filtros) ⭐ NOVO")
-        print("   5. Pular benchmark / Sair do loop")
+        print("   4. Benchmark COMPARATIVO (valida eficácia dos filtros)")
+        print("   5. Benchmark INTELIGENTE (analisa QUAIS filtros rejeitam acertos) ⭐ NOVO")
+        print("   6. Pular benchmark / Sair do loop")
         print()
         
-        opcao_bench = input("   Escolha (1-5) [1]: ").strip() or "1"
+        opcao_bench = input("   Escolha (1-6) [1]: ").strip() or "1"
         
         if opcao_bench == "1":
             analisador.benchmark_automatico(melhores, ultimos_n=100)
@@ -2257,8 +2630,41 @@ def main():
             else:
                 analisador.benchmark_comparativo(ultimos_n=n_concursos, numeros_manual=numeros_manual, modo=modo)
         
+        elif opcao_bench == "5":
+            print("\n🔬 BENCHMARK INTELIGENTE - Análise de filtros que rejeitam resultados REAIS")
+            print("   Este benchmark analisa quais filtros rejeitariam os sorteios oficiais.")
+            print("   Útil para calibrar filtros que possam estar muito restritivos.")
+            print()
+            n_concursos = input("   Quantos concursos analisar? (20-200) [100]: ").strip()
+            n_concursos = int(n_concursos) if n_concursos.isdigit() else 100
+            n_concursos = max(20, min(200, n_concursos))
+            
+            resultado = analisador.benchmark_inteligente_filtros(ultimos_n=n_concursos)
+            
+            # Se houve sugestões, perguntar se quer aplicar
+            if resultado and resultado.get('sugestoes'):
+                print("\n" + "=" * 60)
+                print("💡 APLICAR AJUSTES SUGERIDOS?")
+                print("=" * 60)
+                aplicar = input("   Deseja aplicar os ajustes sugeridos? (s/n) [n]: ").strip().lower()
+                
+                if aplicar == 's':
+                    for sug in resultado['sugestoes']:
+                        filtro = sug['filtro']
+                        tipo = sug['tipo']
+                        novo_valor = sug['valor_sugerido']
+                        
+                        if filtro in analisador.filtros:
+                            print(f"   ✅ Aplicando: {filtro} = {novo_valor}")
+                            analisador.filtros[filtro] = novo_valor
+                    
+                    print("\n   🔄 Filtros atualizados! Refazendo análise das combinações...")
+                    avaliacoes = analisador.analisar_todas(validar_hist)
+                    melhores = analisador.filtrar_melhores(avaliacoes)
+                    print(f"   📊 Novas combinações aprovadas: {len(melhores):,}")
+        
         else:
-            # Opção 5 ou qualquer outra = sair do loop
+            # Opção 6 ou qualquer outra = sair do loop
             continuar_benchmark = False
             continue
         

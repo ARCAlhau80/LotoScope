@@ -5,7 +5,7 @@
 > trabalhando no projeto LotoScope. Mantenha-o atualizado após cada sessão significativa.
 
 ```
-📅 ÚLTIMA ATUALIZAÇÃO: 24/03/2026
+📅 ÚLTIMA ATUALIZAÇÃO: 30/03/2026
 👤 AUTOR: AR CALHAU
 🤖 VALIDADO POR: Claude Sonnet 4.6
 ```
@@ -489,6 +489,94 @@ def carregar_combinacoes(arquivo):
 ---
 
 ## 📝 HISTÓRICO DE SESSÕES IMPORTANTES
+
+### 31/03/2026 - NOVAS FEATURES: Neural FRIOS Diagnostic + Neural PURO como padrão ⭐⭐ NOVO!
+
+**1. Diagnóstico "FRIOS FAVORECIDOS PELA NEURAL" — Forma 1**
+
+Bloco diagnóstico adicionado em **DOIS lugares** no `super_menu.py`:
+- **Opção 31** (~linha 12537): após o ranking híbrido neural, exibe números frios (ausentes ≥ 2 sorteios) ordenados por score neural ascendente. Score baixo = neural prevê que o número vai retornar.
+- **Opção 30→[6]** (~linha 15470): após o resumo do benchmark, carrega a rede neural fresh, chama `_extrair_features(idx_ultimo)` + `obter_scores()`, exibe a mesma tabela diagnóstica.
+
+Sistema de rating:
+- ⭐ FORTE: score < 0.30
+- candidato: score < 0.45
+- neutro: demais
+
+Exibe até 5 candidatos frios. **Somente diagnóstico — não altera a lógica de geração.**
+Validado: última execução identificou {3, 6, 23} com scores 0.400, 0.404, 0.443.
+
+---
+
+**2. Estratégia Neural PURO — novo padrão na Opção 31**
+
+O menu de estratégia da Opção 31 agora apresenta **TRÊS opções**:
+```
+[N] Neural PURO ⭐⭐ MELHOR!   ← NOVO, agora padrão (ENTER = N)
+[H] Híbrido Neural+INVERTIDA   ← antigo padrão (+3.3pp)
+[I] INVERTIDA v3.0             ← clássico
+```
+
+**Benchmark validado (31/03/2026):**
+- Neural PURO: **22.9%** vs INVERTIDA v3.0: **15.2%** = **+7.7pp acima da INVERTIDA** ✅
+- Resultado anterior (Híbrido): +3.3pp — o novo treinamento melhorou significativamente
+
+Implementação: Neural PURO usa `scores_neural` dict diretamente (25 números ordenados por score descendente, sem combinar com INVERTIDA). A tela de ajuste manual também exibe o TOP 10 NEURAL.
+
+**Arquivos alterados:**
+- `lotofacil_lite/interfaces/super_menu.py` — bloco FRIOS adicionado na Opção 31 (~l.12537) e Opção 30→[6] (~l.15470); menu de estratégia da Opção 31 atualizado com [N]/[H]/[I]
+
+---
+
+### 30/03/2026 - NOVA FEATURE: Opção 30→[6] Retreinar Rede Neural + Benchmark ⭐⭐ NOVO!
+**Descrição:**
+O menu de Backtesting (Opção 30) ganhou a sub-opção **[6] Retreinar Rede Neural + Benchmark**, que permite treinar, continuar treinando ou apenas comparar a performance da rede neural contra a estratégia Invertida v3.0.
+
+**Modos disponíveis:**
+```
+[T] Treinar do zero      — descarta pesos anteriores e reinicia
+[C] Continuar treinando  — fine-tuning sobre pesos salvos
+[B] Benchmark apenas     — compara sem retreinar
+```
+
+**Períodos pré-definidos:**
+- Últimos 500, 1.000 ou 2.000 concursos
+- Todo o histórico disponível
+- Personalizado (intervalo manual)
+
+**Resumo final exibido:**
+- Comparativo Neural vs INVERTIDA com diagnóstico emoji: 🎉 (Neural vence), 📊 (Invertida vence), 🤝 (empate)
+
+**Arquitetura da Rede Neural (referência):**
+```
+Entrada:  150 features  (6 features × 25 números)
+Oculta 1: 256 neurônios (ReLU)
+Oculta 2: 128 neurônios (ReLU)
+Oculta 3:  64 neurônios (ReLU)
+Saída:     25 neurônios (Sigmoid)
+Total:  81.433 parâmetros treináveis
+```
+
+**Features de entrada (6 por número):**
+`freq_30`, `atraso`, `consecutividade`, `tendência`, `freq_10`, `score_INVERTIDA`
+
+> 🔴 **EM RADAR — Risco de Overfitting (não implementado ainda):**
+> - Razão parâmetros/amostras: ~40:1 (81k params / 2.000 amostras) → alto risco
+> - Gap observado: treino chegou a 25.3% mas validação ficou em 18.6% (+6.7pp de gap)
+> - Proposta futura: reduzir arquitetura para 150→64→32→25 + L2 regularização + Dropout
+> - **DECISÃO PENDENTE**: usuário vai retreinar com até 500 iterações primeiro, depois decide
+
+**Correção conceitual — contagem de concursos:**
+- `Resultados_INT` tem 3.647 linhas totais
+- 3.617 utilizáveis = 3.647 − 30 (buffer mínimo de histórico para calcular features)
+- O número 3.617 **NÃO é bug** — é comportamento correto de `idx_inicio_real = max(30, idx_inicio)`
+
+**Arquivos alterados:**
+- `lotofacil_lite/interfaces/super_menu.py` — adicionado opção [6] no menu da Opção 30 e método `_executar_retreino_neural_benchmark()`
+
+**Nota:** A mesma rede neural (e arquitetura) é compartilhada com Opção 30→[5] (Disputa Neural) e Opção 31 (Pool 23 Híbrido).
+
+---
 
 ### 24/03/2026 - NOVA FEATURE: Seleção de Estratégia de Exclusão na Opção 30.2 ⭐⭐⭐ NOVO!
 **Descrição:**
