@@ -455,12 +455,20 @@ class MenuLotofacil:
                 except Exception as e:
                     print(f"⚠️ Aviso ao verificar colunas de acertos: {e}")
                 
-                # 1. PROC_ATUALIZAR_COMBIN_10
-                print("🔄 Executando PROC_ATUALIZAR_COMBIN_10...")
+                # 1. PROC_ATUALIZAR_COMBIN_10 (com trava anti-duplicação)
+                print("🔄 Verificando COMBIN_10...")
                 try:
-                    cursor.execute("EXEC PROC_ATUALIZAR_COMBIN_10")
-                    conn.commit()
-                    print("✅ PROC_ATUALIZAR_COMBIN_10 executada com sucesso")
+                    cursor.execute("SELECT ISNULL(MAX(CONCURSO), 0) FROM COMBIN_10")
+                    combin_conc = cursor.fetchone()[0]
+                    cursor.execute("SELECT MAX(Concurso) FROM Resultados_INT")
+                    result_conc = cursor.fetchone()[0]
+                    if combin_conc >= result_conc:
+                        print(f"✅ COMBIN_10 já atualizada (concurso {combin_conc}) — pulando")
+                    else:
+                        print(f"🔄 Executando PROC_ATUALIZAR_COMBIN_10 ({combin_conc} → {result_conc})...")
+                        cursor.execute("EXEC PROC_ATUALIZAR_COMBIN_10")
+                        conn.commit()
+                        print("✅ PROC_ATUALIZAR_COMBIN_10 executada com sucesso")
                 except Exception as e:
                     print(f"⚠️ Erro na PROC_ATUALIZAR_COMBIN_10: {e}")
                 

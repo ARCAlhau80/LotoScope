@@ -1,32 +1,33 @@
 {
-  "total_backtests": 1015,
+  "total_backtests": 1018,
   "filtros_falhas": {
-    "N2_SOMA": 1
+    "N2_SOMA": 1,
+    "N7_POSICOES_FRIAS": 1
   },
   "filtros_acertos": {
     "N2_PARES": 1,
     "N2_DEBITO_POSICIONAL": 1
   },
   "niveis_jackpot": {
-    "0": 22,
-    "1": 2,
-    "2": 1,
-    "3": 1,
-    "4": 0,
-    "5": 1,
-    "6": 0,
+    "0": 23,
+    "1": 3,
+    "2": 2,
+    "3": 2,
+    "4": 1,
+    "5": 2,
+    "6": 1,
     "7": 1,
     "8": 0
   },
-  "exclusao_correta": 41,
-  "exclusao_errada": 645,
+  "exclusao_correta": 42,
+  "exclusao_errada": 647,
   "previsoes": {
     "soma": {
       "acertos": 0,
-      "erros": 1
+      "erros": 4
     },
     "compensacao": {
-      "acertos": 0,
+      "acertos": 3,
       "erros": 1
     }
   },
@@ -52,6 +53,30 @@
       ],
       "padroes": [
         "⚠️ SOMA ATÍPICA: 220 (média: 195)"
+      ]
+    },
+    {
+      "data": "20260331_091434",
+      "resultado": [
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        17,
+        18,
+        20,
+        21,
+        24,
+        25
+      ],
+      "padroes": [
+        "⚠️ SOMA ATÍPICA: 223 (média: 195)",
+        "⚠️ SEQUÊNCIA LONGA: 8 consecutivos!"
       ]
     }
   ],
@@ -94,6 +119,132 @@
       "top2_frios": [
         13,
         25
+      ],
+      "quentes_ok": 1,
+      "frios_ok": 1
+    },
+    {
+      "data": "20260331_091434",
+      "resultado": [
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        17,
+        18,
+        20,
+        21,
+        24,
+        25
+      ],
+      "excluidos": [
+        8,
+        19
+      ],
+      "exclusao_correta": false,
+      "soma": 223,
+      "seq_max": 8,
+      "pares": 8,
+      "ultimo_nivel_jackpot": -1,
+      "melhor_roi_nivel": 7,
+      "melhor_roi_valor": -56.67,
+      "estrategia_vencedora": "-",
+      "top2_quentes": [
+        19,
+        8
+      ],
+      "top2_frios": [
+        19,
+        8
+      ],
+      "quentes_ok": 1,
+      "frios_ok": 1
+    },
+    {
+      "data": "20260331_230336",
+      "resultado": [
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        16,
+        17,
+        20,
+        21,
+        22,
+        25
+      ],
+      "excluidos": [
+        2,
+        4
+      ],
+      "exclusao_correta": false,
+      "soma": 195,
+      "seq_max": 4,
+      "pares": 8,
+      "ultimo_nivel_jackpot": -1,
+      "melhor_roi_nivel": 6,
+      "melhor_roi_valor": -32.96,
+      "estrategia_vencedora": "-",
+      "top2_quentes": [
+        8,
+        15
+      ],
+      "top2_frios": [
+        8,
+        15
+      ],
+      "quentes_ok": 1,
+      "frios_ok": 1
+    },
+    {
+      "data": "20260331_230537",
+      "resultado": [
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        16,
+        17,
+        20,
+        21,
+        22,
+        25
+      ],
+      "excluidos": [
+        1,
+        24
+      ],
+      "exclusao_correta": true,
+      "soma": 195,
+      "seq_max": 4,
+      "pares": 8,
+      "ultimo_nivel_jackpot": 6,
+      "melhor_roi_nivel": 6,
+      "melhor_roi_valor": 8406.0,
+      "estrategia_vencedora": "-",
+      "top2_quentes": [
+        8,
+        15
+      ],
+      "top2_frios": [
+        8,
+        15
       ],
       "quentes_ok": 1,
       "frios_ok": 1
@@ -1221,9 +1372,12 @@
   "vitorias_estrategia": {
     "QUENTES": 0,
     "FRIOS": 0,
-    "EMPATE": 1
+    "EMPATE": 4
   },
   "sequencia_vitorias": [
+    "-",
+    "-",
+    "-",
     "-"
   ],
   "ultimo_vencedor": "-"

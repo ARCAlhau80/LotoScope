@@ -12659,6 +12659,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print(f"      • Q1 inteiro (agressivo): {sorted(q1_nums)} → Pool 20 (15.504 combos)")
 
         # ═══════════════════════════════════════════════════════════════════
+        # 🔄 INVERSÃO POSICIONAL — Diagnóstico de reversão
+        # r=0.4422 (p<0.001), lift 2.2x quando menor≥14
+        # ═══════════════════════════════════════════════════════════════════
+        try:
+            self._diagnostico_inversao_posicional()
+        except Exception:
+            pass
+
+        # ═══════════════════════════════════════════════════════════════════
         # PERMITIR AJUSTE DA QUANTIDADE E SELEÇÃO
         # ═══════════════════════════════════════════════════════════════════
         print("\n   ┌────────────────────────────────────────────────────────────────────┐")
@@ -12991,8 +13000,32 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         # Dados para filtros
         ultimo_resultado = set(resultados[0]['numeros'])
+        ultimo_resultado_sorted = sorted(resultados[0]['numeros'])  # Para filtro inversão posicional
         NUCLEO_C1C2 = {2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 19, 20, 22, 24, 25}
         PRIMOS = {2, 3, 5, 7, 11, 13, 17, 19, 23}
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # INVERSÃO POSICIONAL — Detectar direção prevista (r=0.44, lift 2.2x)
+        # Quando muitas posições desceram, próximo tende a subir (e vice-versa)
+        # ═══════════════════════════════════════════════════════════════════
+        inversao_direcao = None  # 'subir', 'descer' ou None
+        inversao_menor_ultimo = 0
+        inversao_maior_ultimo = 0
+        try:
+            inv_data = self._diagnostico_inversao_posicional(silencioso=True)
+            if inv_data:
+                inversao_menor_ultimo = inv_data['menor']
+                inversao_maior_ultimo = inv_data['maior']
+                if inv_data['menor'] >= 12:
+                    inversao_direcao = 'subir'  # Muitas desceram → próximo sobe
+                elif inv_data['maior'] >= 12:
+                    inversao_direcao = 'descer'  # Muitas subiram → próximo desce
+                if inversao_direcao:
+                    print(f"\n   🔄 INVERSÃO POSICIONAL DETECTADA: previsão={inversao_direcao.upper()}")
+                    print(f"      Último concurso: menor={inv_data['menor']} maior={inv_data['maior']}")
+                    print(f"      Filtro ativo em níveis ≥ 1 (r=0.44, lift {inv_data['lift']:.2f}x)")
+        except Exception:
+            pass
         
         # Frequência para favorecidos (últimos 30)
         freq_30 = Counter()
@@ -13212,6 +13245,32 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 filtro_prob_modo = 0
         
         # ═══════════════════════════════════════════════════════════════════
+        # CARREGAR FILTRO DE SUB-COMBOS QUENTES (COMBIN_10)
+        # Carrega uma vez, reutiliza para todos os níveis
+        # ═══════════════════════════════════════════════════════════════════
+        filtro_subcombos_obj = None
+        try:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            from filtro_subcombos_quentes import FiltroSubcombosQuentes
+            
+            # Verificar se algum nível >= 1 usa o filtro
+            _algum_nivel_usa_subcombos = any(
+                FILTROS_POR_NIVEL.get(n, {}).get('usar_filtro_subcombos', False)
+                for n in niveis_a_processar if n > 0
+            )
+            if _algum_nivel_usa_subcombos:
+                _min_ac = min(
+                    FILTROS_POR_NIVEL.get(n, {}).get('subcombos_min_acertos', 6)
+                    for n in niveis_a_processar if n > 0
+                    and FILTROS_POR_NIVEL.get(n, {}).get('usar_filtro_subcombos', False)
+                )
+                filtro_subcombos_obj = FiltroSubcombosQuentes()
+                filtro_subcombos_obj.carregar(min_acertos=_min_ac)
+        except Exception as e:
+            print(f"   ⚠️ Filtro sub-combos indisponível: {e}")
+            filtro_subcombos_obj = None
+        
+        # ═══════════════════════════════════════════════════════════════════
         # LOOP PRINCIPAL - PROCESSA CADA NÍVEL
         # ═══════════════════════════════════════════════════════════════════
         for nivel in niveis_a_processar:
@@ -13311,6 +13370,18 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 
                 # Usar as combos da cascata para exportação
                 combos_filtradas = combos_cascata
+                
+                # Aplicar filtro sub-combos quentes se configurado no nível cascata
+                if (filtro_subcombos_obj and nivel_cascata_encontrado
+                        and FILTROS_POR_NIVEL.get(nivel_cascata_encontrado, {}).get('usar_filtro_subcombos', False)
+                        and len(combos_filtradas) > 0):
+                    _sc_min_hot = FILTROS_POR_NIVEL[nivel_cascata_encontrado].get('subcombos_min_hot', 400)
+                    print(f"\n   🔥 Aplicando filtro sub-combos quentes (min_hot={_sc_min_hot})...")
+                    print(f"      Total antes: {len(combos_filtradas):,}")
+                    combos_filtradas = filtro_subcombos_obj.filtrar_lista(
+                        combos_filtradas, min_hot=_sc_min_hot
+                    )
+                    print(f"      Total depois: {len(combos_filtradas):,}")
                 
                 # Pular toda a lógica normal de filtros e ir direto para exportação
                 tempo_filtro = 0
@@ -14037,6 +14108,24 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     if violacoes_frias > posicoes_frias_tolerancia:
                         continue
             
+                # Filtro INVERSÃO POSICIONAL (r=0.44, lift 2.2x)
+                # Quando padrão detectado: filtra combos que alinham com a direção prevista
+                # Nível 0: desligado | Nível 1-3: tolerância 5 | Nível 4-6: tolerância 6
+                if nivel > 0 and inversao_direcao:
+                    _inv_sorted = sorted(combo)
+                    if inversao_direcao == 'subir':
+                        # Previsão: próximo sobe → aceitar combos com muitas posições MAIORES
+                        _inv_maior = sum(1 for p in range(15) if _inv_sorted[p] > ultimo_resultado_sorted[p])
+                        _inv_thr = 6 if nivel >= 4 else 5
+                        if _inv_maior < _inv_thr:
+                            continue
+                    elif inversao_direcao == 'descer':
+                        # Previsão: próximo desce → aceitar combos com muitas posições MENORES
+                        _inv_menor = sum(1 for p in range(15) if _inv_sorted[p] < ultimo_resultado_sorted[p])
+                        _inv_thr = 6 if nivel >= 4 else 5
+                        if _inv_menor < _inv_thr:
+                            continue
+            
                 # Filtro POSIÇÕES-CHAVE (N5/N10/N12 - faixas naturais históricas)
                 # Análise 3641 draws: N5=[5-14], N10=[10-20], N12=[13-22] | Custo: 0% jackpots
                 if nivel > 0:
@@ -14055,6 +14144,22 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"\n   ✅ Filtros aplicados em {tempo_filtro:.1f}s")
             print(f"   📊 Resultado: {len(combos_filtradas):,} combinações")
             print(f"   📉 Redução: {100*(1 - len(combos_filtradas)/len(todas_combos)):.2f}%")
+        
+            # ═══════════════════════════════════════════════════════════════════
+            # PÓS-FILTRO: SUB-COMBOS QUENTES (COMBIN_10)
+            # Aplicado DEPOIS dos filtros rápidos para reduzir volume
+            # NUNCA no nível 0
+            # ═══════════════════════════════════════════════════════════════════
+            if (nivel > 0 and filtro_subcombos_obj
+                    and filtros.get('usar_filtro_subcombos', False)
+                    and len(combos_filtradas) > 0):
+                _sc_min_hot = filtros.get('subcombos_min_hot', 400)
+                print(f"\n   🔥 Aplicando filtro sub-combos quentes (min_hot={_sc_min_hot})...")
+                print(f"      Total antes: {len(combos_filtradas):,}")
+                combos_filtradas = filtro_subcombos_obj.filtrar_lista(
+                    combos_filtradas, min_hot=_sc_min_hot
+                )
+                print(f"      Total depois: {len(combos_filtradas):,}")
         
             if len(combos_filtradas) == 0:
                 print("\n   ⚠️ Nenhuma combinação passou nos filtros!")
@@ -14479,6 +14584,129 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(linha)
         
         return evitar
+
+    def _diagnostico_inversao_posicional(self, concurso_ref=None, silencioso=False):
+        """
+        🔄 DIAGNÓSTICO DE INVERSÃO POSICIONAL
+        
+        Analisa o padrão: quando concurso N tem muitos números em posições menores
+        que N-1, o concurso N+1 tende a ter muitos números em posições maiores.
+        Correlação r=0.4422 (altamente significante), lift 2.2x quando menor≥14.
+        
+        Args:
+            concurso_ref: Concurso de referência (None = último disponível)
+            silencioso: Se True, retorna dados sem imprimir
+            
+        Returns:
+            dict com: menor, maior, igual, prob_inversao, alerta, concurso
+            ou None se não houver dados
+        """
+        import pyodbc
+        conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=Lotofacil;Trusted_Connection=yes;'
+        try:
+            conn = pyodbc.connect(conn_str)
+            cursor = conn.cursor()
+            
+            if concurso_ref:
+                cursor.execute('''
+                    SELECT TOP 6 Concurso, menor_que_ultimo, maior_que_ultimo, igual_ao_ultimo
+                    FROM Resultados_INT 
+                    WHERE Concurso <= ? AND Concurso > 1
+                    ORDER BY Concurso DESC
+                ''', concurso_ref)
+            else:
+                cursor.execute('''
+                    SELECT TOP 6 Concurso, menor_que_ultimo, maior_que_ultimo, igual_ao_ultimo
+                    FROM Resultados_INT 
+                    WHERE Concurso > 1
+                    ORDER BY Concurso DESC
+                ''')
+            
+            rows = cursor.fetchall()
+            conn.close()
+            
+            if not rows:
+                return None
+            
+            ultimo = rows[0]
+            conc = ultimo[0]
+            menor = ultimo[1] or 0
+            maior = ultimo[2] or 0
+            igual = ultimo[3] or 0
+            
+            # Tabela de probabilidade baseada na análise estatística
+            # menor_atual → prob(maior_próximo ≥ 10)
+            if menor >= 14:
+                prob_inv = 57.7
+                lift = 2.20
+                alerta = "🔴 MUITO ALTA"
+            elif menor >= 12:
+                prob_inv = 51.4
+                lift = 1.96
+                alerta = "🟠 ALTA"
+            elif menor >= 10:
+                prob_inv = 42.8
+                lift = 1.63
+                alerta = "🟡 MODERADA"
+            elif menor >= 8:
+                prob_inv = 35.0
+                lift = 1.33
+                alerta = "⚪ BAIXA"
+            else:
+                prob_inv = 20.0
+                lift = 0.76
+                alerta = "🔵 IMPROVÁVEL"
+            
+            resultado = {
+                'concurso': conc,
+                'menor': menor,
+                'maior': maior,
+                'igual': igual,
+                'prob_inversao': prob_inv,
+                'lift': lift,
+                'alerta': alerta,
+                'historico': [(r[0], r[1] or 0, r[2] or 0, r[3] or 0) for r in rows]
+            }
+            
+            if not silencioso:
+                print("\n   ╔════════════════════════════════════════════════════════════════════════╗")
+                print("   ║  🔄 INVERSÃO POSICIONAL — Padrão de Reversão (r=0.44, p<0.001)        ║")
+                print("   ║  💡 Quando muitas posições DESCERAM, tendem a SUBIR no próximo         ║")
+                print("   ╚════════════════════════════════════════════════════════════════════════╝")
+                print()
+                print(f"   📊 Concurso {conc}: Menor={menor}  Maior={maior}  Igual={igual}")
+                print()
+                
+                # Mostrar histórico recente
+                print(f"   {'Conc':>6} {'↓Men':>5} {'↑Mai':>5} {'=Igu':>5}  {'Tendência':>12}")
+                print("   " + "─"*40)
+                for h in resultado['historico'][:5]:
+                    if h[1] >= 12:
+                        tend = "⬇️  DESCEU"
+                    elif h[2] >= 12:
+                        tend = "⬆️  SUBIU"
+                    else:
+                        tend = "↔️  neutro"
+                    print(f"   {h[0]:>6} {h[1]:>5} {h[2]:>5} {h[3]:>5}  {tend:>12}")
+                print("   " + "─"*40)
+                
+                # Previsão para próximo
+                print(f"\n   🎯 PREVISÃO para concurso {conc + 1}:")
+                print(f"      Probabilidade de inversão (maior≥10): {prob_inv:.1f}% (lift {lift:.2f}x)")
+                print(f"      Nível de alerta: {alerta}")
+                
+                if menor >= 12:
+                    print(f"\n   ⚠️  ATENÇÃO: {menor} posições desceram → tendência FORTE de subir!")
+                    print(f"      Números em posições baixas (N1-N5) podem migrar para posições altas")
+                elif maior >= 12:
+                    print(f"\n   ℹ️  {maior} posições subiram → possível correção para baixo no próximo")
+            
+            return resultado
+            
+        except Exception as e:
+            if not silencioso:
+                print(f"\n   ⚠️  Erro ao consultar inversão posicional: {e}")
+            return None
 
     def _calcular_debitos_posicionais(self, resultados, janela=5, limiar=0.3):
         """
@@ -15536,6 +15764,14 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             except Exception:
                 pass  # Silencioso se neural não disponível
 
+            # ───────────────────────────────────────────────
+            # 🔄 INVERSÃO POSICIONAL (diagnóstico)
+            # ───────────────────────────────────────────────
+            try:
+                self._diagnostico_inversao_posicional()
+            except Exception:
+                pass
+
         except ImportError as e:
             print(f"\n❌ Erro ao importar módulo neural: {e}")
             print("💡 Verifique se disputa_neural_pool23.py está em sistemas/")
@@ -15637,6 +15873,21 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             
             print(f"   ✅ {len(concursos_disponiveis)} concursos carregados")
             print(f"   📅 Range disponível: {min_concurso} a {max_concurso}")
+            
+            # Carregar dados de inversão posicional
+            inversao_dados = {}
+            try:
+                conn2 = pyodbc.connect(conn_str)
+                cursor2 = conn2.cursor()
+                cursor2.execute("""
+                    SELECT Concurso, menor_que_ultimo, maior_que_ultimo, igual_ao_ultimo
+                    FROM Resultados_INT WHERE Concurso > 1
+                """)
+                for row in cursor2.fetchall():
+                    inversao_dados[row[0]] = {'menor': row[1] or 0, 'maior': row[2] or 0, 'igual': row[3] or 0}
+                conn2.close()
+            except Exception:
+                pass
             
         except Exception as e:
             print(f"   ❌ Erro ao carregar dados: {e}")
@@ -16095,6 +16346,10 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'repeticao': {'fora_min': 0, 'fora_max': 0},
                 'consecutivos_excludos': [],
             }
+            # Tracking de inversão posicional
+            _inv_previsoes = 0  # total de previsões feitas (quando menor_anterior >= 12)
+            _inv_acertos = 0    # acertos (quando maior_atual >= 10)
+            _inv_total_pares = 0  # total de pares analisados
             _t0 = time.time()
             for idx, concurso_teste in enumerate(range(concurso_inicio, concurso_fim + 1)):
                 if concurso_teste not in todos_resultados:
@@ -16219,6 +16474,17 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         'excluidos': sorted(excluir),
                         'errados': sorted(excluidos_no_resultado)
                     })
+
+                # Tracking inversão posicional
+                conc_anterior = concurso_teste - 1
+                if conc_anterior in inversao_dados and concurso_teste in inversao_dados:
+                    _inv_total_pares += 1
+                    m_ant = inversao_dados[conc_anterior]['menor']
+                    m_atu = inversao_dados[concurso_teste]['maior']
+                    if m_ant >= 12:
+                        _inv_previsoes += 1
+                        if m_atu >= 10:
+                            _inv_acertos += 1
 
                 ultimo_resultado_anterior = set(dados_ate_anterior[0]['numeros'])
                 soma_real = sum(resultado_set)
@@ -16872,6 +17138,16 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             
             # Dados auxiliares
             ultimo_resultado = set(dados_ate_anterior[0]['numeros'])
+            ultimo_resultado_sorted_h = sorted(dados_ate_anterior[0]['numeros'])
+            
+            # Direção da inversão posicional para este concurso
+            _inv_dir_h = None
+            conc_ant_h = concurso_teste - 1
+            if conc_ant_h in inversao_dados:
+                if inversao_dados[conc_ant_h].get('menor', 0) >= 12:
+                    _inv_dir_h = 'subir'
+                elif inversao_dados[conc_ant_h].get('maior', 0) >= 12:
+                    _inv_dir_h = 'descer'
             
             freq_30 = Counter()
             for r in dados_ate_anterior[:30]:
@@ -17045,6 +17321,19 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         if len(combo_set & favorecidos) < filtros['favorecidos_min']:
                             continue
                     
+                    # ── Filtro INVERSÃO POSICIONAL (per-contest) ──
+                    if nivel > 0 and _inv_dir_h:
+                        if _inv_dir_h == 'subir':
+                            _inv_maior_h = sum(1 for p in range(15) if combo_list[p] > ultimo_resultado_sorted_h[p])
+                            _inv_thr_h = 6 if nivel >= 4 else 5
+                            if _inv_maior_h < _inv_thr_h:
+                                continue
+                        elif _inv_dir_h == 'descer':
+                            _inv_menor_h = sum(1 for p in range(15) if combo_list[p] < ultimo_resultado_sorted_h[p])
+                            _inv_thr_h = 6 if nivel >= 4 else 5
+                            if _inv_menor_h < _inv_thr_h:
+                                continue
+                    
                     # Filtro POSIÇÕES-CHAVE (N5/N10/N12 - faixas naturais históricas)
                     if nivel > 0:
                         if combo_list[4] < 5 or combo_list[4] > 14:    # N5
@@ -17123,6 +17412,22 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         s_melhor = stats_por_nivel[melhor_nivel]
         lucro_melhor = s_melhor['premio_total'] - s_melhor['custo_total']
         print(f"\n   ⭐ MELHOR NÍVEL: N{melhor_nivel} (lucro total: R${lucro_melhor:,.2f})")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # 🔄 INVERSÃO POSICIONAL — Resumo do backtesting
+        # ═══════════════════════════════════════════════════════════════════
+        if _inv_total_pares > 0:
+            print(f"\n   🔄 INVERSÃO POSICIONAL (r=0.44):")
+            print(f"      Pares analisados: {_inv_total_pares}")
+            if _inv_previsoes > 0:
+                taxa_inv_acerto = _inv_acertos / _inv_previsoes * 100
+                print(f"      Quando menor≥12: previsões={_inv_previsoes}, acertos={_inv_acertos} ({taxa_inv_acerto:.1f}%)")
+                if taxa_inv_acerto >= 50:
+                    print(f"      ✅ Padrão CONFIRMADO neste período (≥50%)")
+                else:
+                    print(f"      ⚠️  Padrão FRACO neste período (<50%)")
+            else:
+                print(f"      ℹ️  Nenhum concurso com menor≥12 no período")
         
         # ═══════════════════════════════════════════════════════════════════
         # SISTEMA DE APRENDIZADO ADAPTATIVO - ANÁLISE E AJUSTES
@@ -17789,6 +18094,14 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print(f"      • Q1 inteiro (agressivo): {sorted(q1_nums)} → Pool 20 (15.504 combos)")
 
         # ═══════════════════════════════════════════════════════════════════
+        # 🔄 INVERSÃO POSICIONAL — Diagnóstico de reversão
+        # ═══════════════════════════════════════════════════════════════════
+        try:
+            self._diagnostico_inversao_posicional()
+        except Exception:
+            pass
+
+        # ═══════════════════════════════════════════════════════════════════
         # ESTRATÉGIA DE EXCLUSÃO
         # ═══════════════════════════════════════════════════════════════════
         print("\n" + "─"*78)
@@ -17800,25 +18113,27 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   │ [3] 🗺️  Q1-Q5 Quadrantes (excluir do Q1 — pior quadrante)      │")
         print("   │ [4] 🔀 Híbrido Invertida + Q1-Q5 (média dos scores)            │")
         print("   │ [5] 🌀 Híbrido TODOS (débito + invertida + Q1-Q5 combinados)   │")
+        print("   │ [6] 🧠 Neural PURO (+10.2pp acima INVERTIDA) ⭐⭐ MELHOR!       │")
         print("   │ [0] 🔄 Comparar TODAS (diagnóstico no PASSO 4)                 │")
         print("   └─────────────────────────────────────────────────────────────────┘")
 
         try:
-            est_input = input("   Estratégia? [0-5, ENTER=2]: ").strip()
-            estrategia_excl_302 = int(est_input) if est_input else 2
-            estrategia_excl_302 = max(0, min(5, estrategia_excl_302))
+            est_input = input("   Estratégia? [0-6, ENTER=6]: ").strip()
+            estrategia_excl_302 = int(est_input) if est_input else 6
+            estrategia_excl_302 = max(0, min(6, estrategia_excl_302))
         except:
-            estrategia_excl_302 = 2
+            estrategia_excl_302 = 6
 
         comparar_estrategias_302 = (estrategia_excl_302 == 0)
-        estrategia_execucao_302 = 2 if comparar_estrategias_302 else estrategia_excl_302
+        estrategia_execucao_302 = 6 if comparar_estrategias_302 else estrategia_excl_302
         NOMES_ESTRATEGIA_302 = {
             0: "Comparar TODAS",
             1: "Débito (superávit)",
             2: "Invertida v3.0 (QUENTES)",
             3: "Q1-Q5 Quadrantes",
             4: "Híbrido Invertida + Q1-Q5",
-            5: "Híbrido TODOS"
+            5: "Híbrido TODOS",
+            6: "Neural PURO (+10.2pp)"
         }
 
         dados_num_estr = {
@@ -17831,6 +18146,60 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         }
         score_inv_map_302 = {c['num']: c['score'] for c in candidatos}
         inv_ranking_nums_302 = [c['num'] for c in candidatos]
+
+        # ═══════════════════════════════════════════════════════════════════
+        # 🧠 CARREGAR NEURAL PARA ESTRATÉGIA [6] Neural PURO
+        # ═══════════════════════════════════════════════════════════════════
+        neural_302_disponivel = False
+        scores_neural_302 = {}
+        try:
+            from sistemas.disputa_neural_pool23 import RedeNeuralExclusao
+            import numpy as np
+            neural_path_302 = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                           'dados', 'neural_exclusao.pkl')
+            if os.path.exists(neural_path_302):
+                neural_302 = RedeNeuralExclusao.carregar(neural_path_302)
+                features_302 = np.zeros(150)
+                for n in range(1, 26):
+                    features_302[n-1] = sum(1 for r in resultados[:30] if n in r['set']) / 30
+                for n in range(1, 26):
+                    atraso = 0
+                    for r in resultados[:30]:
+                        if n in r['set']:
+                            break
+                        atraso += 1
+                    features_302[24 + n] = atraso / 30
+                for n in range(1, 26):
+                    cons = 0
+                    for r in resultados[:30]:
+                        if n in r['set']:
+                            cons += 1
+                        else:
+                            break
+                    features_302[49 + n] = cons / 30
+                freq_10_n = Counter()
+                for r in resultados[:10]:
+                    freq_10_n.update(r['set'])
+                freq_ant_n = Counter()
+                for r in resultados[10:20]:
+                    freq_ant_n.update(r['set'])
+                for n in range(1, 26):
+                    tend = (freq_10_n[n] / 10) - (freq_ant_n[n] / 10) if len(resultados) >= 20 else 0
+                    features_302[74 + n] = (tend + 1) / 2
+                for n in range(1, 26):
+                    features_302[99 + n] = freq_10_n[n] / 10
+                max_score_inv_n = max(c['score'] for c in candidatos) if candidatos else 1
+                for n in range(1, 26):
+                    score_n = next((c['score'] for c in candidatos if c['num'] == n), 0)
+                    features_302[124 + n] = score_n / max(1, max_score_inv_n) if max_score_inv_n != 0 else 0
+                scores_neural_302 = neural_302.obter_scores(features_302)
+                neural_302_disponivel = True
+                print("   🧠 Neural PURO carregado com sucesso para estratégia [6]")
+        except Exception as e_neural:
+            print(f"   ⚠️ Neural não disponível: {e_neural}")
+            if estrategia_excl_302 == 6:
+                print("   ℹ️ Fallback para Invertida v3.0")
+                estrategia_excl_302 = 2
 
         def _score_debito_302(n):
             return -dados_num_estr[n]['debito']
@@ -17860,6 +18229,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 s_q = _score_quadrante_302(n)
                 deb_norm = max(-5, min(7, s_deb / 10))
                 return deb_norm * 0.25 + s_inv * 0.50 + s_q * 0.25
+            if estrategia == 6:
+                return scores_neural_302.get(n, 0)
             return _score_invertida_302(n)
 
         def _ranking_estrategia_302(estrategia):
@@ -17873,12 +18244,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             ranking.sort(key=lambda x: (-x['score'], -x['consec']))
             return ranking
 
-        rankings_estrategias_302 = {e: _ranking_estrategia_302(e) for e in range(1, 6)}
+        rankings_estrategias_302 = {e: _ranking_estrategia_302(e) for e in range(1, 7)}
         ranking_ativo_302 = rankings_estrategias_302[estrategia_execucao_302]
 
         if comparar_estrategias_302:
             print("   ✅ Estratégia: COMPARAR TODAS (diagnóstico será exibido no PASSO 4)")
-            print("   ℹ️ Geração seguirá com estratégia [2] Invertida v3.0 para manter performance.")
+            print("   ℹ️ Geração seguirá com estratégia [6] Neural PURO para melhor performance.")
         else:
             print(f"   ✅ Estratégia: {NOMES_ESTRATEGIA_302[estrategia_execucao_302]}")
         
@@ -17913,6 +18284,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"\n   📋 TOP 10 estratégia ativa: {top10_ativos}")
             print(f"   📋 TOP 10 QUENTES (ref):    {[c['num'] for c in candidatos[:10]]}")
             print(f"   📋 TOP 10 FRIOS (ref):      {[c['num'] for c in cand_frios[:10]]}")
+            if neural_302_disponivel:
+                top10_neural = sorted(scores_neural_302.items(), key=lambda x: -x[1])[:10]
+                print(f"   🧠 TOP 10 NEURAL (ref):     {[n for n, s in top10_neural]}")
             print(f"   💡 Digite {qtd_excluir} números separados por vírgula")
             try:
                 nums_input = input(f"   Números a EXCLUIR ({qtd_excluir}): ")
@@ -18016,8 +18390,29 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         # Dados para filtros
         ultimo_resultado = set(resultados[0]['numeros'])
+        ultimo_resultado_sorted = sorted(resultados[0]['numeros'])  # Para filtro inversão posicional
         NUCLEO_C1C2 = {2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 19, 20, 22, 24, 25}
         PRIMOS = {2, 3, 5, 7, 11, 13, 17, 19, 23}
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # INVERSÃO POSICIONAL — Detectar direção prevista (r=0.44, lift 2.2x)
+        # ═══════════════════════════════════════════════════════════════════
+        inversao_direcao = None
+        inversao_menor_ultimo = 0
+        inversao_maior_ultimo = 0
+        try:
+            inv_data = self._diagnostico_inversao_posicional(silencioso=True)
+            if inv_data:
+                inversao_menor_ultimo = inv_data['menor']
+                inversao_maior_ultimo = inv_data['maior']
+                if inv_data['menor'] >= 12:
+                    inversao_direcao = 'subir'
+                elif inv_data['maior'] >= 12:
+                    inversao_direcao = 'descer'
+                if inversao_direcao:
+                    print(f"\n   🔄 INVERSÃO POSICIONAL: previsão={inversao_direcao.upper()} (filtro ativo em níveis ≥ 1)")
+        except Exception:
+            pass
         
         # Frequência para favorecidos (últimos 30)
         freq_30 = Counter()
@@ -18395,6 +18790,21 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 if violacoes_rec > filtros.get('piores_tolerancia_recente', 1):
                     return False
             
+            # Filtro INVERSÃO POSICIONAL (r=0.44, lift 2.2x)
+            # Quando padrão detectado: filtra combos que alinham com a direção prevista
+            if nivel > 0 and inversao_direcao:
+                _inv_sorted = sorted(combo)
+                if inversao_direcao == 'subir':
+                    _inv_maior = sum(1 for p in range(15) if _inv_sorted[p] > ultimo_resultado_sorted[p])
+                    _inv_thr = 6 if nivel >= 4 else 5
+                    if _inv_maior < _inv_thr:
+                        return False
+                elif inversao_direcao == 'descer':
+                    _inv_menor = sum(1 for p in range(15) if _inv_sorted[p] < ultimo_resultado_sorted[p])
+                    _inv_thr = 6 if nivel >= 4 else 5
+                    if _inv_menor < _inv_thr:
+                        return False
+            
             # Filtro POSIÇÕES-CHAVE (N5/N10/N12 - faixas naturais históricas)
             # Análise 3641 draws: N5=[5-14], N10=[10-20], N12=[13-22] | Custo: 0% jackpots
             if nivel > 0:
@@ -18423,6 +18833,30 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             tempo_prob = time.time() - inicio_prob
             print(f"   ✅ Filtro probabilístico: {len(combos_pre_filtradas):,} combinações restantes ({tempo_prob:.1f}s)")
             print(f"      Redução: {len(todas_combos):,} → {len(combos_pre_filtradas):,} ({len(combos_pre_filtradas)/len(todas_combos)*100:.1f}%)")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # CARREGAR FILTRO SUB-COMBOS QUENTES (COMBIN_10)
+        # ═══════════════════════════════════════════════════════════════════
+        filtro_subcombos_obj_bt = None
+        try:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            from filtro_subcombos_quentes import FiltroSubcombosQuentes
+            
+            _algum_usa = any(
+                FILTROS_POR_NIVEL.get(n, {}).get('usar_filtro_subcombos', False)
+                for n in range(1, 9)
+            )
+            if _algum_usa:
+                _min_ac = min(
+                    FILTROS_POR_NIVEL.get(n, {}).get('subcombos_min_acertos', 6)
+                    for n in range(1, 9)
+                    if FILTROS_POR_NIVEL.get(n, {}).get('usar_filtro_subcombos', False)
+                )
+                filtro_subcombos_obj_bt = FiltroSubcombosQuentes()
+                filtro_subcombos_obj_bt.carregar(min_acertos=_min_ac)
+        except Exception as e:
+            print(f"   ⚠️ Filtro sub-combos indisponível: {e}")
+            filtro_subcombos_obj_bt = None
         
         combos_por_nivel = {}
         for nivel in range(9):
@@ -18493,6 +18927,20 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 combos_nivel = [c for c in combos_pre_filtradas if aplicar_filtros(c, filtros)]
             
             tempo_nivel = time.time() - inicio_nivel
+            
+            # ═══════════════════════════════════════════════════════════
+            # PÓS-FILTRO: SUB-COMBOS QUENTES (COMBIN_10) — NUNCA no nível 0
+            # ═══════════════════════════════════════════════════════════
+            if (nivel > 0 and filtro_subcombos_obj_bt
+                    and filtros.get('usar_filtro_subcombos', False)
+                    and len(combos_nivel) > 0):
+                _sc_min_hot = filtros.get('subcombos_min_hot', 400)
+                print(f"      🔥 Sub-combos quentes (min_hot={_sc_min_hot})... ", end='')
+                _antes = len(combos_nivel)
+                combos_nivel = filtro_subcombos_obj_bt.filtrar_lista(
+                    combos_nivel, min_hot=_sc_min_hot, verbose=False
+                )
+                print(f"{_antes:,} → {len(combos_nivel):,}")
             
             # Guardar combos do nível para uso como base em níveis superiores
             combos_por_nivel[nivel] = combos_nivel
@@ -18573,7 +19021,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"   Quantidade de exclusões usada: {qtd_excluir}")
 
             comp_estr_302 = []
-            for estr_id in range(1, 6):
+            for estr_id in range(1, 7):
                 ranking_estr = rankings_estrategias_302[estr_id]
                 excl_estr = [ranking_estr[i]['num'] for i in range(qtd_excluir)]
                 errados = sorted(set(excl_estr) & resultado_validacao)

@@ -67,6 +67,10 @@ FILTROS_POR_NIVEL = {
         # Qtde 6-25 (seletividade 1.0, 93.7% cobertura)
         'usar_filtro_qtde_6_25': True,
         'qtde_6_25_valores': [9, 10, 11, 12, 13, 14],  # Ampliado
+        # Sub-combos quentes (COMBIN_10) — seletividade 5.75x com min_acertos=6
+        'usar_filtro_subcombos': True,
+        'subcombos_min_acertos': 6,
+        'subcombos_min_hot': 400,  # Conservador (~95% jackpots, ~20% random)
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -97,6 +101,10 @@ FILTROS_POR_NIVEL = {
         'qtde_6_25_valores': [10, 11, 12, 13],
         'usar_filtro_piores_historico': True,
         'piores_tolerancia_historico': 1,  # Tolerância 1 (antes era 0)
+        # Sub-combos quentes
+        'usar_filtro_subcombos': True,
+        'subcombos_min_acertos': 6,
+        'subcombos_min_hot': 450,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -131,6 +139,10 @@ FILTROS_POR_NIVEL = {
         'piores_tolerancia_historico': 0,
         'usar_filtro_piores_recente': True,
         'piores_tolerancia_recente': 5,  # Tolerância alta (gradiente 5→4→3→2)
+        # Sub-combos quentes
+        'usar_filtro_subcombos': True,
+        'subcombos_min_acertos': 6,
+        'subcombos_min_hot': 500,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -171,6 +183,10 @@ FILTROS_POR_NIVEL = {
         'usar_filtro_trios': True,
         'trios_min_frequencia': 750,  # Trios com >= 750 aparições (~20% dos concursos)
         'trios_min_presentes': 80,    # Mínimo de trios frequentes na combinação
+        # Sub-combos quentes
+        'usar_filtro_subcombos': True,
+        'subcombos_min_acertos': 6,
+        'subcombos_min_hot': 550,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -213,6 +229,10 @@ FILTROS_POR_NIVEL = {
         'usar_filtro_trios': True,
         'trios_min_frequencia': 750,
         'trios_min_presentes': 100,   # Mais exigente que N4
+        # Sub-combos quentes
+        'usar_filtro_subcombos': True,
+        'subcombos_min_acertos': 6,
+        'subcombos_min_hot': 600,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -258,6 +278,10 @@ FILTROS_POR_NIVEL = {
         'usar_filtro_trios': True,
         'trios_min_frequencia': 750,
         'trios_min_presentes': 120,   # Mais exigente
+        # Sub-combos quentes
+        'usar_filtro_subcombos': True,
+        'subcombos_min_acertos': 6,
+        'subcombos_min_hot': 650,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
