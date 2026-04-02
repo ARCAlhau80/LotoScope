@@ -12417,18 +12417,32 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         # ═══════════════════════════════════════════════════════════════════
         # 🧠 RANKING NEURAL HÍBRIDO - Combina INVERTIDA + Rede Neural
-        # Benchmark 30/03/2026: Neural +3.3pp acima de INVERTIDA (18.6% vs 15.3%)
+        # Ranking híbrido: combina scores atuais da neural com INVERTIDA
         # ═══════════════════════════════════════════════════════════════════
         neural_disponivel = False
         scores_neural = {}
         ranking_hibrido = []
+        benchmark_neural = None
+        benchmark_texto_neural = 'último benchmark indisponível'
         
         try:
-            from sistemas.disputa_neural_pool23 import RedeNeuralExclusao
+            from sistemas.disputa_neural_pool23 import RedeNeuralExclusao, DisputaNeuralPool23
             neural_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
                                         'dados', 'neural_exclusao.pkl')
             
             if os.path.exists(neural_path):
+                benchmark_neural = DisputaNeuralPool23.carregar_benchmark_modelo(neural_path)
+                if benchmark_neural:
+                    taxa_neural = benchmark_neural.get('taxa_neural')
+                    taxa_invertida = benchmark_neural.get('taxa_invertida')
+                    diferenca_pp = benchmark_neural.get('diferenca_pp')
+                    if taxa_neural is not None and taxa_invertida is not None:
+                        benchmark_texto_neural = (
+                            f"último benchmark: {taxa_neural:.1f}% vs {taxa_invertida:.1f}% INVERTIDA"
+                        )
+                        if diferenca_pp is not None:
+                            benchmark_texto_neural += f" ({diferenca_pp:+.1f}pp)"
+
                 # Carregar modelo neural treinado
                 neural = RedeNeuralExclusao.carregar(neural_path)
                 
@@ -12512,8 +12526,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 
                 # Exibir ranking híbrido
                 print("\n   ╔════════════════════════════════════════════════════════════════════════╗")
-                print("   ║  🧠 RANKING HÍBRIDO: NEURAL (60%) + INVERTIDA (40%)   ⭐⭐ MELHOR!   ║")
-                print("   ║  📊 Benchmark: Neural +3.3pp acima INVERTIDA (18.6% vs 15.3%)        ║")
+                print("   ║  🧠 RANKING HÍBRIDO: NEURAL (60%) + INVERTIDA (40%)                ║")
+                print("   ║  📊 Combina os scores atuais da Neural e da INVERTIDA                 ║")
                 print("   ╚════════════════════════════════════════════════════════════════════════╝")
                 print()
                 print(f"   {'Rank':>4} {'Num':>4} {'Neural':>8} {'INVERT':>8} {'HÍBRIDO':>8} {'Status':>22}")
@@ -12696,8 +12710,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
 
         if neural_disponivel and ranking_hibrido:
             print(f"\n   🧠 MODELO NEURAL DISPONÍVEL!")
-            print(f"      [N] Neural PURO ⭐⭐ MELHOR! (benchmark: +7.7pp acima random)")
-            print(f"      [H] Usar HÍBRIDO Neural+INVERTIDA (+3.3pp)")
+            print(f"      [N] Neural PURO ⭐⭐ MELHOR! ({benchmark_texto_neural})")
+            print(f"      [H] Usar HÍBRIDO Neural+INVERTIDA (combina scores atuais)")
             print(f"      [I] Usar só INVERTIDA v3.0 (clássico)")
             escolha_estrategia = input("   Escolha [N/H/I, ENTER=N]: ").strip().upper()
             if escolha_estrategia == 'I':
@@ -12711,7 +12725,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         if usar_neural_puro and ranking_neural_puro:
             excluir = ranking_neural_puro[:qtd_excluir]
             score_total = sum(scores_neural.get(n, 0) for n in excluir)
-            print(f"   ✅ Usando NEURAL PURO (benchmark: 22.9% vs 15.2% INVERTIDA)")
+            print(f"   ✅ Usando NEURAL PURO ({benchmark_texto_neural})")
         elif usar_hibrido and ranking_hibrido:
             excluir = [ranking_hibrido[i]['num'] for i in range(min(qtd_excluir, len(ranking_hibrido)))]
             score_total = sum(ranking_hibrido[i]['score_hibrido'] for i in range(min(qtd_excluir, len(ranking_hibrido))))
@@ -18115,7 +18129,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   │ [3] 🗺️  Q1-Q5 Quadrantes (excluir do Q1 — pior quadrante)      │")
         print("   │ [4] 🔀 Híbrido Invertida + Q1-Q5 (média dos scores)            │")
         print("   │ [5] 🌀 Híbrido TODOS (débito + invertida + Q1-Q5 combinados)   │")
-        print("   │ [6] 🧠 Neural PURO (+10.2pp acima INVERTIDA) ⭐⭐ MELHOR!       │")
+        print("   │ [6] 🧠 Neural PURO (usa último modelo treinado)                │")
         print("   │ [0] 🔄 Comparar TODAS (diagnóstico no PASSO 4)                 │")
         print("   └─────────────────────────────────────────────────────────────────┘")
 

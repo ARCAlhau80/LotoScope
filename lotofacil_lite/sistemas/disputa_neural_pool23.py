@@ -283,6 +283,47 @@ class DisputaNeuralPool23:
         # Caminho para salvar modelo
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.modelo_path = os.path.join(self.base_path, '..', 'dados', 'neural_exclusao.pkl')
+        self.benchmark_path = os.path.join(self.base_path, '..', 'dados', 'neural_exclusao_benchmark.json')
+
+    @staticmethod
+    def carregar_benchmark_modelo(modelo_path: Optional[str] = None) -> Optional[Dict]:
+        """Carrega metadados do último benchmark salvo para o modelo neural."""
+        if modelo_path:
+            dados_dir = os.path.dirname(modelo_path)
+            benchmark_path = os.path.join(dados_dir, 'neural_exclusao_benchmark.json')
+        else:
+            base_path = os.path.dirname(os.path.abspath(__file__))
+            benchmark_path = os.path.join(base_path, '..', 'dados', 'neural_exclusao_benchmark.json')
+
+        if not os.path.exists(benchmark_path):
+            return None
+
+        try:
+            with open(benchmark_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            return None
+
+    def _salvar_benchmark_modelo(self, taxa_neural: float, taxa_invertida: float,
+                                 concurso_inicio: int, concurso_fim: int,
+                                 total_concursos: int, origem: str):
+        """Persiste o último benchmark para exibição dinâmica no gerador."""
+        try:
+            os.makedirs(os.path.dirname(self.benchmark_path), exist_ok=True)
+            dados = {
+                'taxa_neural': round(taxa_neural, 1),
+                'taxa_invertida': round(taxa_invertida, 1),
+                'diferenca_pp': round(taxa_neural - taxa_invertida, 1),
+                'concurso_inicio': concurso_inicio,
+                'concurso_fim': concurso_fim,
+                'total_concursos': total_concursos,
+                'origem': origem,
+                'atualizado_em': datetime.now().strftime('%d/%m/%Y %H:%M')
+            }
+            with open(self.benchmark_path, 'w', encoding='utf-8') as f:
+                json.dump(dados, f, indent=2, ensure_ascii=False)
+        except Exception:
+            pass
     
     def carregar_historico(self) -> bool:
         """Carrega histórico do banco de dados"""
@@ -527,6 +568,17 @@ class DisputaNeuralPool23:
         
         # Exibir resultados
         self._exibir_resultados(stats, total_real)
+
+        taxa_2_inv = stats['invertida']['acertos_2'] / total_real * 100
+        taxa_2_neu = stats['neural']['acertos_2'] / total_real * 100
+        self._salvar_benchmark_modelo(
+            taxa_neural=taxa_2_neu,
+            taxa_invertida=taxa_2_inv,
+            concurso_inicio=concurso_inicio,
+            concurso_fim=concurso_fim,
+            total_concursos=total_real,
+            origem='disputa'
+        )
         
         self.resultados = stats
         return stats
@@ -776,6 +828,15 @@ class DisputaNeuralPool23:
             print("\n   📊 INVERTIDA v3.0 ainda é superior")
         else:
             print("\n   🤝 Empate técnico entre Neural e INVERTIDA")
+
+        self._salvar_benchmark_modelo(
+            taxa_neural=melhor_taxa,
+            taxa_invertida=taxa_inv,
+            concurso_inicio=concurso_inicio,
+            concurso_fim=concurso_fim,
+            total_concursos=total_real,
+            origem='retreino'
+        )
         
         return {
             'historico': historico_iteracoes,
