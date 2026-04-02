@@ -15815,6 +15815,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             traceback.print_exc()
         
         input("\n   Pressione ENTER para voltar...")
+
+    def _executar_backtesting_pool23_historico(self):
         """
         🔬 BACKTESTING POOL 23 HISTÓRICO
         
