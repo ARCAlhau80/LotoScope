@@ -311,13 +311,13 @@ class DisputaNeuralPool23:
         try:
             os.makedirs(os.path.dirname(self.benchmark_path), exist_ok=True)
             dados = {
-                'taxa_neural': round(taxa_neural, 1),
-                'taxa_invertida': round(taxa_invertida, 1),
-                'diferenca_pp': round(taxa_neural - taxa_invertida, 1),
-                'concurso_inicio': concurso_inicio,
-                'concurso_fim': concurso_fim,
-                'total_concursos': total_concursos,
-                'origem': origem,
+                'taxa_neural': float(round(float(taxa_neural), 1)),
+                'taxa_invertida': float(round(float(taxa_invertida), 1)),
+                'diferenca_pp': float(round(float(taxa_neural) - float(taxa_invertida), 1)),
+                'concurso_inicio': int(concurso_inicio),
+                'concurso_fim': int(concurso_fim),
+                'total_concursos': int(total_concursos),
+                'origem': str(origem),
                 'atualizado_em': datetime.now().strftime('%d/%m/%Y %H:%M')
             }
             with open(self.benchmark_path, 'w', encoding='utf-8') as f:

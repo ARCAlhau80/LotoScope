@@ -12423,7 +12423,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         scores_neural = {}
         ranking_hibrido = []
         benchmark_neural = None
-        benchmark_texto_neural = 'último benchmark indisponível'
+        benchmark_texto_neural = 'modelo carregado; último benchmark indisponível'
         
         try:
             from sistemas.disputa_neural_pool23 import RedeNeuralExclusao, DisputaNeuralPool23
