@@ -12855,6 +12855,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             else:  # N ou ENTER
                 usar_neural_puro = True
 
+        # Flag: registrar no log de produção?
+        _gravar_log = True
+        _log_input = input("\n   📝 Registrar no log de aprendizado? [S/N, ENTER=S]: ").strip().upper()
+        if _log_input == 'N':
+            _gravar_log = False
+            print("   ⚠️  Geração EXPERIMENTAL — NÃO será gravada no log científico")
+        else:
+            print("   ✅ Geração será registrada no log de aprendizado")
+
         # Selecionar automaticamente os top N
         if usar_neural_puro and ranking_neural_puro:
             excluir = ranking_neural_puro[:qtd_excluir]
@@ -13594,38 +13603,41 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"   📦 {len(combos_filtradas):,} combinações")
                 print(f"   💰 Custo: R$ {len(combos_filtradas) * 3.50:,.2f}")
                 # 📝 LOG DE PRODUÇÃO NEURAL — nivel 8
-                try:
-                    import json as _json_log
-                    _log_path = os.path.join(
-                        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                        'dados', 'neural_producao_log.json'
-                    )
-                    _log_data = {'geracoes': []}
-                    if os.path.exists(_log_path):
-                        with open(_log_path, 'r', encoding='utf-8') as _lf:
-                            _log_data = _json_log.load(_lf)
-                        if 'geracoes' not in _log_data:
-                            _log_data['geracoes'] = []
-                    _estr_log = ('NEURAL_PURO' if usar_neural_puro else
-                                 'HIBRIDO' if usar_hibrido else 'INVERTIDA')
-                    _scores_log = {str(n): round((scores_neural or {}).get(n, 0), 4) for n in excluir}
-                    _log_data['geracoes'].append({
-                        'concurso_alvo': resultados[0]['concurso'] + 1,
-                        'data_geracao': datetime.now().strftime('%d/%m/%Y %H:%M'),
-                        'estrategia': _estr_log,
-                        'excluidos': sorted(excluir),
-                        'scores_excluidos': _scores_log,
-                        'nivel_filtro': nivel,
-                        'qtd_combinacoes': len(combos_filtradas),
-                        'arquivo': nome_arquivo,
-                        'resultado_real': None,
-                        'acerto_exclusao': None,
-                        'erros_exclusao': None,
-                    })
-                    with open(_log_path, 'w', encoding='utf-8') as _lf:
-                        _json_log.dump(_log_data, _lf, ensure_ascii=False, indent=2)
-                except Exception:
-                    pass
+                if _gravar_log:
+                    try:
+                        import json as _json_log
+                        _log_path = os.path.join(
+                            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                            'dados', 'neural_producao_log.json'
+                        )
+                        _log_data = {'geracoes': []}
+                        if os.path.exists(_log_path):
+                            with open(_log_path, 'r', encoding='utf-8') as _lf:
+                                _log_data = _json_log.load(_lf)
+                            if 'geracoes' not in _log_data:
+                                _log_data['geracoes'] = []
+                        _estr_log = ('NEURAL_PURO' if usar_neural_puro else
+                                     'HIBRIDO' if usar_hibrido else 'INVERTIDA')
+                        _scores_log = {str(n): round((scores_neural or {}).get(n, 0), 4) for n in excluir}
+                        _log_data['geracoes'].append({
+                            'concurso_alvo': resultados[0]['concurso'] + 1,
+                            'data_geracao': datetime.now().strftime('%d/%m/%Y %H:%M'),
+                            'estrategia': _estr_log,
+                            'excluidos': sorted(excluir),
+                            'scores_excluidos': _scores_log,
+                            'nivel_filtro': nivel,
+                            'qtd_combinacoes': len(combos_filtradas),
+                            'arquivo': nome_arquivo,
+                            'resultado_real': None,
+                            'acerto_exclusao': None,
+                            'erros_exclusao': None,
+                        })
+                        with open(_log_path, 'w', encoding='utf-8') as _lf:
+                            _json_log.dump(_log_data, _lf, ensure_ascii=False, indent=2)
+                    except Exception:
+                        pass
+                else:
+                    print("      ℹ️  Log científico: NÃO gravado (modo experimental)")
                 arquivos_gerados.append({
                     'nivel': f"8(N{nivel_cascata_encontrado})",
                     'caminho': caminho,
@@ -14422,38 +14434,41 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"   📦 {len(combos_filtradas):,} combinações")
             print(f"   💰 Custo: R$ {len(combos_filtradas) * 3.50:,.2f}")
             # 📝 LOG DE PRODUÇÃO NEURAL
-            try:
-                import json as _json_log
-                _log_path = os.path.join(
-                    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                    'dados', 'neural_producao_log.json'
-                )
-                _log_data = {'geracoes': []}
-                if os.path.exists(_log_path):
-                    with open(_log_path, 'r', encoding='utf-8') as _lf:
-                        _log_data = _json_log.load(_lf)
-                    if 'geracoes' not in _log_data:
-                        _log_data['geracoes'] = []
-                _estr_log = ('NEURAL_PURO' if usar_neural_puro else
-                             'HIBRIDO' if usar_hibrido else 'INVERTIDA')
-                _scores_log = {str(n): round((scores_neural or {}).get(n, 0), 4) for n in excluir}
-                _log_data['geracoes'].append({
-                    'concurso_alvo': resultados[0]['concurso'] + 1,
-                    'data_geracao': datetime.now().strftime('%d/%m/%Y %H:%M'),
-                    'estrategia': _estr_log,
-                    'excluidos': sorted(excluir),
-                    'scores_excluidos': _scores_log,
-                    'nivel_filtro': nivel,
-                    'qtd_combinacoes': len(combos_filtradas),
-                    'arquivo': nome_arquivo,
-                    'resultado_real': None,
-                    'acerto_exclusao': None,
-                    'erros_exclusao': None,
-                })
-                with open(_log_path, 'w', encoding='utf-8') as _lf:
-                    _json_log.dump(_log_data, _lf, ensure_ascii=False, indent=2)
-            except Exception:
-                pass
+            if _gravar_log:
+                try:
+                    import json as _json_log
+                    _log_path = os.path.join(
+                        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                        'dados', 'neural_producao_log.json'
+                    )
+                    _log_data = {'geracoes': []}
+                    if os.path.exists(_log_path):
+                        with open(_log_path, 'r', encoding='utf-8') as _lf:
+                            _log_data = _json_log.load(_lf)
+                        if 'geracoes' not in _log_data:
+                            _log_data['geracoes'] = []
+                    _estr_log = ('NEURAL_PURO' if usar_neural_puro else
+                                 'HIBRIDO' if usar_hibrido else 'INVERTIDA')
+                    _scores_log = {str(n): round((scores_neural or {}).get(n, 0), 4) for n in excluir}
+                    _log_data['geracoes'].append({
+                        'concurso_alvo': resultados[0]['concurso'] + 1,
+                        'data_geracao': datetime.now().strftime('%d/%m/%Y %H:%M'),
+                        'estrategia': _estr_log,
+                        'excluidos': sorted(excluir),
+                        'scores_excluidos': _scores_log,
+                        'nivel_filtro': nivel,
+                        'qtd_combinacoes': len(combos_filtradas),
+                        'arquivo': nome_arquivo,
+                        'resultado_real': None,
+                        'acerto_exclusao': None,
+                        'erros_exclusao': None,
+                    })
+                    with open(_log_path, 'w', encoding='utf-8') as _lf:
+                        _json_log.dump(_log_data, _lf, ensure_ascii=False, indent=2)
+                except Exception:
+                    pass
+            else:
+                print("      ℹ️  Log científico: NÃO gravado (modo experimental)")
             # Guardar caminho na lista
             arquivos_gerados.append({
                 'nivel': nivel,
