@@ -15766,13 +15766,37 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 except Exception:
                     repeticoes = 1
 
+                # Early stopping — só pergunta se vai rodar mais de 1 vez
+                paciencia = 3
+                delta_minimo = 0.2
+                if repeticoes > 1:
+                    print("\n   EARLY STOPPING (parada automática):")
+                    print("   └ Para automaticamente quando o modelo parar de aprender.")
+                    try:
+                        pac_str = input("   Rodadas sem melhora para parar [3]: ").strip()
+                        paciencia = int(pac_str) if pac_str else 3
+                        paciencia = max(1, paciencia)
+                    except Exception:
+                        paciencia = 3
+                    try:
+                        delta_str = input("   Melhora mínima considerada aprendizado [0.2]pp: ").strip()
+                        delta_minimo = float(delta_str) if delta_str else 0.2
+                        delta_minimo = max(0.0, delta_minimo)
+                    except Exception:
+                        delta_minimo = 0.2
+
                 resetar = (acao == 'T')
                 resultado = {}
                 melhor_resultado = None
+                melhor_taxa_historico = 0.0
+                rodadas_sem_melhora = 0
+                motivo_parada = 'concluído'
+
                 for repeticao_idx in range(repeticoes):
                     if repeticoes > 1:
                         print("\n" + "─"*78)
-                        print(f"🔁 RODADA DE RETREINO {repeticao_idx + 1}/{repeticoes}")
+                        print(f"🔁 RODADA DE RETREINO {repeticao_idx + 1}/{repeticoes}  "
+                              f"(sem melhora: {rodadas_sem_melhora}/{paciencia})")
                         print("─"*78)
 
                     resultado = disputa.retreinar_automatico(
@@ -15784,10 +15808,30 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         resetar=resetar if repeticao_idx == 0 else False
                     )
 
-                    if resultado and (
-                        melhor_resultado is None or resultado.get('melhor_taxa', 0) > melhor_resultado.get('melhor_taxa', 0)
-                    ):
+                    taxa_atual = resultado.get('melhor_taxa', 0) if resultado else 0
+
+                    if resultado and (melhor_resultado is None or taxa_atual > melhor_resultado.get('melhor_taxa', 0)):
                         melhor_resultado = resultado
+
+                    if repeticoes > 1:
+                        melhora = taxa_atual - melhor_taxa_historico
+                        if melhora >= delta_minimo:
+                            melhor_taxa_historico = taxa_atual
+                            rodadas_sem_melhora = 0
+                            print(f"   📈 Melhora: +{melhora:.2f}pp → taxa {taxa_atual:.1f}%")
+                        else:
+                            rodadas_sem_melhora += 1
+                            print(f"   ➡️  Sem melhora significativa ({melhora:+.2f}pp < {delta_minimo}pp) "
+                                  f"[{rodadas_sem_melhora}/{paciencia}]")
+                            if rodadas_sem_melhora >= paciencia:
+                                motivo_parada = f'early stopping (rodada {repeticao_idx + 1})'
+                                print("\n" + "═"*78)
+                                print(f"🛑 EARLY STOPPING — modelo convergiu na rodada {repeticao_idx + 1}/{repeticoes}")
+                                print(f"   Sem melhora ≥ {delta_minimo}pp por {paciencia} rodadas consecutivas.")
+                                print(f"   Melhor taxa alcançada: {melhor_taxa_historico:.1f}%")
+                                print(f"   💡 Para continuar evoluindo, aguarde novos concursos e retreine.")
+                                print("═"*78)
+                                break
 
                 if melhor_resultado:
                     resultado = melhor_resultado
@@ -15825,6 +15869,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"   Resultado:        {status}")
                 print(f"   Preset usado:     {PRESETS_TREINO.get(preset_escolhido, {'label': 'Personalizado'})['label'] if preset_escolhido in PRESETS_TREINO else 'Personalizado'}")
                 print(f"   Repetições:       {repeticoes}")
+                print(f"   Parada:           {motivo_parada}")
 
             # ───────────────────────────────────────────────
             # FRIOS FAVORECIDOS PELA NEURAL (diagnóstico)
