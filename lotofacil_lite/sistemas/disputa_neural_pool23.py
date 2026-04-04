@@ -39,124 +39,152 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 class RedeNeuralExclusao:
     """
     Rede Neural especializada em EXCLUIR números.
-    
-    Diferente da IA Autônoma (que prevê quais 15 vão sair),
-    esta rede prevê quais 2 NÃO vão sair.
-    
-    Arquitetura:
+
+    Arquitetura v2 (anti-overfitting):
     - Entrada: 150 features (frequência, atraso, consecutividade, tendência)
-    - 3 camadas ocultas: 256 → 128 → 64 neurônios
+    - 2 camadas ocultas: 64 → 32 neurônios  (era 256 → 128 → 64)
     - Saída: 25 valores (score de exclusão para cada número)
+    - L2 regularization (lambda=0.001) — penaliza pesos grandes
+    - Dropout (rate=0.3) durante treino — força generalização
+    - ~12.500 parâmetros (era 81.433) — razão params/amostras muito melhor
     """
-    
-    def __init__(self, silencioso: bool = False):
+
+    def __init__(self, silencioso: bool = False,
+                 dropout_rate: float = 0.3,
+                 l2_lambda: float = 0.001):
         self.pesos = {}
         self.bias = {}
         self.historico_treino = []
-        
-        # Arquitetura: 150 → 256 → 128 → 64 → 25
-        self.tamanhos = [150, 256, 128, 64, 25]
+        self.dropout_rate = dropout_rate
+        self.l2_lambda = l2_lambda
+
+        # Arquitetura: 150 → 64 → 32 → 25
+        self.tamanhos = [150, 64, 32, 25]
         self._inicializar_pesos(silencioso)
-    
+
     def _inicializar_pesos(self, silencioso: bool = False):
-        """Inicializa pesos com Xavier initialization"""
+        """Inicializa pesos com He initialization (otimizado para ReLU)"""
         np.random.seed(42)
-        
+
         if not silencioso:
-            print("   🧠 Inicializando Rede Neural para Exclusão...")
-        
+            print("   🧠 Inicializando Rede Neural para Exclusão (v2 anti-overfitting)...")
+
         for i in range(len(self.tamanhos) - 1):
-            scale = np.sqrt(2.0 / (self.tamanhos[i] + self.tamanhos[i+1]))
+            # He initialization: scale = sqrt(2 / n_entrada)
+            scale = np.sqrt(2.0 / self.tamanhos[i])
             self.pesos[f'W{i}'] = np.random.randn(self.tamanhos[i], self.tamanhos[i+1]).astype(np.float32) * scale
             self.bias[f'b{i}'] = np.zeros(self.tamanhos[i+1], dtype=np.float32)
-        
+
         total_params = sum(w.size for w in self.pesos.values()) + sum(b.size for b in self.bias.values())
         if not silencioso:
             print(f"      • {total_params:,} parâmetros")
             print(f"      • Arquitetura: {' → '.join(map(str, self.tamanhos))}")
-    
+            print(f"      • Dropout: {self.dropout_rate} | L2: {self.l2_lambda}")
+
     def _relu(self, x):
         return np.maximum(0, x)
-    
+
     def _sigmoid(self, x):
         return 1 / (1 + np.exp(-np.clip(x, -500, 500)))
-    
+
     def forward(self, x: np.ndarray) -> np.ndarray:
-        """Forward pass: retorna score de exclusão para cada número"""
+        """Forward pass sem dropout (modo inferência)"""
         a = x
         for i in range(len(self.pesos)):
             z = np.dot(a, self.pesos[f'W{i}']) + self.bias[f'b{i}']
             if i < len(self.pesos) - 1:
                 a = self._relu(z)
             else:
-                a = self._sigmoid(z)  # Output 0-1
+                a = self._sigmoid(z)
         return a
-    
+
     def treinar(self, X: np.ndarray, y: np.ndarray, epochs: int = 100, lr: float = 0.001):
         """
-        Treina a rede para prever score de exclusão.
-        
+        Treina com L2 regularization + Dropout inverted (anti-overfitting).
+
         y deve ter valores altos (perto de 1) para números que NÃO saíram.
         """
+        keep_prob = 1.0 - self.dropout_rate
+
         for epoch in range(epochs):
-            # Forward
+            # Forward com dropout inverted nas camadas ocultas
             activations = [X]
             a = X
             for i in range(len(self.pesos)):
                 z = np.dot(a, self.pesos[f'W{i}']) + self.bias[f'b{i}']
                 if i < len(self.pesos) - 1:
                     a = self._relu(z)
+                    # Dropout inverted: escala por 1/keep_prob para manter
+                    # valor esperado igual ao forward sem dropout
+                    if self.dropout_rate > 0:
+                        mask = (np.random.rand(*a.shape) > self.dropout_rate).astype(np.float32)
+                        a = a * mask / keep_prob
                 else:
                     a = self._sigmoid(z)
                 activations.append(a)
-            
-            # Binary cross-entropy loss
+
+            # Binary cross-entropy loss gradient
             delta = activations[-1] - y
-            
-            # Backward
+
+            # Backward com L2 e propagação através do dropout
             for i in range(len(self.pesos) - 1, -1, -1):
                 grad_w = np.dot(activations[i].T, delta) / X.shape[0]
                 grad_b = np.mean(delta, axis=0)
-                
+
+                # L2 regularization: penaliza pesos grandes
+                grad_w += self.l2_lambda * self.pesos[f'W{i}']
+
                 # Gradient clipping
                 grad_w = np.clip(grad_w, -1.0, 1.0)
                 grad_b = np.clip(grad_b, -1.0, 1.0)
-                
+
                 self.pesos[f'W{i}'] -= lr * grad_w
                 self.bias[f'b{i}'] -= lr * grad_b
-                
+
                 if i > 0:
                     delta = np.dot(delta, self.pesos[f'W{i}'].T)
-                    delta = delta * (activations[i] > 0)  # ReLU derivative
-    
+                    # Gradiente através de ReLU + dropout inverted:
+                    # activations[i] == 0 quando neurônio morreu (relu) ou
+                    # foi dropado → gradiente zero nesses casos
+                    if self.dropout_rate > 0:
+                        delta = delta * (activations[i] > 0) / keep_prob
+                    else:
+                        delta = delta * (activations[i] > 0)
+
     def prever_exclusoes(self, features: np.ndarray, top_k: int = 2) -> List[int]:
         """Retorna os top_k números com maior score de exclusão"""
         scores = self.forward(features.reshape(1, -1))[0]
         indices = np.argsort(scores)[::-1][:top_k]
         return [i + 1 for i in indices]  # Números 1-25
-    
+
     def obter_scores(self, features: np.ndarray) -> Dict[int, float]:
         """Retorna scores de exclusão para todos os números"""
         scores = self.forward(features.reshape(1, -1))[0]
         return {i + 1: float(scores[i]) for i in range(25)}
-    
+
     def salvar(self, caminho: str):
-        """Salva modelo"""
+        """Salva modelo com metadados de regularização"""
         with open(caminho, 'wb') as f:
             pickle.dump({
                 'pesos': self.pesos,
                 'bias': self.bias,
                 'tamanhos': self.tamanhos,
-                'historico_treino': self.historico_treino
+                'historico_treino': self.historico_treino,
+                'dropout_rate': self.dropout_rate,
+                'l2_lambda': self.l2_lambda,
             }, f)
-    
+
     @classmethod
     def carregar(cls, caminho: str) -> 'RedeNeuralExclusao':
-        """Carrega modelo salvo"""
+        """Carrega modelo salvo (compatível com versões anteriores)"""
         with open(caminho, 'rb') as f:
             dados = pickle.load(f)
-        
-        rede = cls(silencioso=True)
+
+        rede = cls(
+            silencioso=True,
+            dropout_rate=dados.get('dropout_rate', 0.3),
+            l2_lambda=dados.get('l2_lambda', 0.001),
+        )
         rede.pesos = dados['pesos']
         rede.bias = dados['bias']
         rede.tamanhos = dados['tamanhos']
