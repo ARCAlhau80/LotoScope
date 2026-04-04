@@ -401,6 +401,12 @@ class SuperMenuLotofacil:
         print("     • Exportação TOTAL (sem tops arbitrários)")
         print("     • 490k → filtrado por nível escolhido")
         print()
+        print("3️⃣1️⃣B 🎲 MULTI-POOL NEURAL (FORA DO LOG CIENTÍFICO)")
+        print("     • Gera 10 pools excluindo 1 número neural de cada vez")
+        print("     • ~4/10 pools terão a exclusão CORRETA (vs 1 no modo padrão)")
+        print("     • Amostras aleatórias de cada pool → mais diversidade de cobertura")
+        print("     • ⚠️  NÃO grava no neural_producao_log (instrumento de medição puro)")
+        print()
         print("3️⃣2️⃣  📊 MAPA GRÁFICO DE RANKING ⭐⭐ NOVO!")
         print("     • Visualização gráfica dos 25 números")
         print("     • 5 Quintetos (TOP 5, ALTOS, MÉDIO, BAIXOS, PIORES 5)")
@@ -2615,6 +2621,8 @@ class SuperMenuLotofacil:
                     self.executar_backtesting_automatizado()
                 elif opcao == "31":
                     self.executar_gerador_pool_23_hibrido()
+                elif opcao == "31b" or opcao == "31B":
+                    self.executar_multipool_neural()
                 elif opcao == "32":
                     self.executar_mapa_grafico_ranking()
                 elif opcao == "33":
@@ -20405,6 +20413,287 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         else:
             print(f"   📁 Arquivos mantidos em: {dados_path}")
         
+        print("\n" + "═"*78)
+        input("\n   Pressione ENTER para voltar ao menu...")
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # OPÇÃO 31B: MULTI-POOL NEURAL
+    # ═══════════════════════════════════════════════════════════════════════════
+    def executar_multipool_neural(self):
+        """
+        🎲 MULTI-POOL NEURAL — FORA DO LOG CIENTÍFICO
+
+        Gera até 10 pools excluindo 1 número neural de cada vez (TOP 10 candidatos).
+        ~40% dos pools terão exclusão correta (vs 15% no modo padrão com 2 excluídos).
+        Amostras aleatórias de cada pool aumentam diversidade de cobertura.
+
+        ⚠️ NÃO grava em neural_producao_log.json — instrumento de medição puro
+           reservado exclusivamente para a opção 31 (exclusão de 2 números).
+        """
+        import pyodbc
+        import random
+        import os
+        import sys
+        import time
+        from collections import Counter
+        from itertools import combinations
+        from datetime import datetime
+
+        print("\n" + "═"*78)
+        print("🎲 MULTI-POOL NEURAL — DIVERSIFICAÇÃO DE APOSTAS")
+        print("═"*78)
+        print("   Estratégia: excluir 1 número neural de cada vez (TOP 1..10)")
+        print("   Resultado esperado: ~4/10 pools com exclusão CORRETA")
+        print("   ⚠️  FORA DO LOG CIENTÍFICO — não contamina neural_producao_log")
+        print("═"*78)
+
+        conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=Lotofacil;Trusted_Connection=yes;'
+
+        # ── CARREGAR DADOS ──────────────────────────────────────────────────
+        print("\n📥 Carregando dados históricos...")
+        try:
+            conn = pyodbc.connect(conn_str)
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT Concurso, N1, N2, N3, N4, N5, N6, N7, N8, N9, N10, N11, N12, N13, N14, N15
+                FROM Resultados_INT ORDER BY Concurso DESC
+            """)
+            resultados = []
+            for row in cursor.fetchall():
+                resultados.append({'concurso': row[0], 'numeros': list(row[1:16]), 'set': set(row[1:16])})
+            conn.close()
+            print(f"   ✅ {len(resultados)} concursos | último: {resultados[0]['concurso']}")
+        except Exception as e:
+            print(f"   ❌ Erro: {e}")
+            input("\nPressione ENTER...")
+            return
+
+        # ── CARREGAR NEURAL ─────────────────────────────────────────────────
+        print("\n🧠 Carregando rede neural...")
+        base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        sys.path.insert(0, os.path.join(base_path, 'sistemas'))
+        scores_neural = {}
+        ranking_neural = []
+        try:
+            from disputa_neural_pool23 import RedeNeuralExclusao
+            modelo_path = os.path.join(base_path, 'dados', 'neural_exclusao.pkl')
+            if os.path.exists(modelo_path):
+                disputa = RedeNeuralExclusao()
+                disputa.carregar(modelo_path)
+                idx_ultimo = 0
+                features = disputa._extrair_features(idx_ultimo, resultados)
+                scores_neural = disputa.obter_scores(features)
+                ranking_neural = sorted(scores_neural.keys(), key=lambda n: scores_neural[n], reverse=True)
+                print(f"   ✅ Neural carregada | TOP 5: {ranking_neural[:5]}")
+            else:
+                print("   ⚠️ Modelo neural não encontrado — usando INVERTIDA v3.0")
+        except Exception as e:
+            print(f"   ⚠️ Neural indisponível ({e}) — usando INVERTIDA v3.0")
+
+        # Fallback: INVERTIDA v3.0 se neural não disponível
+        if not ranking_neural:
+            def _freq(n_conc):
+                freq = Counter()
+                for r in resultados[:min(n_conc, len(resultados))]:
+                    freq.update(r['numeros'])
+                return {n: freq.get(n, 0) / min(n_conc, len(resultados)) * 100 for n in range(1, 26)}
+            freq_5 = _freq(5)
+            candidatos_fallback = sorted(range(1, 26), key=lambda n: freq_5.get(n, 0), reverse=True)
+            ranking_neural = candidatos_fallback
+
+        # ── CONFIGURAR POOLS ────────────────────────────────────────────────
+        print("\n" + "─"*78)
+        print("⚙️  CONFIGURAÇÃO")
+        print("─"*78)
+        print(f"\n   TOP 10 candidatos à exclusão:")
+        for i, n in enumerate(ranking_neural[:10]):
+            sc = scores_neural.get(n, 0)
+            print(f"   [{i+1:2d}] Número {n:2d}  score={sc:.4f}")
+
+        try:
+            n_pools_input = input("\n   Quantos pools gerar? [1-10, ENTER=10]: ").strip()
+            n_pools = int(n_pools_input) if n_pools_input else 10
+            n_pools = max(1, min(10, n_pools))
+        except Exception:
+            n_pools = 10
+
+        print(f"\n   Nível de filtro:")
+        print("   [0] Sem filtros (~1.3M combos por pool)")
+        print("   [1] Soma 175-235 + Qtde 6-25 (~300k)")
+        print("   [2] Básico + Piores Histórico (~100k)")
+        print("   [3] Balanceado (~30k) — RECOMENDADO")
+        try:
+            nivel_input = input("   Nível [0-3, ENTER=3]: ").strip()
+            nivel_mp = int(nivel_input) if nivel_input else 3
+            nivel_mp = max(0, min(3, nivel_mp))
+        except Exception:
+            nivel_mp = 3
+
+        try:
+            n_amostras_input = input("\n   Combos a amostrar por pool para apostas? [ENTER=50]: ").strip()
+            n_amostras = int(n_amostras_input) if n_amostras_input else 50
+            n_amostras = max(1, n_amostras)
+        except Exception:
+            n_amostras = 50
+
+        print(f"\n   ✅ {n_pools} pools | nível {nivel_mp} | {n_amostras} amostras/pool")
+        print(f"   💰 Custo estimado por pool: R$ {n_amostras * 3.50:.2f}")
+        print(f"   💰 Custo TOTAL apostas: R$ {n_pools * n_amostras * 3.50:.2f}")
+
+        confirmar = input("\n   Continuar? [S/N]: ").strip().upper()
+        if confirmar != 'S':
+            print("   ❌ Cancelado.")
+            input("\nPressione ENTER...")
+            return
+
+        # ── GERAR POOLS ─────────────────────────────────────────────────────
+        dados_path = os.path.join(base_path, 'dados')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        proximo_concurso = resultados[0]['concurso'] + 1
+        arquivos_gerados = []
+        amostras_unificadas = []
+
+        # Importar filtros do gerador principal
+        try:
+            sys.path.insert(0, os.path.join(base_path, 'interfaces'))
+            # Reusar FILTROS_POR_NIVEL do contexto local (definidos na opção 31)
+            # Para 31b, implementamos filtros simplificados inline
+        except Exception:
+            pass
+
+        def _filtrar_combo_nivel(combo, nivel, resultados_hist):
+            """Filtro inline simplificado para multi-pool."""
+            nums = sorted(combo)
+            soma = sum(nums)
+            pares = sum(1 for n in nums if n % 2 == 0)
+            qtde_6_25 = sum(1 for n in nums if 6 <= n <= 25)
+
+            if nivel == 0:
+                return True
+
+            # Nível 1: soma + qtde 6-25
+            if soma < 175 or soma > 235:
+                return False
+            if not (10 <= qtde_6_25 <= 13):
+                return False
+            if nivel == 1:
+                return True
+
+            # Nível 2+: consecutivas e gap
+            consec = max_seq = atual = 1
+            for i in range(1, len(nums)):
+                if nums[i] == nums[i-1] + 1:
+                    atual += 1
+                    max_seq = max(max_seq, atual)
+                else:
+                    atual = 1
+            if max_seq < 2 or max_seq > 10:
+                return False
+            if nivel == 2:
+                return True
+
+            # Nível 3: pares/ímpares balanceados
+            if not (5 <= pares <= 9):
+                return False
+            return True
+
+        print("\n" + "─"*78)
+        print(f"🚀 GERANDO {n_pools} POOLS...")
+        print("─"*78)
+
+        for i in range(n_pools):
+            excluido = ranking_neural[i]
+            pool_24 = [n for n in range(1, 26) if n != excluido]
+            sc = scores_neural.get(excluido, 0)
+
+            print(f"\n   Pool {i+1:2d}/{ n_pools} — excluindo № {excluido:2d} (score={sc:.4f})...")
+            t0 = time.time()
+
+            # Gerar e filtrar combinações
+            combos_filtradas = []
+            for combo in combinations(pool_24, 15):
+                if _filtrar_combo_nivel(combo, nivel_mp, resultados):
+                    combos_filtradas.append(combo)
+
+            t1 = time.time()
+            print(f"      {len(combos_filtradas):,} combos em {t1-t0:.1f}s")
+
+            if not combos_filtradas:
+                print("      ⚠️ Nenhuma combo passou nos filtros — usando nível 0")
+                combos_filtradas = list(combinations(pool_24, 15))
+
+            # Amostrar aleatoriamente
+            if len(combos_filtradas) > n_amostras:
+                amostra = random.sample(combos_filtradas, n_amostras)
+            else:
+                amostra = combos_filtradas
+
+            # Salvar arquivo do pool
+            nome_arquivo = f"multipool_excl{excluido:02d}_N{nivel_mp}_{len(combos_filtradas)}_{timestamp}.txt"
+            caminho = os.path.join(dados_path, nome_arquivo)
+            with open(caminho, 'w', encoding='utf-8') as f:
+                f.write(f"# MULTI-POOL NEURAL — FORA DO LOG CIENTÍFICO\n")
+                f.write(f"# Pool {i+1}/{n_pools} | Concurso alvo: {proximo_concurso}\n")
+                f.write(f"# Excluído: {excluido} (score neural={sc:.4f})\n")
+                f.write(f"# Nível de filtro: {nivel_mp}\n")
+                f.write(f"# Total combos: {len(combos_filtradas):,}\n")
+                f.write(f"# Amostra para apostas: {len(amostra)}\n")
+                f.write(f"# ⚠️ NÃO GRAVA EM neural_producao_log.json\n")
+                f.write(f"# {'='*60}\n")
+                for combo in amostra:
+                    f.write(','.join(f"{n:02d}" for n in sorted(combo)) + "\n")
+
+            print(f"      ✅ Salvo: {nome_arquivo}")
+            arquivos_gerados.append({
+                'pool': i + 1,
+                'excluido': excluido,
+                'score': sc,
+                'total': len(combos_filtradas),
+                'amostra': len(amostra),
+                'caminho': caminho,
+            })
+            amostras_unificadas.extend(amostra)
+
+        # ── ARQUIVO UNIFICADO ────────────────────────────────────────────────
+        random.shuffle(amostras_unificadas)
+        # Remover duplicatas preservando ordem
+        visto = set()
+        unificado_unico = []
+        for c in amostras_unificadas:
+            chave = tuple(sorted(c))
+            if chave not in visto:
+                visto.add(chave)
+                unificado_unico.append(c)
+
+        nome_unif = f"multipool_unificado_{n_pools}pools_N{nivel_mp}_{proximo_concurso}_{timestamp}.txt"
+        caminho_unif = os.path.join(dados_path, nome_unif)
+        with open(caminho_unif, 'w', encoding='utf-8') as f:
+            f.write(f"# MULTI-POOL NEURAL UNIFICADO — {n_pools} pools\n")
+            f.write(f"# Concurso alvo: {proximo_concurso}\n")
+            f.write(f"# Excluídos testados: {[info['excluido'] for info in arquivos_gerados]}\n")
+            f.write(f"# Nível de filtro: {nivel_mp}\n")
+            f.write(f"# Total combos únicas: {len(unificado_unico)}\n")
+            f.write(f"# Custo total: R$ {len(unificado_unico) * 3.50:,.2f}\n")
+            f.write(f"# ⚠️ NÃO GRAVA EM neural_producao_log.json\n")
+            f.write(f"# {'='*60}\n")
+            for combo in unificado_unico:
+                f.write(','.join(f"{n:02d}" for n in sorted(combo)) + "\n")
+
+        # ── RESUMO FINAL ─────────────────────────────────────────────────────
+        print("\n" + "═"*78)
+        print("📊 RESUMO — MULTI-POOL NEURAL")
+        print("═"*78)
+        print(f"\n   {'Pool':<6} {'Excluído':<10} {'Score':<10} {'Total combos':<16} {'Amostra'}")
+        print(f"   {'─'*58}")
+        for info in arquivos_gerados:
+            print(f"   {info['pool']:<6} {info['excluido']:<10} {info['score']:<10.4f} "
+                  f"{info['total']:<16,} {info['amostra']}")
+        print(f"   {'─'*58}")
+        print(f"\n   📦 Arquivo unificado: {nome_unif}")
+        print(f"   🎲 Combos únicas: {len(unificado_unico):,}")
+        print(f"   💰 Custo total: R$ {len(unificado_unico) * 3.50:,.2f}")
+        print(f"\n   ℹ️  Probabilidade de acerto de exclusão: ~{n_pools * 40 // 10}% dos pools")
+        print(f"   ℹ️  Log científico (neural_producao_log.json): NÃO ALTERADO ✅")
         print("\n" + "═"*78)
         input("\n   Pressione ENTER para voltar ao menu...")
 
