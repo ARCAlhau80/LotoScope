@@ -20612,15 +20612,21 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             nivel_mp = 3
 
         try:
-            n_amostras_input = input("\n   Combos a amostrar por pool para apostas? [ENTER=50]: ").strip()
-            n_amostras = int(n_amostras_input) if n_amostras_input else 50
-            n_amostras = max(1, n_amostras)
+            n_amostras_input = input("\n   Limite de combos por pool? [ENTER=TODOS]: ").strip()
+            if n_amostras_input:
+                n_amostras = max(1, int(n_amostras_input))
+            else:
+                n_amostras = 0  # 0 = sem limite (todos)
         except Exception:
-            n_amostras = 50
+            n_amostras = 0
 
-        print(f"\n   ✅ {n_pools} pools | nível {nivel_mp} | {n_amostras} amostras/pool")
-        print(f"   💰 Custo estimado por pool: R$ {n_amostras * 3.50:.2f}")
-        print(f"   💰 Custo TOTAL apostas: R$ {n_pools * n_amostras * 3.50:.2f}")
+        _lbl_amostras = "TODOS" if n_amostras == 0 else str(n_amostras)
+        print(f"\n   ✅ {n_pools} pools | nível {nivel_mp} | {_lbl_amostras} combos/pool")
+        if n_amostras > 0:
+            print(f"   💰 Custo estimado por pool: R$ {n_amostras * 3.50:.2f}")
+            print(f"   💰 Custo TOTAL apostas: R$ {n_pools * n_amostras * 3.50:.2f}")
+        else:
+            print(f"   💰 Custo depende do total gerado após filtros")
 
         confirmar = input("\n   Continuar? [S/N]: ").strip().upper()
         if confirmar != 'S':
@@ -20704,8 +20710,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print("      ⚠️ Nenhuma combo passou nos filtros — usando nível 0")
                 combos_filtradas = list(combinations(pool_24, 15))
 
-            # Amostrar aleatoriamente
-            if len(combos_filtradas) > n_amostras:
+            # Amostrar aleatoriamente (0 = sem limite)
+            if n_amostras > 0 and len(combos_filtradas) > n_amostras:
                 amostra = random.sample(combos_filtradas, n_amostras)
             else:
                 amostra = combos_filtradas
