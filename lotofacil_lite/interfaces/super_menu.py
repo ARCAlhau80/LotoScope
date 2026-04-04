@@ -20478,7 +20478,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         ranking_neural = []
         try:
             from disputa_neural_pool23 import DisputaNeuralPool23, RedeNeuralExclusao
-            modelo_path = os.path.join(base_path, 'dados', 'neural_exclusao.pkl')
+            modelo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                       '..', 'dados', 'neural_exclusao.pkl')
             if os.path.exists(modelo_path):
                 disputa_31b = DisputaNeuralPool23()
                 disputa_31b.carregar_historico()
@@ -20550,7 +20551,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             return
 
         # ── GERAR POOLS ─────────────────────────────────────────────────────
-        dados_path = os.path.join(base_path, 'dados')
+        dados_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dados')
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         proximo_concurso = resultados[0]['concurso'] + 1
         arquivos_gerados = []
