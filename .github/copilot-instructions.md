@@ -285,12 +285,13 @@ python super_menu.py
     - Modes: [T] Train from scratch | [C] Continue training | [B] Benchmark only
     - Predefined periods: last 500/1000/2000, all, custom
     - Final summary: Neural vs INVERTIDA with emoji diagnostic 🎉/📊/🤝
-    - Architecture: 150→256→128→64→25 (81,433 params) | ReLU hidden, Sigmoid output
+    - Architecture: ~~150→256→128→64→25 (81,433 params)~~ → **150→64→32→25 (~12,500 params)** ✅ v2 anti-overfitting
     - 150 features = 6 per number: freq_30, atraso, consecutividade, tendência, freq_10, score_INVERTIDA
     - Same network shared with Option 30→[5] (Neural Disputa) and Option 31 (Pool 23 Hybrid)
-    - 🔴 IN RADAR: overfitting risk ~40:1 params/samples ratio; gap treino=25.3% vs validação=18.6%
-    - PENDING DECISION: reduce to 150→64→32→25 + L2 + Dropout after more training runs
+    - ✅ FIXED: overfitting resolved — v2 out-of-sample 21.5% vs INVERTIDA 16.5% (+5pp)
+    - Regularization: L2(0.001) + Dropout(0.3) + He initialization
     - **FRIOS diagnostic** added (31/03/2026): after benchmark summary, loads neural fresh and shows cold candidates table (see item 13)
+    - **3-level training presets** added (04/04/2026): Level 1 (warmup: 3 iter/20 ep/lr=0.005) → Level 2 (consolidation: 5 iter/35 ep/lr=0.001) → Level 3 (deep refinement: 10 iter/50 ep/lr=0.0005 ✅); default window: last 2000 contests; state persisted in `neural_exclusao_train_state.json`
 13. **Added** (31/03/2026): **Neural FRIOS Diagnostic — "FRIOS FAVORECIDOS PELA NEURAL"** ⭐ NEW!
     - Diagnostic block added in TWO places in `super_menu.py`:
       - **Option 31** (~line 12537): after neural hybrid ranking, shows cold numbers (absent ≥ 2 draws) sorted by ascending neural score
@@ -306,9 +307,22 @@ python super_menu.py
     - Default changed from [H] to [N]: benchmark Neural PURO = **22.9%** vs INVERTIDA 15.2% = **+7.7pp** ✅
     - Pure neural uses `scores_neural` dict directly (all 25 numbers ranked by descending score)
     - Manual adjustment screen now also shows TOP 10 NEURAL list
+15. **Updated** (04/04/2026): **Presets de treino 3 níveis para Opção 30→[6]** ⭐ NEW!
+    - Nível 1 (aquecimento rápido): 3 iterações, 20 épocas, lr=0.005
+    - Nível 2 (consolidação): 5 iterações, 35 épocas, lr=0.001
+    - Nível 3 (refinamento profundo): 10 iterações, 50 épocas, lr=0.0005 ✅ confirmado
+    - Janela padrão: últimos 2000 concursos (⭐ valor ótimo)
+    - Fluxo recomendado: N1 com [T] do zero → N2 com [C] continuar → N3 com [C] continuar
+    - Estado persiste em `neural_exclusao_train_state.json` (avança sugestão 1→2→3 automaticamente)
+16. **Refactored** (04/04/2026): **Arquitetura Neural v2 anti-overfitting** ⭐⭐⭐ CRÍTICO!
+    - v1 (81.433 params, 40:1 ratio): overfitting confirmado — out-of-sample 11% vs INVERTIDA 16.5% ❌
+    - v2 (12.500 params, 6:1 ratio): generalização validada — out-of-sample **21.5%** vs INVERTIDA 16.5% ✅
+    - Mudanças: 150→64→32→25 + L2(0.001) + Dropout(0.3) + He initialization
+    - Protocolo: benchmark periódico em #1452-#1651; se <17% → retreinar do zero
+    - Arquivo: `disputa_neural_pool23.py` — classe `RedeNeuralExclusao`
 
 ---
-*Last updated: 2026-03-31*
+*Last updated: 2026-04-04*
 
 <!-- mcp-graph:start -->
 ## mcp-graph — LotoScope

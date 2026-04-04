@@ -540,31 +540,48 @@ O menu de Backtesting (Opção 30) ganhou a sub-opção **[6] Retreinar Rede Neu
 ```
 
 **Períodos pré-definidos:**
-- Últimos 500, 1.000 ou 2.000 concursos
+- Últimos 500, 1.000 ou 2.000 concursos (**⭐ 2.000 = janela ótima validada**)
 - Todo o histórico disponível
 - Personalizado (intervalo manual)
+
+**Presets de Treino (3 Níveis Progressivos):** ⭐⭐ NOVO! (04/04/2026)
+
+| Nível | Label | Iterações | Épocas/amostra | Learning Rate | Ideia |
+|---|---|---|---|---|---|
+| 1 | aquecimento rápido | 3 | 20 | 0.005 | Exploração inicial rápida |
+| 2 | consolidação | 5 | 35 | 0.001 | Refina o que aprendeu |
+| 3 | refinamento profundo | 10 | 50 | 0.0005 | Fine-tuning preciso ✅ confirmado |
+
+**Fluxo recomendado:** Nível 1 com [T] Treinar do zero → Nível 2 com [C] Continuar → Nível 3 com [C] Continuar
+
+**Comportamento automático:** O sistema avança a sugestão de nível automaticamente (1→2→3) a cada uso, gravando estado em `lotofacil_lite/dados/neural_exclusao_train_state.json`.
 
 **Resumo final exibido:**
 - Comparativo Neural vs INVERTIDA com diagnóstico emoji: 🎉 (Neural vence), 📊 (Invertida vence), 🤝 (empate)
 
-**Arquitetura da Rede Neural (referência):**
+**Arquitetura da Rede Neural v2 (anti-overfitting — commit d9c8a27, 04/04/2026):**
 ```
 Entrada:  150 features  (6 features × 25 números)
-Oculta 1: 256 neurônios (ReLU)
-Oculta 2: 128 neurônios (ReLU)
-Oculta 3:  64 neurônios (ReLU)
+Oculta 1:  64 neurônios (ReLU + Dropout 0.3 + L2 0.001)
+Oculta 2:  32 neurônios (ReLU + Dropout 0.3 + L2 0.001)
 Saída:     25 neurônios (Sigmoid)
-Total:  81.433 parâmetros treináveis
+Total:  ~12.500 parâmetros treináveis  (razão params/amostras: 6:1 ✅)
 ```
 
 **Features de entrada (6 por número):**
 `freq_30`, `atraso`, `consecutividade`, `tendência`, `freq_10`, `score_INVERTIDA`
 
-> 🔴 **EM RADAR — Risco de Overfitting (não implementado ainda):**
-> - Razão parâmetros/amostras: ~40:1 (81k params / 2.000 amostras) → alto risco
-> - Gap observado: treino chegou a 25.3% mas validação ficou em 18.6% (+6.7pp de gap)
-> - Proposta futura: reduzir arquitetura para 150→64→32→25 + L2 regularização + Dropout
-> - **DECISÃO PENDENTE**: usuário vai retreinar com até 500 iterações primeiro, depois decide
+> ✅ **Overfitting CORRIGIDO — Benchmark out-of-sample validado (#1452-#1651, nunca visto no treino):**
+> | Métrica | v1 (81k params, 40:1) | v2 (12.5k params, 6:1) |
+> |---|---|---|
+> | Neural Acerto 2/2 | 11.0% ❌ | **21.5%** ✅ |
+> | INVERTIDA Acerto 2/2 | 16.5% | 16.5% |
+> | Erro 0/2 | 38.5% | **26.5%** |
+> | Veredito | INVERTIDA vencia | **Neural +5pp** |
+>
+> **Protocolo de monitoramento**: se benchmark out-of-sample cair abaixo de 17% → overfitting iniciou → retreinar do zero com [T]
+>
+> ~~v1 (81.433 params): 150→256→128→64→25, Xavier init — DESCARTADO overfitting confirmado (04/04/2026)~~
 
 **Correção conceitual — contagem de concursos:**
 - `Resultados_INT` tem 3.647 linhas totais
