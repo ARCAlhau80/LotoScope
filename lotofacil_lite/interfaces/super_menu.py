@@ -20471,18 +20471,21 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # ── CARREGAR NEURAL ─────────────────────────────────────────────────
         print("\n🧠 Carregando rede neural...")
         base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        sys.path.insert(0, os.path.join(base_path, 'sistemas'))
+        _sistemas_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'sistemas')
+        if _sistemas_path not in sys.path:
+            sys.path.insert(0, _sistemas_path)
         scores_neural = {}
         ranking_neural = []
         try:
-            from disputa_neural_pool23 import RedeNeuralExclusao
+            from disputa_neural_pool23 import DisputaNeuralPool23, RedeNeuralExclusao
             modelo_path = os.path.join(base_path, 'dados', 'neural_exclusao.pkl')
             if os.path.exists(modelo_path):
-                disputa = RedeNeuralExclusao()
-                disputa.carregar(modelo_path)
+                disputa_31b = DisputaNeuralPool23()
+                disputa_31b.carregar_historico()
                 idx_ultimo = 0
-                features = disputa._extrair_features(idx_ultimo, resultados)
-                scores_neural = disputa.obter_scores(features)
+                features = disputa_31b._extrair_features(idx_ultimo)
+                rede_31b = RedeNeuralExclusao.carregar(modelo_path)
+                scores_neural = rede_31b.obter_scores(features)
                 ranking_neural = sorted(scores_neural.keys(), key=lambda n: scores_neural[n], reverse=True)
                 print(f"   ✅ Neural carregada | TOP 5: {ranking_neural[:5]}")
             else:
