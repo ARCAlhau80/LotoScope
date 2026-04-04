@@ -15792,6 +15792,11 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 rodadas_sem_melhora = 0
                 motivo_parada = 'concluído'
 
+                # Caminho para backup do melhor modelo global entre rodadas
+                modelo_path_global = os.path.join(
+                    os.path.dirname(__file__), '..', 'dados', 'neural_exclusao_best.pkl'
+                )
+
                 for repeticao_idx in range(repeticoes):
                     if repeticoes > 1:
                         print("\n" + "─"*78)
@@ -15819,6 +15824,13 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                             melhor_taxa_historico = taxa_atual
                             rodadas_sem_melhora = 0
                             print(f"   📈 Melhora: +{melhora:.2f}pp → taxa {taxa_atual:.1f}%")
+                            # Salva backup do melhor modelo global
+                            try:
+                                import shutil as _shutil
+                                _shutil.copy2(disputa.modelo_path, modelo_path_global)
+                                print(f"   💾 Melhor global salvo ({taxa_atual:.1f}%)")
+                            except Exception:
+                                pass
                         else:
                             rodadas_sem_melhora += 1
                             print(f"   ➡️  Sem melhora significativa ({melhora:+.2f}pp < {delta_minimo}pp) "
@@ -15831,6 +15843,14 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                                 print(f"   Melhor taxa alcançada: {melhor_taxa_historico:.1f}%")
                                 print(f"   💡 Para continuar evoluindo, aguarde novos concursos e retreine.")
                                 print("═"*78)
+                                # Restaura o melhor modelo global antes de sair
+                                try:
+                                    import shutil as _shutil
+                                    if os.path.exists(modelo_path_global):
+                                        _shutil.copy2(modelo_path_global, disputa.modelo_path)
+                                        print(f"   🔄 Modelo restaurado para melhor global ({melhor_taxa_historico:.1f}%)")
+                                except Exception:
+                                    pass
                                 break
 
                 if melhor_resultado:
