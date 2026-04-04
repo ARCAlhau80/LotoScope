@@ -6150,42 +6150,120 @@ class SuperMenuLotofacil:
         print("   • caminho/arquivo.txt")
         print("   • caminho/arquivo.txt, caminho/arquivo2.txt")
         print("   Digite FIM quando terminar")
+        print("   Ou digite PASTA para listar arquivos .txt da pasta dados/ ⭐")
         print("═"*78)
         
         # 1. Coletar caminhos dos arquivos
         print("\n📂 ARQUIVOS PARA CONFERIR:")
         arquivos = []
         
-        while True:
-            entrada = input("   📁 ").strip()
+        # Oferecer auto-listagem da pasta dados/
+        _dados_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dados')
+        _dados_dir = os.path.normpath(_dados_dir)
+        
+        _primeira_entrada = input("   📁 (PASTA para listar dados/ ou cole caminhos): ").strip()
+        
+        if _primeira_entrada.upper() == 'PASTA':
+            # Listar todos os .txt da pasta dados/
+            try:
+                _arquivos_txt = sorted([
+                    f for f in os.listdir(_dados_dir)
+                    if f.endswith('.txt') and not f.startswith('.')
+                ])
+            except Exception as _e:
+                print(f"   ❌ Erro ao listar {_dados_dir}: {_e}")
+                input("\n⏸️ Pressione ENTER para voltar...")
+                return
             
-            if entrada.upper() == 'FIM' or entrada == '':
-                if not arquivos:
-                    print("   ⚠️ Nenhum arquivo informado!")
-                    continue
-                break
+            if not _arquivos_txt:
+                print(f"   ⚠️ Nenhum arquivo .txt encontrado em {_dados_dir}")
+                input("\n⏸️ Pressione ENTER para voltar...")
+                return
             
-            # Parsear entrada - pode ter múltiplos arquivos
-            # Formatos: "N0: path, N1: path" ou "path, path" ou "path"
-            partes = entrada.split(',')
+            print(f"\n   📂 {len(_arquivos_txt)} arquivos .txt em dados/:")
+            print(f"   {'─'*68}")
+            for _i, _f in enumerate(_arquivos_txt, 1):
+                _size = os.path.getsize(os.path.join(_dados_dir, _f))
+                _size_str = f"{_size/1024:.0f}KB" if _size < 1048576 else f"{_size/1048576:.1f}MB"
+                print(f"   [{_i:3d}] {_f}  ({_size_str})")
+            print(f"   {'─'*68}")
+            print(f"\n   Selecione: números separados por vírgula, range (1-5), ou TODOS")
+            print(f"   Exemplos: 1,3,5  |  1-8  |  TODOS")
             
-            for parte in partes:
-                parte = parte.strip()
-                if not parte:
-                    continue
+            _sel_input = input("   Seleção: ").strip().upper()
+            
+            if _sel_input == 'TODOS':
+                _idx_sel = list(range(len(_arquivos_txt)))
+            else:
+                _idx_sel = []
+                for _parte in _sel_input.split(','):
+                    _parte = _parte.strip()
+                    if '-' in _parte:
+                        try:
+                            _a, _b = _parte.split('-')
+                            _idx_sel.extend(range(int(_a) - 1, int(_b)))
+                        except:
+                            pass
+                    elif _parte.isdigit():
+                        _idx_sel.append(int(_parte) - 1)
+            
+            for _idx in _idx_sel:
+                if 0 <= _idx < len(_arquivos_txt):
+                    _cam = os.path.join(_dados_dir, _arquivos_txt[_idx])
+                    arquivos.append(_cam)
+                    print(f"      ✅ {_arquivos_txt[_idx]}")
+        else:
+            # Tratar como entrada normal (caminho manual)
+            if _primeira_entrada.upper() not in ('FIM', ''):
+                _partes = _primeira_entrada.split(',')
+                for _parte in _partes:
+                    _parte = _parte.strip()
+                    if not _parte:
+                        continue
+                    if ':' in _parte and _parte.split(':')[0].strip().upper().startswith('N'):
+                        _parte = ':'.join(_parte.split(':')[1:]).strip()
+                    _parte = _parte.strip('"').strip("'")
+                    if _parte and os.path.exists(_parte):
+                        arquivos.append(_parte)
+                        print(f"      ✅ {os.path.basename(_parte)}")
+                    elif _parte:
+                        print(f"      ❌ Não encontrado: {_parte}")
+
+        if not arquivos:
+            # Sem seleção PASTA, precisa entrada manual
+            pass
+
+        if not arquivos or (arquivos and input("\n   Adicionar mais arquivos? [S/N, ENTER=N]: ").strip().upper() == 'S'):
+            while True:
+                entrada = input("   📁 (mais arquivos ou FIM): ").strip()
+            
+                if entrada.upper() == 'FIM' or entrada == '':
+                    if not arquivos:
+                        print("   ⚠️ Nenhum arquivo informado!")
+                        continue
+                    break
+            
+                # Parsear entrada - pode ter múltiplos arquivos
+                # Formatos: "N0: path, N1: path" ou "path, path" ou "path"
+                partes = entrada.split(',')
+            
+                for parte in partes:
+                    parte = parte.strip()
+                    if not parte:
+                        continue
                 
-                # Remover prefixo "N0:", "N1:", etc.
-                if ':' in parte and parte.split(':')[0].strip().upper().startswith('N'):
-                    parte = ':'.join(parte.split(':')[1:]).strip()
+                    # Remover prefixo "N0:", "N1:", etc.
+                    if ':' in parte and parte.split(':')[0].strip().upper().startswith('N'):
+                        parte = ':'.join(parte.split(':')[1:]).strip()
                 
-                # Remover aspas
-                parte = parte.strip('"').strip("'")
+                    # Remover aspas
+                    parte = parte.strip('"').strip("'")
                 
-                if parte and os.path.exists(parte):
-                    arquivos.append(parte)
-                    print(f"      ✅ {os.path.basename(parte)}")
-                elif parte:
-                    print(f"      ❌ Não encontrado: {parte}")
+                    if parte and os.path.exists(parte):
+                        arquivos.append(parte)
+                        print(f"      ✅ {os.path.basename(parte)}")
+                    elif parte:
+                        print(f"      ❌ Não encontrado: {parte}")
         
         if not arquivos:
             print("\n❌ Nenhum arquivo válido para conferir!")
