@@ -11704,7 +11704,55 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"   ❌ Erro ao carregar dados: {e}")
             input("\nPressione ENTER...")
             return
-        
+
+        # ═══════════════════════════════════════════════════════════════════
+        # 📊 LOG DE PRODUÇÃO NEURAL — auto-update e histórico recente
+        # ═══════════════════════════════════════════════════════════════════
+        try:
+            import json as _json_log
+            _log_path_31 = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                'dados', 'neural_producao_log.json'
+            )
+            if os.path.exists(_log_path_31):
+                with open(_log_path_31, 'r', encoding='utf-8') as _lf:
+                    _log_31 = _json_log.load(_lf)
+                _db_map_31 = {r['concurso']: r['set'] for r in resultados}
+                _n_upd_31 = 0
+                for _e31 in _log_31.get('geracoes', []):
+                    if _e31.get('resultado_real') is None and _e31.get('concurso_alvo') in _db_map_31:
+                        _excl_31 = set(_e31.get('excluidos', []))
+                        _res_31 = _db_map_31[_e31['concurso_alvo']]
+                        _erros_31 = sorted(_excl_31 & _res_31)
+                        _e31['resultado_real'] = sorted(_res_31)
+                        _e31['acerto_exclusao'] = len(_erros_31) == 0
+                        _e31['erros_exclusao'] = _erros_31
+                        _n_upd_31 += 1
+                if _n_upd_31 > 0:
+                    with open(_log_path_31, 'w', encoding='utf-8') as _lf:
+                        _json_log.dump(_log_31, _lf, ensure_ascii=False, indent=2)
+                    print(f"   📝 Log: {_n_upd_31} resultado(s) atualizado(s) automaticamente")
+                _geracoes_31 = _log_31.get('geracoes', [])
+                if _geracoes_31:
+                    _ult_31 = _geracoes_31[-10:][::-1]
+                    print(f"\n   📊 HISTÓRICO DE PRODUÇÃO (últimas {len(_ult_31)} gerações):")
+                    print(f"   {'Concurso':<10} {'Estratégia':<14} {'Excluídos':<14} {'Nv':<5} {'Status'}")
+                    print(f"   {'─'*68}")
+                    for _e31 in _ult_31:
+                        if _e31.get('resultado_real') is None:
+                            _s31 = "⏳ Pendente"
+                        elif _e31.get('acerto_exclusao'):
+                            _s31 = "✅ CORRETO"
+                        else:
+                            _s31 = f"❌ Errou {_e31.get('erros_exclusao', [])}"
+                        print(f"   {str(_e31.get('concurso_alvo','?')):<10} "
+                              f"{_e31.get('estrategia','?')[:12]:<14} "
+                              f"{str(_e31.get('excluidos',[])):<14} "
+                              f"{str(_e31.get('nivel_filtro','?')):<5} {_s31}")
+                    print(f"   {'─'*68}")
+        except Exception:
+            pass
+
         # ═══════════════════════════════════════════════════════════════════
         # APRENDIZADO CONDICIONAL - EVENTOS ATÍPICOS
         # Analisa o que acontece APÓS eventos raros para ajuste dinâmico
@@ -13459,6 +13507,39 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"\n   ✅ ARQUIVO SALVO: {caminho}")
                 print(f"   📦 {len(combos_filtradas):,} combinações")
                 print(f"   💰 Custo: R$ {len(combos_filtradas) * 3.50:,.2f}")
+                # 📝 LOG DE PRODUÇÃO NEURAL — nivel 8
+                try:
+                    import json as _json_log
+                    _log_path = os.path.join(
+                        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                        'dados', 'neural_producao_log.json'
+                    )
+                    _log_data = {'geracoes': []}
+                    if os.path.exists(_log_path):
+                        with open(_log_path, 'r', encoding='utf-8') as _lf:
+                            _log_data = _json_log.load(_lf)
+                        if 'geracoes' not in _log_data:
+                            _log_data['geracoes'] = []
+                    _estr_log = ('NEURAL_PURO' if usar_neural_puro else
+                                 'HIBRIDO' if usar_hibrido else 'INVERTIDA')
+                    _scores_log = {str(n): round((scores_neural or {}).get(n, 0), 4) for n in excluir}
+                    _log_data['geracoes'].append({
+                        'concurso_alvo': resultados[0]['concurso'] + 1,
+                        'data_geracao': datetime.now().strftime('%d/%m/%Y %H:%M'),
+                        'estrategia': _estr_log,
+                        'excluidos': sorted(excluir),
+                        'scores_excluidos': _scores_log,
+                        'nivel_filtro': nivel,
+                        'qtd_combinacoes': len(combos_filtradas),
+                        'arquivo': nome_arquivo,
+                        'resultado_real': None,
+                        'acerto_exclusao': None,
+                        'erros_exclusao': None,
+                    })
+                    with open(_log_path, 'w', encoding='utf-8') as _lf:
+                        _json_log.dump(_log_data, _lf, ensure_ascii=False, indent=2)
+                except Exception:
+                    pass
                 arquivos_gerados.append({
                     'nivel': f"8(N{nivel_cascata_encontrado})",
                     'caminho': caminho,
@@ -14254,7 +14335,39 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"\n   ✅ ARQUIVO SALVO: {caminho}")
             print(f"   📦 {len(combos_filtradas):,} combinações")
             print(f"   💰 Custo: R$ {len(combos_filtradas) * 3.50:,.2f}")
-            
+            # 📝 LOG DE PRODUÇÃO NEURAL
+            try:
+                import json as _json_log
+                _log_path = os.path.join(
+                    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                    'dados', 'neural_producao_log.json'
+                )
+                _log_data = {'geracoes': []}
+                if os.path.exists(_log_path):
+                    with open(_log_path, 'r', encoding='utf-8') as _lf:
+                        _log_data = _json_log.load(_lf)
+                    if 'geracoes' not in _log_data:
+                        _log_data['geracoes'] = []
+                _estr_log = ('NEURAL_PURO' if usar_neural_puro else
+                             'HIBRIDO' if usar_hibrido else 'INVERTIDA')
+                _scores_log = {str(n): round((scores_neural or {}).get(n, 0), 4) for n in excluir}
+                _log_data['geracoes'].append({
+                    'concurso_alvo': resultados[0]['concurso'] + 1,
+                    'data_geracao': datetime.now().strftime('%d/%m/%Y %H:%M'),
+                    'estrategia': _estr_log,
+                    'excluidos': sorted(excluir),
+                    'scores_excluidos': _scores_log,
+                    'nivel_filtro': nivel,
+                    'qtd_combinacoes': len(combos_filtradas),
+                    'arquivo': nome_arquivo,
+                    'resultado_real': None,
+                    'acerto_exclusao': None,
+                    'erros_exclusao': None,
+                })
+                with open(_log_path, 'w', encoding='utf-8') as _lf:
+                    _json_log.dump(_log_data, _lf, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
             # Guardar caminho na lista
             arquivos_gerados.append({
                 'nivel': nivel,
@@ -17870,7 +17983,35 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"   ❌ Erro ao carregar dados: {e}")
             input("\nPressione ENTER...")
             return
-        
+
+        # 📝 Auto-atualizar log de produção neural com resultados já na base
+        try:
+            import json as _json_log
+            _log_path_302 = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                'dados', 'neural_producao_log.json'
+            )
+            if os.path.exists(_log_path_302):
+                with open(_log_path_302, 'r', encoding='utf-8') as _lf:
+                    _log_302 = _json_log.load(_lf)
+                _db_map_302 = {r['concurso']: r['set'] for r in resultados}
+                _n_upd_302 = 0
+                for _e302 in _log_302.get('geracoes', []):
+                    if _e302.get('resultado_real') is None and _e302.get('concurso_alvo') in _db_map_302:
+                        _excl_302 = set(_e302.get('excluidos', []))
+                        _res_302 = _db_map_302[_e302['concurso_alvo']]
+                        _erros_302 = sorted(_excl_302 & _res_302)
+                        _e302['resultado_real'] = sorted(_res_302)
+                        _e302['acerto_exclusao'] = len(_erros_302) == 0
+                        _e302['erros_exclusao'] = _erros_302
+                        _n_upd_302 += 1
+                if _n_upd_302 > 0:
+                    with open(_log_path_302, 'w', encoding='utf-8') as _lf:
+                        _json_log.dump(_log_302, _lf, ensure_ascii=False, indent=2)
+                    print(f"   📝 Log produção: {_n_upd_302} resultado(s) atualizado(s)")
+        except Exception:
+            pass
+
         # ═══════════════════════════════════════════════════════════════════
         # PASSO 2: CALCULAR OS 2 NÚMEROS A EXCLUIR (ou ajustar manualmente)
         # ═══════════════════════════════════════════════════════════════════
@@ -19193,6 +19334,33 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 
             except:
                 print("   ⚠️ Formato inválido! Use: 01,02,05,06,08,10,11,13,15,17,18,20,22,24,25")
+
+        # 📝 Atualizar log de produção neural com resultado manual (concurso ainda não na base)
+        try:
+            import json as _json_log
+            _log_path_p4 = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                'dados', 'neural_producao_log.json'
+            )
+            if os.path.exists(_log_path_p4):
+                with open(_log_path_p4, 'r', encoding='utf-8') as _lf:
+                    _log_p4 = _json_log.load(_lf)
+                _alvo_p4 = resultados[0]['concurso'] + 1
+                _n_upd_p4 = 0
+                for _e_p4 in _log_p4.get('geracoes', []):
+                    if _e_p4.get('concurso_alvo') == _alvo_p4 and _e_p4.get('resultado_real') is None:
+                        _excl_p4 = set(_e_p4.get('excluidos', []))
+                        _erros_p4 = sorted(_excl_p4 & resultado_validacao)
+                        _e_p4['resultado_real'] = sorted(resultado_validacao)
+                        _e_p4['acerto_exclusao'] = len(_erros_p4) == 0
+                        _e_p4['erros_exclusao'] = _erros_p4
+                        _n_upd_p4 += 1
+                if _n_upd_p4 > 0:
+                    with open(_log_path_p4, 'w', encoding='utf-8') as _lf:
+                        _json_log.dump(_log_p4, _lf, ensure_ascii=False, indent=2)
+                    print(f"   📝 Log produção: {_n_upd_p4} entrada(s) atualizada(s) com resultado")
+        except Exception:
+            pass
 
         if comparar_estrategias_302:
             print("\n" + "═"*78)
