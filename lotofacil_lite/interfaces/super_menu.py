@@ -13233,12 +13233,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         numeros_fixos = set()
         try:
-            qtd_fixos = input("\n   Quantos números FIXOS? [0-10, ENTER=0]: ").strip()
+            qtd_fixos = input("\n   Quantos números FIXOS? [0-14, ENTER=0]: ").strip()
             if qtd_fixos == '':
                 qtd_fixos = 0
             else:
                 qtd_fixos = int(qtd_fixos)
-                qtd_fixos = max(0, min(10, qtd_fixos))
+                qtd_fixos = max(0, min(14, qtd_fixos))
             
             if qtd_fixos > 0:
                 print(f"\n   Digite {qtd_fixos} números (1-25) separados por espaço ou vírgula:")
@@ -18752,15 +18752,17 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   • 5 fixos: ~43.000 combinações")
         print("   • 7 fixos: ~12.000 combinações")
         print("   • 10 fixos: ~1.300 combinações")
+        print("   • 12 fixos: ~66 combinações")
+        print("   • 14 fixos: 9 combinações")
         
         numeros_fixos = set()
         try:
-            qtd_fixos = input("\n   Quantos números FIXOS? [0-10, ENTER=0]: ").strip()
+            qtd_fixos = input("\n   Quantos números FIXOS? [0-14, ENTER=0]: ").strip()
             if qtd_fixos == '':
                 qtd_fixos = 0
             else:
                 qtd_fixos = int(qtd_fixos)
-                qtd_fixos = max(0, min(10, qtd_fixos))
+                qtd_fixos = max(0, min(14, qtd_fixos))
             
             if qtd_fixos > 0:
                 print(f"\n   Digite {qtd_fixos} números (1-25) separados por espaço ou vírgula:")
