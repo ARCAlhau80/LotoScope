@@ -11805,7 +11805,14 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     _log_31 = _json_log.load(_lf)
                 _db_map_31 = {r['concurso']: r['set'] for r in resultados}
                 _n_upd_31 = 0
+                _n_norm_31 = 0
                 for _e31 in _log_31.get('geracoes', []):
+                    if 'usar_no_aprendizado' not in _e31:
+                        _e31['usar_no_aprendizado'] = True
+                        _n_norm_31 += 1
+                    if 'usar_no_retreino' not in _e31:
+                        _e31['usar_no_retreino'] = _e31.get('usar_no_aprendizado', True)
+                        _n_norm_31 += 1
                     if _e31.get('resultado_real') is None and _e31.get('concurso_alvo') in _db_map_31:
                         _excl_31 = set(_e31.get('excluidos', []))
                         _res_31 = _db_map_31[_e31['concurso_alvo']]
@@ -11814,16 +11821,25 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         _e31['acerto_exclusao'] = len(_erros_31) == 0
                         _e31['erros_exclusao'] = _erros_31
                         _n_upd_31 += 1
-                if _n_upd_31 > 0:
+                if _n_upd_31 > 0 or _n_norm_31 > 0:
                     with open(_log_path_31, 'w', encoding='utf-8') as _lf:
                         _json_log.dump(_log_31, _lf, ensure_ascii=False, indent=2)
-                    print(f"   📝 Log: {_n_upd_31} resultado(s) atualizado(s) automaticamente")
+                    if _n_upd_31 > 0:
+                        print(f"   📝 Log: {_n_upd_31} resultado(s) atualizado(s) automaticamente")
+                    if _n_norm_31 > 0:
+                        print(f"   🧩 Log: {_n_norm_31} campo(s) de protocolo normalizado(s)")
                 _geracoes_31 = _log_31.get('geracoes', [])
                 if _geracoes_31:
+                    _ret_total_31 = sum(1 for _e31 in _geracoes_31 if _e31.get('usar_no_retreino', _e31.get('usar_no_aprendizado', True)))
+                    _ret_resolvidas_31 = sum(
+                        1 for _e31 in _geracoes_31
+                        if _e31.get('usar_no_retreino', _e31.get('usar_no_aprendizado', True)) and _e31.get('resultado_real') is not None
+                    )
                     _ult_31 = _geracoes_31[-10:][::-1]
                     print(f"\n   📊 HISTÓRICO DE PRODUÇÃO (últimas {len(_ult_31)} gerações):")
-                    print(f"   {'Concurso':<10} {'Estratégia':<14} {'Excluídos':<14} {'Nv':<5} {'Status'}")
-                    print(f"   {'─'*68}")
+                    print(f"   🔁 Marcadas para retreino: {_ret_total_31} | já resolvidas: {_ret_resolvidas_31}")
+                    print(f"   {'Concurso':<10} {'Estratégia':<14} {'Excluídos':<14} {'Nv':<5} {'RT':<3} {'Status'}")
+                    print(f"   {'─'*72}")
                     for _e31 in _ult_31:
                         if _e31.get('resultado_real') is None:
                             _s31 = "⏳ Pendente"
@@ -11831,11 +11847,13 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                             _s31 = "✅ CORRETO"
                         else:
                             _s31 = f"❌ Errou {_e31.get('erros_exclusao', [])}"
+                        _rt31 = 'S' if _e31.get('usar_no_retreino', _e31.get('usar_no_aprendizado', True)) else '-'
                         print(f"   {str(_e31.get('concurso_alvo','?')):<10} "
                               f"{_e31.get('estrategia','?')[:12]:<14} "
                               f"{str(_e31.get('excluidos',[])):<14} "
-                              f"{str(_e31.get('nivel_filtro','?')):<5} {_s31}")
-                    print(f"   {'─'*68}")
+                              f"{str(_e31.get('nivel_filtro','?')):<5} "
+                              f"{_rt31:<3} {_s31}")
+                    print(f"   {'─'*72}")
         except Exception:
             pass
 
@@ -12864,6 +12882,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         else:
             print("   ✅ Geração será registrada no log de aprendizado")
 
+        _usar_no_retreino = False
+        if _gravar_log:
+            _retreino_input = input("   🔁 Marcar esta geração para retreino futuro? [S/N, ENTER=S]: ").strip().upper()
+            _usar_no_retreino = _retreino_input != 'N'
+            if _usar_no_retreino:
+                print("   ✅ Geração marcada para retreino futuro")
+            else:
+                print("   ℹ️  Geração ficará no log, mas FORA do retreino futuro")
+
         # Selecionar automaticamente os top N
         if usar_neural_puro and ranking_neural_puro:
             excluir = ranking_neural_puro[:qtd_excluir]
@@ -13623,6 +13650,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                             'concurso_alvo': resultados[0]['concurso'] + 1,
                             'data_geracao': datetime.now().strftime('%d/%m/%Y %H:%M'),
                             'estrategia': _estr_log,
+                            'usar_no_aprendizado': True,
+                            'usar_no_retreino': _usar_no_retreino,
                             'excluidos': sorted(excluir),
                             'scores_excluidos': _scores_log,
                             'nivel_filtro': nivel,
@@ -14454,6 +14483,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         'concurso_alvo': resultados[0]['concurso'] + 1,
                         'data_geracao': datetime.now().strftime('%d/%m/%Y %H:%M'),
                         'estrategia': _estr_log,
+                        'usar_no_aprendizado': True,
+                        'usar_no_retreino': _usar_no_retreino,
                         'excluidos': sorted(excluir),
                         'scores_excluidos': _scores_log,
                         'nivel_filtro': nivel,
@@ -15876,6 +15907,27 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"   💾 Modelo salvo: {data_treino}")
             else:
                 print(f"   ⚠️  Nenhum modelo salvo encontrado")
+
+            log_producao_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                'dados', 'neural_producao_log.json'
+            )
+            try:
+                if os.path.exists(log_producao_path):
+                    with open(log_producao_path, 'r', encoding='utf-8') as f:
+                        log_producao = json.load(f)
+                    geracoes_log = log_producao.get('geracoes', [])
+                    marcadas_retreino = [
+                        e for e in geracoes_log
+                        if e.get('usar_no_retreino', e.get('usar_no_aprendizado', True))
+                    ]
+                    resolvidas_retreino = [e for e in marcadas_retreino if e.get('resultado_real') is not None]
+                    pendentes_retreino = [e for e in marcadas_retreino if e.get('resultado_real') is None]
+                    print(f"   🧪 Log científico: {len(geracoes_log)} geração(ões)")
+                    print(f"   🔁 Marcadas para retreino futuro: {len(marcadas_retreino)}")
+                    print(f"   ✅ Com resultado conhecido: {len(resolvidas_retreino)} | ⏳ pendentes: {len(pendentes_retreino)}")
+            except Exception:
+                pass
 
             # --- Escolher ação ---
             print("\n   AÇÃO:")
