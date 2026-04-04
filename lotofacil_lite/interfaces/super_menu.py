@@ -15600,6 +15600,27 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("🔥 RETREINAR REDE NEURAL + BENCHMARK")
         print("═"*78)
 
+        PRESETS_TREINO = {
+            1: {
+                'label': 'Nível 1 - aquecimento rápido',
+                'iteracoes': 3,
+                'epochs': 20,
+                'lr': 0.005,
+            },
+            2: {
+                'label': 'Nível 2 - consolidação',
+                'iteracoes': 5,
+                'epochs': 35,
+                'lr': 0.001,
+            },
+            3: {
+                'label': 'Nível 3 - refinamento profundo',
+                'iteracoes': 10,
+                'epochs': 50,
+                'lr': 0.0005,
+            }
+        }
+
         try:
             sistemas_path = os.path.join(os.path.dirname(__file__), '..', 'sistemas')
             if sistemas_path not in sys.path:
@@ -15618,6 +15639,18 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             total = len(concursos)
 
             print(f"\n   📊 Base carregada: {total} concursos ({min_c} a {max_c})")
+
+            estado_treino_path = os.path.join(os.path.dirname(__file__), '..', 'dados', 'neural_exclusao_train_state.json')
+            estado_treino = {}
+            try:
+                if os.path.exists(estado_treino_path):
+                    with open(estado_treino_path, 'r', encoding='utf-8') as f:
+                        estado_treino = json.load(f)
+            except Exception:
+                estado_treino = {}
+
+            nivel_sugerido = int(estado_treino.get('proximo_nivel_sugerido', 1) or 1)
+            nivel_sugerido = max(1, min(3, nivel_sugerido))
 
             # --- status do modelo salvo ---
             modelo_path = os.path.join(os.path.dirname(__file__), '..', 'dados', 'neural_exclusao.pkl')
@@ -15651,27 +15684,27 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"   💡 Base disponível: concurso {min_c} a {max_c} ({total} concursos)")
             print(f"      [1] Últimos 500  (#{max_c - 499} a #{max_c})")
             print(f"      [2] Últimos 1000 (#{max_c - 999} a #{max_c})")
-            print(f"      [3] Últimos 2000 (#{max_c - 1999} a #{max_c})")
+            print(f"      [3] Últimos 2000 (#{max_c - 1999} a #{max_c}) ⭐ recomendado")
             print(f"      [4] Todos desde #{min_c}")
             print(f"      [5] Personalizado")
 
             try:
-                preset = input("\n   Escolha [1-5, ENTER=1]: ").strip()
-                if preset == '2':
+                preset = input("\n   Escolha [1-5, ENTER=3]: ").strip()
+                if preset == '1':
+                    c_inicio, c_fim = max_c - 499, max_c
+                elif preset == '2':
                     c_inicio, c_fim = max_c - 999, max_c
-                elif preset == '3':
-                    c_inicio, c_fim = max_c - 1999, max_c
                 elif preset == '4':
                     c_inicio, c_fim = min_c, max_c
                 elif preset == '5':
-                    c_inicio_str = input(f"   Início [{max_c - 499}]: ").strip()
-                    c_inicio = int(c_inicio_str) if c_inicio_str else max_c - 499
+                    c_inicio_str = input(f"   Início [{max_c - 1999}]: ").strip()
+                    c_inicio = int(c_inicio_str) if c_inicio_str else max_c - 1999
                     c_fim_str = input(f"   Fim [{max_c}]: ").strip()
                     c_fim = int(c_fim_str) if c_fim_str else max_c
                 else:
-                    c_inicio, c_fim = max_c - 499, max_c
+                    c_inicio, c_fim = max_c - 1999, max_c
             except Exception:
-                c_inicio, c_fim = max_c - 499, max_c
+                c_inicio, c_fim = max_c - 1999, max_c
 
             c_inicio = max(min_c, c_inicio)
             c_fim = min(max_c, c_fim)
@@ -15683,29 +15716,94 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 disputa.executar_disputa(c_inicio, c_fim, treinar_durante=False)
 
             else:
-                # Parâmetros de treinamento
+                # Presets de treinamento
+                print("\n   NÍVEIS DE TREINO:")
+                print("   ┌─────────────────────────────────────────────────────────────────┐")
+                print("   │ [1] Nível 1 - aquecimento rápido   → 3 it | 20 épocas | lr 0.005  │")
+                print("   │ [2] Nível 2 - consolidação         → 5 it | 35 épocas | lr 0.001  │")
+                print("   │ [3] Nível 3 - refinamento profundo → 10 it | 50 épocas | lr 0.0005│")
+                print("   │ [4] Personalizado                                            │")
+                print("   └─────────────────────────────────────────────────────────────────┘")
+                print(f"   💡 Sugestão automática atual: Nível {nivel_sugerido}")
+
+                try:
+                    preset_str = input(f"\n   Nível [1/2/3/4, ENTER={nivel_sugerido}]: ").strip()
+                    preset_escolhido = int(preset_str) if preset_str else nivel_sugerido
+                    if preset_escolhido not in (1, 2, 3, 4):
+                        preset_escolhido = nivel_sugerido
+                except Exception:
+                    preset_escolhido = nivel_sugerido
+
+                if preset_escolhido in PRESETS_TREINO:
+                    preset_cfg = PRESETS_TREINO[preset_escolhido]
+                    print(f"   ✅ Usando {preset_cfg['label']}")
+                    iter_padrao = preset_cfg['iteracoes']
+                    epochs_padrao = preset_cfg['epochs']
+                    lr_padrao = preset_cfg['lr']
+                else:
+                    print("   ✅ Modo personalizado")
+                    iter_padrao = PRESETS_TREINO[nivel_sugerido]['iteracoes']
+                    epochs_padrao = PRESETS_TREINO[nivel_sugerido]['epochs']
+                    lr_padrao = PRESETS_TREINO[nivel_sugerido]['lr']
+
                 print("\n   PARÂMETROS DE TREINAMENTO (ENTER = valores recomendados):")
                 try:
-                    iter_str = input("   Iterações [5]: ").strip()
-                    iteracoes = int(iter_str) if iter_str else 5
+                    iter_str = input(f"   Iterações [{iter_padrao}]: ").strip()
+                    iteracoes = int(iter_str) if iter_str else iter_padrao
 
-                    epochs_str = input("   Épocas por amostra [10]: ").strip()
-                    epochs = int(epochs_str) if epochs_str else 10
+                    epochs_str = input(f"   Épocas por amostra [{epochs_padrao}]: ").strip()
+                    epochs = int(epochs_str) if epochs_str else epochs_padrao
 
-                    lr_str = input("   Learning rate [0.01]: ").strip()
-                    lr = float(lr_str) if lr_str else 0.01
+                    lr_str = input(f"   Learning rate [{lr_padrao}]: ").strip()
+                    lr = float(lr_str) if lr_str else lr_padrao
                 except Exception:
-                    iteracoes, epochs, lr = 5, 10, 0.01
+                    iteracoes, epochs, lr = iter_padrao, epochs_padrao, lr_padrao
+
+                try:
+                    repeticoes_str = input("   Repetições do retreino [1]: ").strip()
+                    repeticoes = int(repeticoes_str) if repeticoes_str else 1
+                    repeticoes = max(1, repeticoes)
+                except Exception:
+                    repeticoes = 1
 
                 resetar = (acao == 'T')
-                resultado = disputa.retreinar_automatico(
-                    concurso_inicio=c_inicio,
-                    concurso_fim=c_fim,
-                    iteracoes=iteracoes,
-                    lr_inicial=lr,
-                    epochs_por_amostra=epochs,
-                    resetar=resetar
-                )
+                resultado = {}
+                melhor_resultado = None
+                for repeticao_idx in range(repeticoes):
+                    if repeticoes > 1:
+                        print("\n" + "─"*78)
+                        print(f"🔁 RODADA DE RETREINO {repeticao_idx + 1}/{repeticoes}")
+                        print("─"*78)
+
+                    resultado = disputa.retreinar_automatico(
+                        concurso_inicio=c_inicio,
+                        concurso_fim=c_fim,
+                        iteracoes=iteracoes,
+                        lr_inicial=lr,
+                        epochs_por_amostra=epochs,
+                        resetar=resetar if repeticao_idx == 0 else False
+                    )
+
+                    if resultado and (
+                        melhor_resultado is None or resultado.get('melhor_taxa', 0) > melhor_resultado.get('melhor_taxa', 0)
+                    ):
+                        melhor_resultado = resultado
+
+                if melhor_resultado:
+                    resultado = melhor_resultado
+
+                if preset_escolhido in PRESETS_TREINO:
+                    try:
+                        proximo_nivel = min(3, preset_escolhido + 1)
+                        estado_treino['ultimo_nivel_usado'] = preset_escolhido
+                        estado_treino['proximo_nivel_sugerido'] = proximo_nivel
+                        estado_treino['ultima_acao'] = acao
+                        estado_treino['ultima_repeticao'] = repeticoes
+                        estado_treino['atualizado_em'] = datetime.now().strftime('%d/%m/%Y %H:%M')
+                        with open(estado_treino_path, 'w', encoding='utf-8') as f:
+                            json.dump(estado_treino, f, indent=2, ensure_ascii=False)
+                    except Exception:
+                        pass
 
                 # Resumo final
                 print("\n" + "═"*78)
@@ -15725,6 +15823,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"\n   Neural (melhor):  {melhor:.1f}%")
                 print(f"   INVERTIDA v3.0:   {taxa_inv:.1f}%")
                 print(f"   Resultado:        {status}")
+                print(f"   Preset usado:     {PRESETS_TREINO.get(preset_escolhido, {'label': 'Personalizado'})['label'] if preset_escolhido in PRESETS_TREINO else 'Personalizado'}")
+                print(f"   Repetições:       {repeticoes}")
 
             # ───────────────────────────────────────────────
             # FRIOS FAVORECIDOS PELA NEURAL (diagnóstico)
