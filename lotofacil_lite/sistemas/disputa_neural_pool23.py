@@ -22,6 +22,7 @@ Data: 30/03/2026
 import os
 import sys
 import json
+import math
 import pickle
 import numpy as np
 from datetime import datetime
@@ -40,13 +41,14 @@ class RedeNeuralExclusao:
     """
     Rede Neural especializada em EXCLUIR números.
 
-    Arquitetura v2 (anti-overfitting):
-    - Entrada: 150 features (frequência, atraso, consecutividade, tendência)
-    - 2 camadas ocultas: 64 → 32 neurônios  (era 256 → 128 → 64)
+    Arquitetura v3 (250 features, 10 por número):
+    - Entrada: 250 features (freq, atraso, consec, tendência, freq10, INVERTIDA,
+              co-ocorrência, posicional, entropia, soft exclusion)
+    - 2 camadas ocultas: 96 → 48 neurônios
     - Saída: 25 valores (score de exclusão para cada número)
     - L2 regularization (lambda=0.001) — penaliza pesos grandes
     - Dropout (rate=0.3) durante treino — força generalização
-    - ~12.500 parâmetros (era 81.433) — razão params/amostras muito melhor
+    - ~30k parâmetros — razão params/amostras ~15:1
     """
 
     def __init__(self, silencioso: bool = False,
@@ -58,8 +60,8 @@ class RedeNeuralExclusao:
         self.dropout_rate = dropout_rate
         self.l2_lambda = l2_lambda
 
-        # Arquitetura: 150 → 64 → 32 → 25
-        self.tamanhos = [150, 64, 32, 25]
+        # Arquitetura: 250 → 96 → 48 → 25
+        self.tamanhos = [250, 96, 48, 25]
         self._inicializar_pesos(silencioso)
 
     def _inicializar_pesos(self, silencioso: bool = False):
@@ -67,7 +69,7 @@ class RedeNeuralExclusao:
         np.random.seed(42)
 
         if not silencioso:
-            print("   🧠 Inicializando Rede Neural para Exclusão (v2 anti-overfitting)...")
+            print("   🧠 Inicializando Rede Neural para Exclusão (v3 - 250 features)...")
 
         for i in range(len(self.tamanhos) - 1):
             # He initialization: scale = sqrt(2 / n_entrada)
@@ -163,7 +165,7 @@ class RedeNeuralExclusao:
         return {i + 1: float(scores[i]) for i in range(25)}
 
     def salvar(self, caminho: str):
-        """Salva modelo com metadados de regularização"""
+        """Salva modelo com metadados de regularização e versão"""
         with open(caminho, 'wb') as f:
             pickle.dump({
                 'pesos': self.pesos,
@@ -172,13 +174,29 @@ class RedeNeuralExclusao:
                 'historico_treino': self.historico_treino,
                 'dropout_rate': self.dropout_rate,
                 'l2_lambda': self.l2_lambda,
+                'versao': 'v3',
             }, f)
 
     @classmethod
     def carregar(cls, caminho: str) -> 'RedeNeuralExclusao':
-        """Carrega modelo salvo (compatível com versões anteriores)"""
+        """Carrega modelo salvo (compatível com v2=150 features e v3=250 features)"""
         with open(caminho, 'rb') as f:
             dados = pickle.load(f)
+
+        versao = dados.get('versao', 'v2')
+        tamanhos_salvos = dados.get('tamanhos', [150, 64, 32, 25])
+
+        # Detectar modelo antigo (v2 com 150 features)
+        if tamanhos_salvos[0] == 150:
+            print("   ⚠️  Modelo v2 (150 features) detectado — incompatível com v3 (250 features)!")
+            print("   🔄 Reinicializando rede com arquitetura v3. Retreine o modelo.")
+            rede = cls(
+                silencioso=True,
+                dropout_rate=dados.get('dropout_rate', 0.3),
+                l2_lambda=dados.get('l2_lambda', 0.001),
+            )
+            rede.historico_treino = dados.get('historico_treino', [])
+            return rede
 
         rede = cls(
             silencioso=True,
@@ -386,15 +404,19 @@ class DisputaNeuralPool23:
         """
         Extrai features para treinar/usar a rede neural.
         
-        150 features:
+        250 features (10 por número × 25 números):
         - 0-24: Frequência nos últimos 30 (normalizada)
         - 25-49: Atraso de cada número (normalizado)
         - 50-74: Consecutividade (aparições seguidas)
         - 75-99: Tendência (subindo/descendo)
         - 100-124: Frequência nos últimos 10
         - 125-149: Score INVERTIDA (para aprender!)
+        - 150-174: Co-ocorrência score (top 5 parceiros)
+        - 175-199: Heatmap posicional (concentração nas posições)
+        - 200-224: Entropia do padrão de aparição
+        - 225-249: Soft exclusion signal (histórico de exclusão)
         """
-        features = np.zeros(150)
+        features = np.zeros(250)
         
         janela_30 = self.historico[max(0, idx_concurso - 30):idx_concurso]
         janela_10 = self.historico[max(0, idx_concurso - 10):idx_concurso]
@@ -452,6 +474,80 @@ class DisputaNeuralPool23:
         max_score = max(scores_inv.values()) if scores_inv else 1
         for n in range(1, 26):
             features[124 + n] = scores_inv[n] / max(1, max_score) if max_score != 0 else 0
+        
+        # ─── NOVOS GRUPOS DE FEATURES (v3) ──────────────────────────────
+        
+        # Features 150-174: Co-ocorrência score (frequência de pares)
+        # Para cada número, média das top 5 co-ocorrências com parceiros
+        pair_count = Counter()
+        for h in janela_30:
+            nums = h['numeros']
+            for i_n in range(len(nums)):
+                for j_n in range(i_n + 1, len(nums)):
+                    pair_count[(min(nums[i_n], nums[j_n]), max(nums[i_n], nums[j_n]))] += 1
+        
+        max_pair = max(pair_count.values()) if pair_count else 1
+        for n in range(1, 26):
+            pares_n = [pair_count.get((min(n, m), max(n, m)), 0) for m in range(1, 26) if m != n]
+            features[149 + n] = (sum(sorted(pares_n, reverse=True)[:5]) / max(1, 5 * max_pair))
+        
+        # Features 175-199: Heatmap posicional
+        # Quão concentrado cada número está nas suas posições históricas?
+        pos_freq = {}  # {número: Counter de posições}
+        for h in janela_30:
+            nums_sorted = sorted(h['numeros'])
+            for pos_idx, num in enumerate(nums_sorted):
+                if num not in pos_freq:
+                    pos_freq[num] = Counter()
+                pos_freq[num][pos_idx] += 1
+        
+        for n in range(1, 26):
+            if n in pos_freq:
+                total_appearances = sum(pos_freq[n].values())
+                if total_appearances > 0:
+                    top3_pos = pos_freq[n].most_common(3)
+                    top3_ratio = sum(c for _, c in top3_pos) / total_appearances
+                    features[174 + n] = top3_ratio  # Já 0-1
+        
+        # Features 200-224: Entropia do padrão de aparição
+        # Padrão regular = baixa entropia, caótico = alta entropia
+        for n in range(1, 26):
+            sequence = [1 if n in h['numeros'] else 0 for h in janela_30]
+            
+            transitions = Counter()
+            for k in range(len(sequence) - 1):
+                transitions[(sequence[k], sequence[k+1])] += 1
+            
+            total_trans = sum(transitions.values())
+            if total_trans > 0:
+                entropy = 0.0
+                for count in transitions.values():
+                    p = count / total_trans
+                    if p > 0:
+                        entropy -= p * math.log2(p)
+                # Normalizar: entropia máxima para 4 estados = 2.0
+                features[199 + n] = entropy / 2.0
+        
+        # Features 225-249: Soft Exclusion signal
+        # O número foi excluído recentemente pela INVERTIDA? A exclusão acertou?
+        exclusion_success = np.zeros(25)
+        for lookback in range(min(5, idx_concurso)):
+            idx_check = idx_concurso - 1 - lookback
+            if idx_check < 30:
+                continue
+            scores_past = self.invertida.calcular_scores_exclusao(self.historico, idx_check)
+            if not scores_past:
+                continue
+            top2 = sorted(scores_past, key=scores_past.get, reverse=True)[:2]
+            resultado_check = set(self.historico[idx_check]['numeros'])
+            for exc_num in top2:
+                if exc_num not in resultado_check:
+                    exclusion_success[exc_num - 1] += 0.2  # Exclusão correta
+                else:
+                    exclusion_success[exc_num - 1] -= 0.2  # Exclusão errada (apareceu!)
+        
+        for n in range(1, 26):
+            features[224 + n] = (exclusion_success[n-1] + 1) / 2  # Normalizar para 0-1
         
         return features
     

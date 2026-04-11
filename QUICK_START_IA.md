@@ -57,6 +57,14 @@ Banco: SQL Server localhost, database "Lotofacil", tabela "Resultados_INT"
 Prêmio máximo: 15 acertos = R$ 1.8 milhão
 ```
 
+**Pós-carga obrigatório da Resultados_INT:**
+```powershell
+cd "C:\Users\AR CALHAU\source\repos\LotoScope"
+python pos_carga_resultados_int.py
+```
+
+Isso recompõe os campos derivados `menor_que_ultimo`, `maior_que_ultimo` e `igual_ao_ultimo`, que podem ficar nulos após `TRUNCATE` ou reimport da tabela.
+
 ## COMANDO PRINCIPAL
 
 ```powershell

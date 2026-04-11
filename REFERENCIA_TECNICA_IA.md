@@ -477,6 +477,24 @@ TOP_FREQ_PCT = 0.20  # Top 20% por frequência
 TOP_COMBINACOES = 1000
 ```
 
+### Pós-carga da Resultados_INT
+```powershell
+cd "C:\Users\AR CALHAU\source\repos\LotoScope"
+python pos_carga_resultados_int.py
+```
+
+Use após `TRUNCATE` ou reimport da `Resultados_INT` para recomputar:
+- `menor_que_ultimo`
+- `maior_que_ultimo`
+- `igual_ao_ultimo`
+
+Rotina base reutilizável em código:
+```python
+from validar_campos_posicionais import recalcular_campos_posicionais
+
+resumo = recalcular_campos_posicionais(verbose=True)
+```
+
 ---
 
 ## 🐛 DEBUG E LOGS

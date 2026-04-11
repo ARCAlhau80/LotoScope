@@ -105,6 +105,13 @@ Autenticação: Windows (Trusted_Connection=yes)
 - Campos estatísticos      -- Métricas calculadas
 ```
 
+**Campos derivados críticos:**
+- `menor_que_ultimo`
+- `maior_que_ultimo`
+- `igual_ao_ultimo`
+
+**Regra operacional:** após `TRUNCATE`, reload ou repovoamento da `Resultados_INT`, rodar `python pos_carga_resultados_int.py` na raiz do projeto para recomputar esses 3 campos em toda a base.
+
 ### Dados Atuais
 - **~3.592 concursos** carregados (Jan/2026)
 - Primeiro concurso: 2003
@@ -587,6 +594,13 @@ Total:  ~12.500 parâmetros treináveis  (razão params/amostras: 6:1 ✅)
 - `Resultados_INT` tem 3.647 linhas totais
 - 3.617 utilizáveis = 3.647 − 30 (buffer mínimo de histórico para calcular features)
 - O número 3.617 **NÃO é bug** — é comportamento correto de `idx_inicio_real = max(30, idx_inicio)`
+
+**Correção operacional — campos posicionais da Resultados_INT (09/04/2026):**
+- Após truncate/reimport, os campos `menor_que_ultimo`, `maior_que_ultimo` e `igual_ao_ultimo` podem ficar nulos em massa.
+- Sintoma típico: apenas o concurso mais recente fica preenchido após processos incrementais.
+- Script oficial pós-carga: `pos_carga_resultados_int.py`
+- Rotina base reutilizada: `validar_campos_posicionais.py`
+- Validação confirmada em 09/04/2026: **3653 concursos corrigidos**, `NULLs restantes = 0`, `soma != 15 = 0`.
 
 **Arquivos alterados:**
 - `lotofacil_lite/interfaces/super_menu.py` — adicionado opção [6] no menu da Opção 30 e método `_executar_retreino_neural_benchmark()`

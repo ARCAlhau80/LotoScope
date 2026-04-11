@@ -5,11 +5,14 @@ CONFIGURAÇÃO CENTRALIZADA DOS FILTROS DO POOL 23
 Arquivo único de configuração para todos os níveis de filtros.
 Usado por: Option 31 (Gerador), Option 30.2 (Backtesting), Option 30.4 (Histórico)
 
-ATUALIZADO: 28/03/2026
+ATUALIZADO: 06/04/2026
 - Nova estrutura baseada em análise de seletividade
 - Filosofia: Níveis 1-3 (Jackpot), 4-5 (Equilibrado), 6 (Agressivo)
 - Remoção de filtros "assassinos" (Extremos 2-4, Consecutivos max 3)
 - Adição do filtro de TRIOS FREQUENTES para níveis 4-6
+- NOVOS: Filtros Fibonacci, Quintis e Faixa 6-20 (POC Monte Carlo 06/04/2026)
+  - Fibonacci: seletividade 1.084-1.139 | Quintis: 1.048-1.092 | Faixa 6-20: 1.028-1.115
+  - Combinados: Fib+Quintis seletividade 1.169 (efeito sinérgico!)
 
 SELETIVIDADE = Taxa_Real / Taxa_Random
 - > 1.0: Filtro INTELIGENTE (rejeita mais lixo que jackpots)
@@ -71,6 +74,14 @@ FILTROS_POR_NIVEL = {
         'usar_filtro_subcombos': True,
         'subcombos_min_acertos': 6,
         'subcombos_min_hot': 400,  # Conservador (~95% jackpots, ~20% random)
+        # ═══════════════════════════════════════════════════════════════════
+        # NOVOS FILTROS POC 06/04/2026 — Fibonacci, Faixa 6-20
+        # Conservador: faixas amplas, máxima preservação de jackpots
+        # ═══════════════════════════════════════════════════════════════════
+        'usar_filtro_fibonacci': True,
+        'fibonacci_min': 3, 'fibonacci_max': 6,  # Seletiv 1.084, 93% jackpots
+        'usar_filtro_faixa_6_20': True,
+        'faixa_6_20_min': 7, 'faixa_6_20_max': 10,  # Seletiv 1.115, 88.4% jackpots
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -105,6 +116,11 @@ FILTROS_POR_NIVEL = {
         'usar_filtro_subcombos': True,
         'subcombos_min_acertos': 6,
         'subcombos_min_hot': 450,
+        # NOVOS FILTROS POC 06/04/2026 — Conservador
+        'usar_filtro_fibonacci': True,
+        'fibonacci_min': 3, 'fibonacci_max': 6,
+        'usar_filtro_faixa_6_20': True,
+        'faixa_6_20_min': 7, 'faixa_6_20_max': 10,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -143,6 +159,13 @@ FILTROS_POR_NIVEL = {
         'usar_filtro_subcombos': True,
         'subcombos_min_acertos': 6,
         'subcombos_min_hot': 500,
+        # NOVOS FILTROS POC 06/04/2026 — Equilibrado (Fib + Quintis + F6-20)
+        'usar_filtro_fibonacci': True,
+        'fibonacci_min': 3, 'fibonacci_max': 6,
+        'usar_filtro_quintis': True,
+        'quintis_min': 1, 'quintis_max': 4,  # Seletiv 1.091, 73.2% jackpots
+        'usar_filtro_faixa_6_20': True,
+        'faixa_6_20_min': 7, 'faixa_6_20_max': 10,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -187,6 +210,13 @@ FILTROS_POR_NIVEL = {
         'usar_filtro_subcombos': True,
         'subcombos_min_acertos': 6,
         'subcombos_min_hot': 550,
+        # NOVOS FILTROS POC 06/04/2026 — Agressivo (faixas apertadas)
+        'usar_filtro_fibonacci': True,
+        'fibonacci_min': 4, 'fibonacci_max': 5,  # Seletiv 1.139, 59% jackpots
+        'usar_filtro_quintis': True,
+        'quintis_min': 2, 'quintis_max': 4,  # Seletiv 1.092, 55.4% jackpots
+        'usar_filtro_faixa_6_20': True,
+        'faixa_6_20_min': 8, 'faixa_6_20_max': 10,  # Seletiv 1.028, 78% jackpots
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -233,6 +263,13 @@ FILTROS_POR_NIVEL = {
         'usar_filtro_subcombos': True,
         'subcombos_min_acertos': 6,
         'subcombos_min_hot': 600,
+        # NOVOS FILTROS POC 06/04/2026 — Agressivo
+        'usar_filtro_fibonacci': True,
+        'fibonacci_min': 4, 'fibonacci_max': 5,
+        'usar_filtro_quintis': True,
+        'quintis_min': 2, 'quintis_max': 4,
+        'usar_filtro_faixa_6_20': True,
+        'faixa_6_20_min': 8, 'faixa_6_20_max': 10,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -282,6 +319,13 @@ FILTROS_POR_NIVEL = {
         'usar_filtro_subcombos': True,
         'subcombos_min_acertos': 6,
         'subcombos_min_hot': 650,
+        # NOVOS FILTROS POC 06/04/2026 — Ultra agressivo
+        'usar_filtro_fibonacci': True,
+        'fibonacci_min': 4, 'fibonacci_max': 5,
+        'usar_filtro_quintis': True,
+        'quintis_min': 2, 'quintis_max': 4,
+        'usar_filtro_faixa_6_20': True,
+        'faixa_6_20_min': 8, 'faixa_6_20_max': 10,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -440,6 +484,26 @@ def filtro_qtde_6_25(combinacao, valores_aceitos):
     """Verifica se quantidade de números no range 6-25 está nos valores aceitos"""
     qtde = sum(1 for n in combinacao if 6 <= n <= 25)
     return qtde in valores_aceitos
+
+
+def filtro_fibonacci(combinacao, fib_min, fib_max):
+    """Verifica quantidade de números Fibonacci {1,2,3,5,8,13,21} na combinação"""
+    qtde = sum(1 for n in combinacao if n in FIBONACCI)
+    return fib_min <= qtde <= fib_max
+
+
+def filtro_faixa_6_20(combinacao, f_min, f_max):
+    """Verifica quantidade de números no range 6-20"""
+    qtde = sum(1 for n in combinacao if 6 <= n <= 20)
+    return f_min <= qtde <= f_max
+
+
+def filtro_quintis(combinacao, q_min, q_max):
+    """Verifica se cada quintil (1-5,6-10,11-15,16-20,21-25) tem entre q_min e q_max números"""
+    quintis = [0, 0, 0, 0, 0]
+    for n in combinacao:
+        quintis[(n - 1) // 5] += 1
+    return all(q_min <= q <= q_max for q in quintis)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

@@ -12598,19 +12598,22 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 # Carregar modelo neural treinado
                 neural = RedeNeuralExclusao.carregar(neural_path)
                 
-                # Extrair features da situação atual (150 features)
+                # Extrair features da situação atual (250 features, 10 por número)
                 import numpy as np
-                features = np.zeros(150)
+                import math as _math
+                features = np.zeros(250)
+                janela_30 = resultados[:30]
+                janela_10 = resultados[:10]
                 
                 # Features 0-24: Frequência 30 concursos
                 for n in range(1, 26):
-                    freq_30 = sum(1 for r in resultados[:30] if n in r['set']) / 30
+                    freq_30 = sum(1 for r in janela_30 if n in r['set']) / max(1, len(janela_30))
                     features[n-1] = freq_30
                 
                 # Features 25-49: Atraso (quantos concursos desde última aparição)
                 for n in range(1, 26):
                     atraso = 0
-                    for r in resultados[:30]:
+                    for r in janela_30:
                         if n in r['set']:
                             break
                         atraso += 1
@@ -12619,7 +12622,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 # Features 50-74: Consecutividade
                 for n in range(1, 26):
                     cons = 0
-                    for r in resultados[:30]:
+                    for r in janela_30:
                         if n in r['set']:
                             cons += 1
                         else:
@@ -12628,7 +12631,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 
                 # Features 75-99: Tendência (freq últimos 10 vs anteriores 10)
                 freq_10 = Counter()
-                for r in resultados[:10]:
+                for r in janela_10:
                     freq_10.update(r['set'])
                 freq_anterior = Counter()
                 for r in resultados[10:20]:
@@ -12647,6 +12650,70 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 for n in range(1, 26):
                     score_n = next((c['score'] for c in candidatos if c['num'] == n), 0)
                     features[124 + n] = score_n / max(1, max_score_inv) if max_score_inv != 0 else 0
+                
+                # Features 150-174: Co-ocorrência score (top 5 parceiros)
+                pair_count_f = Counter()
+                for r in janela_30:
+                    nums_r = sorted(r['set'])
+                    for i_n in range(len(nums_r)):
+                        for j_n in range(i_n + 1, len(nums_r)):
+                            pair_count_f[(nums_r[i_n], nums_r[j_n])] += 1
+                max_pair_f = max(pair_count_f.values()) if pair_count_f else 1
+                for n in range(1, 26):
+                    pares_n = [pair_count_f.get((min(n, m), max(n, m)), 0) for m in range(1, 26) if m != n]
+                    features[149 + n] = sum(sorted(pares_n, reverse=True)[:5]) / max(1, 5 * max_pair_f)
+                
+                # Features 175-199: Heatmap posicional
+                pos_freq_f = {}
+                for r in janela_30:
+                    nums_sorted = sorted(r['set'])
+                    for pos_idx, num in enumerate(nums_sorted):
+                        if num not in pos_freq_f:
+                            pos_freq_f[num] = Counter()
+                        pos_freq_f[num][pos_idx] += 1
+                for n in range(1, 26):
+                    if n in pos_freq_f:
+                        total_app = sum(pos_freq_f[n].values())
+                        if total_app > 0:
+                            top3_pos = pos_freq_f[n].most_common(3)
+                            features[174 + n] = sum(c for _, c in top3_pos) / total_app
+                
+                # Features 200-224: Entropia do padrão de aparição
+                for n in range(1, 26):
+                    seq = [1 if n in r['set'] else 0 for r in janela_30]
+                    trans = Counter()
+                    for k in range(len(seq) - 1):
+                        trans[(seq[k], seq[k+1])] += 1
+                    total_tr = sum(trans.values())
+                    if total_tr > 0:
+                        ent = 0.0
+                        for cnt in trans.values():
+                            p = cnt / total_tr
+                            if p > 0:
+                                ent -= p * _math.log2(p)
+                        features[199 + n] = ent / 2.0
+                
+                # Features 225-249: Soft Exclusion signal (últimas 5 exclusões)
+                from sistemas.disputa_neural_pool23 import EstrategiaInvertida as _EI
+                excl_success = np.zeros(25)
+                for lb in range(min(5, len(resultados) - 1)):
+                    idx_chk = lb + 1  # resultados[0]=último, resultados[1]=anterior...
+                    if idx_chk + 30 > len(resultados):
+                        continue
+                    hist_tmp = [{'numeros': sorted(r['set'])} for r in reversed(resultados)]
+                    idx_real = len(resultados) - 1 - idx_chk
+                    scores_past = _EI.calcular_scores_exclusao(hist_tmp, idx_real)
+                    if not scores_past:
+                        continue
+                    top2_exc = sorted(scores_past, key=scores_past.get, reverse=True)[:2]
+                    res_chk = resultados[idx_chk]['set']
+                    for exc_num in top2_exc:
+                        if exc_num not in res_chk:
+                            excl_success[exc_num - 1] += 0.2
+                        else:
+                            excl_success[exc_num - 1] -= 0.2
+                for n in range(1, 26):
+                    features[224 + n] = (excl_success[n-1] + 1) / 2
                 
                 # Obter scores da neural
                 scores_neural = neural.obter_scores(features)
@@ -12947,6 +13014,45 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         pool_23 = pool_final  # Manter compatibilidade com resto do código
         
         # ═══════════════════════════════════════════════════════════════════
+        # EXCLUSÃO SUAVE (inspirado Opção 29)
+        # Permite 0-2 dos números excluídos aparecerem nas combinações
+        # ═══════════════════════════════════════════════════════════════════
+        exclusao_suave_max = 0  # Default: exclusão total (comportamento original)
+        exclusao_suave_penalidade = 3  # Penalidade de score por excluído presente
+        numeros_excluidos_set = set(excluir)
+        
+        print("\n" + "─"*78)
+        print("🔄 EXCLUSÃO SUAVE (inspirado Opção 29)")
+        print("─"*78)
+        print(f"   Pool principal: {25-qtd_excluir} números | Excluídos: {sorted(excluir)}")
+        print(f"   Quantos excluídos PERMITIR nas combinações?")
+        print(f"   [0] Nenhum - exclusão total (padrão Pool 23)  ⭐ DEFAULT")
+        print(f"   [1] Até 1 excluído permitido (exclusão suave)")
+        print(f"   [2] Até 2 excluídos permitidos (sem exclusão efetiva)")
+        
+        try:
+            _suave_input = input("   Escolha [0-2, ENTER=0]: ").strip()
+            if _suave_input == '':
+                exclusao_suave_max = 0
+            else:
+                exclusao_suave_max = int(_suave_input)
+                exclusao_suave_max = max(0, min(qtd_excluir, exclusao_suave_max))
+        except:
+            exclusao_suave_max = 0
+        
+        if exclusao_suave_max == 0:
+            print(f"   ✅ Exclusão TOTAL: combinações terão apenas números do Pool {25-qtd_excluir}")
+        elif exclusao_suave_max == 1:
+            from math import comb as _comb_suave
+            extras = _comb_suave(23, 14) * _comb_suave(qtd_excluir, 1)
+            print(f"   🔄 Exclusão SUAVE: até 1 excluído permitido")
+            print(f"      Base: {_comb_suave(23, 15):,} + ~{extras:,} combinações extras")
+            print(f"      ⚠️ Combos com excluído terão penalidade de -{exclusao_suave_penalidade} pts no score")
+        else:
+            print(f"   🔓 SEM exclusão efetiva: todos os 25 números participam")
+            print(f"      ⚠️ Combos com excluídos terão penalidade de -{exclusao_suave_penalidade} pts/excluído no score")
+        
+        # ═══════════════════════════════════════════════════════════════════
         # PASSO 3: GERAR TODAS AS COMBINAÇÕES DO POOL (com fixos)
         # ═══════════════════════════════════════════════════════════════════
         print("\n" + "─"*78)
@@ -13187,6 +13293,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         ultimo_resultado_sorted = sorted(resultados[0]['numeros'])  # Para filtro inversão posicional
         NUCLEO_C1C2 = {2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 19, 20, 22, 24, 25}
         PRIMOS = {2, 3, 5, 7, 11, 13, 17, 19, 23}
+        FIBONACCI = {1, 2, 3, 5, 8, 13, 21}
         
         # ═══════════════════════════════════════════════════════════════════
         # INVERSÃO POSICIONAL — Detectar direção prevista (r=0.44, lift 2.2x)
@@ -13455,6 +13562,168 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             filtro_subcombos_obj = None
         
         # ═══════════════════════════════════════════════════════════════════
+        # FILTRO GRUPOS ATRASADOS (inspirado Opção 29)
+        # Analisa grupos C1+C5 e L1+L5 como blocos estatísticos
+        # ═══════════════════════════════════════════════════════════════════
+        GRUPO_C1_C5 = {1, 6, 11, 16, 21, 5, 10, 15, 20, 25}  # Coluna 1 + Coluna 5
+        GRUPO_L1_L5 = {1, 2, 3, 4, 5, 21, 22, 23, 24, 25}    # Linha 1 + Linha 5
+        
+        filtro_grupos_atrasados_ativo = False
+        grupos_ranges_aceitos = {}  # {grupo: set of accepted hit counts}
+        grupos_bonus_atrasados = {}  # {grupo: set of hit counts with bonus}
+        
+        print("\n" + "─"*78)
+        print("🔄 FILTRO GRUPOS ATRASADOS (inspirado Opção 29)")
+        print("─"*78)
+        
+        def _analisar_grupo_atrasados(grupo_set, grupo_nome, resultados_hist):
+            """Analisa frequência de hit counts de um grupo e identifica ranges atrasados."""
+            # Para cada concurso, contar quantos do grupo apareceram
+            hit_counts = []
+            for r in resultados_hist:
+                count = len(set(r['numeros']) & grupo_set)
+                hit_counts.append(count)
+            
+            # Frequência de cada hit count
+            freq = Counter(hit_counts)
+            total = len(hit_counts)
+            
+            # Top 3 mais comuns
+            top3 = freq.most_common(3)
+            top3_values = set(v for v, _ in top3)
+            
+            # Calcular atraso: para cada hit count, quando foi a última ocorrência
+            atrasados = set()
+            for valor, _ in top3:
+                # Encontrar último concurso com esse hit count
+                ultimo_idx = None
+                for idx, hc in enumerate(hit_counts):
+                    if hc == valor:
+                        ultimo_idx = idx
+                        break
+                
+                if ultimo_idx is not None:
+                    # Frequência esperada: cada quantos concursos aparece em média
+                    freq_valor = freq[valor]
+                    intervalo_medio = total / max(1, freq_valor)
+                    
+                    # Se o atraso (ultimo_idx) é >= intervalo médio, está atrasado
+                    if ultimo_idx >= intervalo_medio:
+                        atrasados.add(valor)
+            
+            return top3, top3_values, atrasados
+        
+        try:
+            # Análise C1+C5
+            top3_c, ranges_c, atrasados_c = _analisar_grupo_atrasados(GRUPO_C1_C5, "C1+C5", resultados)
+            # Análise L1+L5
+            top3_l, ranges_l, atrasados_l = _analisar_grupo_atrasados(GRUPO_L1_L5, "L1+L5", resultados)
+            
+            # Último draw: hits de cada grupo
+            ultimo_c = len(set(resultados[0]['numeros']) & GRUPO_C1_C5)
+            ultimo_l = len(set(resultados[0]['numeros']) & GRUPO_L1_L5)
+            
+            print(f"\n   📊 GRUPO C1+C5 (extremos colunas): {sorted(GRUPO_C1_C5)}")
+            print(f"      Top 3 mais comuns: ", end="")
+            for val, cnt in top3_c:
+                pct = cnt / len(resultados) * 100
+                status = " 🔄ATRASADO" if val in atrasados_c else ""
+                print(f"[{val}]={pct:.1f}%{status}  ", end="")
+            print(f"\n      Último draw: {ultimo_c} hits")
+            
+            print(f"\n   📊 GRUPO L1+L5 (extremos linhas): {sorted(GRUPO_L1_L5)}")
+            print(f"      Top 3 mais comuns: ", end="")
+            for val, cnt in top3_l:
+                pct = cnt / len(resultados) * 100
+                status = " 🔄ATRASADO" if val in atrasados_l else ""
+                print(f"[{val}]={pct:.1f}%{status}  ", end="")
+            print(f"\n      Último draw: {ultimo_l} hits")
+            
+            if atrasados_c or atrasados_l:
+                print(f"\n   🔄 RANGES ATRASADOS detectados!")
+                if atrasados_c:
+                    print(f"      C1+C5 atrasados: {sorted(atrasados_c)} → bônus +5 pts")
+                if atrasados_l:
+                    print(f"      L1+L5 atrasados: {sorted(atrasados_l)} → bônus +5 pts")
+            
+            _grupos_input = input("\n   [S/N] Ativar filtro de grupos C1+C5 e L1+L5? (ENTER=S): ").strip().upper()
+            if _grupos_input == 'N':
+                print("   ⏭️ Filtro de grupos DESATIVADO")
+            else:
+                filtro_grupos_atrasados_ativo = True
+                grupos_ranges_aceitos['C1_C5'] = ranges_c
+                grupos_ranges_aceitos['L1_L5'] = ranges_l
+                grupos_bonus_atrasados['C1_C5'] = atrasados_c
+                grupos_bonus_atrasados['L1_L5'] = atrasados_l
+                print(f"   ✅ Filtro de grupos ATIVADO")
+                print(f"      C1+C5 aceita: {sorted(ranges_c)} | L1+L5 aceita: {sorted(ranges_l)}")
+        
+        except Exception as e:
+            print(f"   ⚠️ Erro na análise de grupos: {e}")
+            print(f"   ⏭️ Filtro de grupos DESATIVADO")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # FILTRO FAVORECIDOS (inspirado Opção 29)
+        # TOP 15 mais frequentes nos últimos 30 concursos
+        # ═══════════════════════════════════════════════════════════════════
+        filtro_favorecidos_ativo = False
+        filtro_favorecidos_min = 0
+        filtro_favorecidos_max = 15
+        top_15_favorecidos = set()
+        
+        print("\n" + "─"*78)
+        print("📊 FILTRO FAVORECIDOS (inspirado Opção 29)")
+        print("─"*78)
+        
+        try:
+            freq_30_fav = Counter()
+            for r in resultados[:30]:
+                freq_30_fav.update(r['numeros'])
+            top_15_favorecidos = set(n for n, _ in freq_30_fav.most_common(15))
+            
+            # Calcular média de favorecidos por sorteio histórico
+            fav_por_sorteio = []
+            for r in resultados[:100]:
+                fav_por_sorteio.append(len(set(r['numeros']) & top_15_favorecidos))
+            media_fav = sum(fav_por_sorteio) / len(fav_por_sorteio) if fav_por_sorteio else 10
+            
+            print(f"   TOP 15 mais frequentes (30 últimos): {sorted(top_15_favorecidos)}")
+            print(f"   Histórico: média ~{media_fav:.1f} favorecidos por sorteio")
+            print()
+            print("   [0] Desativado")
+            print("   [1] Restritivo: 9-11 favorecidos")
+            print("   [2] Moderado: 8-12 favorecidos  ⭐ RECOMENDADO")
+            print("   [3] Flexível: 6-14 favorecidos")
+            
+            _fav_input = input("   Escolha [0-3, ENTER=2]: ").strip()
+            if _fav_input == '':
+                _fav_modo = 2
+            else:
+                _fav_modo = int(_fav_input)
+                _fav_modo = max(0, min(3, _fav_modo))
+            
+            if _fav_modo == 1:
+                filtro_favorecidos_ativo = True
+                filtro_favorecidos_min = 9
+                filtro_favorecidos_max = 11
+            elif _fav_modo == 2:
+                filtro_favorecidos_ativo = True
+                filtro_favorecidos_min = 8
+                filtro_favorecidos_max = 12
+            elif _fav_modo == 3:
+                filtro_favorecidos_ativo = True
+                filtro_favorecidos_min = 6
+                filtro_favorecidos_max = 14
+            
+            if filtro_favorecidos_ativo:
+                print(f"   ✅ Filtro favorecidos ATIVADO: {filtro_favorecidos_min}-{filtro_favorecidos_max} favorecidos")
+            else:
+                print(f"   ⏭️ Filtro favorecidos DESATIVADO")
+        
+        except Exception as e:
+            print(f"   ⚠️ Erro: {e}. Filtro favorecidos desativado.")
+        
+        # ═══════════════════════════════════════════════════════════════════
         # LOOP PRINCIPAL - PROCESSA CADA NÍVEL
         # ═══════════════════════════════════════════════════════════════════
         for nivel in niveis_a_processar:
@@ -13525,7 +13794,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     # Aplicar filtros do nível + posições frias
                     combos_tentativa = self._aplicar_filtros_com_posicoes_frias(
                         todas_combos_cascata, filtros_tentativa, resultados,
-                        posicoes_frias_rejeitar, PRIMOS, NUCLEO_C1C2,
+                        posicoes_frias_rejeitar, PRIMOS, NUCLEO_C1C2, FIBONACCI,
                         ultimo_resultado, favorecidos, compensacao_ativa,
                         tendencia_compensacao, reversao_soma_ativa, soma_ajuste,
                         soma_ajuste_ultra, tendencia_soma,
@@ -13967,6 +14236,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
 
             # ═══════════════════════════════════════════════════════════════════
             # PASSO 4.5: GERAR COMBINAÇÕES (com ou sem números fixos)
+            # Suporte a EXCLUSÃO SUAVE: gera combos extras com números excluídos
             # ═══════════════════════════════════════════════════════════════════
             print("\n" + "─"*78)
             print("📦 GERANDO COMBINAÇÕES...")
@@ -14010,6 +14280,43 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 tempo_geracao = time.time() - inicio
             
                 print(f"   ✅ {len(todas_combos):,} combinações geradas em {tempo_geracao:.1f}s")
+            
+            # ═══════════════════════════════════════════════════════════════════
+            # EXCLUSÃO SUAVE: Gerar combinações extras com números excluídos
+            # ═══════════════════════════════════════════════════════════════════
+            combos_suaves_count = 0
+            if exclusao_suave_max > 0:
+                print(f"\n   🔄 Gerando combinações de exclusão suave (até {exclusao_suave_max} excluído(s))...")
+                _excluidos_list = sorted(excluir)
+                _pool_base = sorted(pool_23)  # Pool sem excluídos
+                
+                inicio_suave = time.time()
+                
+                for k in range(1, exclusao_suave_max + 1):
+                    # Para cada subconjunto de k excluídos
+                    for excl_subset in combinations(_excluidos_list, k):
+                        excl_set = set(excl_subset)
+                        # Os restantes 15-k devem vir do pool base (menos fixos)
+                        if numeros_fixos:
+                            _pool_suave = sorted([n for n in _pool_base if n not in numeros_fixos])
+                            _fixos_suave = tuple(sorted(numeros_fixos | excl_set))
+                            _restantes = 15 - len(_fixos_suave)
+                            if _restantes < 0 or _restantes > len(_pool_suave):
+                                continue
+                            for cv in combinations(_pool_suave, _restantes):
+                                combo_completo = tuple(sorted(_fixos_suave + cv))
+                                todas_combos.append(combo_completo)
+                                combos_suaves_count += 1
+                        else:
+                            _restantes = 15 - k
+                            for cv in combinations(_pool_base, _restantes):
+                                combo_completo = tuple(sorted(excl_subset + cv))
+                                todas_combos.append(combo_completo)
+                                combos_suaves_count += 1
+                
+                tempo_suave = time.time() - inicio_suave
+                print(f"   ✅ +{combos_suaves_count:,} combinações suaves geradas em {tempo_suave:.1f}s")
+                print(f"   📊 Total combinações: {len(todas_combos):,}")
         
             # ═══════════════════════════════════════════════════════════════════
             # PASSO 5: APLICAR FILTROS
@@ -14056,6 +14363,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     print(f"      • 📊 Piores posição (histórico): tolerância={piores_tolerancia_historico}")
                 if usar_filtro_piores_recente:
                     print(f"      • 📊 Piores posição (30 últimos): tolerância={piores_tolerancia_recente}")
+                if filtro_grupos_atrasados_ativo:
+                    print(f"      • 🔄 Grupos atrasados: C1+C5={sorted(grupos_ranges_aceitos.get('C1_C5', set()))}, L1+L5={sorted(grupos_ranges_aceitos.get('L1_L5', set()))}")
+                if filtro_favorecidos_ativo:
+                    print(f"      • ⭐ Favorecidos TOP 15: {filtro_favorecidos_min}-{filtro_favorecidos_max}")
+                if exclusao_suave_max > 0:
+                    print(f"      • 🔄 Exclusão suave: até {exclusao_suave_max} excluído(s) permitido(s)")
                 print()
             print("─"*78)
             
@@ -14318,6 +14631,27 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     if nums_favorecer_anomalias and count_frios < anomalias_min_frios:
                         continue
                 
+                # Filtro FIBONACCI (POC 06/04/2026 — seletividade 1.084-1.139)
+                if filtros.get('usar_filtro_fibonacci'):
+                    qtde_fib = len(combo_set & FIBONACCI)
+                    if qtde_fib < filtros.get('fibonacci_min', 3) or qtde_fib > filtros.get('fibonacci_max', 6):
+                        continue
+                
+                # Filtro QUINTIS (POC 06/04/2026 — seletividade 1.048-1.092)
+                if filtros.get('usar_filtro_quintis'):
+                    quintis = [0, 0, 0, 0, 0]
+                    for n in combo:
+                        quintis[(n - 1) // 5] += 1
+                    q_min, q_max = filtros.get('quintis_min', 1), filtros.get('quintis_max', 4)
+                    if not all(q_min <= q <= q_max for q in quintis):
+                        continue
+                
+                # Filtro FAIXA 6-20 (POC 06/04/2026 — seletividade 1.028-1.115)
+                if filtros.get('usar_filtro_faixa_6_20'):
+                    qtde_f620 = sum(1 for n in combo if 6 <= n <= 20)
+                    if qtde_f620 < filtros.get('faixa_6_20_min', 7) or qtde_f620 > filtros.get('faixa_6_20_max', 10):
+                        continue
+                
                 # Filtro POSIÇÕES FRIAS (Nível 7) - Rejeita combos com MUITOS números "frios" nas posições
                 # Lógica: conta quantas posições têm número com 0% recente, rejeita se > tolerância
                 if usar_filtro_posicoes_frias and posicoes_frias_rejeitar:
@@ -14357,6 +14691,28 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     if _pk[9] < 10 or _pk[9] > 20:   # N10
                         continue
                     if _pk[11] < 13 or _pk[11] > 22: # N12
+                        continue
+                
+                # ═══════════════════════════════════════════════════════════════════
+                # FILTRO GRUPOS ATRASADOS (C1+C5 e L1+L5)
+                # Rejeita combinações cujo hit count cai fora dos top 3 ranges
+                # ═══════════════════════════════════════════════════════════════════
+                if filtro_grupos_atrasados_ativo:
+                    _hits_c = len(combo_set & GRUPO_C1_C5)
+                    _hits_l = len(combo_set & GRUPO_L1_L5)
+                    
+                    if _hits_c not in grupos_ranges_aceitos.get('C1_C5', set()):
+                        continue
+                    if _hits_l not in grupos_ranges_aceitos.get('L1_L5', set()):
+                        continue
+                
+                # ═══════════════════════════════════════════════════════════════════
+                # FILTRO FAVORECIDOS (TOP 15 nos últimos 30)
+                # Rejeita combinações com poucos ou muitos favorecidos
+                # ═══════════════════════════════════════════════════════════════════
+                if filtro_favorecidos_ativo and top_15_favorecidos:
+                    _fav_count = len(combo_set & top_15_favorecidos)
+                    if _fav_count < filtro_favorecidos_min or _fav_count > filtro_favorecidos_max:
                         continue
             
                 combos_filtradas.append(combo)
@@ -14446,6 +14802,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 f.write(f"# Números EXCLUÍDOS: {sorted(excluir)}\n")
                 f.write(f"# Pool 23: {pool_23}\n")
                 f.write(f"# Nível de filtro: {nivel}\n")
+                if exclusao_suave_max > 0:
+                    f.write(f"# Exclusão suave: até {exclusao_suave_max} excluído(s) permitido(s)\n")
+                if filtro_grupos_atrasados_ativo:
+                    f.write(f"# Filtro grupos atrasados: C1+C5={sorted(grupos_ranges_aceitos.get('C1_C5', set()))}, L1+L5={sorted(grupos_ranges_aceitos.get('L1_L5', set()))}\n")
+                if filtro_favorecidos_ativo:
+                    f.write(f"# Filtro favorecidos TOP 15: {filtro_favorecidos_min}-{filtro_favorecidos_max}\n")
                 if filtro_prob_obj:
                     f.write(f"# Filtro probabilístico: Acertos_11 >= {filtro_prob_limite}")
                     if filtro_prob_recentes > 0:
@@ -14490,6 +14852,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         'nivel_filtro': nivel,
                         'qtd_combinacoes': len(combos_filtradas),
                         'arquivo': nome_arquivo,
+                        'exclusao_suave_max': exclusao_suave_max,
+                        'filtro_grupos_atrasados': filtro_grupos_atrasados_ativo,
+                        'filtro_favorecidos': f"{filtro_favorecidos_min}-{filtro_favorecidos_max}" if filtro_favorecidos_ativo else None,
                         'resultado_real': None,
                         'acerto_exclusao': None,
                         'erros_exclusao': None,
@@ -15038,7 +15403,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         return debitos, lista_debitos
 
     def _aplicar_filtros_com_posicoes_frias(self, todas_combos, filtros, resultados,
-                                             posicoes_frias_rejeitar, PRIMOS, NUCLEO_C1C2,
+                                             posicoes_frias_rejeitar, PRIMOS, NUCLEO_C1C2, FIBONACCI,
                                              ultimo_resultado, favorecidos, compensacao_ativa,
                                              tendencia_compensacao, reversao_soma_ativa,
                                              soma_ajuste, soma_ajuste_ultra, tendencia_soma,
@@ -15193,6 +15558,27 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     if (num_na_pos, pos+1) in debitos_dict:
                         matches_debito += 1
                 if matches_debito < debito_min_matches:
+                    continue
+            
+            # Filtro FIBONACCI (POC 06/04/2026 — seletividade 1.084-1.139)
+            if filtros.get('usar_filtro_fibonacci'):
+                qtde_fib = len(combo_set & FIBONACCI)
+                if qtde_fib < filtros.get('fibonacci_min', 3) or qtde_fib > filtros.get('fibonacci_max', 6):
+                    continue
+            
+            # Filtro QUINTIS (POC 06/04/2026 — seletividade 1.048-1.092)
+            if filtros.get('usar_filtro_quintis'):
+                quintis = [0, 0, 0, 0, 0]
+                for n in combo:
+                    quintis[(n - 1) // 5] += 1
+                q_min, q_max = filtros.get('quintis_min', 1), filtros.get('quintis_max', 4)
+                if not all(q_min <= q <= q_max for q in quintis):
+                    continue
+            
+            # Filtro FAIXA 6-20 (POC 06/04/2026 — seletividade 1.028-1.115)
+            if filtros.get('usar_filtro_faixa_6_20'):
+                qtde_f620 = sum(1 for n in combo if 6 <= n <= 20)
+                if qtde_f620 < filtros.get('faixa_6_20_min', 7) or qtde_f620 > filtros.get('faixa_6_20_max', 10):
                     continue
             
             # Filtro POSIÇÕES FRIAS (rejeição com tolerância) - o filtro principal do Nível 8
@@ -15602,6 +15988,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # PREVISÕES
         # ═══════════════════════════════════════════════════════════════════
         previsoes = historico.get('previsoes', {})
+        validacoes_unitarias = historico.get('validacoes_unitarias', [])
         
         print(f"\n   📈 TAXAS DE ACERTO DAS PREVISÕES:")
         print("   " + "─"*70)
@@ -15631,6 +16018,58 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"      Compensação Posicional:  {taxa_comp:5.1f}% [{barra_comp}] {comp_ac}/{comp_total} {status_comp}")
         else:
             print(f"      Compensação Posicional:  N/A (sem dados)")
+
+        if validacoes_unitarias:
+            def _classificar_score_janela(score):
+                if score >= 75:
+                    return 'EXCELENTE'
+                if score >= 60:
+                    return 'ACEITÁVEL'
+                if score >= 45:
+                    return 'ALERTA'
+                return 'RETREINAR'
+
+            print(f"\n   🧪 VALIDAÇÕES UNITÁRIAS SEQUENCIAIS:")
+            print("   " + "─"*70)
+            for janela_validacao in (20, 30):
+                bloco = validacoes_unitarias[-janela_validacao:]
+                if len(bloco) < 5:
+                    continue
+
+                qtd_bloco = len(bloco)
+                media_score = sum(v.get('score_unitario', 0) for v in bloco) / qtd_bloco
+                taxa_exc_bloco = sum(1 for v in bloco if v.get('exclusao_correta')) / qtd_bloco * 100
+                media_exclusao = sum(v.get('taxa_exclusao_unitaria', 0) for v in bloco) / qtd_bloco
+                bloco_soma = [v for v in bloco if v.get('previsao_soma_ok') is not None]
+                bloco_comp = [v for v in bloco if v.get('previsao_comp_ok') is not None]
+                taxa_soma_bloco = (sum(1 for v in bloco_soma if v.get('previsao_soma_ok')) / len(bloco_soma) * 100) if bloco_soma else None
+                taxa_comp_bloco = (sum(1 for v in bloco_comp if v.get('previsao_comp_ok')) / len(bloco_comp) * 100) if bloco_comp else None
+
+                ultimos_10 = bloco[-10:]
+                bloco_anterior = bloco[:-10]
+                if len(ultimos_10) >= 5 and len(bloco_anterior) >= 5:
+                    media_ultimos_10 = sum(v.get('score_unitario', 0) for v in ultimos_10) / len(ultimos_10)
+                    media_anterior = sum(v.get('score_unitario', 0) for v in bloco_anterior) / len(bloco_anterior)
+                    delta_score = media_ultimos_10 - media_anterior
+                else:
+                    delta_score = 0.0
+
+                if delta_score > 5:
+                    tendencia_seq = 'subindo'
+                elif delta_score < -5:
+                    tendencia_seq = 'caindo'
+                else:
+                    tendencia_seq = 'estável'
+
+                print(f"      Últimos {qtd_bloco:02d}: score {media_score:5.1f} | exclusão perfeita {taxa_exc_bloco:5.1f}% | exclusão média {media_exclusao:5.1f}% | {_classificar_score_janela(media_score)} | {tendencia_seq}")
+                if taxa_soma_bloco is not None:
+                    print(f"         Soma: {taxa_soma_bloco:5.1f}%", end='')
+                else:
+                    print("         Soma: N/A", end='')
+                if taxa_comp_bloco is not None:
+                    print(f" | Compensação: {taxa_comp_bloco:5.1f}%")
+                else:
+                    print(" | Compensação: N/A")
         
         # ═══════════════════════════════════════════════════════════════════
         # JACKPOTS POR NÍVEL
@@ -16735,6 +17174,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         PRIMOS = {2, 3, 5, 7, 11, 13, 17, 19, 23}
         NUCLEO_C1C2 = {2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 19, 20, 22, 24, 25}
+        FIBONACCI = {1, 2, 3, 5, 8, 13, 21}
         
         # ═══════════════════════════════════════════════════════════════════
         # APLICAR AJUSTES ADAPTATIVOS NOS FILTROS
@@ -17000,6 +17440,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                                 posicoes_frias_rejeitar,
                                 PRIMOS,
                                 NUCLEO_C1C2,
+                                FIBONACCI,
                                 ultimo_resultado,
                                 favorecidos,
                                 False, {}, False, 0, 0, {},
@@ -17093,6 +17534,24 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                                 continue
                         if 'favorecidos_min' in filtros:
                             if len(combo_set & favorecidos) < filtros['favorecidos_min']:
+                                continue
+                        # Filtro FIBONACCI (POC 06/04/2026 — seletividade 1.084-1.139)
+                        if filtros.get('usar_filtro_fibonacci'):
+                            qtde_fib = len(combo_set & FIBONACCI)
+                            if qtde_fib < filtros.get('fibonacci_min', 3) or qtde_fib > filtros.get('fibonacci_max', 6):
+                                continue
+                        # Filtro QUINTIS (POC 06/04/2026 — seletividade 1.048-1.092)
+                        if filtros.get('usar_filtro_quintis'):
+                            quintis = [0, 0, 0, 0, 0]
+                            for n in combo:
+                                quintis[(n - 1) // 5] += 1
+                            q_min, q_max = filtros.get('quintis_min', 1), filtros.get('quintis_max', 4)
+                            if not all(q_min <= q <= q_max for q in quintis):
+                                continue
+                        # Filtro FAIXA 6-20 (POC 06/04/2026 — seletividade 1.028-1.115)
+                        if filtros.get('usar_filtro_faixa_6_20'):
+                            qtde_f620 = sum(1 for n in combo if 6 <= n <= 20)
+                            if qtde_f620 < filtros.get('faixa_6_20_min', 7) or qtde_f620 > filtros.get('faixa_6_20_max', 10):
                                 continue
                         if nivel > 0:
                             if combo_list[4] < 5 or combo_list[4] > 14:
@@ -17642,6 +18101,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                             posicoes_frias_rejeitar,
                             PRIMOS,
                             NUCLEO_C1C2,
+                            FIBONACCI,
                             ultimo_resultado,
                             favorecidos,
                             False,   # compensacao_ativa
@@ -18630,30 +19090,33 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         try:
             from sistemas.disputa_neural_pool23 import RedeNeuralExclusao
             import numpy as np
+            import math as _math_302
             neural_path_302 = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                            'dados', 'neural_exclusao.pkl')
             if os.path.exists(neural_path_302):
                 neural_302 = RedeNeuralExclusao.carregar(neural_path_302)
-                features_302 = np.zeros(150)
+                features_302 = np.zeros(250)
+                janela_30_302 = resultados[:30]
+                janela_10_302 = resultados[:10]
                 for n in range(1, 26):
-                    features_302[n-1] = sum(1 for r in resultados[:30] if n in r['set']) / 30
+                    features_302[n-1] = sum(1 for r in janela_30_302 if n in r['set']) / max(1, len(janela_30_302))
                 for n in range(1, 26):
                     atraso = 0
-                    for r in resultados[:30]:
+                    for r in janela_30_302:
                         if n in r['set']:
                             break
                         atraso += 1
                     features_302[24 + n] = atraso / 30
                 for n in range(1, 26):
                     cons = 0
-                    for r in resultados[:30]:
+                    for r in janela_30_302:
                         if n in r['set']:
                             cons += 1
                         else:
                             break
                     features_302[49 + n] = cons / 30
                 freq_10_n = Counter()
-                for r in resultados[:10]:
+                for r in janela_10_302:
                     freq_10_n.update(r['set'])
                 freq_ant_n = Counter()
                 for r in resultados[10:20]:
@@ -18667,6 +19130,66 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 for n in range(1, 26):
                     score_n = next((c['score'] for c in candidatos if c['num'] == n), 0)
                     features_302[124 + n] = score_n / max(1, max_score_inv_n) if max_score_inv_n != 0 else 0
+                # Features 150-174: Co-ocorrência (top 5 parceiros)
+                pair_count_302 = Counter()
+                for r in janela_30_302:
+                    nums_r = sorted(r['set'])
+                    for i_n in range(len(nums_r)):
+                        for j_n in range(i_n + 1, len(nums_r)):
+                            pair_count_302[(nums_r[i_n], nums_r[j_n])] += 1
+                max_pair_302 = max(pair_count_302.values()) if pair_count_302 else 1
+                for n in range(1, 26):
+                    pares_n = [pair_count_302.get((min(n, m), max(n, m)), 0) for m in range(1, 26) if m != n]
+                    features_302[149 + n] = sum(sorted(pares_n, reverse=True)[:5]) / max(1, 5 * max_pair_302)
+                # Features 175-199: Heatmap posicional
+                pos_freq_302 = {}
+                for r in janela_30_302:
+                    nums_sorted = sorted(r['set'])
+                    for pos_idx, num in enumerate(nums_sorted):
+                        if num not in pos_freq_302:
+                            pos_freq_302[num] = Counter()
+                        pos_freq_302[num][pos_idx] += 1
+                for n in range(1, 26):
+                    if n in pos_freq_302:
+                        total_app = sum(pos_freq_302[n].values())
+                        if total_app > 0:
+                            top3_pos = pos_freq_302[n].most_common(3)
+                            features_302[174 + n] = sum(c for _, c in top3_pos) / total_app
+                # Features 200-224: Entropia do padrão
+                for n in range(1, 26):
+                    seq = [1 if n in r['set'] else 0 for r in janela_30_302]
+                    trans = Counter()
+                    for k in range(len(seq) - 1):
+                        trans[(seq[k], seq[k+1])] += 1
+                    total_tr = sum(trans.values())
+                    if total_tr > 0:
+                        ent = 0.0
+                        for cnt in trans.values():
+                            p = cnt / total_tr
+                            if p > 0:
+                                ent -= p * _math_302.log2(p)
+                        features_302[199 + n] = ent / 2.0
+                # Features 225-249: Soft Exclusion signal
+                from sistemas.disputa_neural_pool23 import EstrategiaInvertida as _EI302
+                excl_success_302 = np.zeros(25)
+                for lb in range(min(5, len(resultados) - 1)):
+                    idx_chk = lb + 1
+                    if idx_chk + 30 > len(resultados):
+                        continue
+                    hist_tmp = [{'numeros': sorted(r['set'])} for r in reversed(resultados)]
+                    idx_real = len(resultados) - 1 - idx_chk
+                    scores_past = _EI302.calcular_scores_exclusao(hist_tmp, idx_real)
+                    if not scores_past:
+                        continue
+                    top2_exc = sorted(scores_past, key=scores_past.get, reverse=True)[:2]
+                    res_chk = resultados[idx_chk]['set']
+                    for exc_num in top2_exc:
+                        if exc_num not in res_chk:
+                            excl_success_302[exc_num - 1] += 0.2
+                        else:
+                            excl_success_302[exc_num - 1] -= 0.2
+                for n in range(1, 26):
+                    features_302[224 + n] = (excl_success_302[n-1] + 1) / 2
                 scores_neural_302 = neural_302.obter_scores(features_302)
                 neural_302_disponivel = True
                 print("   🧠 Neural PURO carregado com sucesso para estratégia [6]")
@@ -18721,6 +19244,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
 
         rankings_estrategias_302 = {e: _ranking_estrategia_302(e) for e in range(1, 7)}
         ranking_ativo_302 = rankings_estrategias_302[estrategia_execucao_302]
+
+        vencedora_302 = None
 
         if comparar_estrategias_302:
             print("   ✅ Estratégia: COMPARAR TODAS (diagnóstico será exibido no PASSO 4)")
@@ -18870,6 +19395,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         ultimo_resultado_sorted = sorted(resultados[0]['numeros'])  # Para filtro inversão posicional
         NUCLEO_C1C2 = {2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 19, 20, 22, 24, 25}
         PRIMOS = {2, 3, 5, 7, 11, 13, 17, 19, 23}
+        FIBONACCI = {1, 2, 3, 5, 8, 13, 21}
         
         # ═══════════════════════════════════════════════════════════════════
         # INVERSÃO POSICIONAL — Detectar direção prevista (r=0.44, lift 2.2x)
@@ -18931,35 +19457,43 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         # Reversão de soma
         reversao_soma_ativa = False
+        tendencia_soma_validacao = None
         soma_ajuste = None
         soma_ajuste_ultra = None
         
         if soma_ultimo < 170:
             reversao_soma_ativa = True
+            tendencia_soma_validacao = 'ALTA'
             soma_ajuste = (180, 215)
             soma_ajuste_ultra = (190, 210)
         elif soma_ultimo < 180:
             reversao_soma_ativa = True
+            tendencia_soma_validacao = 'ALTA'
             soma_ajuste = (185, 215)
             soma_ajuste_ultra = (190, 212)
         elif soma_ultimo < 190:
             reversao_soma_ativa = True
+            tendencia_soma_validacao = 'ALTA'
             soma_ajuste = (185, 212)
             soma_ajuste_ultra = (188, 210)
         elif soma_ultimo >= 220:
             reversao_soma_ativa = True
+            tendencia_soma_validacao = 'BAIXA'
             soma_ajuste = (175, 208)
             soma_ajuste_ultra = (180, 200)
         elif soma_ultimo >= 210:
             reversao_soma_ativa = True
+            tendencia_soma_validacao = 'BAIXA'
             soma_ajuste = (178, 205)
             soma_ajuste_ultra = (180, 200)
         elif soma_ultimo > 205:
             reversao_soma_ativa = True
+            tendencia_soma_validacao = 'BAIXA'
             soma_ajuste = (182, 208)
             soma_ajuste_ultra = (185, 203)
         elif soma_ultimo > 200:
             reversao_soma_ativa = True
+            tendencia_soma_validacao = 'BAIXA'
             soma_ajuste = (185, 210)
             soma_ajuste_ultra = (185, 205)
         
@@ -19265,6 +19799,27 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     if num_na_pos in piores_recente.get(pos, set()):
                         violacoes_rec += 1
                 if violacoes_rec > filtros.get('piores_tolerancia_recente', 1):
+                    return False
+            
+            # Filtro FIBONACCI (POC 06/04/2026 — seletividade 1.084-1.139)
+            if filtros.get('usar_filtro_fibonacci'):
+                qtde_fib = len(combo_set & FIBONACCI)
+                if qtde_fib < filtros.get('fibonacci_min', 3) or qtde_fib > filtros.get('fibonacci_max', 6):
+                    return False
+            
+            # Filtro QUINTIS (POC 06/04/2026 — seletividade 1.048-1.092)
+            if filtros.get('usar_filtro_quintis'):
+                quintis = [0, 0, 0, 0, 0]
+                for n in combo:
+                    quintis[(n - 1) // 5] += 1
+                q_min, q_max = filtros.get('quintis_min', 1), filtros.get('quintis_max', 4)
+                if not all(q_min <= q <= q_max for q in quintis):
+                    return False
+            
+            # Filtro FAIXA 6-20 (POC 06/04/2026 — seletividade 1.028-1.115)
+            if filtros.get('usar_filtro_faixa_6_20'):
+                qtde_f620 = sum(1 for n in combo if 6 <= n <= 20)
+                if qtde_f620 < filtros.get('faixa_6_20_min', 7) or qtde_f620 > filtros.get('faixa_6_20_max', 10):
                     return False
             
             # Filtro INVERSÃO POSICIONAL (r=0.44, lift 2.2x)
@@ -20116,6 +20671,63 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             pos_real = 'SUBIR' if saldo_resultado > 0 else ('DESCER' if saldo_resultado < 0 else 'NEUTRO')
             status = "✅" if (pos_prevista == pos_real) or (pos_prevista and saldo_resultado == 0) else "❌"
             print(f"      {status} Posição: Previu {pos_prevista}, resultado foi {pos_real} (saldo {saldo_resultado:+d})")
+
+        # ═══════════════════════════════════════════════════════════════════
+        # VALIDAÇÃO UNITÁRIA SEQUENCIAL
+        # Cada concurso validado vira um teste unitário da previsão anterior
+        # ═══════════════════════════════════════════════════════════════════
+        concurso_alvo_validacao = resultados[0]['concurso'] + 1
+        acertos_exclusao_unit = max(0, qtd_excluir - len(excluidos_no_resultado))
+        taxa_exclusao_unit = acertos_exclusao_unit / max(1, qtd_excluir) * 100
+
+        soma_real_validacao = 'ALTA' if resultado_soma > 195 else ('BAIXA' if resultado_soma < 195 else 'MÉDIA')
+        soma_ok_unit = None
+        if reversao_soma_ativa and tendencia_soma_validacao:
+            soma_ok_unit = tendencia_soma_validacao == soma_real_validacao
+
+        pos_prevista_unit = tendencia_compensacao if compensacao_ativa else None
+        pos_real_unit = 'SUBIR' if saldo_resultado > 0 else ('DESCER' if saldo_resultado < 0 else 'NEUTRO')
+        comp_ok_unit = None
+        if pos_prevista_unit:
+            comp_ok_unit = (pos_prevista_unit == pos_real_unit) or (saldo_resultado == 0)
+
+        score_componentes = [('Exclusão', taxa_exclusao_unit, 0.6)]
+        if soma_ok_unit is not None:
+            score_componentes.append(('Soma', 100.0 if soma_ok_unit else 0.0, 0.2))
+        if comp_ok_unit is not None:
+            score_componentes.append(('Compensação', 100.0 if comp_ok_unit else 0.0, 0.2))
+
+        peso_total_unit = sum(item[2] for item in score_componentes)
+        score_unitario = sum(item[1] * item[2] for item in score_componentes) / peso_total_unit if peso_total_unit > 0 else 0.0
+
+        def _classificar_score_unitario(score):
+            if score >= 75:
+                return 'EXCELENTE'
+            if score >= 60:
+                return 'ACEITÁVEL'
+            if score >= 45:
+                return 'ALERTA'
+            return 'RETREINAR'
+
+        classificacao_unitaria = _classificar_score_unitario(score_unitario)
+
+        print("\n" + "═"*78)
+        print("🧪 VALIDAÇÃO UNITÁRIA DO CONCURSO")
+        print("═"*78)
+        print(f"   Concurso validado: {concurso_alvo_validacao}")
+        print(f"   Estratégia avaliada: {NOMES_ESTRATEGIA_302.get(estrategia_execucao_302, 'N/A')}")
+        print(f"   Exclusão: {acertos_exclusao_unit}/{qtd_excluir} corretos ({taxa_exclusao_unit:.1f}%)")
+        if soma_ok_unit is None:
+            print("   Soma: sem previsão ativa neste teste")
+        else:
+            status_soma_unit = '✅' if soma_ok_unit else '❌'
+            print(f"   Soma: {status_soma_unit} previu {tendencia_soma_validacao}, saiu {soma_real_validacao} ({resultado_soma})")
+        if comp_ok_unit is None:
+            print("   Compensação: sem previsão ativa neste teste")
+        else:
+            status_comp_unit = '✅' if comp_ok_unit else '❌'
+            print(f"   Compensação: {status_comp_unit} previu {pos_prevista_unit}, saiu {pos_real_unit} (saldo {saldo_resultado:+d})")
+        print(f"   Score unitário: {score_unitario:.1f}/100 → {classificacao_unitaria}")
         
         # ═══════════════════════════════════════════════════════════════════
         # PASSO 11: SALVAR APRENDIZADO PARA MELHORIAS FUTURAS (OPCIONAL)
@@ -20152,7 +20764,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     'compensacao': {'acertos': 0, 'erros': 0}
                 },
                 'eventos_atipicos': [],
-                'historico_detalhado': []
+                'historico_detalhado': [],
+                'validacoes_unitarias': []
             }
             
             if os.path.exists(historico_path):
@@ -20161,6 +20774,16 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         historico = json.load(f)
                 except:
                     pass
+
+            historico.setdefault('filtros_falhas', {})
+            historico.setdefault('filtros_acertos', {})
+            historico.setdefault('niveis_jackpot', {str(i): 0 for i in range(9)})
+            historico.setdefault('previsoes', {})
+            historico['previsoes'].setdefault('soma', {'acertos': 0, 'erros': 0})
+            historico['previsoes'].setdefault('compensacao', {'acertos': 0, 'erros': 0})
+            historico.setdefault('eventos_atipicos', [])
+            historico.setdefault('historico_detalhado', [])
+            historico.setdefault('validacoes_unitarias', [])
             
             # Atualizar estatísticas
             historico['total_backtests'] += 1
@@ -20336,9 +20959,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             
             # Histórico detalhado (últimos 20 backtests)
             # Determinar qual estratégia venceu neste backtest
-            # excluir usa QUENTES, candidatos[:2] são FRIOS
             top2_quentes_bt = [cand_quentes[0]['num'], cand_quentes[1]['num']]
-            top2_frios_bt = [candidatos[0]['num'], candidatos[1]['num']]
+            top2_frios_bt = [cand_frios[0]['num'], cand_frios[1]['num']]
             
             # Qual estratégia teria acertado?
             quentes_no_resultado = sum(1 for n in top2_quentes_bt if n in resultado_validacao)
@@ -20375,6 +20997,35 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             }
             historico['historico_detalhado'].append(registro)
             historico['historico_detalhado'] = historico['historico_detalhado'][-20:]
+
+            validacao_unitaria = {
+                'data': timestamp,
+                'concurso_base': resultados[0]['concurso'],
+                'concurso_alvo': concurso_alvo_validacao,
+                'estrategia_id': estrategia_execucao_302,
+                'estrategia_nome': NOMES_ESTRATEGIA_302.get(estrategia_execucao_302, 'N/A'),
+                'comparar_todas': comparar_estrategias_302,
+                'melhor_estrategia_pontual': vencedora_302['nome'] if vencedora_302 else None,
+                'qtd_excluir': qtd_excluir,
+                'excluidos': sorted(list(excluir)),
+                'erros_exclusao': sorted(list(excluidos_no_resultado)),
+                'exclusao_correta': not bool(excluidos_no_resultado),
+                'taxa_exclusao_unitaria': round(taxa_exclusao_unit, 2),
+                'score_unitario': round(score_unitario, 2),
+                'classificacao': classificacao_unitaria,
+                'jackpot_nivel_0': bool(tem_jackpot_n0),
+                'ultimo_nivel_jackpot': ultimo_nivel_jackpot if tem_jackpot_n0 else -1,
+                'previsao_soma_ativa': bool(reversao_soma_ativa and tendencia_soma_validacao),
+                'previsao_soma_tipo': tendencia_soma_validacao,
+                'previsao_soma_resultado': soma_real_validacao,
+                'previsao_soma_ok': soma_ok_unit,
+                'previsao_comp_ativa': bool(pos_prevista_unit),
+                'previsao_comp_tipo': pos_prevista_unit,
+                'previsao_comp_resultado': pos_real_unit,
+                'previsao_comp_ok': comp_ok_unit
+            }
+            historico['validacoes_unitarias'].append(validacao_unitaria)
+            historico['validacoes_unitarias'] = historico['validacoes_unitarias'][-100:]
             
             # ═══════════════════════════════════════════════════════════════════
             # ATUALIZAR ESTATÍSTICAS DE ALTERNÂNCIA QUENTES/FRIOS
@@ -20415,6 +21066,49 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"      • FRIOS venceu: {vit['FRIOS']} ({vit['FRIOS']/total_vit*100:.1f}%)")
                 print(f"      • Empates: {vit['EMPATE']}")
                 print(f"      • Último vencedor: {'🔥 QUENTES' if estrategia_vencedora == 'Q' else ('❄️ FRIOS' if estrategia_vencedora == 'F' else '⚖️ EMPATE')}")
+
+            validacoes_seq = historico.get('validacoes_unitarias', [])
+            if validacoes_seq:
+                print(f"\n   🧪 VALIDAÇÕES UNITÁRIAS SEQUENCIAIS:")
+                for janela_validacao in (20, 30):
+                    bloco = validacoes_seq[-janela_validacao:]
+                    if len(bloco) < 5:
+                        continue
+
+                    qtd_bloco = len(bloco)
+                    media_score = sum(v.get('score_unitario', 0) for v in bloco) / qtd_bloco
+                    taxa_exc_bloco = sum(1 for v in bloco if v.get('exclusao_correta')) / qtd_bloco * 100
+                    media_exclusao = sum(v.get('taxa_exclusao_unitaria', 0) for v in bloco) / qtd_bloco
+                    bloco_soma = [v for v in bloco if v.get('previsao_soma_ok') is not None]
+                    bloco_comp = [v for v in bloco if v.get('previsao_comp_ok') is not None]
+                    taxa_soma_bloco = (sum(1 for v in bloco_soma if v.get('previsao_soma_ok')) / len(bloco_soma) * 100) if bloco_soma else None
+                    taxa_comp_bloco = (sum(1 for v in bloco_comp if v.get('previsao_comp_ok')) / len(bloco_comp) * 100) if bloco_comp else None
+
+                    ultimos_10 = bloco[-10:]
+                    bloco_anterior = bloco[:-10]
+                    if len(ultimos_10) >= 5 and len(bloco_anterior) >= 5:
+                        media_ultimos_10 = sum(v.get('score_unitario', 0) for v in ultimos_10) / len(ultimos_10)
+                        media_anterior = sum(v.get('score_unitario', 0) for v in bloco_anterior) / len(bloco_anterior)
+                        delta_score = media_ultimos_10 - media_anterior
+                    else:
+                        delta_score = 0.0
+
+                    if delta_score > 5:
+                        tendencia_seq = 'subindo'
+                    elif delta_score < -5:
+                        tendencia_seq = 'caindo'
+                    else:
+                        tendencia_seq = 'estável'
+
+                    print(f"      • Últimos {qtd_bloco:02d}: score médio {media_score:5.1f} | exclusão perfeita {taxa_exc_bloco:5.1f}% | exclusão média {media_exclusao:5.1f}% | status {_classificar_score_unitario(media_score)} | tendência {tendencia_seq}")
+                    if taxa_soma_bloco is not None:
+                        print(f"        Soma: {taxa_soma_bloco:5.1f}%", end='')
+                    else:
+                        print("        Soma: N/A", end='')
+                    if taxa_comp_bloco is not None:
+                        print(f" | Compensação: {taxa_comp_bloco:5.1f}%")
+                    else:
+                        print(" | Compensação: N/A")
             
             # Top filtros problemáticos
             if historico['filtros_falhas']:
