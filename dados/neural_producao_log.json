@@ -357,9 +357,27 @@
       "nivel_filtro": 0,
       "qtd_combinacoes": 12870,
       "arquivo": "pool23_excl17_19_nivel0_12870_20260404_143220.txt",
-      "resultado_real": null,
-      "acerto_exclusao": null,
-      "erros_exclusao": null
+      "resultado_real": [
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        10,
+        11,
+        13,
+        14,
+        16,
+        18,
+        19,
+        20,
+        21
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        19
+      ]
     },
     {
       "concurso_alvo": 3653,
@@ -376,9 +394,27 @@
       "nivel_filtro": 1,
       "qtd_combinacoes": 4685,
       "arquivo": "pool23_excl17_19_nivel1_4685_20260404_143242.txt",
-      "resultado_real": null,
-      "acerto_exclusao": null,
-      "erros_exclusao": null
+      "resultado_real": [
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        10,
+        11,
+        13,
+        14,
+        16,
+        18,
+        19,
+        20,
+        21
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        19
+      ]
     },
     {
       "concurso_alvo": 3653,
@@ -395,9 +431,27 @@
       "nivel_filtro": 2,
       "qtd_combinacoes": 1089,
       "arquivo": "pool23_excl17_19_nivel2_1089_20260404_143252.txt",
-      "resultado_real": null,
-      "acerto_exclusao": null,
-      "erros_exclusao": null
+      "resultado_real": [
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        10,
+        11,
+        13,
+        14,
+        16,
+        18,
+        19,
+        20,
+        21
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        19
+      ]
     },
     {
       "concurso_alvo": 3653,
@@ -414,9 +468,27 @@
       "nivel_filtro": 3,
       "qtd_combinacoes": 552,
       "arquivo": "pool23_excl17_19_nivel3_552_20260404_143300.txt",
-      "resultado_real": null,
-      "acerto_exclusao": null,
-      "erros_exclusao": null
+      "resultado_real": [
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        10,
+        11,
+        13,
+        14,
+        16,
+        18,
+        19,
+        20,
+        21
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        19
+      ]
     },
     {
       "concurso_alvo": 3653,
@@ -433,9 +505,27 @@
       "nivel_filtro": 4,
       "qtd_combinacoes": 161,
       "arquivo": "pool23_excl17_19_nivel4_161_20260404_143305.txt",
-      "resultado_real": null,
-      "acerto_exclusao": null,
-      "erros_exclusao": null
+      "resultado_real": [
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        10,
+        11,
+        13,
+        14,
+        16,
+        18,
+        19,
+        20,
+        21
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        19
+      ]
     },
     {
       "concurso_alvo": 3653,
@@ -452,9 +542,27 @@
       "nivel_filtro": 7,
       "qtd_combinacoes": 6221,
       "arquivo": "pool23_excl17_19_nivel7_6221_20260404_143306.txt",
-      "resultado_real": null,
-      "acerto_exclusao": null,
-      "erros_exclusao": null
+      "resultado_real": [
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        10,
+        11,
+        13,
+        14,
+        16,
+        18,
+        19,
+        20,
+        21
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        19
+      ]
     },
     {
       "concurso_alvo": 3653,
@@ -471,9 +579,27 @@
       "nivel_filtro": 8,
       "qtd_combinacoes": 4,
       "arquivo": "pool23_excl17_19_nivel8_cascN6_4_20260404_143307.txt",
-      "resultado_real": null,
-      "acerto_exclusao": null,
-      "erros_exclusao": null
+      "resultado_real": [
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        10,
+        11,
+        13,
+        14,
+        16,
+        18,
+        19,
+        20,
+        21
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        19
+      ]
     }
   ]
 }

@@ -1,10 +1,10 @@
 {
-  "taxa_neural": 15.0,
-  "taxa_invertida": 13.8,
-  "diferenca_pp": 1.2,
-  "concurso_inicio": 652,
-  "concurso_fim": 1151,
-  "total_concursos": 500,
+  "taxa_neural": 20.3,
+  "taxa_invertida": 15.3,
+  "diferenca_pp": 5.0,
+  "concurso_inicio": 1658,
+  "concurso_fim": 3657,
+  "total_concursos": 1999,
   "origem": "disputa",
-  "atualizado_em": "04/04/2026 13:09"
+  "atualizado_em": "11/04/2026 12:36"
 }

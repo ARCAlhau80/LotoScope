@@ -13125,7 +13125,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             sys.path.insert(0, base_path)
         
         try:
-            from configuracao_filtros_pool23 import FILTROS_POR_NIVEL as FILTROS_BASE, FiltroTrios
+            from configuracao_filtros_pool23 import FILTROS_POR_NIVEL as FILTROS_BASE, FiltroTrios, POSICOES_TRAVADAS_ALVO
             FILTROS_POR_NIVEL = copy.deepcopy(FILTROS_BASE)
             filtro_trios_instancia = FiltroTrios()  # Singleton - carrega trios uma vez
             print("   ✅ Filtros carregados do módulo centralizado")
@@ -13724,6 +13724,55 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"   ⚠️ Erro: {e}. Filtro favorecidos desativado.")
         
         # ═══════════════════════════════════════════════════════════════════
+        # FILTRO POSIÇÕES TRAVADAS
+        # Quando uma posição repete o mesmo número em 2/3 ou 3/3 dos últimos
+        # 3 draws, favorece combinações que respeitam esse padrão
+        # ═══════════════════════════════════════════════════════════════════
+        filtro_posicoes_travadas_ativo = False
+        posicoes_travadas_template = {}  # {pos_idx: numero_esperado}
+        posicoes_travadas_tolerancia = 3  # default
+        
+        # Verificar se algum nível selecionado usa o filtro
+        _algum_nivel_usa_travadas = any(
+            FILTROS_POR_NIVEL.get(n, {}).get('usar_filtro_posicoes_travadas', False)
+            for n in niveis_a_processar if n > 0
+        )
+        
+        if _algum_nivel_usa_travadas and len(resultados) >= 3:
+            print("\n" + "─"*78)
+            print("🔒 FILTRO POSIÇÕES TRAVADAS (padrão posicional recente)")
+            print("─"*78)
+            
+            try:
+                from collections import Counter as _Counter_trav
+                _ultimos_3 = [sorted(resultados[i]['numeros']) for i in range(3)]
+                
+                for pos in POSICOES_TRAVADAS_ALVO:
+                    valores = [_ultimos_3[j][pos] for j in range(3)]
+                    c = _Counter_trav(valores)
+                    best_val, best_cnt = c.most_common(1)[0]
+                    if best_cnt >= 2:  # 2/3 ou 3/3 → posição semi-travada ou travada
+                        posicoes_travadas_template[pos] = best_val
+                
+                if posicoes_travadas_template:
+                    filtro_posicoes_travadas_ativo = True
+                    print(f"   📊 Últimos 3 draws analisados:")
+                    for pos in sorted(posicoes_travadas_template.keys()):
+                        num = posicoes_travadas_template[pos]
+                        print(f"      N{pos+1:02d} → {num:2d} (travada/semi-travada)")
+                    print(f"   🔒 {len(posicoes_travadas_template)} posições travadas detectadas")
+                    print(f"   📋 Tolerância por nível (máx violações permitidas):")
+                    for n in niveis_a_processar:
+                        if n > 0 and FILTROS_POR_NIVEL.get(n, {}).get('usar_filtro_posicoes_travadas', False):
+                            tol = FILTROS_POR_NIVEL[n].get('posicoes_travadas_tolerancia', 3)
+                            print(f"      Nível {n}: tolerância = {tol}")
+                else:
+                    print(f"   ℹ️ Nenhuma posição travada detectada nos últimos 3 draws")
+                    print(f"   ⏭️ Filtro posições travadas DESATIVADO")
+            except Exception as e:
+                print(f"   ⚠️ Erro: {e}. Filtro posições travadas desativado.")
+        
+        # ═══════════════════════════════════════════════════════════════════
         # LOOP PRINCIPAL - PROCESSA CADA NÍVEL
         # ═══════════════════════════════════════════════════════════════════
         for nivel in niveis_a_processar:
@@ -13798,7 +13847,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         ultimo_resultado, favorecidos, compensacao_ativa,
                         tendencia_compensacao, reversao_soma_ativa, soma_ajuste,
                         soma_ajuste_ultra, tendencia_soma,
-                        posicoes_frias_tolerancia=posicoes_frias_tolerancia
+                        posicoes_frias_tolerancia=posicoes_frias_tolerancia,
+                        posicoes_travadas_template_304=posicoes_travadas_template if filtro_posicoes_travadas_ativo else {}
                     )
                     
                     print(f"      Resultado: {len(combos_tentativa):,} combinações")
@@ -14367,6 +14417,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     print(f"      • 🔄 Grupos atrasados: C1+C5={sorted(grupos_ranges_aceitos.get('C1_C5', set()))}, L1+L5={sorted(grupos_ranges_aceitos.get('L1_L5', set()))}")
                 if filtro_favorecidos_ativo:
                     print(f"      • ⭐ Favorecidos TOP 15: {filtro_favorecidos_min}-{filtro_favorecidos_max}")
+                if filtro_posicoes_travadas_ativo and filtros.get('usar_filtro_posicoes_travadas', False):
+                    _trav_tol_info = filtros.get('posicoes_travadas_tolerancia', 3)
+                    print(f"      • 🔒 Posições travadas: {len(posicoes_travadas_template)} posições, tolerância={_trav_tol_info}")
                 if exclusao_suave_max > 0:
                     print(f"      • 🔄 Exclusão suave: até {exclusao_suave_max} excluído(s) permitido(s)")
                 print()
@@ -14606,7 +14659,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     for pos in range(1, 16):
                         num_na_pos = combo_sorted[pos-1]
                         # Verificar se (número, posição) está em débito
-                        if (num_na_pos, pos+1) in debitos_dict:
+                        if (num_na_pos, pos) in debitos_dict:
                             matches_debito += 1
                     
                     # Exigir mínimo de matches para passar
@@ -14714,6 +14767,22 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     _fav_count = len(combo_set & top_15_favorecidos)
                     if _fav_count < filtro_favorecidos_min or _fav_count > filtro_favorecidos_max:
                         continue
+                
+                # ═══════════════════════════════════════════════════════════════════
+                # FILTRO POSIÇÕES TRAVADAS
+                # Rejeita combos com muitas violações nas posições travadas
+                # ═══════════════════════════════════════════════════════════════════
+                if (filtro_posicoes_travadas_ativo
+                        and filtros.get('usar_filtro_posicoes_travadas', False)
+                        and posicoes_travadas_template):
+                    _trav_tol = filtros.get('posicoes_travadas_tolerancia', 3)
+                    _combo_sorted = sorted(combo)
+                    _trav_viol = 0
+                    for _trav_pos, _trav_num in posicoes_travadas_template.items():
+                        if _combo_sorted[_trav_pos] != _trav_num:
+                            _trav_viol += 1
+                    if _trav_viol > _trav_tol:
+                        continue
             
                 combos_filtradas.append(combo)
         
@@ -14808,6 +14877,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     f.write(f"# Filtro grupos atrasados: C1+C5={sorted(grupos_ranges_aceitos.get('C1_C5', set()))}, L1+L5={sorted(grupos_ranges_aceitos.get('L1_L5', set()))}\n")
                 if filtro_favorecidos_ativo:
                     f.write(f"# Filtro favorecidos TOP 15: {filtro_favorecidos_min}-{filtro_favorecidos_max}\n")
+                if filtro_posicoes_travadas_ativo and filtros.get('usar_filtro_posicoes_travadas', False):
+                    _trav_tol_file = filtros.get('posicoes_travadas_tolerancia', 3)
+                    f.write(f"# Filtro posições travadas: {len(posicoes_travadas_template)} posições, tolerância={_trav_tol_file}\n")
                 if filtro_prob_obj:
                     f.write(f"# Filtro probabilístico: Acertos_11 >= {filtro_prob_limite}")
                     if filtro_prob_recentes > 0:
@@ -15407,13 +15479,16 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                                              ultimo_resultado, favorecidos, compensacao_ativa,
                                              tendencia_compensacao, reversao_soma_ativa,
                                              soma_ajuste, soma_ajuste_ultra, tendencia_soma,
-                                             posicoes_frias_tolerancia=3):
+                                             posicoes_frias_tolerancia=3,
+                                             posicoes_travadas_template_304=None):
         """
         🧊 Aplica filtros de um nível + filtro de posições frias.
         Usado pelo Nível 8 (cascata) para testar cada nível com posições frias.
         
         Retorna lista de combinações que passaram em TODOS os filtros.
         """
+        if posicoes_travadas_template_304 is None:
+            posicoes_travadas_template_304 = {}
         combos_filtradas = []
         
         def calcular_sequencia_maxima(combo):
@@ -15555,7 +15630,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 matches_debito = 0
                 for pos in range(1, 16):
                     num_na_pos = combo_sorted[pos-1]
-                    if (num_na_pos, pos+1) in debitos_dict:
+                    if (num_na_pos, pos) in debitos_dict:
                         matches_debito += 1
                 if matches_debito < debito_min_matches:
                     continue
@@ -15599,6 +15674,17 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 continue
             if combo_sorted[11] < 13 or combo_sorted[11] > 22: # N12
                 continue
+            
+            # Filtro POSIÇÕES TRAVADAS
+            if (filtros.get('usar_filtro_posicoes_travadas', False)
+                    and posicoes_travadas_template_304):
+                _trav_tol = filtros.get('posicoes_travadas_tolerancia', 3)
+                _trav_viol = 0
+                for _trav_pos, _trav_num in posicoes_travadas_template_304.items():
+                    if combo_sorted[_trav_pos] != _trav_num:
+                        _trav_viol += 1
+                if _trav_viol > _trav_tol:
+                    continue
             
             combos_filtradas.append(combo)
         
@@ -17154,7 +17240,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             sys.path.insert(0, base_path)
         
         try:
-            from configuracao_filtros_pool23 import FILTROS_POR_NIVEL as FILTROS_BASE, FiltroTrios
+            from configuracao_filtros_pool23 import FILTROS_POR_NIVEL as FILTROS_BASE, FiltroTrios, POSICOES_TRAVADAS_ALVO
             FILTROS_POR_NIVEL = copy.deepcopy(FILTROS_BASE)
             filtro_trios_instancia = FiltroTrios()
             print("   ✅ Filtros carregados do módulo centralizado")
@@ -17424,6 +17510,17 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                             posicoes_frias_rejeitar[pos] = set()
                         posicoes_frias_rejeitar[pos].add(num)
 
+                # Calcular template de posições travadas para este concurso
+                _trav_template_bt = {}
+                if len(dados_ate_anterior) >= 3:
+                    _ultimos_3_bt = [sorted(dados_ate_anterior[i]['numeros']) for i in range(3)]
+                    for pos in POSICOES_TRAVADAS_ALVO:
+                        vals = [_ultimos_3_bt[j][pos] for j in range(3)]
+                        c_trav = Counter(vals)
+                        best_v, best_c = c_trav.most_common(1)[0]
+                        if best_c >= 2:
+                            _trav_template_bt[pos] = best_v
+
                 for nivel in niveis_testar:
                     filtros = FILTROS_POR_NIVEL[nivel]
                     combos_nivel = []
@@ -17444,7 +17541,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                                 ultimo_resultado,
                                 favorecidos,
                                 False, {}, False, 0, 0, {},
-                                posicoes_frias_tolerancia=tolerancia_8
+                                posicoes_frias_tolerancia=tolerancia_8,
+                                posicoes_travadas_template_304=_trav_template_bt
                             )
                             if len(combos_tentativa) > 0:
                                 combos_nivel = [set(c) for c in combos_tentativa]
@@ -17559,6 +17657,16 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                             if combo_list[9] < 10 or combo_list[9] > 20:
                                 continue
                             if combo_list[11] < 13 or combo_list[11] > 22:
+                                continue
+                        # Filtro POSIÇÕES TRAVADAS
+                        if (filtros.get('usar_filtro_posicoes_travadas', False)
+                                and _trav_template_bt):
+                            _trav_tol = filtros.get('posicoes_travadas_tolerancia', 3)
+                            _trav_viol = 0
+                            for _trav_pos, _trav_num in _trav_template_bt.items():
+                                if combo_list[_trav_pos] != _trav_num:
+                                    _trav_viol += 1
+                            if _trav_viol > _trav_tol:
                                 continue
                         combos_nivel.append(combo_set)
 
@@ -18079,6 +18187,17 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         posicoes_frias_rejeitar[pos] = set()
                     posicoes_frias_rejeitar[pos].add(num)
             
+            # Calcular template de posições travadas para este concurso
+            _trav_template_bt = {}
+            if len(dados_ate_anterior) >= 3:
+                _ultimos_3_bt = [sorted(dados_ate_anterior[i]['numeros']) for i in range(3)]
+                for pos in POSICOES_TRAVADAS_ALVO:
+                    vals = [_ultimos_3_bt[j][pos] for j in range(3)]
+                    c_trav = Counter(vals)
+                    best_v, best_c = c_trav.most_common(1)[0]
+                    if best_c >= 2:
+                        _trav_template_bt[pos] = best_v
+            
             # ═══════════════════════════════════════════════════════════════════
             # GERAR E FILTRAR PARA CADA NÍVEL
             # ═══════════════════════════════════════════════════════════════════
@@ -18110,7 +18229,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                             0,       # soma_ajuste
                             0,       # soma_ajuste_ultra
                             {},      # tendencia_soma
-                            posicoes_frias_tolerancia=tolerancia_8
+                            posicoes_frias_tolerancia=tolerancia_8,
+                            posicoes_travadas_template_304=_trav_template_bt
                         )
                         if len(combos_tentativa) > 0:
                             combos_nivel = [set(c) for c in combos_tentativa]
@@ -18248,6 +18368,17 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         if combo_list[9] < 10 or combo_list[9] > 20:   # N10
                             continue
                         if combo_list[11] < 13 or combo_list[11] > 22: # N12
+                            continue
+                    
+                    # Filtro POSIÇÕES TRAVADAS
+                    if (filtros.get('usar_filtro_posicoes_travadas', False)
+                            and _trav_template_bt):
+                        _trav_tol = filtros.get('posicoes_travadas_tolerancia', 3)
+                        _trav_viol = 0
+                        for _trav_pos, _trav_num in _trav_template_bt.items():
+                            if combo_list[_trav_pos] != _trav_num:
+                                _trav_viol += 1
+                        if _trav_viol > _trav_tol:
                             continue
                     
                     combos_nivel.append(combo_set)
@@ -19607,7 +19738,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             sys.path.insert(0, base_path)
         
         try:
-            from configuracao_filtros_pool23 import FILTROS_POR_NIVEL as FILTROS_BASE, FiltroTrios
+            from configuracao_filtros_pool23 import FILTROS_POR_NIVEL as FILTROS_BASE, FiltroTrios, POSICOES_TRAVADAS_ALVO
             FILTROS_POR_NIVEL = copy.deepcopy(FILTROS_BASE)
             filtro_trios_instancia = FiltroTrios()
             print("   ✅ Filtros carregados do módulo centralizado")
@@ -19650,6 +19781,165 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         total_frias = sum(len(v) for v in posicoes_frias_rejeitar.values())
         print(f"      • Posições frias (freq=0%, janela={janela_frias}): {total_frias} pares identificados")
+
+        # ═══════════════════════════════════════════════════════════════════
+        # FILTRO GRUPOS ATRASADOS (inspirado Opção 29)
+        # Analisa grupos C1+C5 e L1+L5 como blocos estatísticos
+        # ═══════════════════════════════════════════════════════════════════
+        GRUPO_C1_C5 = {1, 6, 11, 16, 21, 5, 10, 15, 20, 25}  # Coluna 1 + Coluna 5
+        GRUPO_L1_L5 = {1, 2, 3, 4, 5, 21, 22, 23, 24, 25}    # Linha 1 + Linha 5
+
+        filtro_grupos_atrasados_ativo = False
+        grupos_ranges_aceitos = {}
+
+        print("\n" + "─"*78)
+        print("🔄 FILTRO GRUPOS ATRASADOS (inspirado Opção 29)")
+        print("─"*78)
+
+        def _analisar_grupo_atrasados_bt(grupo_set, resultados_hist):
+            """Analisa frequência de hit counts de um grupo e identifica top ranges."""
+            hit_counts = []
+            for r in resultados_hist:
+                hit_counts.append(len(set(r['numeros']) & grupo_set))
+
+            freq = Counter(hit_counts)
+            top3 = freq.most_common(3)
+            top3_values = set(v for v, _ in top3)
+            return top3, top3_values
+
+        try:
+            top3_c, ranges_c = _analisar_grupo_atrasados_bt(GRUPO_C1_C5, resultados)
+            top3_l, ranges_l = _analisar_grupo_atrasados_bt(GRUPO_L1_L5, resultados)
+
+            ultimo_c = len(set(resultados[0]['numeros']) & GRUPO_C1_C5)
+            ultimo_l = len(set(resultados[0]['numeros']) & GRUPO_L1_L5)
+
+            print(f"\n   📊 GRUPO C1+C5 (extremos colunas): {sorted(GRUPO_C1_C5)}")
+            print(f"      Top 3 mais comuns: ", end="")
+            for val, cnt in top3_c:
+                pct = cnt / len(resultados) * 100
+                print(f"[{val}]={pct:.1f}%  ", end="")
+            print(f"\n      Último draw: {ultimo_c} hits")
+
+            print(f"\n   📊 GRUPO L1+L5 (extremos linhas): {sorted(GRUPO_L1_L5)}")
+            print(f"      Top 3 mais comuns: ", end="")
+            for val, cnt in top3_l:
+                pct = cnt / len(resultados) * 100
+                print(f"[{val}]={pct:.1f}%  ", end="")
+            print(f"\n      Último draw: {ultimo_l} hits")
+
+            _grupos_input = input("\n   [S/N] Ativar filtro de grupos C1+C5 e L1+L5? (ENTER=S): ").strip().upper()
+            if _grupos_input == 'N':
+                print("   ⏭️ Filtro de grupos DESATIVADO")
+            else:
+                filtro_grupos_atrasados_ativo = True
+                grupos_ranges_aceitos['C1_C5'] = ranges_c
+                grupos_ranges_aceitos['L1_L5'] = ranges_l
+                print("   ✅ Filtro de grupos ATIVADO")
+                print(f"      C1+C5 aceita: {sorted(ranges_c)} | L1+L5 aceita: {sorted(ranges_l)}")
+        except Exception as e:
+            print(f"   ⚠️ Erro na análise de grupos: {e}")
+            print("   ⏭️ Filtro de grupos DESATIVADO")
+
+        # ═══════════════════════════════════════════════════════════════════
+        # FILTRO FAVORECIDOS (inspirado Opção 29)
+        # TOP 15 mais frequentes nos últimos 30 concursos
+        # ═══════════════════════════════════════════════════════════════════
+        filtro_favorecidos_ativo = False
+        filtro_favorecidos_min = 0
+        filtro_favorecidos_max = 15
+        top_15_favorecidos = set()
+
+        print("\n" + "─"*78)
+        print("📊 FILTRO FAVORECIDOS (inspirado Opção 29)")
+        print("─"*78)
+
+        try:
+            freq_30_fav = Counter()
+            for r in resultados[:30]:
+                freq_30_fav.update(r['numeros'])
+            top_15_favorecidos = set(n for n, _ in freq_30_fav.most_common(15))
+
+            fav_por_sorteio = []
+            for r in resultados[:100]:
+                fav_por_sorteio.append(len(set(r['numeros']) & top_15_favorecidos))
+            media_fav = sum(fav_por_sorteio) / len(fav_por_sorteio) if fav_por_sorteio else 10
+
+            print(f"   TOP 15 mais frequentes (30 últimos): {sorted(top_15_favorecidos)}")
+            print(f"   Histórico: média ~{media_fav:.1f} favorecidos por sorteio")
+            print()
+            print("   [0] Desativado")
+            print("   [1] Restritivo: 9-11 favorecidos")
+            print("   [2] Moderado: 8-12 favorecidos  ⭐ RECOMENDADO")
+            print("   [3] Flexível: 6-14 favorecidos")
+
+            _fav_input = input("   Escolha [0-3, ENTER=2]: ").strip()
+            if _fav_input == '':
+                _fav_modo = 2
+            else:
+                _fav_modo = int(_fav_input)
+                _fav_modo = max(0, min(3, _fav_modo))
+
+            if _fav_modo == 1:
+                filtro_favorecidos_ativo = True
+                filtro_favorecidos_min = 9
+                filtro_favorecidos_max = 11
+            elif _fav_modo == 2:
+                filtro_favorecidos_ativo = True
+                filtro_favorecidos_min = 8
+                filtro_favorecidos_max = 12
+            elif _fav_modo == 3:
+                filtro_favorecidos_ativo = True
+                filtro_favorecidos_min = 6
+                filtro_favorecidos_max = 14
+
+            if filtro_favorecidos_ativo:
+                print(f"   ✅ Filtro favorecidos ATIVADO: {filtro_favorecidos_min}-{filtro_favorecidos_max} favorecidos")
+            else:
+                print("   ⏭️ Filtro favorecidos DESATIVADO")
+        except Exception as e:
+            print(f"   ⚠️ Erro: {e}. Filtro favorecidos desativado.")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # FILTRO POSIÇÕES TRAVADAS (backtesting)
+        # Quando posição repete mesmo número em 2/3 ou 3/3 últimos draws
+        # ═══════════════════════════════════════════════════════════════════
+        filtro_posicoes_travadas_ativo = False
+        posicoes_travadas_template = {}  # {pos_idx: numero_esperado}
+        
+        _algum_nivel_usa_travadas = any(
+            FILTROS_POR_NIVEL.get(n, {}).get('usar_filtro_posicoes_travadas', False)
+            for n in range(1, 9)
+        )
+        
+        if _algum_nivel_usa_travadas and len(resultados) >= 3:
+            print("\n" + "─"*78)
+            print("🔒 FILTRO POSIÇÕES TRAVADAS (padrão posicional recente)")
+            print("─"*78)
+            
+            try:
+                from collections import Counter as _Counter_trav
+                _ultimos_3 = [sorted(resultados[i]['numeros']) for i in range(3)]
+                
+                for pos in POSICOES_TRAVADAS_ALVO:
+                    valores = [_ultimos_3[j][pos] for j in range(3)]
+                    c = _Counter_trav(valores)
+                    best_val, best_cnt = c.most_common(1)[0]
+                    if best_cnt >= 2:
+                        posicoes_travadas_template[pos] = best_val
+                
+                if posicoes_travadas_template:
+                    filtro_posicoes_travadas_ativo = True
+                    print(f"   📊 Últimos 3 draws analisados:")
+                    for pos in sorted(posicoes_travadas_template.keys()):
+                        num = posicoes_travadas_template[pos]
+                        print(f"      N{pos+1:02d} → {num:2d} (travada/semi-travada)")
+                    print(f"   🔒 {len(posicoes_travadas_template)} posições travadas detectadas")
+                else:
+                    print(f"   ℹ️ Nenhuma posição travada detectada nos últimos 3 draws")
+                    print(f"   ⏭️ Filtro posições travadas DESATIVADO")
+            except Exception as e:
+                print(f"   ⚠️ Erro: {e}. Filtro posições travadas desativado.")
         
         def calcular_sequencia_maxima(combo):
             combo_sorted = sorted(combo)
@@ -19846,6 +20136,34 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 if combo_sorted[9] < 10 or combo_sorted[9] > 20:   # N10
                     return False
                 if combo_sorted[11] < 13 or combo_sorted[11] > 22: # N12
+                    return False
+
+            # FILTRO GRUPOS ATRASADOS (C1+C5 e L1+L5)
+            if filtro_grupos_atrasados_ativo:
+                hits_c = len(combo_set & GRUPO_C1_C5)
+                hits_l = len(combo_set & GRUPO_L1_L5)
+                if hits_c not in grupos_ranges_aceitos.get('C1_C5', set()):
+                    return False
+                if hits_l not in grupos_ranges_aceitos.get('L1_L5', set()):
+                    return False
+
+            # FILTRO FAVORECIDOS (TOP 15 nos últimos 30)
+            if filtro_favorecidos_ativo and top_15_favorecidos:
+                fav_count = len(combo_set & top_15_favorecidos)
+                if fav_count < filtro_favorecidos_min or fav_count > filtro_favorecidos_max:
+                    return False
+            
+            # FILTRO POSIÇÕES TRAVADAS
+            if (filtro_posicoes_travadas_ativo
+                    and filtros.get('usar_filtro_posicoes_travadas', False)
+                    and posicoes_travadas_template):
+                _trav_tol = filtros.get('posicoes_travadas_tolerancia', 3)
+                combo_sorted = sorted(combo)
+                _trav_viol = 0
+                for _trav_pos, _trav_num in posicoes_travadas_template.items():
+                    if combo_sorted[_trav_pos] != _trav_num:
+                        _trav_viol += 1
+                if _trav_viol > _trav_tol:
                     return False
             
             return True

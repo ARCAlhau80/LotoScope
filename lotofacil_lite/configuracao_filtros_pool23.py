@@ -31,6 +31,11 @@ PRIMOS = {2, 3, 5, 7, 11, 13, 17, 19, 23}
 FIBONACCI = {1, 2, 3, 5, 8, 13, 21}
 NUCLEO_C1C2 = {2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 19, 20, 22, 24, 25}
 
+# Posições com sinal preditivo estável quando "travadas" (3/3 ou 2/3 em janela de 3)
+# Ganho médio: N1 +12pp, N2 +9pp, N3 +6pp, N6 +7pp, N14 +8pp, N15 +18pp
+# Validado historicamente em 3.653 concursos, estável em blocos de 500
+POSICOES_TRAVADAS_ALVO = [0, 1, 2, 5, 13, 14]  # 0-indexed: N1, N2, N3, N6, N14, N15
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONFIGURAÇÃO DE FILTROS POR NÍVEL
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -82,6 +87,9 @@ FILTROS_POR_NIVEL = {
         'fibonacci_min': 3, 'fibonacci_max': 6,  # Seletiv 1.084, 93% jackpots
         'usar_filtro_faixa_6_20': True,
         'faixa_6_20_min': 7, 'faixa_6_20_max': 10,  # Seletiv 1.115, 88.4% jackpots
+        # Posições Travadas (janela 3 — favorecer repetição em posições estáveis)
+        'usar_filtro_posicoes_travadas': True,
+        'posicoes_travadas_tolerancia': 4,  # Muito permissivo (~91% concursos passam)
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -121,6 +129,9 @@ FILTROS_POR_NIVEL = {
         'fibonacci_min': 3, 'fibonacci_max': 6,
         'usar_filtro_faixa_6_20': True,
         'faixa_6_20_min': 7, 'faixa_6_20_max': 10,
+        # Posições Travadas
+        'usar_filtro_posicoes_travadas': True,
+        'posicoes_travadas_tolerancia': 3,  # Recomendado (~75% concursos passam)
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -166,6 +177,9 @@ FILTROS_POR_NIVEL = {
         'quintis_min': 1, 'quintis_max': 4,  # Seletiv 1.091, 73.2% jackpots
         'usar_filtro_faixa_6_20': True,
         'faixa_6_20_min': 7, 'faixa_6_20_max': 10,
+        # Posições Travadas
+        'usar_filtro_posicoes_travadas': True,
+        'posicoes_travadas_tolerancia': 3,  # ~75% concursos passam
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -217,6 +231,9 @@ FILTROS_POR_NIVEL = {
         'quintis_min': 2, 'quintis_max': 4,  # Seletiv 1.092, 55.4% jackpots
         'usar_filtro_faixa_6_20': True,
         'faixa_6_20_min': 8, 'faixa_6_20_max': 10,  # Seletiv 1.028, 78% jackpots
+        # Posições Travadas
+        'usar_filtro_posicoes_travadas': True,
+        'posicoes_travadas_tolerancia': 2,  # Moderado (~49% concursos passam)
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -270,6 +287,9 @@ FILTROS_POR_NIVEL = {
         'quintis_min': 2, 'quintis_max': 4,
         'usar_filtro_faixa_6_20': True,
         'faixa_6_20_min': 8, 'faixa_6_20_max': 10,
+        # Posições Travadas
+        'usar_filtro_posicoes_travadas': True,
+        'posicoes_travadas_tolerancia': 2,  # Moderado (~49% concursos passam)
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -326,6 +346,9 @@ FILTROS_POR_NIVEL = {
         'quintis_min': 2, 'quintis_max': 4,
         'usar_filtro_faixa_6_20': True,
         'faixa_6_20_min': 8, 'faixa_6_20_max': 10,
+        # Posições Travadas
+        'usar_filtro_posicoes_travadas': True,
+        'posicoes_travadas_tolerancia': 1,  # Agressivo (~34% concursos passam)
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
