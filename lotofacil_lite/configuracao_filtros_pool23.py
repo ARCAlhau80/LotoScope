@@ -60,6 +60,8 @@ FILTROS_POR_NIVEL = {
         'descricao': 'Mínimo - foco jackpot',
         # Soma: range amplo (seletividade ~1.0, 97.7% cobertura)
         'soma_min': 170, 'soma_max': 235,
+        # Margem de reversão: amplia faixa da reversão dinâmica ±10 para preservar jackpots
+        'reversao_soma_margem': 10,
         # ═══════════════════════════════════════════════════════════════════
         # FILTRO DE REPETIÇÃO (quantos do último sorteio devem repetir)
         # Histórico: média ~9, 90% dos casos entre 6-12
@@ -78,7 +80,7 @@ FILTROS_POR_NIVEL = {
         # Sub-combos quentes (COMBIN_10) — seletividade 5.75x com min_acertos=6
         'usar_filtro_subcombos': True,
         'subcombos_min_acertos': 6,
-        'subcombos_min_hot': 400,  # Conservador (~95% jackpots, ~20% random)
+        'subcombos_min_hot': 190,  # Leave-one-out P5: preserva ~95% jackpots
         # ═══════════════════════════════════════════════════════════════════
         # NOVOS FILTROS POC 06/04/2026 — Fibonacci, Faixa 6-20
         # Conservador: faixas amplas, máxima preservação de jackpots
@@ -99,6 +101,8 @@ FILTROS_POR_NIVEL = {
         'descricao': 'Básico - foco jackpot',
         # Soma um pouco mais restrita
         'soma_min': 175, 'soma_max': 230,
+        # Margem de reversão: amplia faixa ±7 (foco jackpot)
+        'reversao_soma_margem': 7,
         # Pares: seletividade 1.01x
         'pares_min': 6, 'pares_max': 9,
         # Repetição com último sorteio
@@ -123,7 +127,7 @@ FILTROS_POR_NIVEL = {
         # Sub-combos quentes
         'usar_filtro_subcombos': True,
         'subcombos_min_acertos': 6,
-        'subcombos_min_hot': 450,
+        'subcombos_min_hot': 245,  # Leave-one-out P15: preserva ~85% jackpots
         # NOVOS FILTROS POC 06/04/2026 — Conservador
         'usar_filtro_fibonacci': True,
         'fibonacci_min': 3, 'fibonacci_max': 6,
@@ -141,6 +145,8 @@ FILTROS_POR_NIVEL = {
         'descricao': 'Balanceado - foco jackpot',
         # Soma equilibrada
         'soma_min': 180, 'soma_max': 225,
+        # Margem de reversão: amplia faixa ±5 (balanceado)
+        'reversao_soma_margem': 5,
         # Pares/Primos
         'pares_min': 6, 'pares_max': 9,
         'primos_min': 4, 'primos_max': 7,
@@ -169,7 +175,7 @@ FILTROS_POR_NIVEL = {
         # Sub-combos quentes
         'usar_filtro_subcombos': True,
         'subcombos_min_acertos': 6,
-        'subcombos_min_hot': 500,
+        'subcombos_min_hot': 300,  # Leave-one-out P30: preserva ~70% jackpots
         # NOVOS FILTROS POC 06/04/2026 — Equilibrado (Fib + Quintis + F6-20)
         'usar_filtro_fibonacci': True,
         'fibonacci_min': 3, 'fibonacci_max': 6,
@@ -223,7 +229,7 @@ FILTROS_POR_NIVEL = {
         # Sub-combos quentes
         'usar_filtro_subcombos': True,
         'subcombos_min_acertos': 6,
-        'subcombos_min_hot': 550,
+        'subcombos_min_hot': 370,  # Leave-one-out P50: preserva ~50% jackpots
         # NOVOS FILTROS POC 06/04/2026 — Agressivo (faixas apertadas)
         'usar_filtro_fibonacci': True,
         'fibonacci_min': 4, 'fibonacci_max': 5,  # Seletiv 1.139, 59% jackpots
@@ -279,7 +285,7 @@ FILTROS_POR_NIVEL = {
         # Sub-combos quentes
         'usar_filtro_subcombos': True,
         'subcombos_min_acertos': 6,
-        'subcombos_min_hot': 600,
+        'subcombos_min_hot': 410,  # Leave-one-out P65: preserva ~35% jackpots
         # NOVOS FILTROS POC 06/04/2026 — Agressivo
         'usar_filtro_fibonacci': True,
         'fibonacci_min': 4, 'fibonacci_max': 5,
@@ -338,7 +344,7 @@ FILTROS_POR_NIVEL = {
         # Sub-combos quentes
         'usar_filtro_subcombos': True,
         'subcombos_min_acertos': 6,
-        'subcombos_min_hot': 650,
+        'subcombos_min_hot': 485,  # Leave-one-out P80: preserva ~20% jackpots
         # NOVOS FILTROS POC 06/04/2026 — Ultra agressivo
         'usar_filtro_fibonacci': True,
         'fibonacci_min': 4, 'fibonacci_max': 5,

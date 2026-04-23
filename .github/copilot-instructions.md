@@ -228,6 +228,7 @@ python super_menu.py
 3. Always **check file existence** before reading
 4. Keep **Portuguese** for user-facing strings
 5. Update `CONTEXTO_MASTER_IA.md` after significant changes
+6. **🔴 REGRA INVIOLÁVEL — Paridade Opção 31 ↔ Opção 30.2:** Toda feature/filtro/lógica implementada na Opção 31 DEVE ser replicada na Opção 30.2 (Backtesting). Manter paridade funcional completa.
 
 ## Validated Results
 

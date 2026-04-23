@@ -24,6 +24,7 @@ import sys
 import json
 import math
 import pickle
+import random as _random
 import numpy as np
 from datetime import datetime
 from typing import List, Dict, Tuple, Optional
@@ -309,6 +310,74 @@ class EstrategiaInvertida:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# ESTRATÉGIAS SIMPLES PARA BENCHMARK COMPARATIVO
+# ═══════════════════════════════════════════════════════════════════════════════
+class EstrategiaQuentesSimples:
+    """
+    Exclui os números com MAIOR frequência recente (sem proteção de anomalia).
+    Testa a hipótese pura de "mean reversion" sem sofisticação.
+    """
+    
+    @staticmethod
+    def escolher_exclusoes(historico: List[Dict], idx_concurso: int,
+                           quantidade: int = 2, janela: int = 30) -> List[int]:
+        inicio = max(0, idx_concurso - janela)
+        dados_janela = historico[inicio:idx_concurso]
+        
+        if not dados_janela:
+            return list(range(1, quantidade + 1))
+        
+        freq = Counter()
+        for h in dados_janela:
+            freq.update(h['numeros'])
+        
+        # Top-K por frequência (mais quentes)
+        ranking = sorted(range(1, 26), key=lambda n: freq[n], reverse=True)
+        return ranking[:quantidade]
+
+
+class EstrategiaFriasSimples:
+    """
+    Exclui os números com MAIOR atraso (mais frios / mais tempo sem aparecer).
+    Testa a hipótese de que "frios continuam frios".
+    """
+    
+    @staticmethod
+    def escolher_exclusoes(historico: List[Dict], idx_concurso: int,
+                           quantidade: int = 2, janela: int = 30) -> List[int]:
+        inicio = max(0, idx_concurso - janela)
+        dados_janela = historico[inicio:idx_concurso]
+        
+        if not dados_janela:
+            return list(range(1, quantidade + 1))
+        
+        # Calcular atraso de cada número
+        atraso = {n: len(dados_janela) for n in range(1, 26)}  # default = máximo
+        for n in range(1, 26):
+            for i, h in enumerate(reversed(dados_janela)):
+                if n in h['numeros']:
+                    atraso[n] = i
+                    break
+        
+        # Top-K por atraso (mais frios primeiro)
+        ranking = sorted(range(1, 26), key=lambda n: atraso[n], reverse=True)
+        return ranking[:quantidade]
+
+
+class EstrategiaAleatoria:
+    """
+    Baseline: exclui números aleatórios.
+    Qualquer estratégia precisa superar isso para ter valor.
+    """
+    
+    @staticmethod
+    def escolher_exclusoes(quantidade: int = 2, seed: int = None) -> List[int]:
+        if seed is not None:
+            _random.seed(seed)
+        return _random.sample(range(1, 26), quantidade)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # CLASSE: SISTEMA DE DISPUTA
 # ═══════════════════════════════════════════════════════════════════════════════
 class DisputaNeuralPool23:
@@ -352,7 +421,8 @@ class DisputaNeuralPool23:
 
     def _salvar_benchmark_modelo(self, taxa_neural: float, taxa_invertida: float,
                                  concurso_inicio: int, concurso_fim: int,
-                                 total_concursos: int, origem: str):
+                                 total_concursos: int, origem: str,
+                                 taxas_extras: Dict = None):
         """Persiste o último benchmark para exibição dinâmica no gerador."""
         try:
             os.makedirs(os.path.dirname(self.benchmark_path), exist_ok=True)
@@ -366,6 +436,9 @@ class DisputaNeuralPool23:
                 'origem': str(origem),
                 'atualizado_em': datetime.now().strftime('%d/%m/%Y %H:%M')
             }
+            if taxas_extras:
+                for nome, taxa in taxas_extras.items():
+                    dados[f'taxa_{nome}'] = float(round(float(taxa), 1))
             with open(self.benchmark_path, 'w', encoding='utf-8') as f:
                 json.dump(dados, f, indent=2, ensure_ascii=False)
         except Exception:
@@ -552,7 +625,7 @@ class DisputaNeuralPool23:
         return features
     
     def executar_disputa(self, concurso_inicio: int = 3000, concurso_fim: int = None,
-                         treinar_durante: bool = True) -> Dict:
+                         treinar_durante: bool = True, qtd_exclusoes: int = 2) -> Dict:
         """
         Executa disputa entre INVERTIDA e Neural em um range de concursos.
         
@@ -560,12 +633,13 @@ class DisputaNeuralPool23:
             concurso_inicio: Primeiro concurso a testar
             concurso_fim: Último concurso (None = último disponível)
             treinar_durante: Se True, treina a neural após cada erro
+            qtd_exclusoes: Quantos números excluir (1-10, padrão 2)
             
         Returns:
             Dict com estatísticas comparativas
         """
         print("\n" + "═" * 70)
-        print("🥊 DISPUTA: NEURAL vs INVERTIDA v3.0")
+        print(f"🥊 DISPUTA: NEURAL vs INVERTIDA v3.0 (excluindo {qtd_exclusoes} números)")
         print("═" * 70)
         
         # Inicializar ou carregar neural
@@ -605,15 +679,21 @@ class DisputaNeuralPool23:
         print(f"   Índices: {idx_inicio_real} a {idx_fim} ({total_real} concursos)")
         print(f"🔧 Treinar durante disputa: {'Sim' if treinar_durante else 'Não'}")
         
-        # Estatísticas
-        stats = {
-            'invertida': {'acertos_2': 0, 'acertos_1': 0, 'erros': 0},
-            'neural': {'acertos_2': 0, 'acertos_1': 0, 'erros': 0},
-            'empates': 0,
-            'neural_melhor': 0,
-            'invertida_melhor': 0,
-            'detalhes': []
-        }
+        # Nomes das 5 estratégias
+        ESTRATEGIAS = ['neural', 'invertida', 'quentes', 'frias', 'random']
+        
+        # Estatísticas — categorias dinâmicas baseadas em qtd_exclusoes
+        k = qtd_exclusoes
+        stats = {nome: {f'acertos_{i}': 0 for i in range(k + 1)} for nome in ESTRATEGIAS}
+        stats['empates'] = 0
+        stats['neural_melhor'] = 0
+        stats['invertida_melhor'] = 0
+        stats['detalhes'] = []
+        stats['qtd_exclusoes'] = k
+        stats['estrategias'] = ESTRATEGIAS
+        
+        # Seed fixo para aleatório (reprodutibilidade)
+        _random.seed(42)
         
         # Para cada concurso (já temos 30 anteriores garantidos)
         for idx in range(idx_inicio_real, idx_fim + 1):
@@ -623,36 +703,44 @@ class DisputaNeuralPool23:
             # Extrair features
             features = self._extrair_features(idx)
             
-            # INVERTIDA v3.0 escolhe exclusões
+            # === 5 ESTRATÉGIAS ===
+            # 1. Neural
+            excluidos_neural = self.neural.prever_exclusoes(features, k)
+            
+            # 2. INVERTIDA v3.0
             scores_inv = self.invertida.calcular_scores_exclusao(self.historico, idx)
-            excluidos_inv = self.invertida.escolher_exclusoes(scores_inv, 2)
+            excluidos_inv = self.invertida.escolher_exclusoes(scores_inv, k)
             
-            # Neural escolhe exclusões
-            excluidos_neural = self.neural.prever_exclusoes(features, 2)
+            # 3. QUENTES simples (maior freq recente)
+            excluidos_quentes = EstrategiaQuentesSimples.escolher_exclusoes(
+                self.historico, idx, k)
             
-            # Avaliar: quantos excluídos NÃO estavam no resultado (ACERTO)
-            acertos_inv = sum(1 for n in excluidos_inv if n not in resultado)
-            acertos_neural = sum(1 for n in excluidos_neural if n not in resultado)
+            # 4. FRIAS simples (maior atraso)
+            excluidos_frias = EstrategiaFriasSimples.escolher_exclusoes(
+                self.historico, idx, k)
             
-            # Atualizar estatísticas
-            if acertos_inv == 2:
-                stats['invertida']['acertos_2'] += 1
-            elif acertos_inv == 1:
-                stats['invertida']['acertos_1'] += 1
-            else:
-                stats['invertida']['erros'] += 1
+            # 5. Aleatório (seed por concurso para reprodutibilidade)
+            excluidos_random = EstrategiaAleatoria.escolher_exclusoes(k, seed=concurso)
             
-            if acertos_neural == 2:
-                stats['neural']['acertos_2'] += 1
-            elif acertos_neural == 1:
-                stats['neural']['acertos_1'] += 1
-            else:
-                stats['neural']['erros'] += 1
+            # Calcular acertos de cada estratégia
+            exclusoes = {
+                'neural': excluidos_neural,
+                'invertida': excluidos_inv,
+                'quentes': excluidos_quentes,
+                'frias': excluidos_frias,
+                'random': excluidos_random,
+            }
             
-            # Comparar vencedor
-            if acertos_neural > acertos_inv:
+            acertos = {}
+            for nome, excl in exclusoes.items():
+                ac = sum(1 for n in excl if n not in resultado)
+                acertos[nome] = ac
+                stats[nome][f'acertos_{ac}'] += 1
+            
+            # Comparar Neural vs INVERTIDA (placar direto)
+            if acertos['neural'] > acertos['invertida']:
                 stats['neural_melhor'] += 1
-            elif acertos_inv > acertos_neural:
+            elif acertos['invertida'] > acertos['neural']:
                 stats['invertida_melhor'] += 1
             else:
                 stats['empates'] += 1
@@ -661,10 +749,8 @@ class DisputaNeuralPool23:
             stats['detalhes'].append({
                 'concurso': concurso,
                 'resultado': sorted(resultado),
-                'excluidos_inv': excluidos_inv,
-                'excluidos_neural': excluidos_neural,
-                'acertos_inv': acertos_inv,
-                'acertos_neural': acertos_neural
+                'exclusoes': exclusoes,
+                'acertos': acertos
             })
             
             # TREINAR a neural após cada resultado (aprendizado online)
@@ -693,25 +779,25 @@ class DisputaNeuralPool23:
         # Exibir resultados
         self._exibir_resultados(stats, total_real)
 
-        taxa_2_inv = stats['invertida']['acertos_2'] / total_real * 100
-        taxa_2_neu = stats['neural']['acertos_2'] / total_real * 100
+        taxas_k = {nome: stats[nome][f'acertos_{k}'] / total_real * 100 for nome in ESTRATEGIAS}
         self._salvar_benchmark_modelo(
-            taxa_neural=taxa_2_neu,
-            taxa_invertida=taxa_2_inv,
+            taxa_neural=taxas_k['neural'],
+            taxa_invertida=taxas_k['invertida'],
             concurso_inicio=concurso_inicio,
             concurso_fim=concurso_fim,
             total_concursos=total_real,
-            origem='disputa'
+            origem='disputa',
+            taxas_extras={n: taxas_k[n] for n in ['quentes', 'frias', 'random']}
         )
         
         self.resultados = stats
         return stats
     
     def _exibir_resultados(self, stats: Dict, total: int):
-        """Exibe resultados da disputa"""
-        print("\n" + "═" * 70)
-        print("📊 RESULTADOS DA DISPUTA")
-        print("═" * 70)
+        """Exibe resultados da disputa com 5 estratégias (dinâmico para qualquer qtd_exclusoes)"""
+        print("\n" + "═" * 100)
+        print("📊 RESULTADOS DA DISPUTA — 5 ESTRATÉGIAS")
+        print("═" * 100)
         
         print(f"\n   Total de concursos testados: {total}")
         
@@ -719,58 +805,95 @@ class DisputaNeuralPool23:
             print("   ⚠️  Nenhum concurso foi processado!")
             return
         
-        # Tabela comparativa
-        print("\n   ╔═══════════════════╤══════════════╤══════════════╗")
-        print("   ║ Métrica           │ INVERTIDA    │ NEURAL       ║")
-        print("   ╠═══════════════════╪══════════════╪══════════════╣")
+        k = stats.get('qtd_exclusoes', 2)
+        nomes = stats.get('estrategias', ['neural', 'invertida', 'quentes', 'frias', 'random'])
+        labels = {'neural': 'NEURAL', 'invertida': 'INVERT.', 'quentes': 'QUENTES',
+                  'frias': 'FRIAS', 'random': 'RANDOM'}
         
-        inv = stats['invertida']
-        neu = stats['neural']
+        # Tabela comparativa 5 colunas
+        hdr = " | ".join(f"{labels.get(n, n):^12s}" for n in nomes)
+        sep_h = "-+-".join("-" * 12 for _ in nomes)
         
-        taxa_2_inv = inv['acertos_2'] / total * 100
-        taxa_2_neu = neu['acertos_2'] / total * 100
-        taxa_1_inv = inv['acertos_1'] / total * 100
-        taxa_1_neu = neu['acertos_1'] / total * 100
-        taxa_0_inv = inv['erros'] / total * 100
-        taxa_0_neu = neu['erros'] / total * 100
+        print(f"\n   ╔═══════════════════╤═{sep_h.replace('-','═').replace('+','╤')}═╗")
+        print(f"   ║ Métrica           │ {hdr} ║")
+        print(f"   ╠═══════════════════╪═{sep_h.replace('-','═').replace('+','╪')}═╣")
         
-        melhor_2 = "⭐" if taxa_2_inv > taxa_2_neu else ("⭐" if taxa_2_neu > taxa_2_inv else "")
-        melhor_1 = "⭐" if taxa_1_inv < taxa_1_neu else ("⭐" if taxa_1_neu < taxa_1_inv else "")
+        for i in range(k, -1, -1):
+            cells = []
+            taxas = {}
+            for nome in nomes:
+                cnt = stats[nome].get(f'acertos_{i}', 0)
+                taxa = cnt / total * 100
+                taxas[nome] = taxa
+                cells.append(f"{cnt:4} ({taxa:5.1f}%)")
+            
+            # Melhor da linha (maior taxa)
+            max_taxa = max(taxas.values())
+            
+            if i == k:
+                emoji = " ✅"
+            elif i == 0:
+                emoji = " ❌"
+            else:
+                emoji = "   "
+            
+            label = f"Acerto {i}/{k}{emoji}"
+            row = " | ".join(f"{c:^12s}" for c in cells)
+            
+            # Estrela no melhor
+            best_names = [n for n in nomes if taxas[n] == max_taxa and max_taxa > 0]
+            star = f" ⭐{labels.get(best_names[0], '')}" if len(best_names) == 1 and i == k else ""
+            
+            print(f"   ║ {label:<17s} │ {row} ║{star}")
         
-        print(f"   ║ Acerto 2/2 ✅    │ {inv['acertos_2']:4} ({taxa_2_inv:5.1f}%) │ {neu['acertos_2']:4} ({taxa_2_neu:5.1f}%) ║ {melhor_2}")
-        print(f"   ║ Acerto 1/2       │ {inv['acertos_1']:4} ({taxa_1_inv:5.1f}%) │ {neu['acertos_1']:4} ({taxa_1_neu:5.1f}%) ║")
-        print(f"   ║ Erro 0/2 ❌      │ {inv['erros']:4} ({taxa_0_inv:5.1f}%) │ {neu['erros']:4} ({taxa_0_neu:5.1f}%) ║")
-        print("   ╟───────────────────┼──────────────┼──────────────╢")
+        print(f"   ╟───────────────────┼─{sep_h.replace('-','─').replace('+','┼')}─╢")
         
-        # Taxa de jackpot (se excluiu certo, o jackpot estaria no pool)
-        taxa_jackpot_inv = (inv['acertos_2']) / total * 100
-        taxa_jackpot_neu = (neu['acertos_2']) / total * 100
-        melhor_jp = "⭐" if taxa_jackpot_inv > taxa_jackpot_neu else ("⭐" if taxa_jackpot_neu > taxa_jackpot_inv else "")
+        # Taxa de jackpot (acerto perfeito K/K) 
+        taxas_jp = {}
+        cells_jp = []
+        for nome in nomes:
+            taxa = stats[nome].get(f'acertos_{k}', 0) / total * 100
+            taxas_jp[nome] = taxa
+            cells_jp.append(f"   {taxa:5.1f}%    ")
         
-        print(f"   ║ Taxa Jackpot     │     {taxa_jackpot_inv:5.1f}%   │     {taxa_jackpot_neu:5.1f}%   ║ {melhor_jp}")
-        print("   ╚═══════════════════╧══════════════╧══════════════╝")
+        row_jp = " | ".join(f"{c:^12s}" for c in cells_jp)
+        best_jp = max(taxas_jp, key=taxas_jp.get)
+        star_jp = f" ⭐{labels.get(best_jp, '')}" if taxas_jp[best_jp] > 0 else ""
+        print(f"   ║ Taxa Jackpot      │ {row_jp} ║{star_jp}")
+        print(f"   ╚═══════════════════╧═{sep_h.replace('-','═').replace('+','╧')}═╝")
         
-        # Resumo da disputa
-        print("\n   🏆 PLACAR GERAL:")
+        # Resumo Neural vs INVERTIDA (placar direto)
+        print("\n   🏆 PLACAR NEURAL vs INVERTIDA:")
         print(f"      • Neural venceu: {stats['neural_melhor']} concursos ({stats['neural_melhor']/total*100:.1f}%)")
         print(f"      • INVERTIDA venceu: {stats['invertida_melhor']} concursos ({stats['invertida_melhor']/total*100:.1f}%)")
         print(f"      • Empates: {stats['empates']} concursos ({stats['empates']/total*100:.1f}%)")
         
+        # Ranking geral por taxa de jackpot
+        print("\n   🏅 RANKING GERAL (por Jackpot {}/{}):" .format(k, k))
+        ranking = sorted(taxas_jp.items(), key=lambda x: x[1], reverse=True)
+        medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']
+        for pos, (nome, taxa) in enumerate(ranking):
+            diff = taxa - taxas_jp.get('random', 0)
+            diff_str = f"+{diff:.1f}pp" if diff > 0 else f"{diff:.1f}pp"
+            acima = f"({diff_str} vs random)" if nome != 'random' else "(baseline)"
+            print(f"      {medals[pos]} {labels.get(nome, nome):8s}: {taxa:5.1f}%  {acima}")
+        
         # Conclusão
         print("\n   📌 CONCLUSÃO:")
-        if taxa_jackpot_neu >= taxa_jackpot_inv + 2:
-            print("      🎉 A NEURAL SUPEROU a estratégia INVERTIDA!")
-            print("      💡 Recomendação: usar Neural para ranquear exclusões")
-        elif taxa_jackpot_inv >= taxa_jackpot_neu + 2:
-            print("      📊 INVERTIDA v3.0 continua superior")
-            print("      💡 Recomendação: manter estratégia atual")
+        melhor_nome = ranking[0][0]
+        melhor_taxa = ranking[0][1]
+        random_taxa = taxas_jp.get('random', 0)
+        
+        if melhor_taxa > random_taxa + 3:
+            print(f"      🎉 {labels.get(melhor_nome, melhor_nome)} é CLARAMENTE superior (+{melhor_taxa - random_taxa:.1f}pp sobre random)")
+        elif melhor_taxa > random_taxa + 1:
+            print(f"      📊 {labels.get(melhor_nome, melhor_nome)} tem vantagem moderada (+{melhor_taxa - random_taxa:.1f}pp sobre random)")
         else:
-            print("      🤝 Empate técnico (diferença < 2pp)")
-            print("      💡 Recomendação: testar híbrido (Neural + INVERTIDA)")
+            print(f"      🤝 Nenhuma estratégia se destaca significativamente sobre random")
     
     def retreinamento_intensivo(self, concurso_inicio: int = 3000, concurso_fim: int = None,
                                  iteracoes: int = 5, lr_inicial: float = 0.01,
-                                 epochs_por_amostra: int = 10) -> Dict:
+                                 epochs_por_amostra: int = 10, qtd_exclusoes: int = 2) -> Dict:
         """
         🔥 RETREINAMENTO INTENSIVO
         
@@ -783,12 +906,14 @@ class DisputaNeuralPool23:
             iteracoes: Quantas passagens completas pelo dataset
             lr_inicial: Learning rate inicial (decai a cada iteração)
             epochs_por_amostra: Épocas de treino por amostra
+            qtd_exclusoes: Quantos números excluir (1-10, padrão 2)
         
         Returns:
             Dict com histórico de resultados por iteração
         """
+        k = qtd_exclusoes
         print("\n" + "═" * 70)
-        print("🔥 RETREINAMENTO INTENSIVO - Buscando melhorias")
+        print(f"🔥 RETREINAMENTO INTENSIVO - Excluindo {k} números")
         print("═" * 70)
         
         # Determinar range
@@ -867,48 +992,45 @@ class DisputaNeuralPool23:
                     print(f"   📚 Época {epoch + 1}/{epochs_por_amostra}", end="\r")
             
             # Avaliar após iteração
-            stats = {'acertos_2': 0, 'acertos_1': 0, 'erros': 0}
+            stats = {f'acertos_{i}': 0 for i in range(k + 1)}
             
             for idx in range(idx_inicio, idx_fim + 1):
                 resultado = self.historico[idx]['set']
                 features = self._extrair_features(idx)
-                excluidos = self.neural.prever_exclusoes(features, 2)
+                excluidos = self.neural.prever_exclusoes(features, k)
                 acertos = sum(1 for n in excluidos if n not in resultado)
                 
-                if acertos == 2:
-                    stats['acertos_2'] += 1
-                elif acertos == 1:
-                    stats['acertos_1'] += 1
-                else:
-                    stats['erros'] += 1
+                stats[f'acertos_{acertos}'] += 1
             
-            taxa_2 = stats['acertos_2'] / total_real * 100
-            taxa_1 = stats['acertos_1'] / total_real * 100
-            taxa_erro = stats['erros'] / total_real * 100
+            taxa_k = stats[f'acertos_{k}'] / total_real * 100
+            taxa_k1 = stats.get(f'acertos_{k-1}', 0) / total_real * 100 if k > 0 else 0
+            taxa_0 = stats['acertos_0'] / total_real * 100
             
             historico_iteracoes.append({
                 'iteracao': it + 1,
                 'lr': lr,
-                'taxa_2_2': taxa_2,
-                'taxa_1_2': taxa_1,
-                'taxa_0_2': taxa_erro,
-                'acertos_2': stats['acertos_2'],
-                'total': total_real
+                f'taxa_{k}_{k}': taxa_k,
+                f'taxa_{k-1}_{k}': taxa_k1,
+                f'taxa_0_{k}': taxa_0,
+                f'acertos_{k}': stats[f'acertos_{k}'],
+                'total': total_real,
+                'qtd_exclusoes': k
             })
             
-            print(f"   ✅ Acerto 2/2: {stats['acertos_2']:4} ({taxa_2:5.1f}%)")
-            print(f"      Acerto 1/2: {stats['acertos_1']:4} ({taxa_1:5.1f}%)")
-            print(f"   ❌ Erro 0/2:   {stats['erros']:4} ({taxa_erro:5.1f}%)")
+            print(f"   ✅ Acerto {k}/{k}: {stats[f'acertos_{k}']:4} ({taxa_k:5.1f}%)")
+            if k > 1:
+                print(f"      Acerto {k-1}/{k}: {stats.get(f'acertos_{k-1}', 0):4} ({taxa_k1:5.1f}%)")
+            print(f"   ❌ Erro 0/{k}:   {stats['acertos_0']:4} ({taxa_0:5.1f}%)")
             
             # Guardar melhor modelo
-            if taxa_2 > melhor_taxa:
-                melhor_taxa = taxa_2
+            if taxa_k > melhor_taxa:
+                melhor_taxa = taxa_k
                 melhor_modelo = pickle.dumps({
                     'pesos': self.neural.pesos.copy(),
                     'bias': self.neural.bias.copy(),
                     'tamanhos': self.neural.tamanhos
                 })
-                print(f"   🏆 NOVO RECORDE! Taxa 2/2: {taxa_2:.1f}%")
+                print(f"   🏆 NOVO RECORDE! Taxa {k}/{k}: {taxa_k:.1f}%")
         
         # Restaurar melhor modelo
         if melhor_modelo:
@@ -918,40 +1040,51 @@ class DisputaNeuralPool23:
             
             # Salvar melhor modelo
             self.neural.salvar(self.modelo_path)
-            print(f"\n💾 Melhor modelo salvo (Taxa 2/2: {melhor_taxa:.1f}%)")
+            print(f"\n💾 Melhor modelo salvo (Taxa {k}/{k}: {melhor_taxa:.1f}%)")
         
-        # Comparar com INVERTIDA
+        # Comparar com TODAS as estratégias
         print("\n" + "═" * 70)
-        print("📊 COMPARAÇÃO FINAL COM INVERTIDA v3.0")
+        print("📊 COMPARAÇÃO FINAL — 5 ESTRATÉGIAS")
         print("═" * 70)
         
-        stats_inv = {'acertos_2': 0, 'acertos_1': 0, 'erros': 0}
+        ESTRATEGIAS_COMP = ['invertida', 'quentes', 'frias', 'random']
+        labels = {'neural': 'NEURAL', 'invertida': 'INVERT.', 'quentes': 'QUENTES',
+                  'frias': 'FRIAS', 'random': 'RANDOM'}
+        taxas_comp = {'neural': melhor_taxa}
         
-        for idx in range(idx_inicio, idx_fim + 1):
-            resultado = self.historico[idx]['set']
-            scores_inv = self.invertida.calcular_scores_exclusao(self.historico, idx)
-            excluidos_inv = self.invertida.escolher_exclusoes(scores_inv, 2)
-            acertos = sum(1 for n in excluidos_inv if n not in resultado)
-            
-            if acertos == 2:
-                stats_inv['acertos_2'] += 1
-            elif acertos == 1:
-                stats_inv['acertos_1'] += 1
-            else:
-                stats_inv['erros'] += 1
+        for nome_est in ESTRATEGIAS_COMP:
+            stats_est = {f'acertos_{i}': 0 for i in range(k + 1)}
+            for idx in range(idx_inicio, idx_fim + 1):
+                resultado = self.historico[idx]['set']
+                if nome_est == 'invertida':
+                    scores_inv = self.invertida.calcular_scores_exclusao(self.historico, idx)
+                    excl = self.invertida.escolher_exclusoes(scores_inv, k)
+                elif nome_est == 'quentes':
+                    excl = EstrategiaQuentesSimples.escolher_exclusoes(self.historico, idx, k)
+                elif nome_est == 'frias':
+                    excl = EstrategiaFriasSimples.escolher_exclusoes(self.historico, idx, k)
+                else:  # random
+                    excl = EstrategiaAleatoria.escolher_exclusoes(k, seed=self.historico[idx]['concurso'])
+                acertos = sum(1 for n in excl if n not in resultado)
+                stats_est[f'acertos_{acertos}'] += 1
+            taxas_comp[nome_est] = stats_est[f'acertos_{k}'] / total_real * 100
         
-        taxa_inv = stats_inv['acertos_2'] / total_real * 100
+        # Ranking
+        ranking = sorted(taxas_comp.items(), key=lambda x: x[1], reverse=True)
+        medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']
+        for pos, (nome, taxa) in enumerate(ranking):
+            diff = taxa - taxas_comp.get('random', 0)
+            diff_str = f"+{diff:.1f}pp" if diff > 0 else f"{diff:.1f}pp"
+            acima = f"({diff_str} vs random)" if nome != 'random' else "(baseline)"
+            print(f"      {medals[pos]} {labels.get(nome, nome):8s}: {taxa:5.1f}%  {acima}")
         
-        print(f"\n   INVERTIDA v3.0: {stats_inv['acertos_2']:4} acertos 2/2 ({taxa_inv:.1f}%)")
-        print(f"   NEURAL (melhor): {historico_iteracoes[-1]['acertos_2']:4} acertos 2/2 ({melhor_taxa:.1f}%)")
-        print(f"\n   Diferença: {melhor_taxa - taxa_inv:+.1f}pp")
-        
-        if melhor_taxa > taxa_inv + 2:
-            print("\n   🎉 NEURAL VENCEU! Superou INVERTIDA em mais de 2pp!")
-        elif taxa_inv > melhor_taxa + 2:
-            print("\n   📊 INVERTIDA v3.0 ainda é superior")
+        melhor_nome = ranking[0][0]
+        if melhor_nome == 'neural':
+            print(f"\n   🎉 NEURAL VENCEU o ranking geral!")
         else:
-            print("\n   🤝 Empate técnico entre Neural e INVERTIDA")
+            print(f"\n   📊 {labels.get(melhor_nome, melhor_nome)} lidera o ranking")
+        
+        taxa_inv = taxas_comp['invertida']
 
         self._salvar_benchmark_modelo(
             taxa_neural=melhor_taxa,
@@ -959,7 +1092,8 @@ class DisputaNeuralPool23:
             concurso_inicio=concurso_inicio,
             concurso_fim=concurso_fim,
             total_concursos=total_real,
-            origem='retreino'
+            origem='retreino',
+            taxas_extras={n: taxas_comp[n] for n in ['quentes', 'frias', 'random']}
         )
         
         return {
@@ -971,14 +1105,16 @@ class DisputaNeuralPool23:
     
     def retreinar_automatico(self, concurso_inicio: int = 3000, concurso_fim: int = None,
                               iteracoes: int = 5, lr_inicial: float = 0.01,
-                              epochs_por_amostra: int = 10, resetar: bool = True) -> Dict:
+                              epochs_por_amostra: int = 10, resetar: bool = True,
+                              qtd_exclusoes: int = 2) -> Dict:
         """
         🔥 RETREINAMENTO AUTOMÁTICO (sem prompts interativos)
         
         Versão do retreinamento intensivo para chamada programática.
         """
+        k = qtd_exclusoes
         print("\n" + "═" * 70)
-        print("🔥 RETREINAMENTO AUTOMÁTICO - Sem interação")
+        print(f"🔥 RETREINAMENTO AUTOMÁTICO - Excluindo {k} números")
         print("═" * 70)
         
         # Determinar range
@@ -1058,47 +1194,44 @@ class DisputaNeuralPool23:
                     print(f"   📚 Época {epoch + 1}/{epochs_por_amostra}", end="\r")
             
             # Avaliar
-            stats = {'acertos_2': 0, 'acertos_1': 0, 'erros': 0}
+            stats = {f'acertos_{i}': 0 for i in range(k + 1)}
             
             for idx in range(idx_inicio, idx_fim + 1):
                 resultado = self.historico[idx]['set']
                 features = self._extrair_features(idx)
-                excluidos = self.neural.prever_exclusoes(features, 2)
+                excluidos = self.neural.prever_exclusoes(features, k)
                 acertos = sum(1 for n in excluidos if n not in resultado)
                 
-                if acertos == 2:
-                    stats['acertos_2'] += 1
-                elif acertos == 1:
-                    stats['acertos_1'] += 1
-                else:
-                    stats['erros'] += 1
+                stats[f'acertos_{acertos}'] += 1
             
-            taxa_2 = stats['acertos_2'] / total_real * 100
-            taxa_1 = stats['acertos_1'] / total_real * 100
-            taxa_erro = stats['erros'] / total_real * 100
+            taxa_k = stats[f'acertos_{k}'] / total_real * 100
+            taxa_k1 = stats.get(f'acertos_{k-1}', 0) / total_real * 100 if k > 0 else 0
+            taxa_0 = stats['acertos_0'] / total_real * 100
             
             historico_iteracoes.append({
                 'iteracao': it + 1,
                 'lr': lr,
-                'taxa_2_2': taxa_2,
-                'taxa_1_2': taxa_1,
-                'taxa_0_2': taxa_erro,
-                'acertos_2': stats['acertos_2'],
-                'total': total_real
+                f'taxa_{k}_{k}': taxa_k,
+                f'taxa_{k-1}_{k}': taxa_k1,
+                f'taxa_0_{k}': taxa_0,
+                f'acertos_{k}': stats[f'acertos_{k}'],
+                'total': total_real,
+                'qtd_exclusoes': k
             })
             
-            print(f"   ✅ Acerto 2/2: {stats['acertos_2']:4} ({taxa_2:5.1f}%)")
-            print(f"      Acerto 1/2: {stats['acertos_1']:4} ({taxa_1:5.1f}%)")
-            print(f"   ❌ Erro 0/2:   {stats['erros']:4} ({taxa_erro:5.1f}%)")
+            print(f"   ✅ Acerto {k}/{k}: {stats[f'acertos_{k}']:4} ({taxa_k:5.1f}%)")
+            if k > 1:
+                print(f"      Acerto {k-1}/{k}: {stats.get(f'acertos_{k-1}', 0):4} ({taxa_k1:5.1f}%)")
+            print(f"   ❌ Erro 0/{k}:   {stats['acertos_0']:4} ({taxa_0:5.1f}%)")
             
-            if taxa_2 > melhor_taxa:
-                melhor_taxa = taxa_2
+            if taxa_k > melhor_taxa:
+                melhor_taxa = taxa_k
                 melhor_modelo = pickle.dumps({
-                    'pesos': {k: v.copy() for k, v in self.neural.pesos.items()},
-                    'bias': {k: v.copy() for k, v in self.neural.bias.items()},
+                    'pesos': {wk: wv.copy() for wk, wv in self.neural.pesos.items()},
+                    'bias': {bk: bv.copy() for bk, bv in self.neural.bias.items()},
                     'tamanhos': self.neural.tamanhos
                 })
-                print(f"   🏆 NOVO RECORDE! Taxa 2/2: {taxa_2:.1f}%")
+                print(f"   🏆 NOVO RECORDE! Taxa {k}/{k}: {taxa_k:.1f}%")
         
         # Restaurar melhor modelo
         if melhor_modelo:
@@ -1108,46 +1241,58 @@ class DisputaNeuralPool23:
             
             os.makedirs(os.path.dirname(self.modelo_path), exist_ok=True)
             self.neural.salvar(self.modelo_path)
-            print(f"\n💾 Melhor modelo salvo (Taxa 2/2: {melhor_taxa:.1f}%)")
+            print(f"\n💾 Melhor modelo salvo (Taxa {k}/{k}: {melhor_taxa:.1f}%)")
         
-        # Comparar com INVERTIDA
+        # Comparar com TODAS as estratégias
         print("\n" + "═" * 70)
-        print("📊 COMPARAÇÃO FINAL COM INVERTIDA v3.0")
+        print("📊 COMPARAÇÃO FINAL — 5 ESTRATÉGIAS")
         print("═" * 70)
         
-        stats_inv = {'acertos_2': 0, 'acertos_1': 0, 'erros': 0}
+        ESTRATEGIAS_COMP = ['invertida', 'quentes', 'frias', 'random']
+        labels = {'neural': 'NEURAL', 'invertida': 'INVERT.', 'quentes': 'QUENTES',
+                  'frias': 'FRIAS', 'random': 'RANDOM'}
+        taxas_comp = {'neural': melhor_taxa}
         
-        for idx in range(idx_inicio, idx_fim + 1):
-            resultado = self.historico[idx]['set']
-            scores_inv = self.invertida.calcular_scores_exclusao(self.historico, idx)
-            excluidos_inv = self.invertida.escolher_exclusoes(scores_inv, 2)
-            acertos = sum(1 for n in excluidos_inv if n not in resultado)
-            
-            if acertos == 2:
-                stats_inv['acertos_2'] += 1
-            elif acertos == 1:
-                stats_inv['acertos_1'] += 1
-            else:
-                stats_inv['erros'] += 1
+        for nome_est in ESTRATEGIAS_COMP:
+            stats_est = {f'acertos_{i}': 0 for i in range(k + 1)}
+            for idx in range(idx_inicio, idx_fim + 1):
+                resultado = self.historico[idx]['set']
+                if nome_est == 'invertida':
+                    scores_inv = self.invertida.calcular_scores_exclusao(self.historico, idx)
+                    excl = self.invertida.escolher_exclusoes(scores_inv, k)
+                elif nome_est == 'quentes':
+                    excl = EstrategiaQuentesSimples.escolher_exclusoes(self.historico, idx, k)
+                elif nome_est == 'frias':
+                    excl = EstrategiaFriasSimples.escolher_exclusoes(self.historico, idx, k)
+                else:  # random
+                    excl = EstrategiaAleatoria.escolher_exclusoes(k, seed=self.historico[idx]['concurso'])
+                acertos = sum(1 for n in excl if n not in resultado)
+                stats_est[f'acertos_{acertos}'] += 1
+            taxas_comp[nome_est] = stats_est[f'acertos_{k}'] / total_real * 100
         
-        taxa_inv = stats_inv['acertos_2'] / total_real * 100
+        # Ranking
+        ranking = sorted(taxas_comp.items(), key=lambda x: x[1], reverse=True)
+        medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']
+        for pos, (nome, taxa) in enumerate(ranking):
+            diff = taxa - taxas_comp.get('random', 0)
+            diff_str = f"+{diff:.1f}pp" if diff > 0 else f"{diff:.1f}pp"
+            acima = f"({diff_str} vs random)" if nome != 'random' else "(baseline)"
+            print(f"      {medals[pos]} {labels.get(nome, nome):8s}: {taxa:5.1f}%  {acima}")
         
-        print(f"\n   INVERTIDA v3.0: {stats_inv['acertos_2']:4} acertos 2/2 ({taxa_inv:.1f}%)")
-        print(f"   NEURAL (melhor): {int(melhor_taxa * total_real / 100):4} acertos 2/2 ({melhor_taxa:.1f}%)")
-        print(f"\n   Diferença: {melhor_taxa - taxa_inv:+.1f}pp")
-        
-        if melhor_taxa > taxa_inv + 2:
-            print("\n   🎉 NEURAL VENCEU! Superou INVERTIDA em mais de 2pp!")
-        elif taxa_inv > melhor_taxa + 2:
-            print("\n   📊 INVERTIDA v3.0 ainda é superior")
+        melhor_nome = ranking[0][0]
+        if melhor_nome == 'neural':
+            print(f"\n   🎉 NEURAL VENCEU o ranking geral!")
         else:
-            print("\n   🤝 Empate técnico entre Neural e INVERTIDA")
+            print(f"\n   📊 {labels.get(melhor_nome, melhor_nome)} lidera o ranking")
+        
+        taxa_inv = taxas_comp['invertida']
         
         return {
             'historico': historico_iteracoes,
             'melhor_taxa': melhor_taxa,
             'taxa_invertida': taxa_inv,
-            'diferenca': melhor_taxa - taxa_inv
+            'diferenca': melhor_taxa - taxa_inv,
+            'ranking': taxas_comp
         }
 
 
@@ -1191,10 +1336,29 @@ def menu_disputa():
         inicio = 3000
         fim = None
     
+    # Perguntar quantidade de exclusões
+    if opcao != "3":
+        print("\n🔢 QUANTOS NÚMEROS EXCLUIR?")
+        print("   Combos C(25-N, 15) possíveis:")
+        from math import comb
+        for n in range(1, 6):
+            c = comb(25 - n, 15)
+            marca = " ⭐ padrão" if n == 2 else ""
+            print(f"   [{n}] Excluir {n} → {c:>7,} combos{marca}")
+        try:
+            qtd_str = input("\n   Quantidade [1-5, ENTER=2]: ").strip()
+            qtd_exclusoes = int(qtd_str) if qtd_str else 2
+            qtd_exclusoes = max(1, min(5, qtd_exclusoes))
+        except:
+            qtd_exclusoes = 2
+        print(f"   ✅ Excluindo {qtd_exclusoes} números por concurso")
+    else:
+        qtd_exclusoes = 2
+    
     if opcao == "1":
-        disputa.executar_disputa(inicio, fim, treinar_durante=True)
+        disputa.executar_disputa(inicio, fim, treinar_durante=True, qtd_exclusoes=qtd_exclusoes)
     elif opcao == "2":
-        disputa.executar_disputa(inicio, fim, treinar_durante=False)
+        disputa.executar_disputa(inicio, fim, treinar_durante=False, qtd_exclusoes=qtd_exclusoes)
     elif opcao == "3":
         modelo_path = os.path.join(disputa.base_path, '..', 'dados', 'neural_exclusao.pkl')
         if os.path.exists(modelo_path):
@@ -1219,7 +1383,8 @@ def menu_disputa():
             lr = 0.01
         
         disputa.retreinamento_intensivo(inicio, fim, iteracoes=iteracoes, 
-                                         epochs_por_amostra=epochs, lr_inicial=lr)
+                                         epochs_por_amostra=epochs, lr_inicial=lr,
+                                         qtd_exclusoes=qtd_exclusoes)
     
     input("\n⏸️ Pressione ENTER para voltar...")
 

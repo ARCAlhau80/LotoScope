@@ -36,7 +36,9 @@
       "erros_exclusao": [
         16,
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3652,
@@ -74,7 +76,9 @@
       "erros_exclusao": [
         16,
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3652,
@@ -112,7 +116,9 @@
       "erros_exclusao": [
         16,
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3652,
@@ -150,7 +156,9 @@
       "erros_exclusao": [
         16,
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3652,
@@ -188,7 +196,9 @@
       "erros_exclusao": [
         16,
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3652,
@@ -226,7 +236,9 @@
       "erros_exclusao": [
         16,
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3652,
@@ -264,7 +276,9 @@
       "erros_exclusao": [
         16,
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3652,
@@ -302,7 +316,9 @@
       "erros_exclusao": [
         16,
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3652,
@@ -340,7 +356,9 @@
       "erros_exclusao": [
         16,
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3653,
@@ -377,7 +395,9 @@
       "acerto_exclusao": false,
       "erros_exclusao": [
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3653,
@@ -414,7 +434,9 @@
       "acerto_exclusao": false,
       "erros_exclusao": [
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3653,
@@ -451,7 +473,9 @@
       "acerto_exclusao": false,
       "erros_exclusao": [
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3653,
@@ -488,7 +512,9 @@
       "acerto_exclusao": false,
       "erros_exclusao": [
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3653,
@@ -525,7 +551,9 @@
       "acerto_exclusao": false,
       "erros_exclusao": [
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3653,
@@ -562,7 +590,9 @@
       "acerto_exclusao": false,
       "erros_exclusao": [
         19
-      ]
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
     },
     {
       "concurso_alvo": 3653,
@@ -599,6 +629,4016 @@
       "acerto_exclusao": false,
       "erros_exclusao": [
         19
+      ],
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "11/04/2026 18:13",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        17,
+        23
+      ],
+      "scores_excluidos": {
+        "17": 0.4202,
+        "23": 0.4191
+      },
+      "nivel_filtro": 0,
+      "qtd_combinacoes": 8601,
+      "arquivo": "pool23_excl17_23_nivel0_8601_20260411_181332.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        17,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "11/04/2026 18:13",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        17,
+        23
+      ],
+      "scores_excluidos": {
+        "17": 0.4202,
+        "23": 0.4191
+      },
+      "nivel_filtro": 1,
+      "qtd_combinacoes": 3044,
+      "arquivo": "pool23_excl17_23_nivel1_3044_20260411_181351.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        17,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "11/04/2026 18:13",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        17,
+        23
+      ],
+      "scores_excluidos": {
+        "17": 0.4202,
+        "23": 0.4191
+      },
+      "nivel_filtro": 2,
+      "qtd_combinacoes": 591,
+      "arquivo": "pool23_excl17_23_nivel2_591_20260411_181357.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        17,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "11/04/2026 18:14",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        17,
+        23
+      ],
+      "scores_excluidos": {
+        "17": 0.4202,
+        "23": 0.4191
+      },
+      "nivel_filtro": 3,
+      "qtd_combinacoes": 301,
+      "arquivo": "pool23_excl17_23_nivel3_301_20260411_181402.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        17,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "11/04/2026 18:14",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        17,
+        23
+      ],
+      "scores_excluidos": {
+        "17": 0.4202,
+        "23": 0.4191
+      },
+      "nivel_filtro": 4,
+      "qtd_combinacoes": 4,
+      "arquivo": "pool23_excl17_23_nivel4_4_20260411_181404.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        17,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "11/04/2026 18:14",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        17,
+        23
+      ],
+      "scores_excluidos": {
+        "17": 0.4202,
+        "23": 0.4191
+      },
+      "nivel_filtro": 5,
+      "qtd_combinacoes": 4,
+      "arquivo": "pool23_excl17_23_nivel5_4_20260411_181406.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        17,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "11/04/2026 18:14",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        17,
+        23
+      ],
+      "scores_excluidos": {
+        "17": 0.4202,
+        "23": 0.4191
+      },
+      "nivel_filtro": 7,
+      "qtd_combinacoes": 7235,
+      "arquivo": "pool23_excl17_23_nivel7_7235_20260411_181408.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        17,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "11/04/2026 18:14",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        17,
+        23
+      ],
+      "scores_excluidos": {
+        "17": 0.4202,
+        "23": 0.4191
+      },
+      "nivel_filtro": 8,
+      "qtd_combinacoes": 153,
+      "arquivo": "pool23_excl17_23_nivel8_cascN3_153_20260411_181410.txt",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        17,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "12/04/2026 12:12",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        16,
+        17
+      ],
+      "scores_excluidos": {
+        "17": 0.421,
+        "16": 0.4197
+      },
+      "nivel_filtro": 0,
+      "qtd_combinacoes": 96370,
+      "arquivo": "pool23_excl16_17_nivel0_96370_20260412_121238.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        16,
+        17
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "12/04/2026 12:18",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        16,
+        17
+      ],
+      "scores_excluidos": {
+        "17": 0.421,
+        "16": 0.4197
+      },
+      "nivel_filtro": 1,
+      "qtd_combinacoes": 36531,
+      "arquivo": "pool23_excl16_17_nivel1_36531_20260412_121835.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        16,
+        17
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "12/04/2026 12:21",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        16,
+        17
+      ],
+      "scores_excluidos": {
+        "17": 0.421,
+        "16": 0.4197
+      },
+      "nivel_filtro": 2,
+      "qtd_combinacoes": 8716,
+      "arquivo": "pool23_excl16_17_nivel2_8716_20260412_122139.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        16,
+        17
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "12/04/2026 12:28",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        16,
+        17
+      ],
+      "scores_excluidos": {
+        "17": 0.421,
+        "16": 0.4197
+      },
+      "nivel_filtro": 3,
+      "qtd_combinacoes": 3984,
+      "arquivo": "pool23_excl16_17_nivel3_3984_20260412_122815.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        16,
+        17
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "12/04/2026 12:33",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        16,
+        17
+      ],
+      "scores_excluidos": {
+        "17": 0.421,
+        "16": 0.4197
+      },
+      "nivel_filtro": 4,
+      "qtd_combinacoes": 277,
+      "arquivo": "pool23_excl16_17_nivel4_277_20260412_123344.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        16,
+        17
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "12/04/2026 12:38",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        16,
+        17
+      ],
+      "scores_excluidos": {
+        "17": 0.421,
+        "16": 0.4197
+      },
+      "nivel_filtro": 5,
+      "qtd_combinacoes": 179,
+      "arquivo": "pool23_excl16_17_nivel5_179_20260412_123840.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        16,
+        17
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "12/04/2026 12:42",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        16,
+        17
+      ],
+      "scores_excluidos": {
+        "17": 0.421,
+        "16": 0.4197
+      },
+      "nivel_filtro": 6,
+      "qtd_combinacoes": 1,
+      "arquivo": "pool23_excl16_17_nivel6_1_20260412_124203.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        16,
+        17
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "12/04/2026 12:42",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        16,
+        17
+      ],
+      "scores_excluidos": {
+        "17": 0.421,
+        "16": 0.4197
+      },
+      "nivel_filtro": 7,
+      "qtd_combinacoes": 82465,
+      "arquivo": "pool23_excl16_17_nivel7_82465_20260412_124258.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        16,
+        17
+      ]
+    },
+    {
+      "concurso_alvo": 3659,
+      "data_geracao": "12/04/2026 12:43",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        16,
+        17
+      ],
+      "scores_excluidos": {
+        "17": 0.421,
+        "16": 0.4197
+      },
+      "nivel_filtro": 8,
+      "qtd_combinacoes": 0,
+      "arquivo": "pool23_excl16_17_nivel8_cascN6_0_20260412_124313.txt",
+      "resultado_real": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        16,
+        17
+      ]
+    },
+    {
+      "concurso_alvo": 3660,
+      "data_geracao": "13/04/2026 18:39",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        1,
+        10
+      ],
+      "scores_excluidos": {
+        "1": 0.4926,
+        "10": 0.3332
+      },
+      "nivel_filtro": 0,
+      "qtd_combinacoes": 1249060,
+      "arquivo": "pool23_excl1_10_nivel0_1249060_20260413_183927.txt",
+      "exclusao_suave_max": 2,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        18,
+        22,
+        23,
+        24
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        1,
+        10
+      ]
+    },
+    {
+      "concurso_alvo": 3660,
+      "data_geracao": "13/04/2026 19:21",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        1,
+        10
+      ],
+      "scores_excluidos": {
+        "1": 0.4926,
+        "10": 0.3332
+      },
+      "nivel_filtro": 1,
+      "qtd_combinacoes": 397534,
+      "arquivo": "pool23_excl1_10_nivel1_397534_20260413_192122.txt",
+      "exclusao_suave_max": 2,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        18,
+        22,
+        23,
+        24
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        1,
+        10
+      ]
+    },
+    {
+      "concurso_alvo": 3660,
+      "data_geracao": "13/04/2026 19:34",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        1,
+        10
+      ],
+      "scores_excluidos": {
+        "1": 0.4926,
+        "10": 0.3332
+      },
+      "nivel_filtro": 2,
+      "qtd_combinacoes": 75488,
+      "arquivo": "pool23_excl1_10_nivel2_75488_20260413_193426.txt",
+      "exclusao_suave_max": 2,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        18,
+        22,
+        23,
+        24
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        1,
+        10
+      ]
+    },
+    {
+      "concurso_alvo": 3660,
+      "data_geracao": "13/04/2026 19:52",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        1,
+        10
+      ],
+      "scores_excluidos": {
+        "1": 0.4926,
+        "10": 0.3332
+      },
+      "nivel_filtro": 3,
+      "qtd_combinacoes": 39876,
+      "arquivo": "pool23_excl1_10_nivel3_39876_20260413_195259.txt",
+      "exclusao_suave_max": 2,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        18,
+        22,
+        23,
+        24
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        1,
+        10
+      ]
+    },
+    {
+      "concurso_alvo": 3660,
+      "data_geracao": "13/04/2026 20:01",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        1,
+        4
+      ],
+      "scores_excluidos": {
+        "1": 0.4926,
+        "4": 0.3381
+      },
+      "nivel_filtro": 0,
+      "qtd_combinacoes": 680165,
+      "arquivo": "pool23_excl1_4_nivel0_680165_20260413_200130.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        18,
+        22,
+        23,
+        24
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        1
+      ]
+    },
+    {
+      "concurso_alvo": 3660,
+      "data_geracao": "13/04/2026 20:24",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        1,
+        4
+      ],
+      "scores_excluidos": {
+        "1": 0.4926,
+        "4": 0.3381
+      },
+      "nivel_filtro": 1,
+      "qtd_combinacoes": 233607,
+      "arquivo": "pool23_excl1_4_nivel1_233607_20260413_202416.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        18,
+        22,
+        23,
+        24
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        1
+      ]
+    },
+    {
+      "concurso_alvo": 3660,
+      "data_geracao": "13/04/2026 20:31",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        1,
+        4
+      ],
+      "scores_excluidos": {
+        "1": 0.4926,
+        "4": 0.3381
+      },
+      "nivel_filtro": 2,
+      "qtd_combinacoes": 41759,
+      "arquivo": "pool23_excl1_4_nivel2_41759_20260413_203121.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        18,
+        22,
+        23,
+        24
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        1
+      ]
+    },
+    {
+      "concurso_alvo": 3660,
+      "data_geracao": "13/04/2026 20:39",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        1,
+        4
+      ],
+      "scores_excluidos": {
+        "1": 0.4926,
+        "4": 0.3381
+      },
+      "nivel_filtro": 3,
+      "qtd_combinacoes": 22442,
+      "arquivo": "pool23_excl1_4_nivel3_22442_20260413_203915.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        18,
+        22,
+        23,
+        24
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        1
+      ]
+    },
+    {
+      "concurso_alvo": 3660,
+      "data_geracao": "13/04/2026 20:42",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        1,
+        4
+      ],
+      "scores_excluidos": {
+        "1": 0.4926,
+        "4": 0.3381
+      },
+      "nivel_filtro": 4,
+      "qtd_combinacoes": 1340,
+      "arquivo": "pool23_excl1_4_nivel4_1340_20260413_204254.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        18,
+        22,
+        23,
+        24
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        1
+      ]
+    },
+    {
+      "concurso_alvo": 3660,
+      "data_geracao": "13/04/2026 20:46",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        1,
+        4
+      ],
+      "scores_excluidos": {
+        "1": 0.4926,
+        "4": 0.3381
+      },
+      "nivel_filtro": 5,
+      "qtd_combinacoes": 916,
+      "arquivo": "pool23_excl1_4_nivel5_916_20260413_204644.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        18,
+        22,
+        23,
+        24
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        1
+      ]
+    },
+    {
+      "concurso_alvo": 3660,
+      "data_geracao": "13/04/2026 20:49",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        1,
+        4
+      ],
+      "scores_excluidos": {
+        "1": 0.4926,
+        "4": 0.3381
+      },
+      "nivel_filtro": 6,
+      "qtd_combinacoes": 21,
+      "arquivo": "pool23_excl1_4_nivel6_21_20260413_204936.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        18,
+        22,
+        23,
+        24
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        1
+      ]
+    },
+    {
+      "concurso_alvo": 3660,
+      "data_geracao": "13/04/2026 20:50",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        1,
+        4
+      ],
+      "scores_excluidos": {
+        "1": 0.4926,
+        "4": 0.3381
+      },
+      "nivel_filtro": 7,
+      "qtd_combinacoes": 491993,
+      "arquivo": "pool23_excl1_4_nivel7_491993_20260413_205020.txt",
+      "exclusao_suave_max": 1,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        18,
+        22,
+        23,
+        24
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        1
+      ]
+    },
+    {
+      "concurso_alvo": 3660,
+      "data_geracao": "13/04/2026 20:50",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        1,
+        4
+      ],
+      "scores_excluidos": {
+        "1": 0.4926,
+        "4": 0.3381
+      },
+      "nivel_filtro": 8,
+      "qtd_combinacoes": 0,
+      "arquivo": "pool23_excl1_4_nivel8_cascN6_0_20260413_205034.txt",
+      "resultado_real": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        18,
+        22,
+        23,
+        24
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        1
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:40",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        12,
+        23
+      ],
+      "scores_excluidos": {
+        "12": 0.4636,
+        "23": 0.4702
+      },
+      "nivel_filtro": 0,
+      "qtd_combinacoes": 97118,
+      "arquivo": "pool23_excl12_23_nivel0_97118_20260416_194016.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        12,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:42",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        12,
+        23
+      ],
+      "scores_excluidos": {
+        "12": 0.4636,
+        "23": 0.4702
+      },
+      "nivel_filtro": 1,
+      "qtd_combinacoes": 26892,
+      "arquivo": "pool23_excl12_23_nivel1_26892_20260416_194252.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        12,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:46",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        5,
+        10,
+        12,
+        18,
+        23
+      ],
+      "scores_excluidos": {
+        "5": 0.3336,
+        "10": 0.3697,
+        "12": 0.4636,
+        "18": 0.3896,
+        "23": 0.4702
+      },
+      "nivel_filtro": 0,
+      "qtd_combinacoes": 1262,
+      "arquivo": "pool23_excl5_10_12_18_23_nivel0_1262_20260416_194650.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        5,
+        10,
+        12,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:46",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        5,
+        10,
+        12,
+        18,
+        23
+      ],
+      "scores_excluidos": {
+        "5": 0.3336,
+        "10": 0.3697,
+        "12": 0.4636,
+        "18": 0.3896,
+        "23": 0.4702
+      },
+      "nivel_filtro": 1,
+      "qtd_combinacoes": 209,
+      "arquivo": "pool23_excl5_10_12_18_23_nivel1_209_20260416_194653.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        5,
+        10,
+        12,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:46",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        5,
+        10,
+        12,
+        18,
+        23
+      ],
+      "scores_excluidos": {
+        "5": 0.3336,
+        "10": 0.3697,
+        "12": 0.4636,
+        "18": 0.3896,
+        "23": 0.4702
+      },
+      "nivel_filtro": 2,
+      "qtd_combinacoes": 53,
+      "arquivo": "pool23_excl5_10_12_18_23_nivel2_53_20260416_194655.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        5,
+        10,
+        12,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:46",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        5,
+        10,
+        12,
+        18,
+        23
+      ],
+      "scores_excluidos": {
+        "5": 0.3336,
+        "10": 0.3697,
+        "12": 0.4636,
+        "18": 0.3896,
+        "23": 0.4702
+      },
+      "nivel_filtro": 3,
+      "qtd_combinacoes": 21,
+      "arquivo": "pool23_excl5_10_12_18_23_nivel3_21_20260416_194656.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        5,
+        10,
+        12,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:46",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        5,
+        10,
+        12,
+        18,
+        23
+      ],
+      "scores_excluidos": {
+        "5": 0.3336,
+        "10": 0.3697,
+        "12": 0.4636,
+        "18": 0.3896,
+        "23": 0.4702
+      },
+      "nivel_filtro": 4,
+      "qtd_combinacoes": 3,
+      "arquivo": "pool23_excl5_10_12_18_23_nivel4_3_20260416_194657.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        5,
+        10,
+        12,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:46",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        5,
+        10,
+        12,
+        18,
+        23
+      ],
+      "scores_excluidos": {
+        "5": 0.3336,
+        "10": 0.3697,
+        "12": 0.4636,
+        "18": 0.3896,
+        "23": 0.4702
+      },
+      "nivel_filtro": 5,
+      "qtd_combinacoes": 1,
+      "arquivo": "pool23_excl5_10_12_18_23_nivel5_1_20260416_194658.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        5,
+        10,
+        12,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:46",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        5,
+        10,
+        12,
+        18,
+        23
+      ],
+      "scores_excluidos": {
+        "5": 0.3336,
+        "10": 0.3697,
+        "12": 0.4636,
+        "18": 0.3896,
+        "23": 0.4702
+      },
+      "nivel_filtro": 7,
+      "qtd_combinacoes": 590,
+      "arquivo": "pool23_excl5_10_12_18_23_nivel7_590_20260416_194658.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        5,
+        10,
+        12,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:46",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        5,
+        10,
+        12,
+        18,
+        23
+      ],
+      "scores_excluidos": {
+        "5": 0.3336,
+        "10": 0.3697,
+        "12": 0.4636,
+        "18": 0.3896,
+        "23": 0.4702
+      },
+      "nivel_filtro": 8,
+      "qtd_combinacoes": 0,
+      "arquivo": "pool23_excl5_10_12_18_23_nivel8_cascN5_0_20260416_194659.txt",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        5,
+        10,
+        12,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:53",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        7,
+        9,
+        14,
+        17,
+        19,
+        23
+      ],
+      "scores_excluidos": {
+        "2": 0.4197,
+        "7": 0.4397,
+        "14": 0.4519,
+        "17": 0.3592,
+        "23": 0.4702,
+        "19": 0.3741,
+        "9": 0.3804
+      },
+      "nivel_filtro": 0,
+      "qtd_combinacoes": 90,
+      "arquivo": "pool23_excl2_7_9_14_17_19_23_nivel0_90_20260416_195356.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        14,
+        17,
+        19,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:53",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        7,
+        9,
+        14,
+        17,
+        19,
+        23
+      ],
+      "scores_excluidos": {
+        "2": 0.4197,
+        "7": 0.4397,
+        "14": 0.4519,
+        "17": 0.3592,
+        "23": 0.4702,
+        "19": 0.3741,
+        "9": 0.3804
+      },
+      "nivel_filtro": 1,
+      "qtd_combinacoes": 58,
+      "arquivo": "pool23_excl2_7_9_14_17_19_23_nivel1_58_20260416_195356.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        14,
+        17,
+        19,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:53",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        7,
+        9,
+        14,
+        17,
+        19,
+        23
+      ],
+      "scores_excluidos": {
+        "2": 0.4197,
+        "7": 0.4397,
+        "14": 0.4519,
+        "17": 0.3592,
+        "23": 0.4702,
+        "19": 0.3741,
+        "9": 0.3804
+      },
+      "nivel_filtro": 2,
+      "qtd_combinacoes": 24,
+      "arquivo": "pool23_excl2_7_9_14_17_19_23_nivel2_24_20260416_195356.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        14,
+        17,
+        19,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:53",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        7,
+        9,
+        14,
+        17,
+        19,
+        23
+      ],
+      "scores_excluidos": {
+        "2": 0.4197,
+        "7": 0.4397,
+        "14": 0.4519,
+        "17": 0.3592,
+        "23": 0.4702,
+        "19": 0.3741,
+        "9": 0.3804
+      },
+      "nivel_filtro": 3,
+      "qtd_combinacoes": 10,
+      "arquivo": "pool23_excl2_7_9_14_17_19_23_nivel3_10_20260416_195356.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        14,
+        17,
+        19,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:53",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        7,
+        9,
+        14,
+        17,
+        19,
+        23
+      ],
+      "scores_excluidos": {
+        "2": 0.4197,
+        "7": 0.4397,
+        "14": 0.4519,
+        "17": 0.3592,
+        "23": 0.4702,
+        "19": 0.3741,
+        "9": 0.3804
+      },
+      "nivel_filtro": 4,
+      "qtd_combinacoes": 2,
+      "arquivo": "pool23_excl2_7_9_14_17_19_23_nivel4_2_20260416_195357.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        14,
+        17,
+        19,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:53",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        7,
+        9,
+        14,
+        17,
+        19,
+        23
+      ],
+      "scores_excluidos": {
+        "2": 0.4197,
+        "7": 0.4397,
+        "14": 0.4519,
+        "17": 0.3592,
+        "23": 0.4702,
+        "19": 0.3741,
+        "9": 0.3804
+      },
+      "nivel_filtro": 5,
+      "qtd_combinacoes": 3,
+      "arquivo": "pool23_excl2_7_9_14_17_19_23_nivel5_3_20260416_195357.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        14,
+        17,
+        19,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:53",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        7,
+        9,
+        14,
+        17,
+        19,
+        23
+      ],
+      "scores_excluidos": {
+        "2": 0.4197,
+        "7": 0.4397,
+        "14": 0.4519,
+        "17": 0.3592,
+        "23": 0.4702,
+        "19": 0.3741,
+        "9": 0.3804
+      },
+      "nivel_filtro": 7,
+      "qtd_combinacoes": 66,
+      "arquivo": "pool23_excl2_7_9_14_17_19_23_nivel7_66_20260416_195357.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        14,
+        17,
+        19,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3663,
+      "data_geracao": "16/04/2026 19:53",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        7,
+        9,
+        14,
+        17,
+        19,
+        23
+      ],
+      "scores_excluidos": {
+        "2": 0.4197,
+        "7": 0.4397,
+        "14": 0.4519,
+        "17": 0.3592,
+        "23": 0.4702,
+        "19": 0.3741,
+        "9": 0.3804
+      },
+      "nivel_filtro": 8,
+      "qtd_combinacoes": 0,
+      "arquivo": "pool23_excl2_7_9_14_17_19_23_nivel8_cascN6_0_20260416_195357.txt",
+      "resultado_real": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        10,
+        12,
+        14,
+        17,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        14,
+        17,
+        19,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3664,
+      "data_geracao": "17/04/2026 18:39",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        11,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "15": 0.4346,
+        "11": 0.4339,
+        "2": 0.4126,
+        "23": 0.4078
+      },
+      "nivel_filtro": 0,
+      "qtd_combinacoes": 8008,
+      "arquivo": "pool23_excl2_11_15_23_nivel0_8008_20260417_183918.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": null,
+      "resultado_real": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        10,
+        11,
+        12,
+        16,
+        18,
+        19,
+        20,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        2,
+        11,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3664,
+      "data_geracao": "17/04/2026 18:39",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        11,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "15": 0.4346,
+        "11": 0.4339,
+        "2": 0.4126,
+        "23": 0.4078
+      },
+      "nivel_filtro": 1,
+      "qtd_combinacoes": 3792,
+      "arquivo": "pool23_excl2_11_15_23_nivel1_3792_20260417_183936.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": null,
+      "resultado_real": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        10,
+        11,
+        12,
+        16,
+        18,
+        19,
+        20,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        2,
+        11,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3664,
+      "data_geracao": "17/04/2026 18:39",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        11,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "15": 0.4346,
+        "11": 0.4339,
+        "2": 0.4126,
+        "23": 0.4078
+      },
+      "nivel_filtro": 2,
+      "qtd_combinacoes": 1732,
+      "arquivo": "pool23_excl2_11_15_23_nivel2_1732_20260417_183948.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": null,
+      "resultado_real": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        10,
+        11,
+        12,
+        16,
+        18,
+        19,
+        20,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        2,
+        11,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3664,
+      "data_geracao": "17/04/2026 18:39",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        11,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "15": 0.4346,
+        "11": 0.4339,
+        "2": 0.4126,
+        "23": 0.4078
+      },
+      "nivel_filtro": 3,
+      "qtd_combinacoes": 625,
+      "arquivo": "pool23_excl2_11_15_23_nivel3_625_20260417_183957.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": null,
+      "resultado_real": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        10,
+        11,
+        12,
+        16,
+        18,
+        19,
+        20,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        2,
+        11,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3664,
+      "data_geracao": "17/04/2026 18:40",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        11,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "15": 0.4346,
+        "11": 0.4339,
+        "2": 0.4126,
+        "23": 0.4078
+      },
+      "nivel_filtro": 4,
+      "qtd_combinacoes": 104,
+      "arquivo": "pool23_excl2_11_15_23_nivel4_104_20260417_184000.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": null,
+      "resultado_real": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        10,
+        11,
+        12,
+        16,
+        18,
+        19,
+        20,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        2,
+        11,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3664,
+      "data_geracao": "17/04/2026 18:40",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        11,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "15": 0.4346,
+        "11": 0.4339,
+        "2": 0.4126,
+        "23": 0.4078
+      },
+      "nivel_filtro": 7,
+      "qtd_combinacoes": 5871,
+      "arquivo": "pool23_excl2_11_15_23_nivel7_5871_20260417_184002.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": null,
+      "resultado_real": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        10,
+        11,
+        12,
+        16,
+        18,
+        19,
+        20,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        2,
+        11,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3664,
+      "data_geracao": "17/04/2026 18:40",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        2,
+        11,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "15": 0.4346,
+        "11": 0.4339,
+        "2": 0.4126,
+        "23": 0.4078
+      },
+      "nivel_filtro": 8,
+      "qtd_combinacoes": 4,
+      "arquivo": "pool23_excl2_11_15_23_nivel8_cascN6_4_20260417_184003.txt",
+      "resultado_real": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        10,
+        11,
+        12,
+        16,
+        18,
+        19,
+        20,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        2,
+        11,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "18/04/2026 19:48",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        6,
+        8,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "6": 0.4825,
+        "15": 0.4289,
+        "8": 0.4361,
+        "23": 0.3717
+      },
+      "nivel_filtro": 0,
+      "qtd_combinacoes": 3003,
+      "arquivo": "pool23_excl6_8_15_23_nivel0_3003_20260418_194808.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": "6-14",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        6,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "18/04/2026 19:48",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        6,
+        8,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "6": 0.4825,
+        "15": 0.4289,
+        "8": 0.4361,
+        "23": 0.3717
+      },
+      "nivel_filtro": 1,
+      "qtd_combinacoes": 1301,
+      "arquivo": "pool23_excl6_8_15_23_nivel1_1301_20260418_194813.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": "6-14",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        6,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "18/04/2026 19:48",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        6,
+        8,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "6": 0.4825,
+        "15": 0.4289,
+        "8": 0.4361,
+        "23": 0.3717
+      },
+      "nivel_filtro": 2,
+      "qtd_combinacoes": 549,
+      "arquivo": "pool23_excl6_8_15_23_nivel2_549_20260418_194817.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": "6-14",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        6,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "18/04/2026 19:48",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        6,
+        8,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "6": 0.4825,
+        "15": 0.4289,
+        "8": 0.4361,
+        "23": 0.3717
+      },
+      "nivel_filtro": 3,
+      "qtd_combinacoes": 312,
+      "arquivo": "pool23_excl6_8_15_23_nivel3_312_20260418_194820.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": "6-14",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        6,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "18/04/2026 19:48",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        6,
+        8,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "6": 0.4825,
+        "15": 0.4289,
+        "8": 0.4361,
+        "23": 0.3717
+      },
+      "nivel_filtro": 4,
+      "qtd_combinacoes": 55,
+      "arquivo": "pool23_excl6_8_15_23_nivel4_55_20260418_194822.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": "6-14",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        6,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "18/04/2026 19:48",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        6,
+        8,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "6": 0.4825,
+        "15": 0.4289,
+        "8": 0.4361,
+        "23": 0.3717
+      },
+      "nivel_filtro": 5,
+      "qtd_combinacoes": 30,
+      "arquivo": "pool23_excl6_8_15_23_nivel5_30_20260418_194823.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": "6-14",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        6,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "18/04/2026 19:48",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        6,
+        8,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "6": 0.4825,
+        "15": 0.4289,
+        "8": 0.4361,
+        "23": 0.3717
+      },
+      "nivel_filtro": 6,
+      "qtd_combinacoes": 1,
+      "arquivo": "pool23_excl6_8_15_23_nivel6_1_20260418_194824.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": "6-14",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        6,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "18/04/2026 19:48",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        6,
+        8,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "6": 0.4825,
+        "15": 0.4289,
+        "8": 0.4361,
+        "23": 0.3717
+      },
+      "nivel_filtro": 7,
+      "qtd_combinacoes": 1144,
+      "arquivo": "pool23_excl6_8_15_23_nivel7_1144_20260418_194824.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": false,
+      "filtro_favorecidos": "6-14",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        6,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "18/04/2026 19:48",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        6,
+        8,
+        15,
+        23
+      ],
+      "scores_excluidos": {
+        "6": 0.4825,
+        "15": 0.4289,
+        "8": 0.4361,
+        "23": 0.3717
+      },
+      "nivel_filtro": 8,
+      "qtd_combinacoes": 0,
+      "arquivo": "pool23_excl6_8_15_23_nivel8_cascN6_0_20260418_194824.txt",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        6,
+        23
+      ]
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 12:30",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 0,
+      "qtd_combinacoes": 33784,
+      "arquivo": "pool23_excl19_20_21_nivel0_33784_20260420_123015.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 12:31",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 1,
+      "qtd_combinacoes": 12336,
+      "arquivo": "pool23_excl19_20_21_nivel1_12336_20260420_123107.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 12:31",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 2,
+      "qtd_combinacoes": 4271,
+      "arquivo": "pool23_excl19_20_21_nivel2_4271_20260420_123135.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 12:31",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 3,
+      "qtd_combinacoes": 2114,
+      "arquivo": "pool23_excl19_20_21_nivel3_2114_20260420_123159.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 12:32",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 4,
+      "qtd_combinacoes": 249,
+      "arquivo": "pool23_excl19_20_21_nivel4_249_20260420_123206.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 12:32",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 5,
+      "qtd_combinacoes": 55,
+      "arquivo": "pool23_excl19_20_21_nivel5_55_20260420_123211.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 12:32",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 6,
+      "qtd_combinacoes": 25,
+      "arquivo": "pool23_excl19_20_21_nivel6_25_20260420_123215.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 12:32",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 7,
+      "qtd_combinacoes": 29929,
+      "arquivo": "pool23_excl19_20_21_nivel7_29929_20260420_123216.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 12:32",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 8,
+      "qtd_combinacoes": 19,
+      "arquivo": "pool23_excl19_20_21_nivel8_cascN6_19_20260420_123219.txt",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 13:04",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 0,
+      "qtd_combinacoes": 33784,
+      "arquivo": "pool23_excl19_20_21_nivel0_33784_20260420_130407.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 13:05",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 1,
+      "qtd_combinacoes": 12336,
+      "arquivo": "pool23_excl19_20_21_nivel1_12336_20260420_130500.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 13:05",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 2,
+      "qtd_combinacoes": 4271,
+      "arquivo": "pool23_excl19_20_21_nivel2_4271_20260420_130528.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 13:05",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 3,
+      "qtd_combinacoes": 2114,
+      "arquivo": "pool23_excl19_20_21_nivel3_2114_20260420_130552.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 13:05",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 4,
+      "qtd_combinacoes": 249,
+      "arquivo": "pool23_excl19_20_21_nivel4_249_20260420_130559.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 13:06",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 5,
+      "qtd_combinacoes": 55,
+      "arquivo": "pool23_excl19_20_21_nivel5_55_20260420_130604.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 13:06",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 6,
+      "qtd_combinacoes": 25,
+      "arquivo": "pool23_excl19_20_21_nivel6_25_20260420_130608.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 13:06",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 7,
+      "qtd_combinacoes": 29929,
+      "arquivo": "pool23_excl19_20_21_nivel7_29929_20260420_130609.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3665,
+      "data_geracao": "20/04/2026 13:06",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        19,
+        20,
+        21
+      ],
+      "scores_excluidos": {
+        "19": 0.4252,
+        "20": 0.3317,
+        "21": 0.4042
+      },
+      "nivel_filtro": 8,
+      "qtd_combinacoes": 19,
+      "arquivo": "pool23_excl19_20_21_nivel8_cascN6_19_20260420_130611.txt",
+      "resultado_real": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        16,
+        18,
+        22,
+        23,
+        25
+      ],
+      "acerto_exclusao": true,
+      "erros_exclusao": []
+    },
+    {
+      "concurso_alvo": 3666,
+      "data_geracao": "20/04/2026 16:41",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        8,
+        9,
+        10
+      ],
+      "scores_excluidos": {
+        "8": 0.4141,
+        "9": 0.3883,
+        "10": 0.364
+      },
+      "nivel_filtro": 0,
+      "qtd_combinacoes": 23426,
+      "arquivo": "pool23_excl8_9_10_nivel0_23426_20260420_164132.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        4,
+        6,
+        7,
+        9,
+        12,
+        14,
+        15,
+        16,
+        17,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        9
+      ]
+    },
+    {
+      "concurso_alvo": 3666,
+      "data_geracao": "20/04/2026 16:42",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        8,
+        9,
+        10
+      ],
+      "scores_excluidos": {
+        "8": 0.4141,
+        "9": 0.3883,
+        "10": 0.364
+      },
+      "nivel_filtro": 1,
+      "qtd_combinacoes": 9636,
+      "arquivo": "pool23_excl8_9_10_nivel1_9636_20260420_164218.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        4,
+        6,
+        7,
+        9,
+        12,
+        14,
+        15,
+        16,
+        17,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        9
+      ]
+    },
+    {
+      "concurso_alvo": 3666,
+      "data_geracao": "20/04/2026 16:42",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        8,
+        9,
+        10
+      ],
+      "scores_excluidos": {
+        "8": 0.4141,
+        "9": 0.3883,
+        "10": 0.364
+      },
+      "nivel_filtro": 2,
+      "qtd_combinacoes": 3440,
+      "arquivo": "pool23_excl8_9_10_nivel2_3440_20260420_164241.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        4,
+        6,
+        7,
+        9,
+        12,
+        14,
+        15,
+        16,
+        17,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        9
+      ]
+    },
+    {
+      "concurso_alvo": 3666,
+      "data_geracao": "20/04/2026 16:42",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        8,
+        9,
+        10
+      ],
+      "scores_excluidos": {
+        "8": 0.4141,
+        "9": 0.3883,
+        "10": 0.364
+      },
+      "nivel_filtro": 3,
+      "qtd_combinacoes": 537,
+      "arquivo": "pool23_excl8_9_10_nivel3_537_20260420_164255.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        4,
+        6,
+        7,
+        9,
+        12,
+        14,
+        15,
+        16,
+        17,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        9
+      ]
+    },
+    {
+      "concurso_alvo": 3666,
+      "data_geracao": "20/04/2026 16:43",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        8,
+        9,
+        10
+      ],
+      "scores_excluidos": {
+        "8": 0.4141,
+        "9": 0.3883,
+        "10": 0.364
+      },
+      "nivel_filtro": 4,
+      "qtd_combinacoes": 40,
+      "arquivo": "pool23_excl8_9_10_nivel4_40_20260420_164301.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        4,
+        6,
+        7,
+        9,
+        12,
+        14,
+        15,
+        16,
+        17,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        9
+      ]
+    },
+    {
+      "concurso_alvo": 3666,
+      "data_geracao": "20/04/2026 16:43",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        8,
+        9,
+        10
+      ],
+      "scores_excluidos": {
+        "8": 0.4141,
+        "9": 0.3883,
+        "10": 0.364
+      },
+      "nivel_filtro": 7,
+      "qtd_combinacoes": 14717,
+      "arquivo": "pool23_excl8_9_10_nivel7_14717_20260420_164312.txt",
+      "exclusao_suave_max": 0,
+      "filtro_grupos_atrasados": true,
+      "filtro_favorecidos": "8-12",
+      "resultado_real": [
+        1,
+        4,
+        6,
+        7,
+        9,
+        12,
+        14,
+        15,
+        16,
+        17,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        9
+      ]
+    },
+    {
+      "concurso_alvo": 3666,
+      "data_geracao": "20/04/2026 16:43",
+      "estrategia": "NEURAL_PURO",
+      "usar_no_aprendizado": true,
+      "usar_no_retreino": true,
+      "excluidos": [
+        8,
+        9,
+        10
+      ],
+      "scores_excluidos": {
+        "8": 0.4141,
+        "9": 0.3883,
+        "10": 0.364
+      },
+      "nivel_filtro": 8,
+      "qtd_combinacoes": 0,
+      "arquivo": "pool23_excl8_9_10_nivel8_cascN6_0_20260420_164314.txt",
+      "resultado_real": [
+        1,
+        4,
+        6,
+        7,
+        9,
+        12,
+        14,
+        15,
+        16,
+        17,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "acerto_exclusao": false,
+      "erros_exclusao": [
+        9
       ]
     }
   ]

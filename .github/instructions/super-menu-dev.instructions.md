@@ -139,3 +139,8 @@ INTERFACES_DIR = r"C:\Users\AR CALHAU\source\repos\LotoScope\lotofacil_lite\inte
 - SEMPRE testar a nova opção isoladamente antes de integrar
 - Toda opção deve ter tratamento de exceção com mensagem amigável
 - Input de concurso deve aceitar tanto número inteiro quanto "último"
+- **🔴 REGRA INVIOLÁVEL — Paridade Opção 31 ↔ Opção 30.2:**
+  Toda feature, filtro, prompt ou lógica implementada na **Opção 31** (Pool 23 Gerador)
+  **DEVE obrigatoriamente ser replicada** na **Opção 30.2** (Pool 23 Backtesting).
+  As duas opções devem manter paridade funcional. Ao concluir uma alteração na Opção 31,
+  verificar imediatamente se a Opção 30.2 precisa da mesma mudança e aplicá-la.
