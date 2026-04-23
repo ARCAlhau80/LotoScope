@@ -13495,7 +13495,13 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"   ⚠️ Confiança: {nota} (vantagem ~{62 if criterio>=3 else (60 if criterio>=2 else 58)}% vs 60% aleatório)")
         except Exception as e:
             pass  # Silencioso se falhar - é apenas sugestão
-        
+
+        # TOP 20 DÉBITOS — referência visual para escolha dos fixos
+        try:
+            self._exibir_top20_debitos_inline(resultados, janela=6)
+        except Exception:
+            pass
+
         numeros_fixos = set()
         pool_minmax_candidatos = set()
         pool_minmax_min = 0
@@ -16135,6 +16141,43 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             'criterio': criterio_usado,
             'confianca': '⭐⭐⭐' if criterio_usado >= 3 else ('⭐⭐' if criterio_usado >= 2 else '⭐')
         }
+
+    def _exibir_top20_debitos_inline(self, resultados, janela=6):
+        """
+        Exibe TOP 20 débitos posicionais de forma compacta, sem pedir input.
+        Usado como referência informativa na seleção de números fixos.
+        """
+        from collections import Counter, defaultdict
+
+        _, lista_debitos = self._calcular_debitos_posicionais(resultados, janela)
+        if not lista_debitos:
+            return
+
+        freq_geral = Counter()
+        for r in resultados[:janela]:
+            for num in r['numeros']:
+                freq_geral[num] += 1
+
+        print(f"\n   💰 TOP 20 DÉBITOS — últimos {janela} concursos (referência para fixos):")
+        print("   " + "─"*85)
+        print(f"   {'Nº':>4} | {'Posição':>7} | {'Freq Geral':>10} | {'Média Hist':>10} | {'Freq Pos':>8} | {'Déficit':>8}")
+        print(f"   {'':>4} | {'':>7} | {'(últimos)':>10} | {'(posição)':>10} | {'(recente)':>8} | {'':>8}")
+        print("   " + "─"*85)
+        for deb in lista_debitos[:20]:
+            barra = "█" * int(deb['deficit'] / 2)
+            fg = freq_geral[deb['numero']] / janela * 100
+            print(f"   {deb['numero']:4d} |   N{deb['posicao']:<4d} | {fg:9.1f}% | {deb['media_historica']:9.1f}% | {deb['freq_recente']:7.1f}% | {deb['deficit']:+7.1f}% {barra}")
+
+        # WHERE SQL compacto
+        where_por_posicao = defaultdict(set)
+        for deb in lista_debitos[:20]:
+            where_por_posicao[deb['posicao']].add(deb['numero'])
+        if where_por_posicao:
+            clausulas = [
+                f"N{p} IN ({','.join(str(v) for v in sorted(where_por_posicao[p]))})"
+                for p in sorted(where_por_posicao.keys())
+            ]
+            print(f"\n   🧩 WHERE SQL (TOP 20): {' AND '.join(clausulas)}")
 
     def _exibir_mapa_debitos_posicionais(self):
         """Exibe o mapa de débitos posicionais - números que estão "devendo"."""
@@ -20055,7 +20098,13 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"   ⚠️ Confiança: {nota_302} (vantagem ~{62 if criterio_302>=3 else (60 if criterio_302>=2 else 58)}% vs 60% aleatório)")
         except Exception:
             pass
-        
+
+        # TOP 20 DÉBITOS — referência visual para escolha dos fixos
+        try:
+            self._exibir_top20_debitos_inline(resultados, janela=6)
+        except Exception:
+            pass
+
         numeros_fixos = set()
         pool_minmax_candidatos_302 = set()
         pool_minmax_min_302 = 0
