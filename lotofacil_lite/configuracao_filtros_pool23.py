@@ -92,6 +92,10 @@ FILTROS_POR_NIVEL = {
         # Posições Travadas (janela 3 — favorecer repetição em posições estáveis)
         'usar_filtro_posicoes_travadas': True,
         'posicoes_travadas_tolerancia': 4,  # Muito permissivo (~91% concursos passam)
+        # Melhores por Posição (filtro posicional positivo)
+        'usar_filtro_melhores_posicao': True,
+        'melhores_limiar': 11,
+        'melhores_top_k': 3,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -136,6 +140,10 @@ FILTROS_POR_NIVEL = {
         # Posições Travadas
         'usar_filtro_posicoes_travadas': True,
         'posicoes_travadas_tolerancia': 3,  # Recomendado (~75% concursos passam)
+        # Melhores por Posição (filtro posicional positivo)
+        'usar_filtro_melhores_posicao': True,
+        'melhores_limiar': 11,
+        'melhores_top_k': 3,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -186,6 +194,10 @@ FILTROS_POR_NIVEL = {
         # Posições Travadas
         'usar_filtro_posicoes_travadas': True,
         'posicoes_travadas_tolerancia': 3,  # ~75% concursos passam
+        # Melhores por Posição (filtro posicional positivo)
+        'usar_filtro_melhores_posicao': True,
+        'melhores_limiar': 11,
+        'melhores_top_k': 3,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -240,6 +252,10 @@ FILTROS_POR_NIVEL = {
         # Posições Travadas
         'usar_filtro_posicoes_travadas': True,
         'posicoes_travadas_tolerancia': 2,  # Moderado (~49% concursos passam)
+        # Melhores por Posição (filtro posicional positivo)
+        'usar_filtro_melhores_posicao': True,
+        'melhores_limiar': 10,
+        'melhores_top_k': 3,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -296,6 +312,10 @@ FILTROS_POR_NIVEL = {
         # Posições Travadas
         'usar_filtro_posicoes_travadas': True,
         'posicoes_travadas_tolerancia': 2,  # Moderado (~49% concursos passam)
+        # Melhores por Posição (filtro posicional positivo)
+        'usar_filtro_melhores_posicao': True,
+        'melhores_limiar': 10,
+        'melhores_top_k': 3,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -355,6 +375,10 @@ FILTROS_POR_NIVEL = {
         # Posições Travadas
         'usar_filtro_posicoes_travadas': True,
         'posicoes_travadas_tolerancia': 1,  # Agressivo (~34% concursos passam)
+        # Melhores por Posição (filtro posicional positivo)
+        'usar_filtro_melhores_posicao': True,
+        'melhores_limiar': 10,
+        'melhores_top_k': 3,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════

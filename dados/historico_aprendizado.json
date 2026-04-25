@@ -1,5 +1,5 @@
 {
-  "total_backtests": 1026,
+  "total_backtests": 1028,
   "filtros_falhas": {
     "N2_SOMA": 3,
     "N7_POSICOES_FRIAS": 1,
@@ -25,16 +25,16 @@
     "7": 6,
     "8": 0
   },
-  "exclusao_correta": 49,
-  "exclusao_errada": 648,
+  "exclusao_correta": 50,
+  "exclusao_errada": 649,
   "previsoes": {
     "soma": {
-      "acertos": 4,
+      "acertos": 6,
       "erros": 5
     },
     "compensacao": {
       "acertos": 4,
-      "erros": 4
+      "erros": 6
     }
   },
   "eventos_atipicos": [
@@ -175,6 +175,52 @@
       ],
       "padroes": [
         "⚠️ PARES ATÍPICO: 4 (normal: 6-9)"
+      ]
+    },
+    {
+      "data": "20260424_092809",
+      "resultado": [
+        1,
+        2,
+        3,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        15,
+        17,
+        18,
+        21,
+        24
+      ],
+      "padroes": [
+        "⚠️ SOMA ATÍPICA: 164 (média: 195)"
+      ]
+    },
+    {
+      "data": "20260424_094248",
+      "resultado": [
+        1,
+        2,
+        3,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        15,
+        17,
+        18,
+        21,
+        24
+      ],
+      "padroes": [
+        "⚠️ SOMA ATÍPICA: 164 (média: 195)"
       ]
     }
   ],
@@ -687,6 +733,92 @@
         8
       ],
       "quentes_ok": 0,
+      "frios_ok": 1
+    },
+    {
+      "data": "20260424_092809",
+      "resultado": [
+        1,
+        2,
+        3,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        15,
+        17,
+        18,
+        21,
+        24
+      ],
+      "excluidos": [
+        10,
+        13,
+        22
+      ],
+      "exclusao_correta": false,
+      "soma": 164,
+      "seq_max": 5,
+      "pares": 5,
+      "ultimo_nivel_jackpot": -1,
+      "melhor_roi_nivel": 7,
+      "melhor_roi_valor": -67.2,
+      "estrategia_vencedora": "-",
+      "top2_quentes": [
+        6,
+        1
+      ],
+      "top2_frios": [
+        23,
+        8
+      ],
+      "quentes_ok": 1,
+      "frios_ok": 1
+    },
+    {
+      "data": "20260424_094248",
+      "resultado": [
+        1,
+        2,
+        3,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        15,
+        17,
+        18,
+        21,
+        24
+      ],
+      "excluidos": [
+        4,
+        19,
+        22
+      ],
+      "exclusao_correta": true,
+      "soma": 164,
+      "seq_max": 5,
+      "pares": 5,
+      "ultimo_nivel_jackpot": -1,
+      "melhor_roi_nivel": 7,
+      "melhor_roi_valor": 171.3,
+      "estrategia_vencedora": "-",
+      "top2_quentes": [
+        6,
+        1
+      ],
+      "top2_frios": [
+        23,
+        8
+      ],
+      "quentes_ok": 1,
       "frios_ok": 1
     }
   ],
@@ -1812,7 +1944,7 @@
   "vitorias_estrategia": {
     "QUENTES": 2,
     "FRIOS": 2,
-    "EMPATE": 8
+    "EMPATE": 10
   },
   "sequencia_vitorias": [
     "-",
@@ -1826,9 +1958,11 @@
     "-",
     "-",
     "-",
-    "F"
+    "F",
+    "-",
+    "-"
   ],
-  "ultimo_vencedor": "F",
+  "ultimo_vencedor": "-",
   "validacoes_unitarias": [
     {
       "data": "20260411_124849",
@@ -2041,6 +2175,69 @@
       "previsao_comp_tipo": null,
       "previsao_comp_resultado": "DESCER",
       "previsao_comp_ok": null
+    },
+    {
+      "data": "20260424_092809",
+      "concurso_base": 3667,
+      "concurso_alvo": 3668,
+      "estrategia_id": 6,
+      "estrategia_nome": "Neural PURO (+10.2pp)",
+      "comparar_todas": false,
+      "melhor_estrategia_pontual": null,
+      "qtd_excluir": 3,
+      "excluidos": [
+        10,
+        13,
+        22
+      ],
+      "erros_exclusao": [
+        10,
+        13
+      ],
+      "exclusao_correta": false,
+      "taxa_exclusao_unitaria": 33.33,
+      "score_unitario": 20.0,
+      "classificacao": "RETREINAR",
+      "jackpot_nivel_0": false,
+      "ultimo_nivel_jackpot": -1,
+      "previsao_soma_ativa": true,
+      "previsao_soma_tipo": "ALTA",
+      "previsao_soma_resultado": "BAIXA",
+      "previsao_soma_ok": false,
+      "previsao_comp_ativa": true,
+      "previsao_comp_tipo": "SUBIR",
+      "previsao_comp_resultado": "DESCER",
+      "previsao_comp_ok": false
+    },
+    {
+      "data": "20260424_094248",
+      "concurso_base": 3667,
+      "concurso_alvo": 3668,
+      "estrategia_id": 6,
+      "estrategia_nome": "Neural PURO (+10.2pp)",
+      "comparar_todas": false,
+      "melhor_estrategia_pontual": null,
+      "qtd_excluir": 3,
+      "excluidos": [
+        4,
+        19,
+        22
+      ],
+      "erros_exclusao": [],
+      "exclusao_correta": true,
+      "taxa_exclusao_unitaria": 100.0,
+      "score_unitario": 60.0,
+      "classificacao": "ACEITÁVEL",
+      "jackpot_nivel_0": false,
+      "ultimo_nivel_jackpot": -1,
+      "previsao_soma_ativa": true,
+      "previsao_soma_tipo": "ALTA",
+      "previsao_soma_resultado": "BAIXA",
+      "previsao_soma_ok": false,
+      "previsao_comp_ativa": true,
+      "previsao_comp_tipo": "SUBIR",
+      "previsao_comp_resultado": "DESCER",
+      "previsao_comp_ok": false
     }
   ]
 }

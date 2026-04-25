@@ -3710,7 +3710,16 @@ class SuperMenuLotofacil:
             if len(todas_combinacoes) > max_combinacoes:
                 print(f"\n⚠️ Limitando a {max_combinacoes:,} combinações (de {len(todas_combinacoes):,})")
                 todas_combinacoes = random.sample(todas_combinacoes, max_combinacoes)
-        # Salvar arquivo
+        
+                    # POS-FILTRO: PADROES STRING (Op30.2)
+            if _usar_filtro_string_302 and _cold_bigrams_302 and len(combos_nivel)>0:
+                try:
+                    from analise_padroes_string import filtrar_por_padroes_string as _fps302
+                    _an302=len(combos_nivel)
+                    combos_nivel,_rj302=_fps302(combos_nivel,_cold_bigrams_302,None,max_violacoes=_max_viol_string_302)
+                    if _rj302>0:print(f'      String:{_an302:,}>{len(combos_nivel):,} ({_rj302:,} rej.)')
+                except:pass
+# Salvar arquivo
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         nome_arquivo = f"multiplos_pools_{timestamp}.txt"
         
@@ -6157,7 +6166,7 @@ class SuperMenuLotofacil:
         arquivos = []
         
         # Oferecer auto-listagem da pasta dados/
-        _dados_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'dados')
+        _dados_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dados')
         _dados_dir = os.path.normpath(_dados_dir)
         
         _primeira_entrada = input("   📁 (PASTA para listar dados/ ou cole caminhos): ").strip()
@@ -13048,13 +13057,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # === ALERTA PADROES STRING (Op31) ===
         _cold_bigrams_31=set();_cold_trigrams_31=set()
         _usar_filtro_string_31=False;_max_viol_string_31=1
-        _ultimo_sorteio_31=[];_usar_hamming_31=False;_min_hamming_31=4
         try:
             _sd31=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"sistemas")
             if _sd31 not in sys.path:sys.path.insert(0,_sd31)
             from analise_padroes_string import alerta_padroes_pool as _aps31
             _r31=_aps31(pool_final,janela=50)
-            _cold_bigrams_31,_cold_trigrams_31,_,_,_usar_filtro_string_31,_max_viol_string_31,_ultimo_sorteio_31,_usar_hamming_31,_min_hamming_31=_r31
+            _cold_bigrams_31,_cold_trigrams_31,_,_,_usar_filtro_string_31,_max_viol_string_31=_r31
         except Exception as _e31:print("   Info padroes string:",_e31)
 
         # ═══════════════════════════════════════════════════════════════════
@@ -13416,7 +13424,6 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Quando muitas posições desceram, próximo tende a subir (e vice-versa)
         # ═══════════════════════════════════════════════════════════════════
         inversao_direcao = None  # 'subir', 'descer' ou None
-        inversao_intensidade = None  # 'forte' (>=12), 'moderada' (>=10), 'leve' (>=8)
         inversao_menor_ultimo = 0
         inversao_maior_ultimo = 0
         try:
@@ -13425,25 +13432,11 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 inversao_menor_ultimo = inv_data['menor']
                 inversao_maior_ultimo = inv_data['maior']
                 if inv_data['menor'] >= 12:
-                    inversao_direcao = 'subir'
-                    inversao_intensidade = 'forte'
-                elif inv_data['menor'] >= 10:
-                    inversao_direcao = 'subir'
-                    inversao_intensidade = 'moderada'
-                elif inv_data['menor'] >= 8:
-                    inversao_direcao = 'subir'
-                    inversao_intensidade = 'leve'
+                    inversao_direcao = 'subir'  # Muitas desceram → próximo sobe
                 elif inv_data['maior'] >= 12:
-                    inversao_direcao = 'descer'
-                    inversao_intensidade = 'forte'
-                elif inv_data['maior'] >= 10:
-                    inversao_direcao = 'descer'
-                    inversao_intensidade = 'moderada'
-                elif inv_data['maior'] >= 8:
-                    inversao_direcao = 'descer'
-                    inversao_intensidade = 'leve'
+                    inversao_direcao = 'descer'  # Muitas subiram → próximo desce
                 if inversao_direcao:
-                    print(f"\n   🔄 INVERSÃO POSICIONAL DETECTADA: previsão={inversao_direcao.upper()} ({inversao_intensidade})")
+                    print(f"\n   🔄 INVERSÃO POSICIONAL DETECTADA: previsão={inversao_direcao.upper()}")
                     print(f"      Último concurso: menor={inv_data['menor']} maior={inv_data['maior']}")
                     print(f"      Filtro ativo em níveis ≥ 1 (r=0.44, lift {inv_data['lift']:.2f}x)")
         except Exception:
@@ -13495,13 +13488,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"   ⚠️ Confiança: {nota} (vantagem ~{62 if criterio>=3 else (60 if criterio>=2 else 58)}% vs 60% aleatório)")
         except Exception as e:
             pass  # Silencioso se falhar - é apenas sugestão
-
-        # TOP 20 DÉBITOS — referência visual para escolha dos fixos
-        try:
-            self._exibir_top20_debitos_inline(resultados, janela=6)
-        except Exception:
-            pass
-
+        
         numeros_fixos = set()
         pool_minmax_candidatos = set()
         pool_minmax_min = 0
@@ -14058,7 +14045,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         if pool_minmax_min <= len(set(c) & pool_minmax_candidatos) <= pool_minmax_max
                     ]
                     print(f"   🎯 Pool Min/Max: {_antes_pool8:,} → {len(combos_filtradas):,} combinações")
-                if len(combos_filtradas) == 0:
+                                # POS-FILTRO: PADROES STRING (Op31)
+            if _usar_filtro_string_31 and _cold_bigrams_31 and len(combos_filtradas)>0:
+                try:
+                    from analise_padroes_string import filtrar_por_padroes_string as _fps31
+                    _an31=len(combos_filtradas)
+                    combos_filtradas,_rj31=_fps31(combos_filtradas,_cold_bigrams_31,None,max_violacoes=_max_viol_string_31)
+                    print(f'   String: {_an31:,}>{len(combos_filtradas):,} ({_rj31:,} rej.)')
+                except Exception as _ef31:print('   Filtro string err:',_ef31)
+if len(combos_filtradas) == 0:
                         print("   ⚠️ Pool Min/Max eliminou todas as combinações!")
                         if len(niveis_a_processar) > 1:
                             continue
@@ -14449,21 +14444,6 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     print(f"      Exemplos: {' | '.join(exemplos)}")
 
             # ═══════════════════════════════════════════════════════════════════
-            # CALCULAR MELHORES NÚMEROS POR POSIÇÃO (Filtro Posicional Positivo)
-            # ═══════════════════════════════════════════════════════════════════
-            melhores_candidatos = {}
-            melhores_limiar = filtros.get('melhores_limiar', 11)
-            usar_filtro_melhores_posicao = filtros.get('usar_filtro_melhores_posicao', False)
-
-            if usar_filtro_melhores_posicao:
-                melhores_candidatos, _ = self._calcular_melhores_por_posicao(
-                    resultados, top_k=filtros.get('melhores_top_k', 3)
-                )
-                print(f"\n   🏆 FILTRO MELHORES POSIÇÃO ATIVADO!")
-                print(f"      Top-3 por posição (hist+win10+win6 ponderado)")
-                print(f"      Limiar: {melhores_limiar}/15 posições com número bom")
-
-            # ═══════════════════════════════════════════════════════════════════
             # CALCULAR POSIÇÕES FRIAS (Filtro para Nível 7)
             # Usa débitos posicionais com janela=6 para identificar números
             # que NÃO devem estar em determinadas posições
@@ -14698,8 +14678,6 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     print(f"      • 📊 Piores posição (histórico): tolerância={piores_tolerancia_historico}")
                 if usar_filtro_piores_recente:
                     print(f"      • 📊 Piores posição (30 últimos): tolerância={piores_tolerancia_recente}")
-                if usar_filtro_melhores_posicao:
-                    print(f"      • 🏆 Melhores posição (ponderado top-3): limiar={melhores_limiar}")
                 if filtro_grupos_atrasados_ativo:
                     print(f"      • 🔄 Grupos atrasados: C1+C5={sorted(grupos_ranges_aceitos.get('C1_C5', set()))}, L1+L5={sorted(grupos_ranges_aceitos.get('L1_L5', set()))}")
                 if filtro_favorecidos_ativo:
@@ -14827,17 +14805,6 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     if violacoes_rec > piores_tolerancia_recente:
                         continue
             
-                # Filtro MELHORES POR POSIÇÃO
-                if usar_filtro_melhores_posicao and melhores_candidatos:
-                    if 'combo_sorted' not in locals():
-                        combo_sorted = sorted(combo)
-                    match_count = sum(
-                        1 for pos_idx, num in enumerate(combo_sorted)
-                        if num in melhores_candidatos.get(pos_idx + 1, set())
-                    )
-                    if match_count < melhores_limiar:
-                        continue
-
                 # Filtro PARES
                 if 'pares_min' in filtros:
                     pares = sum(1 for n in combo if n % 2 == 0)
@@ -15018,25 +14985,20 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         continue
             
                 # Filtro INVERSÃO POSICIONAL (r=0.44, lift 2.2x)
-                # Gradual: forte(>=12) thr=5/6 | moderada(>=10) thr=4/5 | leve(>=8) thr=3/4
-                # Nível 0: desligado
+                # Quando padrão detectado: filtra combos que alinham com a direção prevista
+                # Nível 0: desligado | Nível 1-3: tolerância 5 | Nível 4-6: tolerância 6
                 if nivel > 0 and inversao_direcao:
                     _inv_sorted = sorted(combo)
-                    # Threshold por intensidade: forte=5/6, moderada=4/5, leve=3/4
-                    if inversao_intensidade == 'forte':
-                        _inv_thr = 6 if nivel >= 4 else 5
-                    elif inversao_intensidade == 'moderada':
-                        _inv_thr = 5 if nivel >= 4 else 4
-                    else:  # leve
-                        _inv_thr = 4 if nivel >= 4 else 3
                     if inversao_direcao == 'subir':
                         # Previsão: próximo sobe → aceitar combos com muitas posições MAIORES
                         _inv_maior = sum(1 for p in range(15) if _inv_sorted[p] > ultimo_resultado_sorted[p])
+                        _inv_thr = 6 if nivel >= 4 else 5
                         if _inv_maior < _inv_thr:
                             continue
                     elif inversao_direcao == 'descer':
                         # Previsão: próximo desce → aceitar combos com muitas posições MENORES
                         _inv_menor = sum(1 for p in range(15) if _inv_sorted[p] < ultimo_resultado_sorted[p])
+                        _inv_thr = 6 if nivel >= 4 else 5
                         if _inv_menor < _inv_thr:
                             continue
             
@@ -15127,17 +15089,18 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 try:
                     from analise_padroes_string import filtrar_por_padroes_string as _fps31
                     _an31=len(combos_filtradas)
-                    combos_filtradas,_rj31=_fps31(combos_filtradas,_cold_bigrams_31,_cold_trigrams_31,max_violacoes=_max_viol_string_31)
+                    combos_filtradas,_rj31=_fps31(combos_filtradas,_cold_bigrams_31,None,max_violacoes=_max_viol_string_31)
                     print(f"   String: {_an31:,}>{len(combos_filtradas):,} ({_rj31:,} rej.)")
                 except Exception as _ef31:print("   Filtro string err:",_ef31)
-            # POS-FILTRO: HAMMING (Op31)
-            if _usar_hamming_31 and _ultimo_sorteio_31 and len(combos_filtradas)>0:
+
+            # POS-FILTRO: PADROES STRING (Op31)
+            if _usar_filtro_string_31 and _cold_bigrams_31 and len(combos_filtradas)>0:
                 try:
-                    from analise_padroes_string import filtrar_por_hamming as _fh31
-                    _anh31=len(combos_filtradas)
-                    combos_filtradas,_rjh31=_fh31(combos_filtradas,_ultimo_sorteio_31,min_hamming=_min_hamming_31)
-                    print(f"   Hamming: {_anh31:,}>{len(combos_filtradas):,} ({_rjh31:,} rej.)")
-                except Exception as _efh31:print("   Filtro hamming err:",_efh31)
+                    from analise_padroes_string import filtrar_por_padroes_string as _fps31
+                    _an31=len(combos_filtradas)
+                    combos_filtradas,_rj31=_fps31(combos_filtradas,_cold_bigrams_31,None,max_violacoes=_max_viol_string_31)
+                    print(f'   String: {_an31:,}>{len(combos_filtradas):,} ({_rj31:,} rej.)')
+                except Exception as _ef31:print('   Filtro string err:',_ef31)
             if len(combos_filtradas) == 0:
                 print("\n   ⚠️ Nenhuma combinação passou nos filtros!")
                 if len(niveis_a_processar) > 1:
@@ -15516,68 +15479,6 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         
         return piores_por_posicao, freq_detalhada
 
-    def _calcular_melhores_por_posicao(self, resultados, top_k=3, pesos=None):
-        """
-        🏆 FILTRO POSICIONAL POSITIVO — Melhores por Posição
-        
-        Calcula para cada posição (N1-N15) os TOP-K números mais frequentes,
-        combinando 3 janelas com pesos:
-          - histórico completo: 50%
-          - últimos 10: 30%
-          - últimos 6: 20%
-        
-        Retorna um dict {posicao(1-15): set(numeros_candidatos)} — a UNIÃO dos
-        top-K das 3 janelas ponderada. Uma combinação "passa" se ≥ limiar posições
-        têm seu número dentro do conjunto candidato.
-        
-        Args:
-            resultados: Lista de dicts com 'numeros' (ordenados), mais recentes primeiro.
-            top_k: Candidatos por posição por janela (padrão 3).
-            pesos: dict com chaves 'hist', 'win10', 'win6' (padrão 0.5/0.3/0.2).
-        
-        Retorna:
-            dict: {posicao: set(numeros_candidatos)} — união ponderada dos tops
-            dict: {posicao: {numero: score}} — scores por (posição, número) para debug
-        """
-        from collections import Counter, defaultdict
-        
-        if pesos is None:
-            pesos = {'hist': 0.5, 'win10': 0.3, 'win6': 0.2}
-        
-        # resultados vem do mais recente para o mais antigo
-        todos = resultados          # histórico completo
-        janela_10 = resultados[:10]
-        janela_6 = resultados[:6]
-        
-        def top_k_por_posicao(dados, k):
-            freq = defaultdict(Counter)
-            for r in dados:
-                for pos_idx, num in enumerate(r['numeros']):
-                    freq[pos_idx + 1][num] += 1
-            return {pos: [n for n, _ in cnt.most_common(k)] for pos, cnt in freq.items()}
-        
-        top_hist = top_k_por_posicao(todos, top_k)
-        top_10   = top_k_por_posicao(janela_10, top_k) if len(janela_10) >= 3 else top_hist
-        top_6    = top_k_por_posicao(janela_6, top_k) if len(janela_6) >= 3 else top_hist
-        
-        # Calcular score ponderado por (posição, número)
-        scores = defaultdict(lambda: defaultdict(float))
-        for pos in range(1, 16):
-            for rank_0, num in enumerate(top_hist.get(pos, [])):
-                scores[pos][num] += pesos['hist'] * (top_k - rank_0) / top_k
-            for rank_0, num in enumerate(top_10.get(pos, [])):
-                scores[pos][num] += pesos['win10'] * (top_k - rank_0) / top_k
-            for rank_0, num in enumerate(top_6.get(pos, [])):
-                scores[pos][num] += pesos['win6'] * (top_k - rank_0) / top_k
-        
-        # Candidatos por posição: UNIÃO dos tops das 3 janelas
-        candidatos = {}
-        for pos in range(1, 16):
-            cands = set(top_hist.get(pos, [])) | set(top_10.get(pos, [])) | set(top_6.get(pos, []))
-            candidatos[pos] = cands
-        
-        return candidatos, dict(scores)
-
     def _contar_qtde_intervalo_6_25(self, combo):
         """
         🎯 FILTRO QTDE 6-25
@@ -15723,56 +15624,27 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             igual = ultimo[3] or 0
             
             # Tabela de probabilidade baseada na análise estatística
-            # menor_atual → prob(maior_próximo ≥ 10) = SUBIR
+            # menor_atual → prob(maior_próximo ≥ 10)
             if menor >= 14:
-                prob_subir = 57.7
-                lift_subir = 2.20
-                alerta_subir = "🔴 MUITO ALTA"
+                prob_inv = 57.7
+                lift = 2.20
+                alerta = "🔴 MUITO ALTA"
             elif menor >= 12:
-                prob_subir = 51.4
-                lift_subir = 1.96
-                alerta_subir = "🟠 ALTA"
+                prob_inv = 51.4
+                lift = 1.96
+                alerta = "🟠 ALTA"
             elif menor >= 10:
-                prob_subir = 42.8
-                lift_subir = 1.63
-                alerta_subir = "🟡 MODERADA"
+                prob_inv = 42.8
+                lift = 1.63
+                alerta = "🟡 MODERADA"
             elif menor >= 8:
-                prob_subir = 35.0
-                lift_subir = 1.33
-                alerta_subir = "⚪ BAIXA"
+                prob_inv = 35.0
+                lift = 1.33
+                alerta = "⚪ BAIXA"
             else:
-                prob_subir = 20.0
-                lift_subir = 0.76
-                alerta_subir = "🔵 IMPROVÁVEL"
-
-            # maior_atual → prob(menor_próximo ≥ 10) = DESCER (tabela simétrica)
-            if maior >= 14:
-                prob_descer = 57.7
-                lift_descer = 2.20
-                alerta_descer = "🔴 MUITO ALTA"
-            elif maior >= 12:
-                prob_descer = 51.4
-                lift_descer = 1.96
-                alerta_descer = "🟠 ALTA"
-            elif maior >= 10:
-                prob_descer = 42.8
-                lift_descer = 1.63
-                alerta_descer = "🟡 MODERADA"
-            elif maior >= 8:
-                prob_descer = 35.0
-                lift_descer = 1.33
-                alerta_descer = "⚪ BAIXA"
-            else:
-                prob_descer = 20.0
-                lift_descer = 0.76
-                alerta_descer = "🔵 IMPROVÁVEL"
-
-            prob_neutro = max(0.0, 100.0 - prob_subir - prob_descer)
-
-            # Compatibilidade com código existente
-            prob_inv = prob_subir
-            lift = lift_subir
-            alerta = alerta_subir
+                prob_inv = 20.0
+                lift = 0.76
+                alerta = "🔵 IMPROVÁVEL"
             
             resultado = {
                 'concurso': conc,
@@ -15798,40 +15670,20 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"   {'Conc':>6} {'↓Men':>5} {'↑Mai':>5} {'=Igu':>5}  {'Tendência':>12}")
                 print("   " + "─"*40)
                 for h in resultado['historico'][:5]:
-                    if h[1] >= 14:
-                        tend = "⬇️ DESCEU++"
-                    elif h[1] >= 12:
+                    if h[1] >= 12:
                         tend = "⬇️  DESCEU"
-                    elif h[1] >= 10:
-                        tend = "⬇️  desc.mod"
-                    elif h[1] >= 8:
-                        tend = "⬇️  desc.leve"
-                    elif h[2] >= 14:
-                        tend = "⬆️  SUBIU++"
                     elif h[2] >= 12:
                         tend = "⬆️  SUBIU"
-                    elif h[2] >= 10:
-                        tend = "⬆️  sub.mod"
-                    elif h[2] >= 8:
-                        tend = "⬆️  sub.leve"
                     else:
                         tend = "↔️  neutro"
-                    print(f"   {h[0]:>6} {h[1]:>5} {h[2]:>5} {h[3]:>5}  {tend}")
+                    print(f"   {h[0]:>6} {h[1]:>5} {h[2]:>5} {h[3]:>5}  {tend:>12}")
                 print("   " + "─"*40)
                 
                 # Previsão para próximo
-                dominante = max(
-                    ('⬆️  SUBIR',  prob_subir,  alerta_subir),
-                    ('⬇️  DESCER', prob_descer, alerta_descer),
-                    ('↔️  NEUTRO', prob_neutro, ''),
-                    key=lambda x: x[1]
-                )
                 print(f"\n   🎯 PREVISÃO para concurso {conc + 1}:")
-                print(f"      ⬆️  SUBIR  (maior≥10): {prob_subir:>5.1f}%  lift {lift_subir:.2f}x  {alerta_subir}")
-                print(f"      ⬇️  DESCER (menor≥10): {prob_descer:>5.1f}%  lift {lift_descer:.2f}x  {alerta_descer}")
-                print(f"      ↔️  NEUTRO (mai≤9 e men≤9): {prob_neutro:>5.1f}%")
-                print(f"      → Cenário dominante: {dominante[0]}  ({dominante[1]:.1f}%)")
-
+                print(f"      Probabilidade de inversão (maior≥10): {prob_inv:.1f}% (lift {lift:.2f}x)")
+                print(f"      Nível de alerta: {alerta}")
+                
                 if menor >= 12:
                     print(f"\n   ⚠️  ATENÇÃO: {menor} posições desceram → tendência FORTE de subir!")
                     print(f"      Números em posições baixas (N1-N5) podem migrar para posições altas")
@@ -16232,43 +16084,6 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             'confianca': '⭐⭐⭐' if criterio_usado >= 3 else ('⭐⭐' if criterio_usado >= 2 else '⭐')
         }
 
-    def _exibir_top20_debitos_inline(self, resultados, janela=6):
-        """
-        Exibe TOP 20 débitos posicionais de forma compacta, sem pedir input.
-        Usado como referência informativa na seleção de números fixos.
-        """
-        from collections import Counter, defaultdict
-
-        _, lista_debitos = self._calcular_debitos_posicionais(resultados, janela)
-        if not lista_debitos:
-            return
-
-        freq_geral = Counter()
-        for r in resultados[:janela]:
-            for num in r['numeros']:
-                freq_geral[num] += 1
-
-        print(f"\n   💰 TOP 20 DÉBITOS — últimos {janela} concursos (referência para fixos):")
-        print("   " + "─"*85)
-        print(f"   {'Nº':>4} | {'Posição':>7} | {'Freq Geral':>10} | {'Média Hist':>10} | {'Freq Pos':>8} | {'Déficit':>8}")
-        print(f"   {'':>4} | {'':>7} | {'(últimos)':>10} | {'(posição)':>10} | {'(recente)':>8} | {'':>8}")
-        print("   " + "─"*85)
-        for deb in lista_debitos[:20]:
-            barra = "█" * int(deb['deficit'] / 2)
-            fg = freq_geral[deb['numero']] / janela * 100
-            print(f"   {deb['numero']:4d} |   N{deb['posicao']:<4d} | {fg:9.1f}% | {deb['media_historica']:9.1f}% | {deb['freq_recente']:7.1f}% | {deb['deficit']:+7.1f}% {barra}")
-
-        # WHERE SQL compacto
-        where_por_posicao = defaultdict(set)
-        for deb in lista_debitos[:20]:
-            where_por_posicao[deb['posicao']].add(deb['numero'])
-        if where_por_posicao:
-            clausulas = [
-                f"N{p} IN ({','.join(str(v) for v in sorted(where_por_posicao[p]))})"
-                for p in sorted(where_por_posicao.keys())
-            ]
-            print(f"\n   🧩 WHERE SQL (TOP 20): {' AND '.join(clausulas)}")
-
     def _exibir_mapa_debitos_posicionais(self):
         """Exibe o mapa de débitos posicionais - números que estão "devendo"."""
         import pyodbc
@@ -16345,28 +16160,6 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             barra = "█" * int(deb['deficit'] / 2)
             fg = freq_geral[deb['numero']] / janela * 100
             print(f"   {deb['numero']:4d} |   N{deb['posicao']:<4d} | {fg:9.1f}% | {deb['media_historica']:9.1f}% | {deb['freq_recente']:7.1f}% | {deb['deficit']:+7.1f}% {barra}")
-
-        # Cláusula SQL simples para reaproveitar os TOP 20 débitos por posição.
-        # Usa os números originais da tabela (sem deslocamento).
-        from collections import defaultdict
-        where_por_posicao = defaultdict(set)
-        for deb in lista_debitos[:20]:
-            where_por_posicao[deb['posicao']].add(deb['numero'])
-
-        if where_por_posicao:
-            clausulas = []
-            for pos in sorted(where_por_posicao.keys()):
-                vals = sorted(where_por_posicao[pos])
-                vals_sql = ",".join(str(v) for v in vals)
-                if len(vals) == 1:
-                    clausulas.append(f"N{pos} IN ({vals_sql})")
-                else:
-                    clausulas.append(f"N{pos} IN ({vals_sql})")
-
-            where_sql = " AND ".join(clausulas)
-            print(f"\n   🧩 WHERE SQL SIMPLE (TOP 20 DÉBITOS):")
-            print("   " + "─"*85)
-            print(f"   {where_sql}")
         
         # Agrupar por número (quais números estão mais em débito)
         print(f"\n   🔢 NÚMEROS COM MAIS POSIÇÕES EM DÉBITO:")
@@ -20044,13 +19837,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # === ALERTA PADROES STRING (Op30.2) ===
         _cold_bigrams_302=set();_cold_trigrams_302=set()
         _usar_filtro_string_302=False;_max_viol_string_302=1
-        _ultimo_sorteio_302=[];_usar_hamming_302=False;_min_hamming_302=4
         try:
             _sd302=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"sistemas")
             if _sd302 not in sys.path:sys.path.insert(0,_sd302)
             from analise_padroes_string import alerta_padroes_pool as _aps302
             _r302=_aps302(pool_final,janela=50)
-            _cold_bigrams_302,_cold_trigrams_302,_,_,_usar_filtro_string_302,_max_viol_string_302,_ultimo_sorteio_302,_usar_hamming_302,_min_hamming_302=_r302
+            _cold_bigrams_302,_cold_trigrams_302,_,_,_usar_filtro_string_302,_max_viol_string_302=_r302
         except Exception as _e302:print("   Info padroes string 302:",_e302)
 
         # ═══════════════════════════════════════════════════════════════════
@@ -20188,13 +19980,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"   ⚠️ Confiança: {nota_302} (vantagem ~{62 if criterio_302>=3 else (60 if criterio_302>=2 else 58)}% vs 60% aleatório)")
         except Exception:
             pass
-
-        # TOP 20 DÉBITOS — referência visual para escolha dos fixos
-        try:
-            self._exibir_top20_debitos_inline(resultados, janela=6)
-        except Exception:
-            pass
-
+        
         numeros_fixos = set()
         pool_minmax_candidatos_302 = set()
         pool_minmax_min_302 = 0
@@ -20631,23 +20417,6 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print(f"\n   📊 Filtros posicionais calculados:")
         print(f"      • Piores histórico: {sum(len(p) for p in piores_historico.values())} pares identificados")
         print(f"      • Piores últimos 30: {sum(len(p) for p in piores_recente.values())} pares identificados")
-
-        # ═══════════════════════════════════════════════════════════════════
-        # CALCULAR MELHORES NÚMEROS POR POSIÇÃO (Filtro Posicional Positivo)
-        # ═══════════════════════════════════════════════════════════════════
-        melhores_candidatos_bt = {}
-        try:
-            from configuracao_filtros_pool23 import FILTROS_POR_NIVEL as _fpn_chk
-            _nivel_ref = _fpn_chk.get(3, {})
-        except Exception:
-            _nivel_ref = {}
-        _usa_melhores_algum_nivel = any(
-            FILTROS_POR_NIVEL.get(n, {}).get('usar_filtro_melhores_posicao', False)
-            for n in range(1, 7)
-        )
-        if _usa_melhores_algum_nivel:
-            melhores_candidatos_bt, _ = self._calcular_melhores_por_posicao(resultados)
-            print(f"      • 🏆 Melhores posição: top-3 por posição calculado (ponderado hist+win10+win6)")
         
         # ═══════════════════════════════════════════════════════════════════
         # CALCULAR POSIÇÕES FRIAS (para Níveis 7 e 8)
@@ -20977,17 +20746,6 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 if violacoes_rec > filtros.get('piores_tolerancia_recente', 1):
                     return False
             
-            # Filtro MELHORES POR POSIÇÃO
-            if filtros.get('usar_filtro_melhores_posicao') and melhores_candidatos_bt:
-                combo_sorted = sorted(combo)
-                match_count = sum(
-                    1 for pos_idx, num in enumerate(combo_sorted)
-                    if num in melhores_candidatos_bt.get(pos_idx + 1, set())
-                )
-                _melhores_limiar = filtros.get('melhores_limiar', 11)
-                if match_count < _melhores_limiar:
-                    return False
-
             # Filtro FIBONACCI (POC 06/04/2026 — seletividade 1.084-1.139)
             if filtros.get('usar_filtro_fibonacci'):
                 qtde_fib = len(combo_set & FIBONACCI)
@@ -21206,18 +20964,19 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 try:
                     from analise_padroes_string import filtrar_por_padroes_string as _fps302
                     _an302=len(combos_nivel)
-                    combos_nivel,_rj302=_fps302(combos_nivel,_cold_bigrams_302,_cold_trigrams_302,max_violacoes=_max_viol_string_302)
+                    combos_nivel,_rj302=_fps302(combos_nivel,_cold_bigrams_302,None,max_violacoes=_max_viol_string_302)
                     if _rj302>0:print(f"      String:{_an302:,}>{len(combos_nivel):,} ({_rj302:,} rej.)")
                 except:pass
-            # POS-FILTRO: HAMMING (Op30.2)
-            if _usar_hamming_302 and _ultimo_sorteio_302 and len(combos_nivel)>0:
+
+                        # POS-FILTRO: PADROES STRING (Op30.2)
+            if _usar_filtro_string_302 and _cold_bigrams_302 and len(combos_nivel)>0:
                 try:
-                    from analise_padroes_string import filtrar_por_hamming as _fh302
-                    _anh302=len(combos_nivel)
-                    combos_nivel,_rjh302=_fh302(combos_nivel,_ultimo_sorteio_302,min_hamming=_min_hamming_302)
-                    if _rjh302>0:print(f"      Hamming:{_anh302:,}>{len(combos_nivel):,} ({_rjh302:,} rej.)")
-                except:pass
-            combos_por_nivel[nivel] = combos_nivel
+                    from analise_padroes_string import filtrar_por_padroes_string as _fps302
+                    _an302=len(combos_nivel)
+                    combos_nivel,_rj302=_fps302(combos_nivel,_cold_bigrams_302,None,max_violacoes=_max_viol_string_302)
+                    if (_rj302 > 0): print(f'      String:{_an302:,}>{len(combos_nivel):,} ({_rj302:,} rej.)')
+                except: pass
+combos_por_nivel[nivel] = combos_nivel
             
             # Salvar arquivo
             excluidos_str = '_'.join(map(str, sorted(excluir)))
@@ -21625,41 +21384,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 # Verificar cada filtro contra o resultado - guardar todos
                 filtros_problematicos = []
                 filtros_ok = []
-
-                # ── NÍVEL 8 CASCATA: auditar cada nível base (N1-N6) ─────────────
-                if filtros_nivel.get('nivel_base') == 'cascata':
-                    _cascata_pass = []
-                    _cascata_fail = []
-                    for _nc in range(1, 7):
-                        _fb = FILTROS_POR_NIVEL[_nc]
-                        _nc_erros = []
-                        if 'pares_min' in _fb and not (_fb['pares_min'] <= pares_resultado <= _fb['pares_max']):
-                            _nc_erros.append(f"PARES={pares_resultado} fora [{_fb['pares_min']}-{_fb['pares_max']}]")
-                        if 'soma_min' in _fb:
-                            _sm, _sM = _fb['soma_min'], _fb['soma_max']
-                            if not (_sm <= resultado_soma <= _sM):
-                                _nc_erros.append(f"SOMA={resultado_soma} fora [{_sm}-{_sM}]")
-                        if 'rep_min' in _fb and not (_fb['rep_min'] <= rep_ultimo <= _fb['rep_max']):
-                            _nc_erros.append(f"REP={rep_ultimo} fora [{_fb['rep_min']}-{_fb['rep_max']}]")
-                        if 'seq_max' in _fb and seq_max_resultado > _fb['seq_max']:
-                            _nc_erros.append(f"SEQ={seq_max_resultado}>{_fb['seq_max']}")
-                        if 'nucleo_min' in _fb and nucleo_resultado < _fb['nucleo_min']:
-                            _nc_erros.append(f"NUCLEO={nucleo_resultado}<{_fb['nucleo_min']}")
-                        if _nc_erros:
-                            _cascata_fail.append((f"N{_nc}", _nc_erros))
-                        else:
-                            _cascata_pass.append(f"N{_nc}")
-                    if not _cascata_pass:
-                        _todos_motivos = [e for _, errs in _cascata_fail for e in errs]
-                        _motivo_top = _todos_motivos[0] if _todos_motivos else '?'
-                        filtros_problematicos.append((
-                            'CASCATA_BASE',
-                            f"falha em todos N1-N6: {_motivo_top}",
-                            f"passes={len(_cascata_pass)}/{len(_cascata_pass)+len(_cascata_fail)}"
-                        ))
-                    else:
-                        filtros_ok.append(f"Cascata base: passa em {', '.join(_cascata_pass)}")
-
+                
                 if 'soma_min' in filtros_nivel:
                     soma_min = filtros_nivel['soma_min']
                     soma_max = filtros_nivel['soma_max']
@@ -22096,7 +21821,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print(f"\n   📈 PREVISÕES DO SISTEMA:")
         
         if reversao_soma_ativa:
-            soma_prevista = 'ALTA' if tendencia_soma_validacao and 'ALTA' in tendencia_soma_validacao else 'BAIXA'
+            soma_prevista = 'ALTA' if soma_ajuste and soma_ajuste[0] > 185 else 'BAIXA'
             soma_real = 'ALTA' if resultado_soma > 195 else ('BAIXA' if resultado_soma < 195 else 'MÉDIA')
             status = "✅" if soma_prevista == soma_real else "❌"
             print(f"      {status} Soma: Previu tendência {soma_prevista}, resultado foi {soma_real} ({resultado_soma})")
