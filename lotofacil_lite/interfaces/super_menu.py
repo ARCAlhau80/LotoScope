@@ -20042,6 +20042,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         pool_23 = pool_final  # Manter compatibilidade com resto do código
         
         # === ALERTA PADROES STRING (Op30.2) ===
+        import sys  # binding local antecipado — usado abaixo e em múltiplos blocos
         _cold_bigrams_302=set();_cold_trigrams_302=set()
         _usar_filtro_string_302=False;_max_viol_string_302=1
         _ultimo_sorteio_302=[];_usar_hamming_302=False;_min_hamming_302=4
@@ -20457,7 +20458,6 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"   ⚠️ Erro: {e}. Filtro probabilístico desativado.")
         
         # Carregar filtro probabilístico se ativado
-        import sys  # garante binding local antes de qualquer uso abaixo
         if filtro_prob_ativo:
             try:
                 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
