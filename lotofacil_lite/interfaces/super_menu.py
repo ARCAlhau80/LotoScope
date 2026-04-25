@@ -20457,6 +20457,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             print(f"   ⚠️ Erro: {e}. Filtro probabilístico desativado.")
         
         # Carregar filtro probabilístico se ativado
+        import sys  # garante binding local antes de qualquer uso abaixo
         if filtro_prob_ativo:
             try:
                 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -20595,7 +20596,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Sincronizado com Option 31 e 30.4
         # ═══════════════════════════════════════════════════════════════════
         import copy
-        import sys
+        # sys já importado acima (binding local garantido)
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         if base_path not in sys.path:
             sys.path.insert(0, base_path)
