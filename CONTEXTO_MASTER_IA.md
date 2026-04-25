@@ -5,7 +5,7 @@
 > trabalhando no projeto LotoScope. Mantenha-o atualizado após cada sessão significativa.
 
 ```
-📅 ÚLTIMA ATUALIZAÇÃO: 30/03/2026
+📅 ÚLTIMA ATUALIZAÇÃO: Abr/2026
 👤 AUTOR: AR CALHAU
 🤖 VALIDADO POR: Claude Sonnet 4.6
 ```
@@ -496,6 +496,63 @@ def carregar_combinacoes(arquivo):
 ---
 
 ## 📝 HISTÓRICO DE SESSÕES IMPORTANTES
+
+### Abr/2026 - NOVA FEATURE: Filtro "Melhores por Posição" (Opção 31 + 30.2) ⭐⭐ NOVO!
+
+**Conceito:**
+Análise POSITIVA complementar ao filtro "piores" já existente. Para cada posição P1-P15, identifica os TOP-K números mais frequentes usando score ponderado:
+- **50%** frequência histórica total
+- **30%** janela dos últimos 10 concursos
+- **20%** janela dos últimos 6 concursos
+
+Uma combinação recebe um **score de cobertura** = número de posições que possuem ≥1 dos seus números no TOP-K. Combinações com cobertura abaixo do limiar são **REJEITADAS**.
+
+**Validação POC** (`poc_melhores_por_posicao.py`):
+| Limiar | Jackpots Preservados |
+|--------|---------------------|
+| 11 | 78.5% |
+| 10 | **86%** ✅ |
+
+**Configuração por Nível** (`configuracao_filtros_pool23.py`):
+| Níveis | `usar_filtro_melhores_posicao` | `melhores_limiar` | `melhores_top_k` |
+|--------|-------------------------------|-------------------|-----------------|
+| 1-3 | `True` | 11 | 3 |
+| 4-6 | `True` | 10 | 3 |
+| 0, 7, 8 | `False` | — | — |
+
+**Método adicionado em `super_menu.py`** (~linha 15519):
+```python
+def _calcular_melhores_por_posicao(self, cursor, concurso_atual, top_k=3):
+    # Retorna {posicao (0-14): [lista dos top_k números mais frequentes]}
+    # Pesos: 50% histórico, 30% janela 10, 20% janela 6
+```
+
+**Paridade Opção 31 ↔ 30.2:** ✅ Implementada nas duas opções.
+
+**Arquivos alterados:**
+- `lotofacil_lite/interfaces/super_menu.py` — filtro melhores posição + método `_calcular_melhores_por_posicao`
+- `lotofacil_lite/configuracao_filtros_pool23.py` — novos campos `usar_filtro_melhores_posicao`, `melhores_limiar`, `melhores_top_k` nos níveis 1-6
+- `poc_melhores_por_posicao.py` — novo script POC de validação
+
+---
+
+### Abr/2026 - BUG FIXES: `import sys` UnboundLocalError em `super_menu.py` ⭐ CRÍTICO!
+
+**Causa Raiz:**
+Python trata qualquer `import sys` dentro de uma função como uma atribuição de variável local para **toda** a função. Qualquer uso de `sys` antes do `import` na mesma função lança `UnboundLocalError: cannot access local variable 'sys'`.
+
+**Três ocorrências corrigidas:**
+
+| # | Função | Linha | Fix |
+|---|--------|-------|-----|
+| 1 | `executar_gerador_pool_23_hibrido` | ~13694 | `import sys` movido para antes do primeiro uso |
+| 2 | `_executar_backtesting_pool23` (bloco padrões string 302) | ~20045 | `import sys` adicionado antes do `sys.path.insert` |
+| 3 | `_executar_backtesting_pool23` (bloco filtro probabilístico) | ~20461 | `import sys` redundante removido (já coberto pelo fix 2) |
+
+**Arquivo alterado:**
+- `lotofacil_lite/interfaces/super_menu.py`
+
+---
 
 ### 31/03/2026 - NOVAS FEATURES: Neural FRIOS Diagnostic + Neural PURO como padrão ⭐⭐ NOVO!
 

@@ -123,6 +123,23 @@ python super_menu.py
   - Level 4-6: Both tol=0 (maximum restriction)
 - **Dynamically calculated** at each execution based on real frequency data
 
+### 7b. Best-by-Position Filter / "Melhores por Posição" (Option 31 + Option 30.2) ⭐⭐ NEW! (Apr/2026)
+- **Purpose**: Complementary POSITIVE filter — accepts combos whose numbers appear among the historical TOP-K in each position
+- **Concept**: For each position P1-P15, identify the TOP-K most frequent numbers using a weighted score:
+  - 50% full historical frequency + 30% last-10 window + 20% last-6 window
+  - A combo receives a "coverage score" = how many positions have ≥1 of its numbers in the TOP-K
+  - Combos with coverage < threshold are **REJECTED**
+- **POC Validation** (`poc_melhores_por_posicao.py`):
+  - Threshold 11 → 78.5% of jackpots preserved
+  - Threshold 10 → 86% of jackpots preserved
+- **Configuration per level** (`configuracao_filtros_pool23.py`):
+  - Levels 1-3: `usar_filtro_melhores_posicao=True`, `melhores_limiar=11`, `melhores_top_k=3`
+  - Levels 4-6: `usar_filtro_melhores_posicao=True`, `melhores_limiar=10`, `melhores_top_k=3`
+  - Levels 0, 7, 8: filter disabled
+- **Method**: `_calcular_melhores_por_posicao(cursor, concurso_atual, top_k)` in `super_menu.py` (~line 15519)
+  - Returns `{position (0-14): [list of top_k most frequent numbers]}`
+- **Parity**: ✅ Implemented in both Option 31 (Generator) AND Option 30.2 (Backtesting)
+
 ### 8. Cold Positions Filter (Option 31 Levels 7-8 + Backtesting) ⭐⭐⭐ NEW!
 - **Purpose**: Reject combinations with numbers at positions where they had 0% frequency recently
 - **Concept**: For each (number, position) pair, check frequency in last 6 contests
@@ -321,9 +338,23 @@ python super_menu.py
     - Mudanças: 150→64→32→25 + L2(0.001) + Dropout(0.3) + He initialization
     - Protocolo: benchmark periódico em #1452-#1651; se <17% → retreinar do zero
     - Arquivo: `disputa_neural_pool23.py` — classe `RedeNeuralExclusao`
+17. **Added** (Abr/2026): **Filtro "Melhores por Posição" — análise positiva complementar** ⭐⭐ NOVO!
+    - Para cada posição P1-P15, identifica os TOP-K números mais frequentes via score ponderado
+      (50% histórico total + 30% janela 10 + 20% janela 6)
+    - Score de cobertura da combo = nº de posições com ≥1 número no TOP-K
+    - Combos com cobertura < limiar são **REJEITADAS**
+    - POC (`poc_melhores_por_posicao.py`): limiar 11 → 78.5% jackpots preservados; limiar 10 → 86%
+    - Config: Níveis 1-3 (`limiar=11, top_k=3`), Níveis 4-6 (`limiar=10, top_k=3`), Níveis 0/7/8 desativado
+    - Método: `_calcular_melhores_por_posicao(cursor, concurso_atual, top_k)` em `super_menu.py` (~l.15519)
+    - ✅ Paridade Opção 31 ↔ 30.2 implementada
+18. **Fixed** (Abr/2026): **`import sys` UnboundLocalError em 3 pontos de `super_menu.py`** ⭐ CRÍTICO!
+    - **Causa raiz**: Python trata `import sys` dentro de função como atribuição local → qualquer uso de `sys` antes do `import` na mesma função levanta `UnboundLocalError`
+    - **Fix 1** — `executar_gerador_pool_23_hibrido`: `import sys` movido para antes do primeiro uso (~l.13694)
+    - **Fix 2** — `_executar_backtesting_pool23` (bloco padrões string 302): `import sys` adicionado antes do `sys.path.insert` (~l.20045)
+    - **Fix 3** — `_executar_backtesting_pool23` (bloco filtro probabilístico): `import sys` redundante removido (~l.20461, já coberto pelo Fix 2)
 
 ---
-*Last updated: 2026-04-04*
+*Last updated: 2026-04 (Abr/2026)*
 
 <!-- mcp-graph:start -->
 ## mcp-graph — LotoScope

@@ -170,6 +170,13 @@ PREMIOS = {11: 7, 12: 14, 13: 35, 14: 1000, 15: 1800000}
 # Nível 5: AGRESSIVO      (42k combos)  → ROI +1257.6%
 # Nível 6: ULTRA ⭐⭐     (18k combos)  → ROI +2841.1% (MELHOR!)
 
+# FILTRO "MELHORES POR POSIÇÃO" (Abr/2026) ⭐ NOVO!
+# Análise POSITIVA: identifica TOP-K números por posição via score ponderado
+# Score: 50% histórico + 30% janela-10 + 20% janela-6
+# Combinação precisa cobrir ≥ LIMIAR posições com TOP-K números
+# Níveis 1-3: limiar=11 (78.5% jackpots preservados)
+# Níveis 4-6: limiar=10 (86% jackpots preservados)
+
 # ESTATÍSTICAS APRENDIZADO (8 backtests):
 # - Exclusão correta: 50%
 # - Previsão soma: 100%
@@ -285,4 +292,4 @@ conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=Lot
 ---
 
 > Para detalhes: `CONTEXTO_MASTER_IA.md`
-> Última atualização: 24/03/2026
+> Última atualização: Abr/2026
