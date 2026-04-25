@@ -13232,7 +13232,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Nova estrutura otimizada com análise de seletividade + trios
         # ═══════════════════════════════════════════════════════════════════
         import copy
-        import sys
+        # sys já importado acima (binding local garantido)
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         if base_path not in sys.path:
             sys.path.insert(0, base_path)
@@ -13691,10 +13691,10 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             filtro_prob_modo = 0
         
         # Carregar filtro probabilístico se ativado
+        import sys  # garante binding local antes de qualquer uso abaixo
         filtro_prob_obj = None
         if filtro_prob_modo > 0:
             try:
-                # Import dinâmico para evitar overhead se não usar
                 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
                 from filtro_probabilistico import FiltroProbabilistico
                 
