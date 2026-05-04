@@ -42,14 +42,19 @@ class RedeNeuralExclusao:
     """
     Rede Neural especializada em EXCLUIR números.
 
-    Arquitetura v3 (250 features, 10 por número):
-    - Entrada: 250 features (freq, atraso, consec, tendência, freq10, INVERTIDA,
-              co-ocorrência, posicional, entropia, soft exclusion)
+    Arquitetura v6 (401 features):
+    - Entrada: 401 features (freq, atraso, consec, tendência, freq10, INVERTIDA,
+              co-ocorrência, posicional, entropia, soft exclusion,
+              + 3 features de CICLO: qtd_ciclo_norm, rank_ciclo, pendente_ciclo
+              + completude do ciclo atual (1 feature global)
+              + média histórica últimos 5 ciclos fechados (25 features)
+              + atraso relativo no ciclo (25 features) ← v6 NOVO
+              + interação pendente × completude (25 features) ← v6 NOVO)
     - 2 camadas ocultas: 96 → 48 neurônios
     - Saída: 25 valores (score de exclusão para cada número)
     - L2 regularization (lambda=0.001) — penaliza pesos grandes
     - Dropout (rate=0.3) durante treino — força generalização
-    - ~30k parâmetros — razão params/amostras ~15:1
+    - ~44k parâmetros — razão params/amostras ~22:1
     """
 
     def __init__(self, silencioso: bool = False,
@@ -61,8 +66,8 @@ class RedeNeuralExclusao:
         self.dropout_rate = dropout_rate
         self.l2_lambda = l2_lambda
 
-        # Arquitetura: 250 → 96 → 48 → 25
-        self.tamanhos = [250, 96, 48, 25]
+        # Arquitetura: 401 → 96 → 48 → 25
+        self.tamanhos = [401, 96, 48, 25]
         self._inicializar_pesos(silencioso)
 
     def _inicializar_pesos(self, silencioso: bool = False):
@@ -70,7 +75,7 @@ class RedeNeuralExclusao:
         np.random.seed(42)
 
         if not silencioso:
-            print("   🧠 Inicializando Rede Neural para Exclusão (v3 - 250 features)...")
+            print("   🧠 Inicializando Rede Neural para Exclusão (v6 - 401 features)...")
 
         for i in range(len(self.tamanhos) - 1):
             # He initialization: scale = sqrt(2 / n_entrada)
@@ -175,22 +180,22 @@ class RedeNeuralExclusao:
                 'historico_treino': self.historico_treino,
                 'dropout_rate': self.dropout_rate,
                 'l2_lambda': self.l2_lambda,
-                'versao': 'v3',
+                'versao': 'v6',
             }, f)
 
     @classmethod
     def carregar(cls, caminho: str) -> 'RedeNeuralExclusao':
-        """Carrega modelo salvo (compatível com v2=150 features e v3=250 features)"""
+        """Carrega modelo salvo (compatível com v2=150, v3=250 e v4=325 features)"""
         with open(caminho, 'rb') as f:
             dados = pickle.load(f)
 
-        versao = dados.get('versao', 'v2')
         tamanhos_salvos = dados.get('tamanhos', [150, 64, 32, 25])
+        entradas_salvas = tamanhos_salvos[0]
 
-        # Detectar modelo antigo (v2 com 150 features)
-        if tamanhos_salvos[0] == 150:
-            print("   ⚠️  Modelo v2 (150 features) detectado — incompatível com v3 (250 features)!")
-            print("   🔄 Reinicializando rede com arquitetura v3. Retreine o modelo.")
+        # Detectar modelo antigo incompatível com v6 (401 features)
+        if entradas_salvas != 401:
+            print(f"   ⚠️  Modelo v{entradas_salvas} ({entradas_salvas} features) detectado — incompatível com v6 (401 features)!")
+            print("   🔄 Reinicializando rede com arquitetura v6. Retreine o modelo.")
             rede = cls(
                 silencioso=True,
                 dropout_rate=dados.get('dropout_rate', 0.3),
@@ -394,7 +399,13 @@ class DisputaNeuralPool23:
         self.neural = None
         self.invertida = EstrategiaInvertida()
         self.resultados = []
-        
+
+        # Cache de features de ciclo (precomputado em carregar_historico)
+        self.ciclo_qtd_cache = []         # List[np.ndarray(25)] — qtd de cada num no ciclo ANTES do sorteio
+        self.ciclo_concs_cache = []       # List[int]            — nº de concursos já no ciclo ANTES do sorteio
+        self.ciclo_media_hist_cache = []  # List[np.ndarray(25)] — média dos últimos 5 ciclos fechados
+        self.ciclo_atraso_ciclo_cache = []# List[np.ndarray(25)] — atraso relativo no ciclo (v6 NOVO)
+
         # Caminho para salvar modelo
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.modelo_path = os.path.join(self.base_path, '..', 'dados', 'neural_exclusao.pkl')
@@ -467,29 +478,97 @@ class DisputaNeuralPool23:
                     })
                 
                 print(f"   ✅ {len(self.historico)} concursos carregados")
+
+                # Precomputar features de ciclo para todos os concursos
+                self._precomputar_ciclo()
                 return True
-                
+
         except Exception as e:
             print(f"   ❌ Erro: {e}")
             return False
-    
+
+    def _precomputar_ciclo(self):
+        """
+        Precomputa para cada concurso, usando apenas Resultados_INT:
+          - qtd_ciclo[n]: quantas vezes o número n saiu no ciclo atual ANTES deste sorteio
+          - concs_no_ciclo: quantos sorteios já ocorreram no ciclo atual ANTES deste sorteio
+
+        Um ciclo começa em 1 e fecha quando todos os 25 números apareceram pelo menos 1 vez.
+        Guardamos o estado ANTES de processar cada concurso (usado como feature).
+        """
+        qtd = np.zeros(25, dtype=np.float32)
+        concs = 0
+        self.ciclo_qtd_cache = []
+        self.ciclo_concs_cache = []
+        self.ciclo_media_hist_cache = []
+        self.ciclo_atraso_ciclo_cache = []
+
+        ciclos_fechados = []   # List[np.ndarray(25)] — histórico de ciclos já concluídos
+        JANELA_HIST = 5        # quantos ciclos fechados usar para a média
+        pos_ultima_no_ciclo = np.zeros(25, dtype=np.int32)  # posição (1-indexed) da última aparição no ciclo atual
+
+        for h in self.historico:
+            # Média dos últimos JANELA_HIST ciclos fechados (ANTES do sorteio)
+            if ciclos_fechados:
+                ultimos = ciclos_fechados[-JANELA_HIST:]
+                media_hist = np.mean(ultimos, axis=0).astype(np.float32)
+            else:
+                media_hist = np.zeros(25, dtype=np.float32)
+
+            # Atraso relativo no ciclo — ANTES do sorteio (v6 NOVO)
+            # Para números aparecidos no ciclo: (concs - pos_ultima) / concs (0=recém apareceu, →1=apareceu cedo)
+            # Para pendentes (pos=0): 1.0
+            if concs > 0:
+                atraso_rel = np.ones(25, dtype=np.float32)
+                for _n_idx in range(25):
+                    if pos_ultima_no_ciclo[_n_idx] > 0:
+                        atraso_rel[_n_idx] = (concs - pos_ultima_no_ciclo[_n_idx]) / float(concs)
+            else:
+                atraso_rel = np.ones(25, dtype=np.float32)  # início de ciclo: todos 1.0
+
+            # Snapshot ANTES do sorteio
+            self.ciclo_qtd_cache.append(qtd.copy())
+            self.ciclo_concs_cache.append(concs)
+            self.ciclo_media_hist_cache.append(media_hist)
+            self.ciclo_atraso_ciclo_cache.append(atraso_rel.copy())
+
+            # Processar sorteio
+            for n in h['numeros']:
+                qtd[n - 1] += 1
+                pos_ultima_no_ciclo[n - 1] = concs + 1  # posição 1-indexed no ciclo
+            concs += 1
+
+            # Ciclo fechado quando todos os 25 números apareceram
+            if np.all(qtd > 0):
+                ciclos_fechados.append(qtd.copy())
+                qtd = np.zeros(25, dtype=np.float32)
+                concs = 0
+                pos_ultima_no_ciclo = np.zeros(25, dtype=np.int32)
+
     def _extrair_features(self, idx_concurso: int) -> np.ndarray:
         """
         Extrai features para treinar/usar a rede neural.
-        
-        250 features (10 por número × 25 números):
-        - 0-24: Frequência nos últimos 30 (normalizada)
-        - 25-49: Atraso de cada número (normalizado)
-        - 50-74: Consecutividade (aparições seguidas)
-        - 75-99: Tendência (subindo/descendo)
+
+        401 features (v6):
+        - 0-24:   Frequência nos últimos 30 (normalizada)
+        - 25-49:  Atraso de cada número (normalizado)
+        - 50-74:  Consecutividade (aparições seguidas)
+        - 75-99:  Tendência (subindo/descendo)
         - 100-124: Frequência nos últimos 10
         - 125-149: Score INVERTIDA (para aprender!)
         - 150-174: Co-ocorrência score (top 5 parceiros)
         - 175-199: Heatmap posicional (concentração nas posições)
         - 200-224: Entropia do padrão de aparição
         - 225-249: Soft exclusion signal (histórico de exclusão)
+        - 250-274: Qtd no ciclo atual normalizada (v4)
+        - 275-299: Rank de calor no ciclo (0=mais quente, 1=mais frio)
+        - 300-324: Pendente no ciclo (1 se nunca apareceu no ciclo atual)
+        - 325:    Completude do ciclo atual (qtd distintos / 25)
+        - 326-350: Média histórica últimos 5 ciclos fechados por número (v5)
+        - 351-375: Atraso relativo no ciclo por número (v6 NOVO)
+        - 376-400: Interação pendente × completude por número (v6 NOVO)
         """
-        features = np.zeros(250)
+        features = np.zeros(401)
         
         janela_30 = self.historico[max(0, idx_concurso - 30):idx_concurso]
         janela_10 = self.historico[max(0, idx_concurso - 10):idx_concurso]
@@ -621,9 +700,95 @@ class DisputaNeuralPool23:
         
         for n in range(1, 26):
             features[224 + n] = (exclusion_success[n-1] + 1) / 2  # Normalizar para 0-1
-        
+
+        # ─── FEATURES DE CICLO (v4) ─────────────────────────────────────
+        # Validação: cache pode não estar disponível (e.g. chamada externa)
+        if self.ciclo_qtd_cache and idx_concurso < len(self.ciclo_qtd_cache):
+            qtd_ciclo = self.ciclo_qtd_cache[idx_concurso]   # shape (25,)
+            concs_ciclo = self.ciclo_concs_cache[idx_concurso]  # int
+
+            # Features 250-274: qtd_ciclo_norm = qtd / max(concs_no_ciclo, 1)
+            # Mede com que frequência o número saiu neste ciclo (relativo ao tempo)
+            denom_tempo = max(float(concs_ciclo), 1.0)
+            for n in range(25):
+                features[250 + n] = qtd_ciclo[n] / denom_tempo
+
+            # Features 275-299: rank de calor no ciclo (0=mais quente, 1=mais frio)
+            # Útil para a neural aprender "excluir os mais quentes do ciclo" (+1.5pp validado)
+            ranks = np.argsort(np.argsort(-qtd_ciclo)).astype(np.float32)  # 0 = hottest
+            for n in range(25):
+                features[275 + n] = ranks[n] / 24.0
+
+            # Features 300-324: pendente no ciclo (nunca apareceu = 1.0)
+            # Sinal de "dívida": número que ainda não saiu no ciclo atual
+            for n in range(25):
+                features[300 + n] = 1.0 if qtd_ciclo[n] == 0 else 0.0
+
+            # Feature 325: completude do ciclo atual (quantos números distintos já saíram / 25)
+            # Quando próximo de 1.0, os pendentes têm pressão maior para sair
+            features[325] = float(np.sum(qtd_ciclo > 0)) / 25.0
+
+        # ─── MÉDIA HISTÓRICA DE CICLOS FECHADOS (v5) ─────────────────────
+        # Features 326-350: média de aparições de cada número nos últimos 5 ciclos fechados
+        # Captura a "tendência natural" de cada número — independente do ciclo atual
+        if self.ciclo_media_hist_cache and idx_concurso < len(self.ciclo_media_hist_cache):
+            media_hist = self.ciclo_media_hist_cache[idx_concurso]  # shape (25,)
+            # Normalizar pelo valor esperado (15 bolas / 25 números = 0.6 por ciclo)
+            for n in range(25):
+                features[326 + n] = media_hist[n] / 1.5  # 1.5 = referência razoável para normalização
+
+        # ─── ATRASO RELATIVO NO CICLO (v6) ──────────────────────────────────
+        # Features 351-375: quão antigo é o número DENTRO do ciclo atual
+        # 0.0 = apareceu no draw anterior do ciclo | 1.0 = pendente ou ciclo novo
+        if self.ciclo_atraso_ciclo_cache and idx_concurso < len(self.ciclo_atraso_ciclo_cache):
+            atraso_ciclo = self.ciclo_atraso_ciclo_cache[idx_concurso]  # shape (25,)
+            for n in range(25):
+                features[351 + n] = atraso_ciclo[n]  # já normalizado [0,1]
+
+        # ─── INTERAÇÃO PENDENTE × COMPLETUDE (v6) ────────────────────────────
+        # Features 376-400: produto que amplifica sinal dos pendentes quando ciclo está quase fechado
+        # Quando completude → 1.0 e número é pendente → 1.0 (pressão máxima)
+        completude = features[325]
+        for n in range(25):
+            features[376 + n] = features[300 + n] * completude
+
         return features
-    
+
+    @classmethod
+    def extrair_features_para_atual(cls, resultados_desc: list, neural: 'RedeNeuralExclusao') -> Dict[int, float]:
+        """
+        Extrai features do estado atual usando resultados já carregados (ordem DESC).
+        Usa _precomputar_ciclo() para features de ciclo corretas.
+
+        Args:
+            resultados_desc: lista de dicts {'concurso', 'numeros'/'set'} ordenada DESC (mais recente primeiro)
+            neural: RedeNeuralExclusao já carregada
+
+        Returns:
+            Dict[int, float] — scores de exclusão para cada número (1-25)
+        """
+        disp = cls.__new__(cls)
+        disp.invertida = EstrategiaInvertida()
+        disp.ciclo_qtd_cache = []
+        disp.ciclo_concs_cache = []
+        disp.ciclo_media_hist_cache = []
+        disp.ciclo_atraso_ciclo_cache = []
+
+        # Converter resultados DESC → historico ASC
+        disp.historico = []
+        for r in reversed(resultados_desc):
+            nums = sorted(r.get('numeros') or list(r.get('set', [])))
+            disp.historico.append({
+                'concurso': r.get('concurso', 0),
+                'numeros': nums,
+                'set': set(nums),
+            })
+
+        disp._precomputar_ciclo()
+        idx_ultimo = len(disp.historico) - 1
+        features = disp._extrair_features(idx_ultimo)
+        return neural.obter_scores(features)
+
     def executar_disputa(self, concurso_inicio: int = 3000, concurso_fim: int = None,
                          treinar_durante: bool = True, qtd_exclusoes: int = 2) -> Dict:
         """

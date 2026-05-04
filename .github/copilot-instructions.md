@@ -321,9 +321,20 @@ python super_menu.py
     - Mudanças: 150→64→32→25 + L2(0.001) + Dropout(0.3) + He initialization
     - Protocolo: benchmark periódico em #1452-#1651; se <17% → retreinar do zero
     - Arquivo: `disputa_neural_pool23.py` — classe `RedeNeuralExclusao`
+17. **Upgraded** (04/05/2026): **Neural v6 — 401 features + fix bug silencioso crítico** ⭐⭐⭐ CRÍTICO!
+    - **Arquitetura v6**: `401→96→48→25` (~44.473 params) — anteriormente v5: `351→96→48→25`
+    - **Novas features**:
+      - 351-375: `atraso_relativo_ciclo` — 0.0=acabou de sair, 1.0=pendente (posição no ciclo atual)
+      - 376-400: `pendente × completude` — interação que amplifica sinal de pendentes quando ciclo quase fecha
+    - **Bug crítico corrigido**: Options 31 e 30.2 computavam 250 features manualmente → mismatch silencioso de dimensão → neural estava **DESATIVADA em produção há meses** sem o usuário saber
+    - **Fix**: método `extrair_features_para_atual(resultados_desc, neural)` (@classmethod em `DisputaNeuralPool23`) — usa `_precomputar_ciclo()` + `_extrair_features()` corretos
+    - **FRIOS Proteção** (Option 31): se número excluído for FORTE FRIO (score < 0.35), é substituído automaticamente pelo próximo candidato do ranking
+    - **Online Fine-tuning** (Option 30.2 PASSO 4): após resultado real, executa 2 epochs (lr=0.0001) e salva pkl — mantém modelo atualizado incrementalmente
+    - **Benchmark v6 validado**: **20.5% (+5.2pp vs INVERTIDA, +4.9pp vs random)** — já no primeiro treino completo N1→N2→N3
+    - Protocolo retreino: N1 [T] do zero → N2 [C] continuar → N3 [C] continuar (mesmo fluxo de antes)
 
 ---
-*Last updated: 2026-04-04*
+*Last updated: 2026-05-04*
 
 <!-- mcp-graph:start -->
 ## mcp-graph — LotoScope

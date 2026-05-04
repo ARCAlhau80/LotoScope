@@ -12625,126 +12625,10 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
 
                 # Carregar modelo neural treinado
                 neural = RedeNeuralExclusao.carregar(neural_path)
-                
-                # Extrair features da situação atual (250 features, 10 por número)
-                import numpy as np
-                import math as _math
-                features = np.zeros(250)
-                janela_30 = resultados[:30]
-                janela_10 = resultados[:10]
-                
-                # Features 0-24: Frequência 30 concursos
-                for n in range(1, 26):
-                    freq_30 = sum(1 for r in janela_30 if n in r['set']) / max(1, len(janela_30))
-                    features[n-1] = freq_30
-                
-                # Features 25-49: Atraso (quantos concursos desde última aparição)
-                for n in range(1, 26):
-                    atraso = 0
-                    for r in janela_30:
-                        if n in r['set']:
-                            break
-                        atraso += 1
-                    features[24 + n] = atraso / 30
-                
-                # Features 50-74: Consecutividade
-                for n in range(1, 26):
-                    cons = 0
-                    for r in janela_30:
-                        if n in r['set']:
-                            cons += 1
-                        else:
-                            break
-                    features[49 + n] = cons / 30
-                
-                # Features 75-99: Tendência (freq últimos 10 vs anteriores 10)
-                freq_10 = Counter()
-                for r in janela_10:
-                    freq_10.update(r['set'])
-                freq_anterior = Counter()
-                for r in resultados[10:20]:
-                    freq_anterior.update(r['set'])
-                
-                for n in range(1, 26):
-                    tend = (freq_10[n] / 10) - (freq_anterior[n] / 10) if len(resultados) >= 20 else 0
-                    features[74 + n] = (tend + 1) / 2
-                
-                # Features 100-124: Frequência 10 concursos
-                for n in range(1, 26):
-                    features[99 + n] = freq_10[n] / 10
-                
-                # Features 125-149: Score INVERTIDA (para a neural aprender)
-                max_score_inv = max(c['score'] for c in candidatos) if candidatos else 1
-                for n in range(1, 26):
-                    score_n = next((c['score'] for c in candidatos if c['num'] == n), 0)
-                    features[124 + n] = score_n / max(1, max_score_inv) if max_score_inv != 0 else 0
-                
-                # Features 150-174: Co-ocorrência score (top 5 parceiros)
-                pair_count_f = Counter()
-                for r in janela_30:
-                    nums_r = sorted(r['set'])
-                    for i_n in range(len(nums_r)):
-                        for j_n in range(i_n + 1, len(nums_r)):
-                            pair_count_f[(nums_r[i_n], nums_r[j_n])] += 1
-                max_pair_f = max(pair_count_f.values()) if pair_count_f else 1
-                for n in range(1, 26):
-                    pares_n = [pair_count_f.get((min(n, m), max(n, m)), 0) for m in range(1, 26) if m != n]
-                    features[149 + n] = sum(sorted(pares_n, reverse=True)[:5]) / max(1, 5 * max_pair_f)
-                
-                # Features 175-199: Heatmap posicional
-                pos_freq_f = {}
-                for r in janela_30:
-                    nums_sorted = sorted(r['set'])
-                    for pos_idx, num in enumerate(nums_sorted):
-                        if num not in pos_freq_f:
-                            pos_freq_f[num] = Counter()
-                        pos_freq_f[num][pos_idx] += 1
-                for n in range(1, 26):
-                    if n in pos_freq_f:
-                        total_app = sum(pos_freq_f[n].values())
-                        if total_app > 0:
-                            top3_pos = pos_freq_f[n].most_common(3)
-                            features[174 + n] = sum(c for _, c in top3_pos) / total_app
-                
-                # Features 200-224: Entropia do padrão de aparição
-                for n in range(1, 26):
-                    seq = [1 if n in r['set'] else 0 for r in janela_30]
-                    trans = Counter()
-                    for k in range(len(seq) - 1):
-                        trans[(seq[k], seq[k+1])] += 1
-                    total_tr = sum(trans.values())
-                    if total_tr > 0:
-                        ent = 0.0
-                        for cnt in trans.values():
-                            p = cnt / total_tr
-                            if p > 0:
-                                ent -= p * _math.log2(p)
-                        features[199 + n] = ent / 2.0
-                
-                # Features 225-249: Soft Exclusion signal (últimas 5 exclusões)
-                from sistemas.disputa_neural_pool23 import EstrategiaInvertida as _EI
-                excl_success = np.zeros(25)
-                for lb in range(min(5, len(resultados) - 1)):
-                    idx_chk = lb + 1  # resultados[0]=último, resultados[1]=anterior...
-                    if idx_chk + 30 > len(resultados):
-                        continue
-                    hist_tmp = [{'numeros': sorted(r['set'])} for r in reversed(resultados)]
-                    idx_real = len(resultados) - 1 - idx_chk
-                    scores_past = _EI.calcular_scores_exclusao(hist_tmp, idx_real)
-                    if not scores_past:
-                        continue
-                    top2_exc = sorted(scores_past, key=scores_past.get, reverse=True)[:2]
-                    res_chk = resultados[idx_chk]['set']
-                    for exc_num in top2_exc:
-                        if exc_num not in res_chk:
-                            excl_success[exc_num - 1] += 0.2
-                        else:
-                            excl_success[exc_num - 1] -= 0.2
-                for n in range(1, 26):
-                    features[224 + n] = (excl_success[n-1] + 1) / 2
-                
-                # Obter scores da neural
-                scores_neural = neural.obter_scores(features)
+
+                # Extrair features completas v6 (401) via helper — inclui features de ciclo
+                print("   🧠 Extraindo features v6 (401 features + ciclo)...")
+                scores_neural = DisputaNeuralPool23.extrair_features_para_atual(resultados, neural)
                 neural_disponivel = True
                 
                 # Criar ranking híbrido (60% Neural + 40% INVERTIDA)
@@ -13003,6 +12887,25 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             excluir = [candidatos[i]['num'] for i in range(qtd_excluir)]
             score_total = sum(candidatos[i]['score'] for i in range(qtd_excluir))
             print(f"   ✅ Usando RANKING INVERTIDA v3.0")
+
+        # ── FRIOS PROTEÇÃO: substituir exclusões que são FORTES FRIOS (score < 0.35) ──
+        if neural_disponivel and scores_neural and _frios_neural_sugestao:
+            _fortes_frios = {n for n in _frios_neural_sugestao if scores_neural.get(n, 1.0) < 0.35}
+            if _fortes_frios:
+                excluir = list(excluir)  # garantir mutável
+                _ranking_ref = (
+                    ranking_neural_puro if (usar_neural_puro and ranking_neural_puro)
+                    else ([h['num'] for h in ranking_hibrido] if (usar_hibrido and ranking_hibrido)
+                          else [c['num'] for c in candidatos])
+                )
+                for _i, _exc_n in enumerate(excluir):
+                    if _exc_n in _fortes_frios:
+                        for _alt in _ranking_ref:
+                            if _alt not in excluir and _alt not in _fortes_frios:
+                                print(f"   🛡️ FRIOS PROTEÇÃO: {_exc_n} (score={scores_neural[_exc_n]:.3f} — FORTE FRIO) "
+                                      f"→ substituído por {_alt}")
+                                excluir[_i] = _alt
+                                break
 
         print(f"   📊 Selecionados TOP {qtd_excluir}: {sorted(excluir)} (score: {score_total:.2f})")
         
@@ -16806,6 +16709,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             if sistemas_path not in sys.path:
                 sys.path.insert(0, sistemas_path)
 
+            import importlib
+            import disputa_neural_pool23 as _dnn_mod
+            importlib.reload(_dnn_mod)
             from disputa_neural_pool23 import DisputaNeuralPool23
 
             disputa = DisputaNeuralPool23()
@@ -19647,110 +19553,16 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # ═══════════════════════════════════════════════════════════════════
         neural_302_disponivel = False
         scores_neural_302 = {}
+        neural_302 = None
+        neural_path_302 = None
         try:
-            from sistemas.disputa_neural_pool23 import RedeNeuralExclusao
-            import numpy as np
-            import math as _math_302
+            from sistemas.disputa_neural_pool23 import RedeNeuralExclusao, DisputaNeuralPool23
             neural_path_302 = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                            'dados', 'neural_exclusao.pkl')
             if os.path.exists(neural_path_302):
                 neural_302 = RedeNeuralExclusao.carregar(neural_path_302)
-                features_302 = np.zeros(250)
-                janela_30_302 = resultados[:30]
-                janela_10_302 = resultados[:10]
-                for n in range(1, 26):
-                    features_302[n-1] = sum(1 for r in janela_30_302 if n in r['set']) / max(1, len(janela_30_302))
-                for n in range(1, 26):
-                    atraso = 0
-                    for r in janela_30_302:
-                        if n in r['set']:
-                            break
-                        atraso += 1
-                    features_302[24 + n] = atraso / 30
-                for n in range(1, 26):
-                    cons = 0
-                    for r in janela_30_302:
-                        if n in r['set']:
-                            cons += 1
-                        else:
-                            break
-                    features_302[49 + n] = cons / 30
-                freq_10_n = Counter()
-                for r in janela_10_302:
-                    freq_10_n.update(r['set'])
-                freq_ant_n = Counter()
-                for r in resultados[10:20]:
-                    freq_ant_n.update(r['set'])
-                for n in range(1, 26):
-                    tend = (freq_10_n[n] / 10) - (freq_ant_n[n] / 10) if len(resultados) >= 20 else 0
-                    features_302[74 + n] = (tend + 1) / 2
-                for n in range(1, 26):
-                    features_302[99 + n] = freq_10_n[n] / 10
-                max_score_inv_n = max(c['score'] for c in candidatos) if candidatos else 1
-                for n in range(1, 26):
-                    score_n = next((c['score'] for c in candidatos if c['num'] == n), 0)
-                    features_302[124 + n] = score_n / max(1, max_score_inv_n) if max_score_inv_n != 0 else 0
-                # Features 150-174: Co-ocorrência (top 5 parceiros)
-                pair_count_302 = Counter()
-                for r in janela_30_302:
-                    nums_r = sorted(r['set'])
-                    for i_n in range(len(nums_r)):
-                        for j_n in range(i_n + 1, len(nums_r)):
-                            pair_count_302[(nums_r[i_n], nums_r[j_n])] += 1
-                max_pair_302 = max(pair_count_302.values()) if pair_count_302 else 1
-                for n in range(1, 26):
-                    pares_n = [pair_count_302.get((min(n, m), max(n, m)), 0) for m in range(1, 26) if m != n]
-                    features_302[149 + n] = sum(sorted(pares_n, reverse=True)[:5]) / max(1, 5 * max_pair_302)
-                # Features 175-199: Heatmap posicional
-                pos_freq_302 = {}
-                for r in janela_30_302:
-                    nums_sorted = sorted(r['set'])
-                    for pos_idx, num in enumerate(nums_sorted):
-                        if num not in pos_freq_302:
-                            pos_freq_302[num] = Counter()
-                        pos_freq_302[num][pos_idx] += 1
-                for n in range(1, 26):
-                    if n in pos_freq_302:
-                        total_app = sum(pos_freq_302[n].values())
-                        if total_app > 0:
-                            top3_pos = pos_freq_302[n].most_common(3)
-                            features_302[174 + n] = sum(c for _, c in top3_pos) / total_app
-                # Features 200-224: Entropia do padrão
-                for n in range(1, 26):
-                    seq = [1 if n in r['set'] else 0 for r in janela_30_302]
-                    trans = Counter()
-                    for k in range(len(seq) - 1):
-                        trans[(seq[k], seq[k+1])] += 1
-                    total_tr = sum(trans.values())
-                    if total_tr > 0:
-                        ent = 0.0
-                        for cnt in trans.values():
-                            p = cnt / total_tr
-                            if p > 0:
-                                ent -= p * _math_302.log2(p)
-                        features_302[199 + n] = ent / 2.0
-                # Features 225-249: Soft Exclusion signal
-                from sistemas.disputa_neural_pool23 import EstrategiaInvertida as _EI302
-                excl_success_302 = np.zeros(25)
-                for lb in range(min(5, len(resultados) - 1)):
-                    idx_chk = lb + 1
-                    if idx_chk + 30 > len(resultados):
-                        continue
-                    hist_tmp = [{'numeros': sorted(r['set'])} for r in reversed(resultados)]
-                    idx_real = len(resultados) - 1 - idx_chk
-                    scores_past = _EI302.calcular_scores_exclusao(hist_tmp, idx_real)
-                    if not scores_past:
-                        continue
-                    top2_exc = sorted(scores_past, key=scores_past.get, reverse=True)[:2]
-                    res_chk = resultados[idx_chk]['set']
-                    for exc_num in top2_exc:
-                        if exc_num not in res_chk:
-                            excl_success_302[exc_num - 1] += 0.2
-                        else:
-                            excl_success_302[exc_num - 1] -= 0.2
-                for n in range(1, 26):
-                    features_302[224 + n] = (excl_success_302[n-1] + 1) / 2
-                scores_neural_302 = neural_302.obter_scores(features_302)
+                # Extrair features completas v6 (401) via helper — inclui features de ciclo
+                scores_neural_302 = DisputaNeuralPool23.extrair_features_para_atual(resultados, neural_302)
                 neural_302_disponivel = True
                 print("   🧠 Neural PURO carregado com sucesso para estratégia [6]")
         except Exception as e_neural:
@@ -21200,6 +21012,39 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         except Exception:
             pass
 
+        # ── ONLINE FINE-TUNING: ajuste rápido (2 epochs) com o resultado real ──────
+        if neural_302_disponivel and neural_302 is not None and neural_path_302 and resultado_validacao:
+            try:
+                from sistemas.disputa_neural_pool23 import EstrategiaInvertida as _EI_ft, DisputaNeuralPool23 as _DNN_ft
+                import numpy as _np_ft302
+                _disp_ft = _DNN_ft.__new__(_DNN_ft)
+                _disp_ft.invertida = _EI_ft()
+                _disp_ft.ciclo_qtd_cache = []
+                _disp_ft.ciclo_concs_cache = []
+                _disp_ft.ciclo_media_hist_cache = []
+                _disp_ft.ciclo_atraso_ciclo_cache = []
+                _disp_ft.historico = []
+                for _r in reversed(resultados):
+                    _nums = sorted(_r.get('numeros') or list(_r.get('set', [])))
+                    _disp_ft.historico.append({'concurso': _r.get('concurso', 0), 'numeros': _nums, 'set': set(_nums)})
+                _disp_ft._precomputar_ciclo()
+                _feat_ft302 = _disp_ft._extrair_features(len(_disp_ft.historico) - 1)
+                # y: 1.0 se número NÃO saiu (candidato a excluir), 0.0 se saiu
+                _y_ft302 = _np_ft302.zeros(25)
+                for _n_ft in range(1, 26):
+                    if _n_ft not in resultado_validacao:
+                        _y_ft302[_n_ft - 1] = 1.0
+                neural_302.treinar(
+                    _feat_ft302.reshape(1, -1),
+                    _y_ft302.reshape(1, -1),
+                    epochs=2,
+                    lr=0.0001
+                )
+                neural_302.salvar(neural_path_302)
+                print("   🧠 Online fine-tuning aplicado (2 epochs, lr=0.0001) e modelo salvo")
+            except Exception as _e_ft302:
+                print(f"   ⚠️ Fine-tuning indisponível: {_e_ft302}")
+
         if comparar_estrategias_302:
             print("\n" + "═"*78)
             print("🏆 COMPARAÇÃO DE ESTRATÉGIAS (PASSO 4 - DIAGNÓSTICO DE EXCLUSÃO)")
@@ -22645,7 +22490,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             if os.path.exists(modelo_path):
                 disputa_31b = DisputaNeuralPool23()
                 disputa_31b.carregar_historico()
-                idx_ultimo = 0
+                idx_ultimo = len(disputa_31b.historico) - 1
                 features = disputa_31b._extrair_features(idx_ultimo)
                 rede_31b = RedeNeuralExclusao.carregar(modelo_path)
                 scores_neural = rede_31b.obter_scores(features)
