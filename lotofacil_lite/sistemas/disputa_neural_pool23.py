@@ -159,6 +159,16 @@ class RedeNeuralExclusao:
                     else:
                         delta = delta * (activations[i] > 0)
 
+    def calcular_loss(self, X: np.ndarray, y: np.ndarray) -> float:
+        """
+        Calcula binary cross-entropy sem dropout (modo inferência).
+        Usado para monitorar overfitting via Early Stopping.
+        """
+        pred = self.forward(X)
+        eps = 1e-7
+        loss = -np.mean(y * np.log(pred + eps) + (1 - y) * np.log(1 - pred + eps))
+        return float(loss)
+
     def prever_exclusoes(self, features: np.ndarray, top_k: int = 2) -> List[int]:
         """Retorna os top_k números com maior score de exclusão"""
         scores = self.forward(features.reshape(1, -1))[0]
@@ -1058,7 +1068,9 @@ class DisputaNeuralPool23:
     
     def retreinamento_intensivo(self, concurso_inicio: int = 3000, concurso_fim: int = None,
                                  iteracoes: int = 5, lr_inicial: float = 0.01,
-                                 epochs_por_amostra: int = 10, qtd_exclusoes: int = 2) -> Dict:
+                                 epochs_por_amostra: int = 10, qtd_exclusoes: int = 2,
+                                 patience: int = 5, validation_split: float = 0.2,
+                                 patience_iteracoes: int = 2) -> Dict:
         """
         🔥 RETREINAMENTO INTENSIVO
         
@@ -1072,6 +1084,8 @@ class DisputaNeuralPool23:
             lr_inicial: Learning rate inicial (decai a cada iteração)
             epochs_por_amostra: Épocas de treino por amostra
             qtd_exclusoes: Quantos números excluir (1-10, padrão 2)
+            patience: Épocas sem melhora na val_loss antes de parar (Early Stopping)
+            validation_split: Fração do final dos dados usada para validação (padrão 0.20)
         
         Returns:
             Dict com histórico de resultados por iteração
@@ -1113,6 +1127,19 @@ class DisputaNeuralPool23:
             print("\n🧠 Carregando modelo existente...")
             self.neural = RedeNeuralExclusao.carregar(self.modelo_path)
         
+        # ── Split temporal: primeiros 80% treino, últimos 20% validação ──────
+        total_amostras = idx_fim - idx_inicio + 1
+        n_val = max(10, int(total_amostras * validation_split))
+        n_train = total_amostras - n_val
+        idx_split = idx_inicio + n_train  # índice onde começa a validação
+        print(f"\n📐 Split temporal: {n_train} treino / {n_val} validação ({validation_split*100:.0f}%)")
+        print(f"🔁 Early Stopping épocas: patience={patience}")
+        print(f"🔁 Early Stopping iterações: patience_iteracoes={patience_iteracoes}\n")
+
+        # Controle de ES entre iterações
+        melhor_val_loss_global = float('inf')
+        its_sem_melhora_global = 0
+
         # Loop de iterações
         for it in range(iteracoes):
             lr = lr_inicial * (0.7 ** it)  # Decay de 30% por iteração
@@ -1121,11 +1148,11 @@ class DisputaNeuralPool23:
             print(f"📊 ITERAÇÃO {it + 1}/{iteracoes} (LR: {lr:.6f})")
             print(f"{'─' * 60}")
             
-            # Coletar features e targets
+            # Coletar features e targets — apenas do conjunto de TREINO
             X_all = []
             y_all = []
             
-            for idx in range(idx_inicio, idx_fim + 1):
+            for idx in range(idx_inicio, idx_split):
                 resultado = self.historico[idx]['set']
                 features = self._extrair_features(idx)
                 
@@ -1141,9 +1168,28 @@ class DisputaNeuralPool23:
             X = np.array(X_all)
             y = np.array(y_all)
             
-            # Treinar batch (shuffle)
+            # Coletar conjunto de validação (sem shuffle — ordem temporal)
+            X_val_list = []
+            y_val_list = []
+            for idx in range(idx_split, idx_fim + 1):
+                resultado = self.historico[idx]['set']
+                features = self._extrair_features(idx)
+                yv = np.zeros(25)
+                for n in range(1, 26):
+                    if n not in resultado:
+                        yv[n-1] = 1.0
+                X_val_list.append(features)
+                y_val_list.append(yv)
+            X_val = np.array(X_val_list)
+            y_val = np.array(y_val_list)
+            
+            # Treinar com Early Stopping
             indices = np.arange(len(X))
             np.random.shuffle(indices)
+            
+            melhor_val_loss = float('inf')
+            melhor_pesos_it = None
+            epochs_sem_melhora = 0
             
             for epoch in range(epochs_por_amostra):
                 # Mini-batches de 32
@@ -1153,10 +1199,34 @@ class DisputaNeuralPool23:
                     y_batch = y[batch_idx]
                     self.neural.treinar(X_batch, y_batch, epochs=1, lr=lr)
                 
+                # Calcular val_loss após cada época completa
+                val_loss = self.neural.calcular_loss(X_val, y_val)
+                
+                if val_loss < melhor_val_loss - 1e-5:
+                    melhor_val_loss = val_loss
+                    melhor_pesos_it = {
+                        'pesos': {k2: v.copy() for k2, v in self.neural.pesos.items()},
+                        'bias': {k2: v.copy() for k2, v in self.neural.bias.items()},
+                    }
+                    epochs_sem_melhora = 0
+                else:
+                    epochs_sem_melhora += 1
+                
                 if (epoch + 1) % 5 == 0:
-                    print(f"   📚 Época {epoch + 1}/{epochs_por_amostra}", end="\r")
+                    print(f"   📚 Época {epoch + 1}/{epochs_por_amostra}  val_loss={val_loss:.4f}  sem melhora={epochs_sem_melhora}/{patience}", end="\r")
+                
+                if epochs_sem_melhora >= patience:
+                    print(f"\n   🛑 Early Stopping na época {epoch + 1} (val_loss={melhor_val_loss:.4f})")
+                    break
+            else:
+                print()  # nova linha após progresso
             
-            # Avaliar após iteração
+            # Restaurar pesos do melhor epoch desta iteração
+            if melhor_pesos_it:
+                self.neural.pesos = melhor_pesos_it['pesos']
+                self.neural.bias = melhor_pesos_it['bias']
+            
+            # Avaliar após iteração (conjunto completo, incluindo validação)
             stats = {f'acertos_{i}': 0 for i in range(k + 1)}
             
             for idx in range(idx_inicio, idx_fim + 1):
@@ -1174,6 +1244,7 @@ class DisputaNeuralPool23:
             historico_iteracoes.append({
                 'iteracao': it + 1,
                 'lr': lr,
+                'val_loss': melhor_val_loss,
                 f'taxa_{k}_{k}': taxa_k,
                 f'taxa_{k-1}_{k}': taxa_k1,
                 f'taxa_0_{k}': taxa_0,
@@ -1196,6 +1267,18 @@ class DisputaNeuralPool23:
                     'tamanhos': self.neural.tamanhos
                 })
                 print(f"   🏆 NOVO RECORDE! Taxa {k}/{k}: {taxa_k:.1f}%")
+
+            # ES entre iterações: monitora val_loss global
+            if melhor_val_loss < melhor_val_loss_global - 1e-5:
+                melhor_val_loss_global = melhor_val_loss
+                its_sem_melhora_global = 0
+            else:
+                its_sem_melhora_global += 1
+                print(f"   ⚠️  Sem melhora global ({its_sem_melhora_global}/{patience_iteracoes}) — val_loss={melhor_val_loss:.4f}")
+                if its_sem_melhora_global >= patience_iteracoes:
+                    print(f"\n   🛑 Early Stopping de ITERAÇÕES ativado após iteração {it + 1}")
+                    print(f"      val_loss estabilizou em {melhor_val_loss_global:.4f}")
+                    break
         
         # Restaurar melhor modelo
         if melhor_modelo:
@@ -1271,7 +1354,9 @@ class DisputaNeuralPool23:
     def retreinar_automatico(self, concurso_inicio: int = 3000, concurso_fim: int = None,
                               iteracoes: int = 5, lr_inicial: float = 0.01,
                               epochs_por_amostra: int = 10, resetar: bool = True,
-                              qtd_exclusoes: int = 2) -> Dict:
+                              qtd_exclusoes: int = 2, patience: int = 5,
+                              validation_split: float = 0.2,
+                              patience_iteracoes: int = 2) -> Dict:
         """
         🔥 RETREINAMENTO AUTOMÁTICO (sem prompts interativos)
         
@@ -1317,6 +1402,19 @@ class DisputaNeuralPool23:
             print("\n🧠 Modelo não encontrado, criando nova rede neural...")
             self.neural = RedeNeuralExclusao()
         
+        # ── Split temporal: primeiros 80% treino, últimos 20% validação ──────
+        total_amostras = idx_fim - idx_inicio + 1
+        n_val = max(10, int(total_amostras * validation_split))
+        n_train = total_amostras - n_val
+        idx_split = idx_inicio + n_train
+        print(f"\n📐 Split temporal: {n_train} treino / {n_val} validação ({validation_split*100:.0f}%)")
+        print(f"🔁 Early Stopping épocas: patience={patience}")
+        print(f"🔁 Early Stopping iterações: patience_iteracoes={patience_iteracoes}\n")
+
+        # Controle de ES entre iterações
+        melhor_val_loss_global = float('inf')
+        its_sem_melhora_global = 0
+
         # Loop de iterações
         for it in range(iteracoes):
             lr = lr_inicial * (0.7 ** it)
@@ -1325,11 +1423,11 @@ class DisputaNeuralPool23:
             print(f"📊 ITERAÇÃO {it + 1}/{iteracoes} (LR: {lr:.6f})")
             print(f"{'─' * 60}")
             
-            # Coletar features e targets
+            # Coletar features e targets — apenas TREINO
             X_all = []
             y_all = []
             
-            for idx in range(idx_inicio, idx_fim + 1):
+            for idx in range(idx_inicio, idx_split):
                 resultado = self.historico[idx]['set']
                 features = self._extrair_features(idx)
                 
@@ -1344,9 +1442,28 @@ class DisputaNeuralPool23:
             X = np.array(X_all)
             y = np.array(y_all)
             
-            # Treinar batch (shuffle)
+            # Conjunto de validação
+            X_val_list = []
+            y_val_list = []
+            for idx in range(idx_split, idx_fim + 1):
+                resultado = self.historico[idx]['set']
+                features = self._extrair_features(idx)
+                yv = np.zeros(25)
+                for n in range(1, 26):
+                    if n not in resultado:
+                        yv[n-1] = 1.0
+                X_val_list.append(features)
+                y_val_list.append(yv)
+            X_val = np.array(X_val_list)
+            y_val = np.array(y_val_list)
+            
+            # Treinar com Early Stopping
             indices = np.arange(len(X))
             np.random.shuffle(indices)
+            
+            melhor_val_loss = float('inf')
+            melhor_pesos_it = None
+            epochs_sem_melhora = 0
             
             for epoch in range(epochs_por_amostra):
                 for i in range(0, len(X), 32):
@@ -1355,10 +1472,33 @@ class DisputaNeuralPool23:
                     y_batch = y[batch_idx]
                     self.neural.treinar(X_batch, y_batch, epochs=1, lr=lr)
                 
+                val_loss = self.neural.calcular_loss(X_val, y_val)
+                
+                if val_loss < melhor_val_loss - 1e-5:
+                    melhor_val_loss = val_loss
+                    melhor_pesos_it = {
+                        'pesos': {k2: v.copy() for k2, v in self.neural.pesos.items()},
+                        'bias': {k2: v.copy() for k2, v in self.neural.bias.items()},
+                    }
+                    epochs_sem_melhora = 0
+                else:
+                    epochs_sem_melhora += 1
+                
                 if (epoch + 1) % 5 == 0:
-                    print(f"   📚 Época {epoch + 1}/{epochs_por_amostra}", end="\r")
+                    print(f"   📚 Época {epoch + 1}/{epochs_por_amostra}  val_loss={val_loss:.4f}  sem melhora={epochs_sem_melhora}/{patience}", end="\r")
+                
+                if epochs_sem_melhora >= patience:
+                    print(f"\n   🛑 Early Stopping na época {epoch + 1} (val_loss={melhor_val_loss:.4f})")
+                    break
+            else:
+                print()
             
-            # Avaliar
+            # Restaurar melhor epoch desta iteração
+            if melhor_pesos_it:
+                self.neural.pesos = melhor_pesos_it['pesos']
+                self.neural.bias = melhor_pesos_it['bias']
+            
+            # Avaliar (conjunto completo)
             stats = {f'acertos_{i}': 0 for i in range(k + 1)}
             
             for idx in range(idx_inicio, idx_fim + 1):
@@ -1376,6 +1516,7 @@ class DisputaNeuralPool23:
             historico_iteracoes.append({
                 'iteracao': it + 1,
                 'lr': lr,
+                'val_loss': melhor_val_loss,
                 f'taxa_{k}_{k}': taxa_k,
                 f'taxa_{k-1}_{k}': taxa_k1,
                 f'taxa_0_{k}': taxa_0,
@@ -1397,6 +1538,18 @@ class DisputaNeuralPool23:
                     'tamanhos': self.neural.tamanhos
                 })
                 print(f"   🏆 NOVO RECORDE! Taxa {k}/{k}: {taxa_k:.1f}%")
+
+            # ES entre iterações: monitora val_loss global
+            if melhor_val_loss < melhor_val_loss_global - 1e-5:
+                melhor_val_loss_global = melhor_val_loss
+                its_sem_melhora_global = 0
+            else:
+                its_sem_melhora_global += 1
+                print(f"   ⚠️  Sem melhora global ({its_sem_melhora_global}/{patience_iteracoes}) — val_loss={melhor_val_loss:.4f}")
+                if its_sem_melhora_global >= patience_iteracoes:
+                    print(f"\n   🛑 Early Stopping de ITERAÇÕES ativado após iteração {it + 1}")
+                    print(f"      val_loss estabilizou em {melhor_val_loss_global:.4f}")
+                    break
         
         # Restaurar melhor modelo
         if melhor_modelo:

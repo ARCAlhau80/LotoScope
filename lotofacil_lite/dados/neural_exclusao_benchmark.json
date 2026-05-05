@@ -1,13 +1,13 @@
 {
-  "taxa_neural": 19.8,
+  "taxa_neural": 17.0,
   "taxa_invertida": 15.3,
-  "diferenca_pp": 4.5,
-  "concurso_inicio": 1675,
-  "concurso_fim": 3674,
-  "total_concursos": 1999,
+  "diferenca_pp": 1.8,
+  "concurso_inicio": 1500,
+  "concurso_fim": 3676,
+  "total_concursos": 2176,
   "origem": "disputa",
-  "atualizado_em": "03/05/2026 19:23",
-  "taxa_quentes": 15.4,
-  "taxa_frias": 14.5,
+  "atualizado_em": "05/05/2026 02:38",
+  "taxa_quentes": 15.3,
+  "taxa_frias": 14.7,
   "taxa_random": 15.6
 }

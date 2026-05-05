@@ -1,8 +1,8 @@
 {
   "versao": "1.0",
   "criado_em": "2026-03-03T09:02:56.969014",
-  "ultima_atualizacao": "2026-04-23T14:54:34.407176",
-  "total_sessoes": 59,
+  "ultima_atualizacao": "2026-05-05T14:57:58.602055",
+  "total_sessoes": 74,
   "sessoes": [
     {
       "sessao_id": "e0fa344b",
@@ -822,6 +822,216 @@
       "sessao_id": "bebacbd5",
       "data": "2026-04-22",
       "inicio": "16:06",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "148ea5db",
+      "data": "2026-04-23",
+      "inicio": "14:54",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "a1d16533",
+      "data": "2026-04-23",
+      "inicio": "19:07",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "fa3e19cf",
+      "data": "2026-04-24",
+      "inicio": "09:25",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "8751d673",
+      "data": "2026-04-24",
+      "inicio": "16:35",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "7ce5325e",
+      "data": "2026-04-25",
+      "inicio": "12:02",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "ccbe2f5b",
+      "data": "2026-04-25",
+      "inicio": "17:13",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "9fb19fb3",
+      "data": "2026-04-27",
+      "inicio": "23:21",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "813da55d",
+      "data": "2026-04-28",
+      "inicio": "17:55",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "0f117c29",
+      "data": "2026-04-29",
+      "inicio": "20:09",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "6ffa6581",
+      "data": "2026-04-30",
+      "inicio": "18:12",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "798c1426",
+      "data": "2026-05-02",
+      "inicio": "15:23",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "43c1670d",
+      "data": "2026-05-03",
+      "inicio": "13:50",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "6e4947da",
+      "data": "2026-05-04",
+      "inicio": "01:22",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "e901971c",
+      "data": "2026-05-05",
+      "inicio": "01:39",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "44d8f7ec",
+      "data": "2026-05-05",
+      "inicio": "11:57",
       "duracao_minutos": 0,
       "total_decisoes": 0,
       "total_backtests": 0,
