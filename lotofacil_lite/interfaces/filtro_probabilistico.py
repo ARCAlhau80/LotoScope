@@ -4,8 +4,8 @@
 FILTRO PROBABILÍSTICO - COMBINAÇÕES COM HISTÓRICO DE ACERTOS
 =============================================================================
 Baseado na análise de Hidden Patterns:
-- Combinações com Acertos_11 >= 313 têm 11% mais chance de acertar 11+
-- Combinações com Acertos_11 >= 330 têm 18% mais chance de acertar 11+
+- Combinações com Acertos_11 >= 317 têm 11% mais chance de acertar 11+
+- Combinações com Acertos_11 >= 329 têm 18% mais chance de acertar 11+
 - Combinações "recentes" (acertaram 11 nos últimos 20 concursos) têm melhor performance
 
 Este módulo carrega um dicionário em memória para lookup rápido (<1ms/100k combinações)
@@ -38,7 +38,7 @@ class FiltroProbabilistico:
     
     Uso:
         filtro = FiltroProbabilistico()
-        filtro.carregar(min_acertos_11=313, max_concursos_sem_11=20)
+        filtro.carregar(min_acertos_11=317, max_concursos_sem_11=20)
         
         # Verificar se combinação passa no filtro
         if filtro.passa((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)):
@@ -54,12 +54,12 @@ class FiltroProbabilistico:
         self.total_combinacoes = 0
         self.combinacoes_filtradas = 0
     
-    def carregar(self, min_acertos_11=313, max_concursos_sem_11=None, verbose=True):
+    def carregar(self, min_acertos_11=317, max_concursos_sem_11=None, verbose=True):
         """
         Carrega combinações que atendem aos critérios em um dicionário para lookup rápido.
         
         Args:
-            min_acertos_11: Mínimo de acertos de 11 no histórico (default: 313 = mediana)
+            min_acertos_11: Mínimo de acertos de 11 no histórico (default: 317 = mediana)
             max_concursos_sem_11: Máximo de concursos desde último acerto de 11 (None = sem limite)
             verbose: Mostrar progresso
         """
@@ -202,7 +202,7 @@ class FiltroProbabilistico:
 # Instância global para reuso (evita recarregar)
 _filtro_global = None
 
-def get_filtro_probabilistico(min_acertos_11=313, max_concursos_sem_11=None, forcar_reload=False):
+def get_filtro_probabilistico(min_acertos_11=317, max_concursos_sem_11=None, forcar_reload=False):
     """
     Retorna instância do filtro probabilístico (singleton com lazy loading).
     
@@ -230,9 +230,9 @@ if __name__ == "__main__":
     print("="*70)
     
     # Testar com diferentes configurações
-    print("\n📊 Teste 1: Acertos_11 >= 313 (mediana)")
+    print("\n📊 Teste 1: Acertos_11 >= 317 (mediana)")
     filtro1 = FiltroProbabilistico()
-    filtro1.carregar(min_acertos_11=313)
+    filtro1.carregar(min_acertos_11=317)
     print(f"   Estatísticas: {filtro1.get_estatisticas()}")
     
     # Testar lookup da combinação vencedora do 3614
@@ -243,9 +243,9 @@ if __name__ == "__main__":
     if info:
         print(f"   Info: Acertos_11={info['acertos_11']}, Último_11={info['ultimo_11']}")
     
-    print("\n📊 Teste 2: Acertos_11 >= 330 + Recentes <= 20")
+    print("\n📊 Teste 2: Acertos_11 >= 329 + Recentes <= 20")
     filtro2 = FiltroProbabilistico()
-    filtro2.carregar(min_acertos_11=330, max_concursos_sem_11=20)
+    filtro2.carregar(min_acertos_11=329, max_concursos_sem_11=20)
     print(f"   Estatísticas: {filtro2.get_estatisticas()}")
     print(f"   Combinação 3614 passa? {filtro2.passa(combo_3614)}")
     

@@ -13856,9 +13856,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   Combinações com mais 11-acertos têm MAIOR probabilidade.")
         print("")
         print("   📊 Modos disponíveis:")
-        print("   [1] Conservador: Acertos_11 >= 313 (58% das combos, +11% chance)")
-        print("   [2] Moderado:    Acertos_11 >= 320 (45% das combos, +15% chance)")
-        print("   [3] Agressivo:   Acertos_11 >= 330 (35% das combos, +18% chance)")
+        print("   [1] Conservador: Acertos_11 >= 317 (59% das combos, +11% chance)")
+        print("   [2] Moderado:    Acertos_11 >= 324 (45% das combos, +15% chance)")
+        print("   [3] Agressivo:   Acertos_11 >= 329 (35% das combos, +18% chance)")
         print("   [4] Personalizado: Definir limite manualmente")
         print("   [0] Desativado:  Sem filtro probabilístico")
         print("")
@@ -13876,19 +13876,19 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 filtro_prob_modo = max(0, min(4, filtro_prob_modo))
             
             if filtro_prob_modo == 1:
-                filtro_prob_limite = 313
+                filtro_prob_limite = 317
             elif filtro_prob_modo == 2:
-                filtro_prob_limite = 320
+                filtro_prob_limite = 324
             elif filtro_prob_modo == 3:
-                filtro_prob_limite = 330
+                filtro_prob_limite = 329
             elif filtro_prob_modo == 4:
                 try:
                     limite_input = input("   Limite de Acertos_11 [300-350]: ").strip()
                     filtro_prob_limite = int(limite_input)
                     filtro_prob_limite = max(300, min(350, filtro_prob_limite))
                 except:
-                    filtro_prob_limite = 313
-                    print("   ⚠️ Usando limite padrão: 313")
+                    filtro_prob_limite = 317
+                    print("   ⚠️ Usando limite padrão: 157")
             
             if filtro_prob_modo > 0:
                 # Opção de filtro de "recentes" (encalhadas são piores)
@@ -17780,9 +17780,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   Combinações com mais 11-acertos têm MAIOR probabilidade.")
         print()
         print("   📊 Modos disponíveis:")
-        print("   [1] Conservador: Acertos_11 >= 313 (58% das combos, +11% chance)")
-        print("   [2] Moderado:    Acertos_11 >= 320 (45% das combos, +15% chance)")
-        print("   [3] Agressivo:   Acertos_11 >= 330 (35% das combos, +18% chance)")
+        print("   [1] Conservador: Acertos_11 >= 317 (59% das combos, +11% chance)")
+        print("   [2] Moderado:    Acertos_11 >= 324 (45% das combos, +15% chance)")
+        print("   [3] Agressivo:   Acertos_11 >= 329 (35% das combos, +18% chance)")
         print("   [4] Personalizado: Definir limite manualmente")
         print("   [0] Desativado:  Sem filtro probabilístico")
         print("   [5] 🔄 Comparar TODOS modos — executa 0→4 e mostra ranking de ROI")
@@ -17797,13 +17797,13 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             
             if modo_prob == '1':
                 filtro_prob_ativo_hist = True
-                filtro_prob_limite_hist = 313
+                filtro_prob_limite_hist = 317
             elif modo_prob == '2':
                 filtro_prob_ativo_hist = True
-                filtro_prob_limite_hist = 320
+                filtro_prob_limite_hist = 324
             elif modo_prob == '3':
                 filtro_prob_ativo_hist = True
-                filtro_prob_limite_hist = 330
+                filtro_prob_limite_hist = 329
             elif modo_prob == '4':
                 try:
                     filtro_prob_limite_hist = int(input("   Digite o limite mínimo de Acertos_11 (300-350): ").strip())
@@ -18380,7 +18380,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             def _carregar_prob_cfgs_comp():
                 print(f"   ⏳ Carregando filtros probabilísticos...")
                 _fp_dict_c = {}
-                for _plim_c in [313, 320, 330]:
+                for _plim_c in [317, 324, 329]:
                     try:
                         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
                         from filtro_probabilistico import FiltroProbabilistico as _FPC
@@ -18393,9 +18393,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         _fp_dict_c[_plim_c] = None
                 return [
                     (None,                "Desativado      "),
-                    (_fp_dict_c.get(313), "Conserv. (≥313) "),
-                    (_fp_dict_c.get(320), "Moderado (≥320) "),
-                    (_fp_dict_c.get(330), "Agressivo(≥330) "),
+                    (_fp_dict_c.get(317), "Conserv. (≥157) "),
+                    (_fp_dict_c.get(324), "Moderado (≥160) "),
+                    (_fp_dict_c.get(329), "Agressivo(≥165) "),
                 ]
 
             if _comparar_estr_hist and _comparar_todos_prob_hist:
@@ -20571,9 +20571,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   Combinações com mais 11-acertos têm MAIOR probabilidade.")
         print()
         print("   📊 Modos disponíveis:")
-        print("   [1] Conservador: Acertos_11 >= 313 (58% das combos, +11% chance)")
-        print("   [2] Moderado:    Acertos_11 >= 320 (45% das combos, +15% chance)")
-        print("   [3] Agressivo:   Acertos_11 >= 330 (35% das combos, +18% chance)")
+        print("   [1] Conservador: Acertos_11 >= 317 (59% das combos, +11% chance)")
+        print("   [2] Moderado:    Acertos_11 >= 324 (45% das combos, +15% chance)")
+        print("   [3] Agressivo:   Acertos_11 >= 329 (35% das combos, +18% chance)")
         print("   [4] Personalizado: Definir limite manualmente")
         print("   [0] Desativado:  Sem filtro probabilístico")
         
@@ -20586,13 +20586,13 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             
             if modo_prob == '1':
                 filtro_prob_ativo = True
-                filtro_prob_limite = 313
+                filtro_prob_limite = 317
             elif modo_prob == '2':
                 filtro_prob_ativo = True
-                filtro_prob_limite = 320
+                filtro_prob_limite = 324
             elif modo_prob == '3':
                 filtro_prob_ativo = True
-                filtro_prob_limite = 330
+                filtro_prob_limite = 329
             elif modo_prob == '4':
                 try:
                     filtro_prob_limite = int(input("   Digite o limite mínimo de Acertos_11 (300-350): ").strip())
