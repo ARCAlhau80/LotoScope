@@ -13852,28 +13852,32 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("\n" + "─"*78)
         print("🎲 FILTRO PROBABILÍSTICO (opcional)")
         print("─"*78)
-        print("   Baseado em análise de frequência histórica (Acertos_11).")
-        print("   Combinações com mais 11-acertos têm MAIOR probabilidade.")
+        print("   Baseado em análise de frequência e padrão histórico das combinações.")
         print("")
         print("   📊 Modos disponíveis:")
-        print("   [1] Conservador: Acertos_11 >= 317 (59% das combos, +11% chance)")
-        print("   [2] Moderado:    Acertos_11 >= 324 (45% das combos, +15% chance)")
-        print("   [3] Agressivo:   Acertos_11 >= 329 (35% das combos, +18% chance)")
-        print("   [4] Personalizado: Definir limite manualmente")
-        print("   [0] Desativado:  Sem filtro probabilístico")
+        print("   [1] Conservador:       Acertos_11 >= 317   (59% das combos, +11% chance)")
+        print("   [2] Moderado:          Acertos_11 >= 324   (45% das combos, +15% chance)")
+        print("   [3] Agressivo:         Acertos_11 >= 329   (35% das combos, +18% chance)")
+        print("   [4] Personalizado:     Definir limite de Acertos_11 manualmente")
+        print("   [5] Score Mod.:   Score >= 565       (16% — A11+A12×2+A13×10+A14×100)")
+        print("   [6] Score Prem.:  Score >= 616       ( 6% — máximo sinal histórico)")
+        print("   [7] 🥇 C. de Ouro: A14 últ. 100 conc. ( 0.46% — esteve a 1 do jackpot!)")
+        print("   [0] Desativado:        Sem filtro probabilístico")
         print("")
         
         filtro_prob_modo = 0
         filtro_prob_limite = 0
         filtro_prob_recentes = 0
+        filtro_prob_score = None
+        filtro_prob_ouro_window = None
         
         try:
-            modo_prob = input("   Modo [0-4, ENTER=0]: ").strip()
+            modo_prob = input("   Modo [0-7, ENTER=0]: ").strip()
             if modo_prob == '':
                 filtro_prob_modo = 0
             else:
                 filtro_prob_modo = int(modo_prob)
-                filtro_prob_modo = max(0, min(4, filtro_prob_modo))
+                filtro_prob_modo = max(0, min(7, filtro_prob_modo))
             
             if filtro_prob_modo == 1:
                 filtro_prob_limite = 317
@@ -13888,9 +13892,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     filtro_prob_limite = max(300, min(350, filtro_prob_limite))
                 except:
                     filtro_prob_limite = 317
-                    print("   ⚠️ Usando limite padrão: 157")
+                    print("   ⚠️ Usando limite padrão: 317")
+            elif filtro_prob_modo == 5:
+                filtro_prob_score = 565
+            elif filtro_prob_modo == 6:
+                filtro_prob_score = 616
+            elif filtro_prob_modo == 7:
+                filtro_prob_ouro_window = 100
             
-            if filtro_prob_modo > 0:
+            if filtro_prob_modo in (1, 2, 3, 4):
                 # Opção de filtro de "recentes" (encalhadas são piores)
                 print(f"\n   📌 Filtro de recentes (opcional):")
                 print("   Combinações 'encalhadas' (sem 11+ há muito tempo) são PIORES.")
@@ -13914,6 +13924,17 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     print(f"      • Máx concursos sem 11+: {filtro_prob_recentes}")
                 else:
                     print(f"      • Recentes: desativado")
+            elif filtro_prob_modo == 5:
+                print(f"\n   ✅ Filtro probabilístico ATIVADO:")
+                print(f"      • Score Composto >= 565 (A11×1 + A12×2 + A13×10 + A14×100 + A15×1000)")
+                print(f"      • Aprox. 16% das combinações, seleção por qualidade histórica multi-nível")
+            elif filtro_prob_modo == 6:
+                print(f"\n   ✅ Filtro probabilístico ATIVADO:")
+                print(f"      • Score Composto >= 616 (seleção premium, ~6% das combinações)")
+            elif filtro_prob_modo == 7:
+                print(f"\n   ✅ 🥇 Filtro CANDIDATA DE OURO ATIVADO:")
+                print(f"      • Combos com Acertos_14 nos últimos 100 concursos (~0.46%)")
+                print(f"      • Estas combos estiveram a 1 número do jackpot recentemente!")
             else:
                 print(f"\n   ⏭️ Filtro probabilístico DESATIVADO")
         except Exception as e:
@@ -13930,10 +13951,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 
                 print(f"\n   ⏳ Carregando dados probabilísticos...")
                 filtro_prob_obj = FiltroProbabilistico()
-                filtro_prob_obj.carregar(
-                    min_acertos_11=filtro_prob_limite,
-                    max_concursos_sem_11=filtro_prob_recentes if filtro_prob_recentes > 0 else None
-                )
+                if filtro_prob_modo in (1, 2, 3, 4):
+                    filtro_prob_obj.carregar(
+                        min_acertos_11=filtro_prob_limite,
+                        max_concursos_sem_11=filtro_prob_recentes if filtro_prob_recentes > 0 else None
+                    )
+                elif filtro_prob_modo in (5, 6):
+                    filtro_prob_obj.carregar(min_score_composto=filtro_prob_score)
+                elif filtro_prob_modo == 7:
+                    filtro_prob_obj.carregar(ultimo_acertos_14_window=filtro_prob_ouro_window)
                 print(f"   ✅ {filtro_prob_obj.combinacoes_filtradas:,} combinações válidas carregadas")
             except Exception as e:
                 print(f"   ⚠️ Erro ao carregar filtro probabilístico: {e}")
@@ -14925,7 +14951,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 if anomalias_ativo:
                     print(f"      • 🔬 Anomalias de frequência: máx {anomalias_max_quentes} quentes, mín {anomalias_min_frios} frios")
                 if filtro_prob_obj:
-                    print(f"      • 🎲 Filtro probabilístico: Acertos_11 >= {filtro_prob_limite}")
+                    if filtro_prob_modo in (1, 2, 3, 4):
+                        print(f"      • 🎲 Filtro probabilístico: Acertos_11 >= {filtro_prob_limite}")
+                    elif filtro_prob_modo in (5, 6):
+                        print(f"      • 🎲 Filtro probabilístico: Score Composto >= {filtro_prob_score}")
+                    elif filtro_prob_modo == 7:
+                        print(f"      • 🥇 Candidata de Ouro: Acertos_14 nos últimos {filtro_prob_ouro_window} conc.")
                 # NOVOS FILTROS POSICIONAIS
                 if usar_filtro_qtde_6_25:
                     print(f"      • 🎯 Qtde 6-25: aceita {qtde_6_25_valores}")
@@ -15430,10 +15461,15 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     _trav_tol_file = filtros.get('posicoes_travadas_tolerancia', 3)
                     f.write(f"# Filtro posições travadas: {len(posicoes_travadas_template)} posições, tolerância={_trav_tol_file}\n")
                 if filtro_prob_obj:
-                    f.write(f"# Filtro probabilístico: Acertos_11 >= {filtro_prob_limite}")
-                    if filtro_prob_recentes > 0:
-                        f.write(f", Recentes <= {filtro_prob_recentes}")
-                    f.write(f" (+11-18% chance)\n")
+                    if filtro_prob_modo in (1, 2, 3, 4):
+                        f.write(f"# Filtro probabilístico: Acertos_11 >= {filtro_prob_limite}")
+                        if filtro_prob_recentes > 0:
+                            f.write(f", Recentes <= {filtro_prob_recentes}")
+                        f.write(f" (+11-18% chance)\n")
+                    elif filtro_prob_modo in (5, 6):
+                        f.write(f"# Filtro probabilístico: Score Composto >= {filtro_prob_score}\n")
+                    elif filtro_prob_modo == 7:
+                        f.write(f"# Filtro probabilístico: Candidata de Ouro (A14 últ. {filtro_prob_ouro_window} conc.)\n")
                 f.write(f"# Combinações: {len(combos_filtradas):,}\n")
                 f.write(f"# Custo: R$ {len(combos_filtradas) * 3.50:,.2f}\n")
                 f.write(f"#" + "="*60 + "\n")
@@ -17776,25 +17812,29 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("\n" + "─"*78)
         print("🎲 FILTRO PROBABILÍSTICO (opcional)")
         print("─"*78)
-        print("   Baseado em análise de frequência histórica (Acertos_11).")
-        print("   Combinações com mais 11-acertos têm MAIOR probabilidade.")
+        print("   Baseado em análise de frequência e padrão histórico das combinações.")
         print()
         print("   📊 Modos disponíveis:")
-        print("   [1] Conservador: Acertos_11 >= 317 (59% das combos, +11% chance)")
-        print("   [2] Moderado:    Acertos_11 >= 324 (45% das combos, +15% chance)")
-        print("   [3] Agressivo:   Acertos_11 >= 329 (35% das combos, +18% chance)")
-        print("   [4] Personalizado: Definir limite manualmente")
-        print("   [0] Desativado:  Sem filtro probabilístico")
-        print("   [5] 🔄 Comparar TODOS modos — executa 0→4 e mostra ranking de ROI")
-        
+        print("   [1] Conservador:       Acertos_11 >= 317   (59% das combos, +11% chance)")
+        print("   [2] Moderado:          Acertos_11 >= 324   (45% das combos, +15% chance)")
+        print("   [3] Agressivo:         Acertos_11 >= 329   (35% das combos, +18% chance)")
+        print("   [4] Personalizado:     Definir limite de Acertos_11 manualmente")
+        print("   [5] Score Mod.:   Score >= 565       (16% — A11+A12×2+A13×10+A14×100)")
+        print("   [6] Score Prem.:  Score >= 616       ( 6% — máximo sinal histórico)")
+        print("   [7] 🥇 C. de Ouro: A14 últ. 100 conc. ( 0.46% — esteve a 1 do jackpot!)")
+        print("   [0] Desativado:        Sem filtro probabilístico")
+        print("   [C] 🔄 Comparar TODOS modos — executa 0→4 e mostra ranking de ROI")
+
         _comparar_todos_prob_hist = False
         filtro_prob_ativo_hist = False
         filtro_prob_limite_hist = 0
+        filtro_prob_score_hist = None
+        filtro_prob_ouro_window_hist = None
         filtro_prob_obj_hist = None
-        
+
         try:
-            modo_prob = input("\n   Modo do filtro probabilístico [0-5]: ").strip()
-            
+            modo_prob = input("\n   Modo do filtro probabilístico [0-7, C=Comparar]: ").strip().upper()
+
             if modo_prob == '1':
                 filtro_prob_ativo_hist = True
                 filtro_prob_limite_hist = 317
@@ -17814,18 +17854,32 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 except:
                     print("   ⚠️ Valor inválido! Filtro desativado.")
             elif modo_prob == '5':
+                filtro_prob_ativo_hist = True
+                filtro_prob_score_hist = 565
+            elif modo_prob == '6':
+                filtro_prob_ativo_hist = True
+                filtro_prob_score_hist = 616
+            elif modo_prob == '7':
+                filtro_prob_ativo_hist = True
+                filtro_prob_ouro_window_hist = 100
+            elif modo_prob == 'C':
                 _comparar_todos_prob_hist = True
-                print(f"\n   🔄 Modo comparação: testará 4 configurações (desativado + ≥313 + ≥320 + ≥330)")
-            
+                print(f"\n   🔄 Modo comparação: testará 4 configurações (desativado + ≥317 + ≥324 + ≥329)")
+
             if filtro_prob_ativo_hist:
                 print(f"\n   ✅ Filtro probabilístico ATIVADO:")
-                print(f"      • Limite mínimo: Acertos_11 >= {filtro_prob_limite_hist}")
+                if filtro_prob_score_hist:
+                    print(f"      • Score Composto >= {filtro_prob_score_hist}")
+                elif filtro_prob_ouro_window_hist:
+                    print(f"      • 🥇 Candidata de Ouro: A14 nos últimos {filtro_prob_ouro_window_hist} concursos")
+                else:
+                    print(f"      • Limite mínimo: Acertos_11 >= {filtro_prob_limite_hist}")
             elif not _comparar_todos_prob_hist:
                 print(f"\n   ⏭️ Filtro probabilístico DESATIVADO")
         except Exception as e:
             print(f"   ⚠️ Erro: {e}. Filtro probabilístico desativado.")
 
-        # Modo composto: quando usuário escolhe comparar estratégias (0) E probabilístico (5).
+        # Modo composto: quando usuário escolhe comparar estratégias (0) E probabilístico (C).
         if _comparar_estr_hist and _comparar_todos_prob_hist:
             print("\n   🧪 MODO COMPOSTO DETECTADO: estratégias + probabilístico")
             print("   [1] Estratégia fixa × TODOS probabilísticos (4 rodadas)")
@@ -17856,7 +17910,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 from filtro_probabilistico import FiltroProbabilistico
                 print(f"\n   ⏳ Carregando dados do filtro probabilístico...")
                 _fp = FiltroProbabilistico()
-                _fp.carregar(min_acertos_11=filtro_prob_limite_hist, max_concursos_sem_11=None)
+                if filtro_prob_score_hist is not None:
+                    _fp.carregar(min_score_composto=filtro_prob_score_hist)
+                elif filtro_prob_ouro_window_hist is not None:
+                    _fp.carregar(ultimo_acertos_14_window=filtro_prob_ouro_window_hist)
+                else:
+                    _fp.carregar(min_acertos_11=filtro_prob_limite_hist, max_concursos_sem_11=None)
                 filtro_prob_obj_hist = _fp
                 print(f"   ✅ Filtro probabilístico carregado ({_fp.combinacoes_filtradas:,} combinações válidas)")
             except Exception as e:
@@ -18393,9 +18452,9 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         _fp_dict_c[_plim_c] = None
                 return [
                     (None,                "Desativado      "),
-                    (_fp_dict_c.get(317), "Conserv. (≥157) "),
-                    (_fp_dict_c.get(324), "Moderado (≥160) "),
-                    (_fp_dict_c.get(329), "Agressivo(≥165) "),
+                    (_fp_dict_c.get(317), "Conserv. (≥317) "),
+                    (_fp_dict_c.get(324), "Moderado (≥324) "),
+                    (_fp_dict_c.get(329), "Agressivo(≥329) "),
                 ]
 
             if _comparar_estr_hist and _comparar_todos_prob_hist:
@@ -20567,23 +20626,27 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("\n" + "─"*78)
         print("🎲 FILTRO PROBABILÍSTICO (opcional)")
         print("─"*78)
-        print("   Baseado em análise de frequência histórica (Acertos_11).")
-        print("   Combinações com mais 11-acertos têm MAIOR probabilidade.")
+        print("   Baseado em análise de frequência e padrão histórico das combinações.")
         print()
         print("   📊 Modos disponíveis:")
-        print("   [1] Conservador: Acertos_11 >= 317 (59% das combos, +11% chance)")
-        print("   [2] Moderado:    Acertos_11 >= 324 (45% das combos, +15% chance)")
-        print("   [3] Agressivo:   Acertos_11 >= 329 (35% das combos, +18% chance)")
-        print("   [4] Personalizado: Definir limite manualmente")
-        print("   [0] Desativado:  Sem filtro probabilístico")
-        
+        print("   [1] Conservador:       Acertos_11 >= 317   (59% das combos, +11% chance)")
+        print("   [2] Moderado:          Acertos_11 >= 324   (45% das combos, +15% chance)")
+        print("   [3] Agressivo:         Acertos_11 >= 329   (35% das combos, +18% chance)")
+        print("   [4] Personalizado:     Definir limite de Acertos_11 manualmente")
+        print("   [5] Score Mod.:   Score >= 565       (16% — A11+A12×2+A13×10+A14×100)")
+        print("   [6] Score Prem.:  Score >= 616       ( 6% — máximo sinal histórico)")
+        print("   [7] 🥇 C. de Ouro: A14 últ. 100 conc. ( 0.46% — esteve a 1 do jackpot!)")
+        print("   [0] Desativado:        Sem filtro probabilístico")
+
         filtro_prob_ativo = False
         filtro_prob_limite = 0
+        filtro_prob_score = None
+        filtro_prob_ouro_window = None
         filtro_prob_dados = None
-        
+
         try:
-            modo_prob = input("\n   Modo do filtro probabilístico [0-4]: ").strip()
-            
+            modo_prob = input("\n   Modo do filtro probabilístico [0-7]: ").strip()
+
             if modo_prob == '1':
                 filtro_prob_ativo = True
                 filtro_prob_limite = 317
@@ -20602,15 +20665,29 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         print("   ⚠️ Valor fora do range! Filtro desativado.")
                 except:
                     print("   ⚠️ Valor inválido! Filtro desativado.")
-            
+            elif modo_prob == '5':
+                filtro_prob_ativo = True
+                filtro_prob_score = 565
+            elif modo_prob == '6':
+                filtro_prob_ativo = True
+                filtro_prob_score = 616
+            elif modo_prob == '7':
+                filtro_prob_ativo = True
+                filtro_prob_ouro_window = 100
+
             if filtro_prob_ativo:
                 print(f"\n   ✅ Filtro probabilístico ATIVADO:")
-                print(f"      • Limite mínimo: Acertos_11 >= {filtro_prob_limite}")
+                if filtro_prob_score:
+                    print(f"      • Score Composto >= {filtro_prob_score}")
+                elif filtro_prob_ouro_window:
+                    print(f"      • 🥇 Candidata de Ouro: A14 nos últimos {filtro_prob_ouro_window} concursos")
+                else:
+                    print(f"      • Limite mínimo: Acertos_11 >= {filtro_prob_limite}")
             else:
                 print(f"\n   ⏭️ Filtro probabilístico DESATIVADO")
         except Exception as e:
             print(f"   ⚠️ Erro: {e}. Filtro probabilístico desativado.")
-        
+
         # Carregar filtro probabilístico se ativado
         if filtro_prob_ativo:
             try:
@@ -20618,10 +20695,12 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 from filtro_probabilistico import FiltroProbabilistico
                 print(f"\n   ⏳ Carregando dados do filtro probabilístico...")
                 filtro_prob = FiltroProbabilistico()
-                filtro_prob.carregar(
-                    min_acertos_11=filtro_prob_limite,
-                    max_concursos_sem_11=None
-                )
+                if filtro_prob_score is not None:
+                    filtro_prob.carregar(min_score_composto=filtro_prob_score)
+                elif filtro_prob_ouro_window is not None:
+                    filtro_prob.carregar(ultimo_acertos_14_window=filtro_prob_ouro_window)
+                else:
+                    filtro_prob.carregar(min_acertos_11=filtro_prob_limite, max_concursos_sem_11=None)
                 filtro_prob_dados = filtro_prob
                 print(f"   ✅ Filtro probabilístico carregado ({filtro_prob.combinacoes_filtradas:,} combinações válidas)")
             except Exception as e:

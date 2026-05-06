@@ -50,61 +50,110 @@ class FiltroProbabilistico:
         self.carregado = False
         self.min_acertos_11 = 0
         self.max_concursos_sem_11 = None
+        self.min_score_composto = None
+        self.ultimo_acertos_14_window = None
         self.ultimo_concurso = 0
         self.total_combinacoes = 0
         self.combinacoes_filtradas = 0
     
-    def carregar(self, min_acertos_11=317, max_concursos_sem_11=None, verbose=True):
+    def carregar(self, min_acertos_11=317, max_concursos_sem_11=None,
+                 min_score_composto=None, ultimo_acertos_14_window=None,
+                 verbose=True):
         """
         Carrega combinações que atendem aos critérios em um dicionário para lookup rápido.
-        
+
         Args:
-            min_acertos_11: Mínimo de acertos de 11 no histórico (default: 317 = mediana)
-            max_concursos_sem_11: Máximo de concursos desde último acerto de 11 (None = sem limite)
-            verbose: Mostrar progresso
+            min_acertos_11: Mínimo de acertos de 11 no histórico (default: 317 = mediana).
+                            Ignorado quando min_score_composto ou ultimo_acertos_14_window forem definidos.
+            max_concursos_sem_11: Máximo de concursos desde último acerto de 11 (None = sem limite).
+                                  Aplicado apenas em modos A11 (modos 1-4).
+            min_score_composto: Filtro por Score Composto mínimo
+                                (A11×1 + A12×2 + A13×10 + A14×100 + A15×1000).
+                                Exemplos calibrados: 565 → 16%, 616 → 6%.
+            ultimo_acertos_14_window: Janela em concursos para "Candidata de Ouro".
+                                      Ex: 100 → inclui combos com Ultimo_Acertos_14 >= (atual-100).
+            verbose: Mostrar progresso.
         """
         if verbose:
             print("   ⏳ Carregando filtro probabilístico...")
-        
+
         db = DatabaseConfig()
         conn = db.get_connection()
         cursor = conn.cursor()
-        
+
         # Obter último concurso
         cursor.execute("SELECT MAX(UltimoConcursoAtualizado) FROM COMBINACOES_LOTOFACIL")
         self.ultimo_concurso = cursor.fetchone()[0] or 0
-        
-        # Construir query
-        conditions = [f"Acertos_11 >= {min_acertos_11}"]
-        
-        if max_concursos_sem_11 is not None:
-            limite_concurso = self.ultimo_concurso - max_concursos_sem_11
-            conditions.append(f"Ultimo_Acertos_11 >= {limite_concurso}")
-        
+
+        usar_score = min_score_composto is not None
+        usar_ouro  = ultimo_acertos_14_window is not None
+
+        # Colunas extras necessárias para score/ouro
+        cols_extras = ""
+        if usar_score or usar_ouro:
+            cols_extras = (", Acertos_12, Acertos_13, Acertos_14, "
+                           "ISNULL(Acertos_15, 0) AS Acertos_15, Ultimo_Acertos_14")
+
+        # Construir condição WHERE
+        if usar_score:
+            score_expr = ("(Acertos_11*1 + Acertos_12*2 + Acertos_13*10 "
+                          "+ Acertos_14*100 + ISNULL(Acertos_15,0)*1000)")
+            conditions = [f"{score_expr} >= {min_score_composto}"]
+        elif usar_ouro:
+            conc_limite = self.ultimo_concurso - ultimo_acertos_14_window
+            conditions = [
+                "Acertos_14 > 0",
+                f"Ultimo_Acertos_14 >= {conc_limite}"
+            ]
+        else:
+            conditions = [f"Acertos_11 >= {min_acertos_11}"]
+            if max_concursos_sem_11 is not None:
+                limite_concurso = self.ultimo_concurso - max_concursos_sem_11
+                conditions.append(f"Ultimo_Acertos_11 >= {limite_concurso}")
+
         where_clause = " AND ".join(conditions)
-        
+
         query = f"""
-        SELECT 
-            CONCAT(N1,'-',N2,'-',N3,'-',N4,'-',N5,'-',N6,'-',N7,'-',N8,'-',N9,'-',N10,'-',N11,'-',N12,'-',N13,'-',N14,'-',N15),
+        SELECT
+            CONCAT(N1,'-',N2,'-',N3,'-',N4,'-',N5,'-',N6,'-',N7,'-',N8,
+                   '-',N9,'-',N10,'-',N11,'-',N12,'-',N13,'-',N14,'-',N15),
             Acertos_11,
             Ultimo_Acertos_11
+            {cols_extras}
         FROM COMBINACOES_LOTOFACIL
         WHERE {where_clause}
         """
-        
+
         cursor.execute(query)
-        
+
         # Carregar em memória
         self.lookup = {}
-        for row in cursor:
-            chave = row[0]
-            self.lookup[chave] = {
-                'acertos_11': row[1],
-                'ultimo_11': row[2]
-            }
-        
-        self.min_acertos_11 = min_acertos_11
+        if usar_score or usar_ouro:
+            for row in cursor:
+                chave = row[0]
+                a11, u11 = row[1], row[2]
+                a12, a13, a14, a15, u14 = row[3], row[4], row[5], row[6], row[7]
+                score = a11 * 1 + a12 * 2 + a13 * 10 + a14 * 100 + a15 * 1000
+                nm_ratio = round(a13 / a12, 3) if a12 > 0 else 0.0
+                self.lookup[chave] = {
+                    'acertos_11': a11, 'ultimo_11': u11,
+                    'acertos_12': a12, 'acertos_13': a13,
+                    'acertos_14': a14, 'acertos_15': a15,
+                    'ultimo_14': u14,
+                    'score': score, 'nm_ratio': nm_ratio,
+                }
+        else:
+            for row in cursor:
+                chave = row[0]
+                self.lookup[chave] = {
+                    'acertos_11': row[1],
+                    'ultimo_11': row[2],
+                }
+
+        self.min_acertos_11 = min_acertos_11 if not (usar_score or usar_ouro) else 0
         self.max_concursos_sem_11 = max_concursos_sem_11
+        self.min_score_composto = min_score_composto
+        self.ultimo_acertos_14_window = ultimo_acertos_14_window
         self.combinacoes_filtradas = len(self.lookup)
         
         # Obter total para estatísticas
@@ -116,11 +165,16 @@ class FiltroProbabilistico:
         if verbose:
             pct = self.combinacoes_filtradas / self.total_combinacoes * 100
             print(f"   ✅ Filtro carregado: {self.combinacoes_filtradas:,} combinações ({pct:.1f}%)")
-            print(f"      Critérios: Acertos_11 >= {min_acertos_11}", end="")
-            if max_concursos_sem_11:
-                print(f", Recentes <= {max_concursos_sem_11} concursos")
+            if usar_score:
+                print(f"      Critério: Score Composto >= {min_score_composto}")
+            elif usar_ouro:
+                print(f"      Critério: Candidata de Ouro — Ultimo_Acertos_14 nos últimos {ultimo_acertos_14_window} concursos")
             else:
-                print()
+                print(f"      Critério: Acertos_11 >= {min_acertos_11}", end="")
+                if max_concursos_sem_11:
+                    print(f", Recentes <= {max_concursos_sem_11} concursos")
+                else:
+                    print()
         
         conn.close()
         return self
@@ -194,6 +248,8 @@ class FiltroProbabilistico:
             'combinacoes_filtradas': self.combinacoes_filtradas,
             'percentual': self.combinacoes_filtradas / self.total_combinacoes * 100 if self.total_combinacoes else 0,
             'min_acertos_11': self.min_acertos_11,
+            'min_score_composto': self.min_score_composto,
+            'ultimo_acertos_14_window': self.ultimo_acertos_14_window,
             'max_concursos_sem_11': self.max_concursos_sem_11,
             'ultimo_concurso': self.ultimo_concurso
         }
@@ -202,24 +258,33 @@ class FiltroProbabilistico:
 # Instância global para reuso (evita recarregar)
 _filtro_global = None
 
-def get_filtro_probabilistico(min_acertos_11=317, max_concursos_sem_11=None, forcar_reload=False):
+def get_filtro_probabilistico(min_acertos_11=317, max_concursos_sem_11=None,
+                              min_score_composto=None, ultimo_acertos_14_window=None,
+                              forcar_reload=False):
     """
     Retorna instância do filtro probabilístico (singleton com lazy loading).
-    
+
     Args:
         min_acertos_11: Mínimo de acertos de 11 no histórico
         max_concursos_sem_11: Máximo de concursos desde último acerto de 11
+        min_score_composto: Score Composto mínimo (substitui A11 se definido)
+        ultimo_acertos_14_window: Janela para Candidata de Ouro (substitui A11 se definido)
         forcar_reload: Forçar recarga mesmo se já carregado
-        
+
     Returns:
         Instância de FiltroProbabilistico carregada
     """
     global _filtro_global
-    
+
     if _filtro_global is None or forcar_reload:
         _filtro_global = FiltroProbabilistico()
-        _filtro_global.carregar(min_acertos_11, max_concursos_sem_11)
-    
+        _filtro_global.carregar(
+            min_acertos_11=min_acertos_11,
+            max_concursos_sem_11=max_concursos_sem_11,
+            min_score_composto=min_score_composto,
+            ultimo_acertos_14_window=ultimo_acertos_14_window,
+        )
+
     return _filtro_global
 
 
