@@ -17906,7 +17906,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Carregar filtro probabilístico se ativado
         if filtro_prob_ativo_hist:
             try:
-                sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+                import sys as _sys_fp_302
+                _sys_fp_302.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
                 from filtro_probabilistico import FiltroProbabilistico
                 print(f"\n   ⏳ Carregando dados do filtro probabilístico...")
                 _fp = FiltroProbabilistico()
@@ -20691,7 +20692,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         # Carregar filtro probabilístico se ativado
         if filtro_prob_ativo:
             try:
-                sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+                import sys as _sys_fp_302b
+                _sys_fp_302b.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
                 from filtro_probabilistico import FiltroProbabilistico
                 print(f"\n   ⏳ Carregando dados do filtro probabilístico...")
                 filtro_prob = FiltroProbabilistico()
