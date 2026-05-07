@@ -21794,10 +21794,57 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                         print(f"      → Esses números NÃO saíram, eliminando a combinação vencedora!")
                         print(f"      💡 Solução: Rodar novamente SEM números fixos ou fixar apenas números certos.")
                     else:
-                        print(f"      Verificar se a combinação vencedora estava no arquivo.")
-                        print(f"      (Números fixos OK: {sorted(numeros_fixos)} - todos no resultado)")
+                        # Fixos OK — investigar se o filtro probabilístico removeu o jackpot
+                        _causa_encontrada = False
+                        if filtro_prob_ativo and filtro_prob_dados:
+                            _chave_res = '-'.join(str(n) for n in sorted(resultado_lista))
+                            _chaves_pool = {'-'.join(str(n) for n in sorted(c)) for c in todas_combos}
+                            _estava_antes = _chave_res in _chaves_pool
+                            _passou_prob = _chave_res in filtro_prob_dados.lookup
+                            if _estava_antes and not _passou_prob:
+                                _causa_encontrada = True
+                                if filtro_prob_ouro_window is not None:
+                                    _modo_desc = f"Candidata de Ouro (A14 últ. {filtro_prob_ouro_window} conc.)"
+                                elif filtro_prob_score is not None:
+                                    _modo_desc = f"Score Composto >= {filtro_prob_score}"
+                                else:
+                                    _modo_desc = f"Acertos_11 >= {filtro_prob_limite}"
+                                print(f"\n   🚨 CAUSA IDENTIFICADA: FILTRO PROBABILÍSTICO REMOVEU O JACKPOT!")
+                                print(f"      Modo ativo: {_modo_desc}")
+                                print(f"      A combinação vencedora NÃO passou no critério do filtro.")
+                                print(f"      💡 Solução: Usar modo menos restritivo ou desativar o filtro [0].")
+                            elif not _estava_antes:
+                                _causa_encontrada = True
+                                print(f"\n   🚨 CAUSA IDENTIFICADA: COMBINAÇÃO VENCEDORA NÃO ESTAVA NO POOL GERADO!")
+                                print(f"      A combinação não foi gerada (verifique números fixos ou pool 23).")
+                        if not _causa_encontrada:
+                            print(f"      Verificar se a combinação vencedora estava no arquivo.")
+                            print(f"      (Números fixos OK: {sorted(numeros_fixos)} - todos no resultado)")
                 else:
-                    print(f"      Verificar se a combinação vencedora estava no arquivo.")
+                    # Sem números fixos — investigar filtro probabilístico
+                    _causa_encontrada = False
+                    if filtro_prob_ativo and filtro_prob_dados:
+                        _chave_res = '-'.join(str(n) for n in sorted(resultado_lista))
+                        _chaves_pool = {'-'.join(str(n) for n in sorted(c)) for c in todas_combos}
+                        _estava_antes = _chave_res in _chaves_pool
+                        _passou_prob = _chave_res in filtro_prob_dados.lookup
+                        if _estava_antes and not _passou_prob:
+                            _causa_encontrada = True
+                            if filtro_prob_ouro_window is not None:
+                                _modo_desc = f"Candidata de Ouro (A14 últ. {filtro_prob_ouro_window} conc.)"
+                            elif filtro_prob_score is not None:
+                                _modo_desc = f"Score Composto >= {filtro_prob_score}"
+                            else:
+                                _modo_desc = f"Acertos_11 >= {filtro_prob_limite}"
+                            print(f"\n   🚨 CAUSA IDENTIFICADA: FILTRO PROBABILÍSTICO REMOVEU O JACKPOT!")
+                            print(f"      Modo ativo: {_modo_desc}")
+                            print(f"      A combinação vencedora NÃO passou no critério do filtro.")
+                            print(f"      💡 Solução: Usar modo menos restritivo ou desativar o filtro [0].")
+                        elif not _estava_antes:
+                            _causa_encontrada = True
+                            print(f"\n   🚨 CAUSA IDENTIFICADA: COMBINAÇÃO VENCEDORA NÃO ESTAVA NO POOL GERADO!")
+                    if not _causa_encontrada:
+                        print(f"      Verificar se a combinação vencedora estava no arquivo.")
             else:
                 print(f"\n   ✅ Nível 0 tem {resultados_validacao[0]['acertos'][15]} jackpot(s) - ESPERADO!")
         
