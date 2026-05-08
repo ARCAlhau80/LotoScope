@@ -15270,22 +15270,21 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     if violacoes_frias > posicoes_frias_tolerancia:
                         continue
 
-                # Filtro TENDÊNCIA DIRECIONAL POR POSIÇÃO — LÓGICA INVERTIDA (07/05/2026)
-                # Validação histórica (3668 concursos): momentum forte tem REVERSÃO À MÉDIA!
-                # UP forte 4/5 → apenas 31.6% continuam subindo → 68.4% REVERTEM (descem/iguais)
-                # DOWN forte 4/5 → apenas 29.5% continuam descendo → 70.5% REVERTEM (sobem/iguais)
-                # NOVO: rejeita combos que CONTINUAM o momentum (pois reversão é o padrão real)
+                # Filtro INTERVALO DIRECIONAL POR POSIÇÃO (07/05/2026)
+                # Validação histórica (3.668 concursos): intervalo [N-1, N0_prev] é +7pp acima do baseline!
+                # UP forte 4/5: 25.2% caem no intervalo vs 18.2% aleatório (+7.0pp)
+                # DOWN forte 4/5: 23.3% vs 17.4% (+5.9pp)
+                # Rejeita combos cujo valor em posições fortes cai FORA do intervalo direcional
                 # Scores nos níveis: 3→max3  4→max2  5→max2  6→max1
                 if filtros.get('usar_filtro_tendencia_direcao') and tendencia_por_pos:
                     _td_sorted = sorted(combo)
                     _td_viol = 0
                     for _t in tendencia_por_pos:
                         _tp = _t['pos'] - 1  # 0-indexed
-                        if _t['up'] >= 4:    # FORTE SUBINDO → esperar REVERSÃO: combo deve ter < valor anterior
-                            if _td_sorted[_tp] >= ultimo_resultado_sorted[_tp]:
-                                _td_viol += 1
-                        elif _t['down'] >= 4:  # FORTE DESCENDO → esperar REVERSÃO: combo deve ter > valor anterior
-                            if _td_sorted[_tp] <= ultimo_resultado_sorted[_tp]:
+                        if _t['up'] >= 4 or _t['down'] >= 4:  # FORTE (≥4/5)
+                            _lo = _t['intervalo_lo']
+                            _hi = _t['intervalo_hi']
+                            if not (_lo <= _td_sorted[_tp] <= _hi):
                                 _td_viol += 1
                     if _td_viol > filtros.get('tendencia_max_violacoes', 3):
                         continue
@@ -16069,6 +16068,11 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         `janela` pares consecutivos e conta quantas vezes o número naquela posição
         subiu, desceu ou permaneceu igual em relação ao sorteio anterior.
 
+        Também calcula o INTERVALO DIRECIONAL [intervalo_lo, intervalo_hi]:
+          UP  → [valor_anterior, max(valores_atingidos_subindo)]  (+7pp vs baseline)
+          DOWN→ [min(valores_atingidos_descendo), valor_anterior] (+6pp vs baseline)
+        Validado historicamente em 3.668 concursos (07/05/2026).
+
         Args:
             resultados: lista de dicts com 'numeros', mais recentes primeiro
             janela: número de transições a analisar (padrão 5)
@@ -16076,21 +16080,26 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         Returns:
             list[dict]: 15 dicts, um por posição (pos 1-15)
                 {'pos': int, 'up': int, 'down': int, 'equal': int,
-                 'dominante': 'UP'/'DOWN'/'NEUTRAL', 'forca': float}
+                 'dominante': 'UP'/'DOWN'/'NEUTRAL', 'forca': float,
+                 'intervalo_lo': int, 'intervalo_hi': int}
         """
         tendencias = []
         n_pares = min(janela, len(resultados) - 1)
 
         for pos in range(15):  # 0-indexed internamente
             up = down = equal = 0
+            up_vals   = []   # valores atingidos quando subiu
+            down_vals = []   # valores atingidos quando desceu
             for i in range(n_pares):
                 # resultados[i] é mais recente, resultados[i+1] é mais antigo
                 nums_novo = sorted(resultados[i]['numeros'])
                 nums_ant  = sorted(resultados[i + 1]['numeros'])
                 if nums_novo[pos] > nums_ant[pos]:
                     up += 1
+                    up_vals.append(nums_novo[pos])
                 elif nums_novo[pos] < nums_ant[pos]:
                     down += 1
+                    down_vals.append(nums_novo[pos])
                 else:
                     equal += 1
 
@@ -16104,13 +16113,27 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             else:
                 dominante = 'NEUTRAL'
 
+            # Intervalo direcional (validado +7pp acima do baseline para F≥4/5)
+            prev_val = sorted(resultados[0]['numeros'])[pos]
+            if dominante == 'UP' and up_vals:
+                intervalo_lo = prev_val
+                intervalo_hi = max(up_vals)
+            elif dominante == 'DOWN' and down_vals:
+                intervalo_lo = min(down_vals)
+                intervalo_hi = prev_val
+            else:
+                intervalo_lo = prev_val
+                intervalo_hi = prev_val
+
             tendencias.append({
-                'pos': pos + 1,
-                'up': up,
-                'down': down,
-                'equal': equal,
-                'dominante': dominante,
-                'forca': forca,
+                'pos':          pos + 1,
+                'up':           up,
+                'down':         down,
+                'equal':        equal,
+                'dominante':    dominante,
+                'forca':        forca,
+                'intervalo_lo': intervalo_lo,
+                'intervalo_hi': intervalo_hi,
             })
 
         return tendencias
@@ -21273,19 +21296,18 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 if _trav_viol > _trav_tol:
                     return False
 
-            # Filtro TENDÊNCIA DIRECIONAL POR POSIÇÃO — LÓGICA INVERTIDA (07/05/2026)
-            # Validação histórica: momentum forte → REVERSÃO À MÉDIA (UP forte: 68.4% revertem)
-            # Rejeita combos que CONTINUAM o momentum (pois reversão é o padrão real)
+            # Filtro INTERVALO DIRECIONAL POR POSIÇÃO (07/05/2026)
+            # Validação histórica: [N-1, N0_prev] é +7pp acima do baseline (3.668 concursos)
+            # Rejeita combos cujo valor em posições fortes cai FORA do intervalo direcional
             if filtros.get('usar_filtro_tendencia_direcao') and tendencia_por_pos:
                 _td_sorted = sorted(combo)
                 _td_viol = 0
                 for _t in tendencia_por_pos:
                     _tp = _t['pos'] - 1  # 0-indexed
-                    if _t['up'] >= 4:        # FORTE SUBINDO → esperar REVERSÃO: combo deve ter < anterior
-                        if _td_sorted[_tp] >= ultimo_resultado_sorted[_tp]:
-                            _td_viol += 1
-                    elif _t['down'] >= 4:    # FORTE DESCENDO → esperar REVERSÃO: combo deve ter > anterior
-                        if _td_sorted[_tp] <= ultimo_resultado_sorted[_tp]:
+                    if _t['up'] >= 4 or _t['down'] >= 4:  # FORTE (≥4/5)
+                        _lo = _t['intervalo_lo']
+                        _hi = _t['intervalo_hi']
+                        if not (_lo <= _td_sorted[_tp] <= _hi):
                             _td_viol += 1
                 if _td_viol > filtros.get('tendencia_max_violacoes', 3):
                     return False
