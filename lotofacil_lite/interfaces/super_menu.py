@@ -15270,20 +15270,22 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                     if violacoes_frias > posicoes_frias_tolerancia:
                         continue
 
-                # Filtro TENDÊNCIA DIRECIONAL POR POSIÇÃO ⭐ NOVO (05/05/2026)
-                # Para posições com momentum FORTE (≥4/5 na mesma direção):
-                # Rejeita combos que contrariam a tendência em mais de X posições fortes.
+                # Filtro TENDÊNCIA DIRECIONAL POR POSIÇÃO — LÓGICA INVERTIDA (07/05/2026)
+                # Validação histórica (3668 concursos): momentum forte tem REVERSÃO À MÉDIA!
+                # UP forte 4/5 → apenas 31.6% continuam subindo → 68.4% REVERTEM (descem/iguais)
+                # DOWN forte 4/5 → apenas 29.5% continuam descendo → 70.5% REVERTEM (sobem/iguais)
+                # NOVO: rejeita combos que CONTINUAM o momentum (pois reversão é o padrão real)
                 # Scores nos níveis: 3→max3  4→max2  5→max2  6→max1
                 if filtros.get('usar_filtro_tendencia_direcao') and tendencia_por_pos:
                     _td_sorted = sorted(combo)
                     _td_viol = 0
                     for _t in tendencia_por_pos:
                         _tp = _t['pos'] - 1  # 0-indexed
-                        if _t['up'] >= 4:    # FORTE SUBINDO → combo deve ter >= valor anterior
-                            if _td_sorted[_tp] < ultimo_resultado_sorted[_tp]:
+                        if _t['up'] >= 4:    # FORTE SUBINDO → esperar REVERSÃO: combo deve ter < valor anterior
+                            if _td_sorted[_tp] >= ultimo_resultado_sorted[_tp]:
                                 _td_viol += 1
-                        elif _t['down'] >= 4:  # FORTE DESCENDO → combo deve ter <= valor anterior
-                            if _td_sorted[_tp] > ultimo_resultado_sorted[_tp]:
+                        elif _t['down'] >= 4:  # FORTE DESCENDO → esperar REVERSÃO: combo deve ter > valor anterior
+                            if _td_sorted[_tp] <= ultimo_resultado_sorted[_tp]:
                                 _td_viol += 1
                     if _td_viol > filtros.get('tendencia_max_violacoes', 3):
                         continue
@@ -16161,7 +16163,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print(f"   Tendência DESCER: {down_count:>2} posições  ({forte_down} fortes ≥4/5)")
         total_fortes = forte_up + forte_down
         if total_fortes > 0:
-            print(f"   🎯 Filtro ativo (níveis 3-6): rejeita combos com >{total_fortes - 1} violações nas {total_fortes} posições fortes")
+            print(f"   🔄 Filtro ativo (níveis 3-6): REVERSÃO À MÉDIA — rejeita combos que CONTINUAM o momentum em >{total_fortes - 1} das {total_fortes} posições fortes")
 
     def _aplicar_filtros_com_posicoes_frias(self, todas_combos, filtros, resultados,
                                              posicoes_frias_rejeitar, PRIMOS, NUCLEO_C1C2, FIBONACCI,
@@ -21271,18 +21273,19 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 if _trav_viol > _trav_tol:
                     return False
 
-            # Filtro TENDÊNCIA DIRECIONAL POR POSIÇÃO ⭐ NOVO (05/05/2026)
-            # Rejeita combos que contrariam o momentum FORTE (≥4/5) de cada posição
+            # Filtro TENDÊNCIA DIRECIONAL POR POSIÇÃO — LÓGICA INVERTIDA (07/05/2026)
+            # Validação histórica: momentum forte → REVERSÃO À MÉDIA (UP forte: 68.4% revertem)
+            # Rejeita combos que CONTINUAM o momentum (pois reversão é o padrão real)
             if filtros.get('usar_filtro_tendencia_direcao') and tendencia_por_pos:
                 _td_sorted = sorted(combo)
                 _td_viol = 0
                 for _t in tendencia_por_pos:
                     _tp = _t['pos'] - 1  # 0-indexed
-                    if _t['up'] >= 4:        # FORTE SUBINDO
-                        if _td_sorted[_tp] < ultimo_resultado_sorted[_tp]:
+                    if _t['up'] >= 4:        # FORTE SUBINDO → esperar REVERSÃO: combo deve ter < anterior
+                        if _td_sorted[_tp] >= ultimo_resultado_sorted[_tp]:
                             _td_viol += 1
-                    elif _t['down'] >= 4:    # FORTE DESCENDO
-                        if _td_sorted[_tp] > ultimo_resultado_sorted[_tp]:
+                    elif _t['down'] >= 4:    # FORTE DESCENDO → esperar REVERSÃO: combo deve ter > anterior
+                        if _td_sorted[_tp] <= ultimo_resultado_sorted[_tp]:
                             _td_viol += 1
                 if _td_viol > filtros.get('tendencia_max_violacoes', 3):
                     return False
