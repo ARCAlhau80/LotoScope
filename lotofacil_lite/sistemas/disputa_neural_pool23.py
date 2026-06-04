@@ -42,8 +42,8 @@ class RedeNeuralExclusao:
     """
     Rede Neural especializada em EXCLUIR números.
 
-    Arquitetura v6 (401 features):
-    - Entrada: 401 features (freq, atraso, consec, tendência, freq10, INVERTIDA,
+    Arquitetura v7 (451 features):
+    - Entrada: 451 features (freq, atraso, consec, tendência, freq10, INVERTIDA,
               co-ocorrência, posicional, entropia, soft exclusion,
               + 3 features de CICLO: qtd_ciclo_norm, rank_ciclo, pendente_ciclo
               + completude do ciclo atual (1 feature global)
@@ -67,7 +67,7 @@ class RedeNeuralExclusao:
         self.l2_lambda = l2_lambda
 
         # Arquitetura: 401 → 96 → 48 → 25
-        self.tamanhos = [401, 96, 48, 25]
+        self.tamanhos = [451, 96, 48, 25]
         self._inicializar_pesos(silencioso)
 
     def _inicializar_pesos(self, silencioso: bool = False):
@@ -75,7 +75,7 @@ class RedeNeuralExclusao:
         np.random.seed(42)
 
         if not silencioso:
-            print("   🧠 Inicializando Rede Neural para Exclusão (v6 - 401 features)...")
+            print("   🧠 Inicializando Rede Neural para Exclusão (v7 - 451 features)...")
 
         for i in range(len(self.tamanhos) - 1):
             # He initialization: scale = sqrt(2 / n_entrada)
@@ -415,6 +415,8 @@ class DisputaNeuralPool23:
         self.ciclo_concs_cache = []       # List[int]            — nº de concursos já no ciclo ANTES do sorteio
         self.ciclo_media_hist_cache = []  # List[np.ndarray(25)] — média dos últimos 5 ciclos fechados
         self.ciclo_atraso_ciclo_cache = []# List[np.ndarray(25)] — atraso relativo no ciclo (v6 NOVO)
+        self.trios_global_score = None
+        self.trios_global_hot = None
 
         # Caminho para salvar modelo
         self.base_path = os.path.dirname(os.path.abspath(__file__))
@@ -491,11 +493,44 @@ class DisputaNeuralPool23:
 
                 # Precomputar features de ciclo para todos os concursos
                 self._precomputar_ciclo()
+                self._carregar_trios_globais(conn)
                 return True
 
         except Exception as e:
             print(f"   ❌ Erro: {e}")
             return False
+
+
+    def _carregar_trios_globais(self, conn=None):
+        """Carrega scores de trio de CONTA_TRIOS_LOTO. v7."""
+        def _lr(c):
+            cur = c.cursor()
+            cur.execute("SELECT num1, num2, num3, quantidade FROM CONTA_TRIOS_LOTO")
+            return cur.fetchall()
+        try:
+            if conn is not None:
+                rows = _lr(conn)
+            else:
+                cs = ("DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;"
+                      "DATABASE=Lotofacil;Trusted_Connection=yes;")
+                with pyodbc.connect(cs) as c2:
+                    rows = _lr(c2)
+            qs = np.array([r[3] for r in rows], dtype=np.float32)
+            z = (qs - qs.mean()) / (float(qs.std()) or 1.0)
+            sz = np.zeros(25, dtype=np.float32)
+            hc = np.zeros(25, dtype=np.float32)
+            for k, r in enumerate(rows):
+                a,b,c = r[0]-1, r[1]-1, r[2]-1
+                sz[a]+=z[k]; sz[b]+=z[k]; sz[c]+=z[k]
+                if z[k] > 0.5: hc[a]+=1; hc[b]+=1; hc[c]+=1
+            mn, mx = sz.min(), sz.max()
+            self.trios_global_score = (sz-mn)/(mx-mn) if mx>mn else np.full(25,0.5,dtype=np.float32)
+            mh = float(hc.max())
+            self.trios_global_hot = hc/mh if mh>0 else np.zeros(25, dtype=np.float32)
+        except Exception as ex:
+            print(f"   Trios nao carregados: {ex}")
+            self.trios_global_score = np.full(25, 0.5, dtype=np.float32)
+            self.trios_global_hot = np.zeros(25, dtype=np.float32)
 
     def _precomputar_ciclo(self):
         """
@@ -559,7 +594,7 @@ class DisputaNeuralPool23:
         """
         Extrai features para treinar/usar a rede neural.
 
-        401 features (v6):
+        451 features (v7):
         - 0-24:   Frequência nos últimos 30 (normalizada)
         - 25-49:  Atraso de cada número (normalizado)
         - 50-74:  Consecutividade (aparições seguidas)
@@ -577,8 +612,10 @@ class DisputaNeuralPool23:
         - 326-350: Média histórica últimos 5 ciclos fechados por número (v5)
         - 351-375: Atraso relativo no ciclo por número (v6 NOVO)
         - 376-400: Interação pendente × completude por número (v6 NOVO)
+        - 401-425: Score global de trio por numero (v7 NOVO)
+        - 426-450: Hot trio count por numero (v7 NOVO)
         """
-        features = np.zeros(401)
+        features = np.zeros(451)
         
         janela_30 = self.historico[max(0, idx_concurso - 30):idx_concurso]
         janela_10 = self.historico[max(0, idx_concurso - 10):idx_concurso]
@@ -762,6 +799,18 @@ class DisputaNeuralPool23:
         for n in range(25):
             features[376 + n] = features[300 + n] * completude
 
+
+        # --- TRIO SCORE FEATURES (v7) ---
+        # 401-425: soma normalizada z-scores trios
+        if self.trios_global_score is not None:
+            for _n in range(25):
+                features[401 + _n] = self.trios_global_score[_n]
+
+        # 426-450: fracao trios quentes
+        if self.trios_global_hot is not None:
+            for _n in range(25):
+                features[426 + _n] = self.trios_global_hot[_n]
+
         return features
 
     @classmethod
@@ -783,6 +832,8 @@ class DisputaNeuralPool23:
         disp.ciclo_concs_cache = []
         disp.ciclo_media_hist_cache = []
         disp.ciclo_atraso_ciclo_cache = []
+        disp.trios_global_score = None
+        disp.trios_global_hot = None
 
         # Converter resultados DESC → historico ASC
         disp.historico = []
@@ -795,6 +846,7 @@ class DisputaNeuralPool23:
             })
 
         disp._precomputar_ciclo()
+        disp._carregar_trios_globais()
         idx_ultimo = len(disp.historico) - 1
         features = disp._extrair_features(idx_ultimo)
         return neural.obter_scores(features)

@@ -307,6 +307,14 @@ class MenuLotofacil:
             
             # Calcula TODOS os campos estatísticos
             campos = self.calcular_campos_estatisticos(concurso, numeros, data_sorteio)
+            # Extrai ordem de sorteio (S1-S15)
+            ordem_sorteio = [int(n) for n in data.get('dezenasSorteadasOrdemSorteio', [])]
+            if len(ordem_sorteio) == 15:
+                for i, s in enumerate(ordem_sorteio, 1):
+                    campos['S' + str(i)] = s
+            else:
+                for i in range(1, 16):
+                    campos['S' + str(i)] = None
             
             # SQL de UPDATE completo
             sql_update = """
@@ -317,7 +325,10 @@ class MenuLotofacil:
                 Quintil1 = ?, Quintil2 = ?, Quintil3 = ?, Quintil4 = ?, Quintil5 = ?,
                 QtdeGaps = ?, QtdeRepetidos = ?, SEQ = ?, DistanciaExtremos = ?, ParesSequencia = ?,
                 QtdeMultiplos3 = ?, ParesSaltados = ?, Faixa_Baixa = ?, Faixa_Media = ?, Faixa_Alta = ?,
-                RepetidosMesmaPosicao = ?, Acumulou = ?
+                RepetidosMesmaPosicao = ?, Acumulou = ?,
+                S1 = ?, S2 = ?, S3 = ?, S4 = ?, S5 = ?,
+                S6 = ?, S7 = ?, S8 = ?, S9 = ?, S10 = ?,
+                S11 = ?, S12 = ?, S13 = ?, S14 = ?, S15 = ?
             WHERE Concurso = ?
             """
             
@@ -330,7 +341,11 @@ class MenuLotofacil:
                 campos['QtdeGaps'], campos['QtdeRepetidos'], campos['SEQ'], campos['DistanciaExtremos'], 
                 campos['ParesSequencia'], campos['QtdeMultiplos3'], campos['ParesSaltados'],
                 campos['Faixa_Baixa'], campos['Faixa_Media'], campos['Faixa_Alta'],
-                campos['RepetidosMesmaPosicao'], campos['Acumulou'], campos['Concurso']
+                campos['RepetidosMesmaPosicao'], campos['Acumulou'],
+                campos['S1'], campos['S2'], campos['S3'], campos['S4'], campos['S5'],
+                campos['S6'], campos['S7'], campos['S8'], campos['S9'], campos['S10'],
+                campos['S11'], campos['S12'], campos['S13'], campos['S14'], campos['S15'],
+                campos['Concurso']
             )
             
             # SQL de INSERT completo
@@ -341,10 +356,12 @@ class MenuLotofacil:
                 Quintil1, Quintil2, Quintil3, Quintil4, Quintil5,
                 QtdeGaps, QtdeRepetidos, SEQ, DistanciaExtremos, ParesSequencia,
                 QtdeMultiplos3, ParesSaltados, Faixa_Baixa, Faixa_Media, Faixa_Alta,
-                RepetidosMesmaPosicao, Acumulou
+                RepetidosMesmaPosicao, Acumulou,
+                S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15
             ) VALUES (
                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
             """
             
@@ -357,7 +374,10 @@ class MenuLotofacil:
                 campos['QtdeGaps'], campos['QtdeRepetidos'], campos['SEQ'], campos['DistanciaExtremos'], 
                 campos['ParesSequencia'], campos['QtdeMultiplos3'], campos['ParesSaltados'],
                 campos['Faixa_Baixa'], campos['Faixa_Media'], campos['Faixa_Alta'],
-                campos['RepetidosMesmaPosicao'], campos['Acumulou']
+                campos['RepetidosMesmaPosicao'], campos['Acumulou'],
+                campos['S1'], campos['S2'], campos['S3'], campos['S4'], campos['S5'],
+                campos['S6'], campos['S7'], campos['S8'], campos['S9'], campos['S10'],
+                campos['S11'], campos['S12'], campos['S13'], campos['S14'], campos['S15']
             )
             
             # Executa UPDATE primeiro, se não afetar faz INSERT

@@ -1,5 +1,14 @@
 {
   "mcpServers": {
+    "lotoscope-agents": {
+      "command": ".venv\\Scripts\\python.exe",
+      "args": [
+        "lotoscope_mcp_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "."
+      }
+    },
     "mcp-graph": {
       "command": "npx",
       "args": [

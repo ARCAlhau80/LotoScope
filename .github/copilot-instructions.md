@@ -1,5 +1,57 @@
 # Copilot Instructions for LotoScope Project
 
+## ⚡ REGRA ABSOLUTA — Knowledge-First (toda mensagem, sem exceção)
+
+> **ANTES de processar qualquer mensagem técnica, siga o fluxo de 3 camadas abaixo.**
+> Esta regra se aplica a TODA mensagem: pergunta técnica, pedido de código, dúvida de algoritmo, debug, qualquer coisa.
+
+```
+╔════════════════════════════════════════════════════════════╗
+║  CAMADA 1 → Knowledge Hub local (SQLite FTS5)              ║
+║             0 tokens │ < 0.1s │ threshold ≥ 0.75           ║
+║             cd C:\Users\AR CALHAU\source\repos\IAgentsFactory
+║             .\iagents-factory.ps1 search "<query>"         ║
+║             ↓ sem match suficiente?                        ║
+║  CAMADA 2 → Ollama Windows nativo (localhost:11434)        ║
+║             0 custo externo │ timeout 90s │ auto-captura   ║
+║             .\iagents-factory.ps1 ask "<pergunta>"         ║
+║             ↓ timeout ou falha?                            ║
+║  CAMADA 3 → Provider externo (Claude / GPT)                ║
+║             custo medido │ AUTO-CAPTURA OBRIGATORIA          ║
+║             .\iagents-factory.ps1 save "<query>" (auto)     ║
+╚════════════════════════════════════════════════════════════╝
+```
+
+
+**OLLAMA ATIVO — PRÉ-REQUISITO CAMADA 2:**
+> Antes de usar Camada 2, garantir que o serviço Ollama está rodando em localhost:11434.
+> Se não estiver ativo, iniciar automaticamente:
+> ```powershell
+> # Checar e iniciar Ollama se necessário
+> try { Invoke-RestMethod http://localhost:11434/api/tags -TimeoutSec 2 | Out-Null }
+> catch { Start-Process ollama -ArgumentList "serve" -WindowStyle Hidden; Start-Sleep 4 }
+> ```
+> Ollama deve estar SEMPRE em execução durante sessões de trabalho para capturas automáticas.
+
+**Fluxo obrigatório para o Copilot/Claude:**
+1. Ao receber uma pergunta técnica → sugerir busca no Hub: `.\iagents-factory.ps1 search "<resumo da pergunta>"`
+2. Se o Hub retornar match ≥ 0.75 → usar como base da resposta. Informar "resolução local, Camada 1".
+3. Se não → tentar Ollama: `.\iagents-factory.ps1 ask "<pergunta>"`
+4. Se não → responder normalmente com conhecimento externo (Camada 3).
+5. **APÓS Camada 3 - AUTO-CAPTURA OBRIGATORIA** (executar SEMPRE):
+   ```powershell
+   "RESPOSTA COMPLETA" | Out-File "C:\Users\AR CALHAU\.iagents-factory\iaf_answer.txt" -Encoding UTF8
+   cd "C:\Users\AR CALHAU\source\repos\IAgentsFactory"
+   .\iagents-factory.ps1 save "RESUMO" -Domain "DOMINIO" -Tags "tag1","tag2" -Quality 0.85
+   ```
+   Dominios: lottery, python, sql, neural, iagentsfactory | Apos OK confirmar ao usuario.
+
+**Hub LotoScope:** 126+ soluções migradas (backtests, neural v6, filtros, descobertas, ROI)
+**Localização:** `%USERPROFILE%\.iagents-factory\knowledge.db`
+**Reindexar:** `python migrate_to_knowledge_hub.py` (LotoScope root)
+
+---
+
 ## 🎯 MODEL SELECTION (READ FIRST!)
 
 **Evaluate task complexity before processing:**

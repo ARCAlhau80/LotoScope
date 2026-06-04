@@ -29,6 +29,7 @@ from functools import lru_cache
 # ═══════════════════════════════════════════════════════════════════════════════
 PRIMOS = {2, 3, 5, 7, 11, 13, 17, 19, 23}
 FIBONACCI = {1, 2, 3, 5, 8, 13, 21}
+QUADRADOS  = {1, 4, 9, 16, 25}
 NUCLEO_C1C2 = {2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 19, 20, 22, 24, 25}
 
 # Posições com sinal preditivo estável quando "travadas" (3/3 ou 2/3 em janela de 3)
@@ -88,10 +89,15 @@ FILTROS_POR_NIVEL = {
         'usar_filtro_fibonacci': True,
         'fibonacci_min': 3, 'fibonacci_max': 6,  # Seletiv 1.084, 93% jackpots
         'usar_filtro_faixa_6_20': True,
-        'faixa_6_20_min': 7, 'faixa_6_20_max': 10,  # Seletiv 1.115, 88.4% jackpots
+        # ⚠️ WALD 13/05/2026: 7-10 rejeitava 12.3% → alargado para 6-12
+        'faixa_6_20_min': 6, 'faixa_6_20_max': 12,
         # Posições Travadas (janela 3 — favorecer repetição em posições estáveis)
         'usar_filtro_posicoes_travadas': True,
         'posicoes_travadas_tolerancia': 4,  # Muito permissivo (~91% concursos passam)
+        # Reentradas: 10 ausentes do último sorteio que devem aparecer no próximo
+        # L1: range amplo (96.8% cobertura histórica)
+        'usar_filtro_reentradas': True,
+        'reentradas_min': 4, 'reentradas_max': 8,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -132,10 +138,14 @@ FILTROS_POR_NIVEL = {
         'usar_filtro_fibonacci': True,
         'fibonacci_min': 3, 'fibonacci_max': 6,
         'usar_filtro_faixa_6_20': True,
-        'faixa_6_20_min': 7, 'faixa_6_20_max': 10,
+        # ⚠️ WALD 13/05/2026: 7-10 rejeitava 12.3% → alargado para 6-12
+        'faixa_6_20_min': 6, 'faixa_6_20_max': 12,
         # Posições Travadas
         'usar_filtro_posicoes_travadas': True,
         'posicoes_travadas_tolerancia': 3,  # Recomendado (~75% concursos passam)
+        # Reentradas: L2 ligeiramente mais restrito (88% cobertura)
+        'usar_filtro_reentradas': True,
+        'reentradas_min': 5, 'reentradas_max': 8,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -144,7 +154,9 @@ FILTROS_POR_NIVEL = {
     3: {
         'descricao': 'Balanceado - foco jackpot',
         # Soma equilibrada
-        'soma_min': 180, 'soma_max': 225,
+        # ⚠️ WALD R1 13/05/2026: 180-225 rejeitava 23.5% → 177-230
+        # ⚠️ WALD R3 13/05/2026: 177-230 rejeitava 17.2% → 171-235
+        'soma_min': 171, 'soma_max': 235,
         # Margem de reversão: amplia faixa ±5 (balanceado)
         'reversao_soma_margem': 5,
         # Pares/Primos
@@ -168,6 +180,10 @@ FILTROS_POR_NIVEL = {
         # Filtros posicionais
         'usar_filtro_qtde_6_25': True,
         'qtde_6_25_valores': [10, 11, 12, 13],
+        # Composicao G1 (1-5): G1=3 modal (38.7%), G1=2-4 = 87.6% | Pearson=-0.69
+        'usar_filtro_composicao_g1': True,
+        'composicao_g1_min': 2,
+        'composicao_g1_max': 4,
         'usar_filtro_piores_historico': True,
         'piores_tolerancia_historico': 0,
         'usar_filtro_piores_recente': True,
@@ -179,13 +195,21 @@ FILTROS_POR_NIVEL = {
         # NOVOS FILTROS POC 06/04/2026 — Equilibrado (Fib + Quintis + F6-20)
         'usar_filtro_fibonacci': True,
         'fibonacci_min': 3, 'fibonacci_max': 6,
+        # Mod3: seletividade 8.7% histórica / Wald 8.7% confirmado (13/05/2026)
+        'usar_filtro_mod3': True,
+        'mod3_min': 3, 'mod3_max': 7,
+        # ⚠️ WALD 13/05/2026: quintis max=4 rejeitava 28% dos resultados reais → max=5
         'usar_filtro_quintis': True,
-        'quintis_min': 1, 'quintis_max': 4,  # Seletiv 1.091, 73.2% jackpots
+        'quintis_min': 1, 'quintis_max': 5,  # Apenas rejeita se algum quintil tiver 0 números
         'usar_filtro_faixa_6_20': True,
-        'faixa_6_20_min': 7, 'faixa_6_20_max': 10,
+        # ⚠️ WALD 13/05/2026: 7-10 rejeitava 12.3% → alargado para 6-12
+        'faixa_6_20_min': 6, 'faixa_6_20_max': 12,
         # Posições Travadas
         'usar_filtro_posicoes_travadas': True,
         'posicoes_travadas_tolerancia': 3,  # ~75% concursos passam
+        # Reentradas: L3 equilibrado (78.8% cobertura, rejeita extremos)
+        'usar_filtro_reentradas': True,
+        'reentradas_min': 5, 'reentradas_max': 7,
     },
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -194,7 +218,9 @@ FILTROS_POR_NIVEL = {
     4: {
         'descricao': 'Equilibrado - redução + prêmios menores',
         # Soma moderada
-        'soma_min': 180, 'soma_max': 220,
+        # ⚠️ WALD R3 13/05/2026: 180-220 não testado, rejeitava 27% → 175-226
+        # ⚠️ WALD R4 13/05/2026: 175-226 rejeitava 16.2% → 168-234
+        'soma_min': 168, 'soma_max': 234,
         # Pares/Primos mais restritos
         'pares_min': 6, 'pares_max': 9,
         'primos_min': 4, 'primos_max': 7,
@@ -216,6 +242,10 @@ FILTROS_POR_NIVEL = {
         # Filtros posicionais
         'usar_filtro_qtde_6_25': True,
         'qtde_6_25_valores': [10, 11, 12, 13],
+        # Composicao G1 (1-5): G1=3 modal (38.7%), G1=2-4 = 87.6% | Pearson=-0.69
+        'usar_filtro_composicao_g1': True,
+        'composicao_g1_min': 2,
+        'composicao_g1_max': 4,
         'usar_filtro_piores_historico': True,
         'piores_tolerancia_historico': 0,
         'usar_filtro_piores_recente': True,
@@ -233,10 +263,18 @@ FILTROS_POR_NIVEL = {
         # NOVOS FILTROS POC 06/04/2026 — Agressivo (faixas apertadas)
         'usar_filtro_fibonacci': True,
         'fibonacci_min': 4, 'fibonacci_max': 5,  # Seletiv 1.139, 59% jackpots
+        # Mod3: seletividade 8.7% / Wald confirmado (13/05/2026)
+        'usar_filtro_mod3': True,
+        'mod3_min': 3, 'mod3_max': 7,
+        # Quadrados: seletividade 11.4% / Wald confirmado (13/05/2026)
+        'usar_filtro_quadrados': True,
+        'quadrados_min': 2, 'quadrados_max': 4,
+        # ⚠️ WALD 13/05/2026: quintis max=4 rejeitava 28%+ → max=5
         'usar_filtro_quintis': True,
-        'quintis_min': 2, 'quintis_max': 4,  # Seletiv 1.092, 55.4% jackpots
+        'quintis_min': 1, 'quintis_max': 5,
         'usar_filtro_faixa_6_20': True,
-        'faixa_6_20_min': 8, 'faixa_6_20_max': 10,  # Seletiv 1.028, 78% jackpots
+        # ⚠️ WALD 13/05/2026: 8-10 rejeitava 22.3% → alargado para 7-11
+        'faixa_6_20_min': 7, 'faixa_6_20_max': 11,
         # Posições Travadas
         'usar_filtro_posicoes_travadas': True,
         'posicoes_travadas_tolerancia': 2,  # Moderado (~49% concursos passam)
@@ -248,14 +286,18 @@ FILTROS_POR_NIVEL = {
     5: {
         'descricao': 'Agressivo - ROI em prêmios menores',
         # Soma mais restrita
-        'soma_min': 180, 'soma_max': 215,
+        # ⚠️ WALD R1 13/05/2026: 180-215 rejeitava 32.5% → 175-222
+        # ⚠️ WALD R3 13/05/2026: 175-222 rejeitava 18.7% → 172-227
+        # ⚠️ WALD R4 13/05/2026: 172-227 rejeitava 12.2% → 168-232
+        'soma_min': 168, 'soma_max': 232,
         # Pares/Primos
         'pares_min': 6, 'pares_max': 9,
         'primos_min': 4, 'primos_max': 7,
         # Consecutivos e gap restritivos
         'consecutivos_min': 7, 'consecutivos_max': 9,
         'gap_max': 4,
-        'seq_max': 5,
+        # ⚠️ WALD 13/05/2026: seq_max=5 rejeitava 29% dos resultados reais → 6
+        'seq_max': 6,
         # Repetição com concurso anterior
         'rep_min': 4, 'rep_max': 11,
         'nucleo_min': 8,
@@ -271,6 +313,10 @@ FILTROS_POR_NIVEL = {
         # Filtros posicionais
         'usar_filtro_qtde_6_25': True,
         'qtde_6_25_valores': [10, 11, 12, 13],
+        # Composicao G1 (1-5): G1=3 modal (38.7%), G1=2-4 = 87.6% | Pearson=-0.69
+        'usar_filtro_composicao_g1': True,
+        'composicao_g1_min': 2,
+        'composicao_g1_max': 4,
         'usar_filtro_piores_historico': True,
         'piores_tolerancia_historico': 0,
         'usar_filtro_piores_recente': True,
@@ -289,10 +335,18 @@ FILTROS_POR_NIVEL = {
         # NOVOS FILTROS POC 06/04/2026 — Agressivo
         'usar_filtro_fibonacci': True,
         'fibonacci_min': 4, 'fibonacci_max': 5,
+        # Mod3: seletividade 8.7% / Wald confirmado (13/05/2026)
+        'usar_filtro_mod3': True,
+        'mod3_min': 3, 'mod3_max': 7,
+        # Quadrados: seletividade 11.4% / Wald confirmado (13/05/2026)
+        'usar_filtro_quadrados': True,
+        'quadrados_min': 2, 'quadrados_max': 4,
+        # ⚠️ WALD 13/05/2026: quintis max=4 rejeitava 28%+ → max=5
         'usar_filtro_quintis': True,
-        'quintis_min': 2, 'quintis_max': 4,
+        'quintis_min': 1, 'quintis_max': 5,
         'usar_filtro_faixa_6_20': True,
-        'faixa_6_20_min': 8, 'faixa_6_20_max': 10,
+        # ⚠️ WALD 13/05/2026: 8-10 rejeitava 22.3% → alargado para 7-11
+        'faixa_6_20_min': 7, 'faixa_6_20_max': 11,
         # Posições Travadas
         'usar_filtro_posicoes_travadas': True,
         'posicoes_travadas_tolerancia': 2,  # Moderado (~49% concursos passam)
@@ -303,10 +357,11 @@ FILTROS_POR_NIVEL = {
     # ═══════════════════════════════════════════════════════════════════════════
     6: {
         'descricao': 'Ultra - aposta concentrada',
-        # Soma estreita
-        'soma_min': 185, 'soma_max': 210,
-        # Pares mais restrito (seletividade 1.09x - MELHOR)
-        'pares_min': 7, 'pares_max': 8,
+        # ⚠️ WALD 13/05/2026: soma 185-210 rejeitava 53% dos resultados reais → ampliado para 183-215
+        # ⚠️ WALD R4 13/05/2026: 183-215 rejeitava 37.4% → alargado para 177-225
+        'soma_min': 177, 'soma_max': 225,
+        # ⚠️ WALD: pares 7-8 rejeitava 41% dos resultados reais → relaxado para 6-9
+        'pares_min': 6, 'pares_max': 9,
         # Primos
         'primos_min': 4, 'primos_max': 6,
         # Consecutivos e gap
@@ -328,6 +383,10 @@ FILTROS_POR_NIVEL = {
         # Filtros posicionais
         'usar_filtro_qtde_6_25': True,
         'qtde_6_25_valores': [10, 11, 12, 13],
+        # Composicao G1 (1-5): G1=3 modal (38.7%), G1=2-4 = 87.6% | Pearson=-0.69
+        'usar_filtro_composicao_g1': True,
+        'composicao_g1_min': 2,
+        'composicao_g1_max': 4,
         'usar_filtro_piores_historico': True,
         'piores_tolerancia_historico': 0,
         'usar_filtro_piores_recente': True,
@@ -345,14 +404,21 @@ FILTROS_POR_NIVEL = {
         'usar_filtro_subcombos': True,
         'subcombos_min_acertos': 6,
         'subcombos_min_hot': 485,  # Leave-one-out P80: preserva ~20% jackpots
-        # NOVOS FILTROS POC 06/04/2026 — Ultra agressivo
+        # ⚠️ WALD: quintis max=4 rejeitava 28%+ dos resultados reais → max=5
+        'usar_filtro_quintis': True,
+        'quintis_min': 1, 'quintis_max': 5,
         'usar_filtro_fibonacci': True,
         'fibonacci_min': 4, 'fibonacci_max': 5,
-        'usar_filtro_quintis': True,
-        'quintis_min': 2, 'quintis_max': 4,
+        # Mod3: seletividade 8.7% / Wald confirmado (13/05/2026)
+        'usar_filtro_mod3': True,
+        'mod3_min': 3, 'mod3_max': 7,
+        # Quadrados: seletividade 11.4% / Wald confirmado (13/05/2026)
+        'usar_filtro_quadrados': True,
+        'quadrados_min': 2, 'quadrados_max': 4,
         'usar_filtro_faixa_6_20': True,
-        'faixa_6_20_min': 8, 'faixa_6_20_max': 10,
-        # Posições Travadas
+        # ⚠️ WALD 13/05/2026: 8-10 rejeitava 22.3% → alargado para 7-11
+        'faixa_6_20_min': 7, 'faixa_6_20_max': 11,
+        # Posições Travadas — L6 já tem muitos outros filtros, manter tolerância baixa
         'usar_filtro_posicoes_travadas': True,
         'posicoes_travadas_tolerancia': 1,  # Agressivo (~34% concursos passam)
     },
@@ -364,7 +430,10 @@ FILTROS_POR_NIVEL = {
         'descricao': 'Posições frias sobre N0',
         'usar_filtro_posicoes_frias': True,
         'posicoes_frias_janela': 6,
-        'posicoes_frias_tolerancia': 4,
+        # ⚠️ WALD 13/05/2026 1ª: tol=4 rejeitava 52% → subiu para 6
+        # ⚠️ WALD 13/05/2026 2ª: tol=6 ainda rejeitava 25.7% → subiu para 10
+        # (distribuição de violações tem cauda longa sobre todo o histórico)
+        'posicoes_frias_tolerancia': 10,
         'nivel_base': 0,
     },
     
@@ -375,7 +444,9 @@ FILTROS_POR_NIVEL = {
         'descricao': 'Cascata adaptativa + posições frias',
         'usar_filtro_posicoes_frias': True,
         'posicoes_frias_janela': 6,
-        'posicoes_frias_tolerancia': 3,
+        # ⚠️ WALD 13/05/2026 1ª: tol=3 rejeitava 67% → subiu para 5
+        # ⚠️ WALD 13/05/2026 2ª: tol=5 ainda rejeitava 37.5% → subiu para 9
+        'posicoes_frias_tolerancia': 9,
         'nivel_base': 'cascata',  # Começa no 6, desce até encontrar combos
     },
 }
