@@ -413,6 +413,7 @@ export async function analiseCompleta(janela?: number, lotteryId?: string): Prom
   const ultimoStats: UltimoSorteio = {
     concurso: ultimo.concurso,
     numeros: numsUltimo,
+    ...(ultimo.trevos ? { trevos: ultimo.trevos } : {}),
     soma: numsUltimo.reduce((a, b) => a + b, 0),
     pares: numsUltimo.filter(n => n % 2 === 0).length,
     pares_numeros: numsUltimo.filter(n => n % 2 === 0),

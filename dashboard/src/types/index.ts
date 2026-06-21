@@ -1,6 +1,7 @@
 export interface UltimoSorteio {
   concurso: number;
   numeros: number[];
+  trevos?: number[];
   soma: number;
   pares: number;
   pares_numeros: number[];

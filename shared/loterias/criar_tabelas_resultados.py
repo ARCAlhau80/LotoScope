@@ -28,12 +28,34 @@ TABELAS = {
         "numeros": 6,
         "descricao": "Dupla Sena (6 números, 1-50)",
     },
+    "Resultados_DiaDeSorte": {
+        "numeros": 7,
+        "descricao": "Dia de Sorte (7 números, 1-31)",
+    },
+    "Resultados_Timemania": {
+        "numeros": 7,
+        "descricao": "Timemania (7 números, 1-80)",
+    },
+    "Resultados_SuperSete": {
+        "numeros": 7,
+        "descricao": "Super Sete (7 colunas, 0-9)",
+    },
+    "Resultados_MaisMilionaria": {
+        "numeros": 6,
+        "descricao": "Mais Milionária (6 números + 2 trevos)",
+        "extras": ["T1 INT", "T2 INT"],
+    },
 }
 
 
-def gerar_ddl(nome_tabela: str, qtd_numeros: int) -> str:
+def gerar_ddl(nome_tabela: str, qtd_numeros: int, extras: list = None) -> str:
     n_cols = ",\n            ".join(f"N{i} INT" for i in range(1, qtd_numeros + 1))
     s_cols = ",\n            ".join(f"S{i} INT DEFAULT NULL" for i in range(1, qtd_numeros + 1))
+    extra_cols = ",\n            ".join(extras) if extras else ""
+
+    cols = f"{n_cols},\n            {s_cols}"
+    if extra_cols:
+        cols += f",\n            {extra_cols}"
 
     return f"""
     IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='{nome_tabela}' AND xtype='U')
@@ -41,8 +63,7 @@ def gerar_ddl(nome_tabela: str, qtd_numeros: int) -> str:
         CREATE TABLE {nome_tabela} (
             Concurso INT PRIMARY KEY,
             Data_Sorteio VARCHAR(10),
-            {n_cols},
-            {s_cols},
+            {cols},
             DataGeracao DATETIME DEFAULT GETDATE()
         );
         PRINT 'Tabela {nome_tabela} criada';
@@ -54,9 +75,10 @@ def gerar_ddl(nome_tabela: str, qtd_numeros: int) -> str:
     """
 
 
-def criar_tabela(nome: str, qtd: int) -> bool:
-    print(f"📋 Criando {nome} ({qtd} números)...")
-    sql = gerar_ddl(nome, qtd)
+def criar_tabela(nome: str, qtd: int, extras: list = None) -> bool:
+    extras_str = f" + extras: {extras}" if extras else ""
+    print(f"📋 Criando {nome} ({qtd} números{extras_str})...")
+    sql = gerar_ddl(nome, qtd, extras)
     return db_config.execute_command(sql)
 
 
@@ -71,7 +93,8 @@ def main():
 
     ok = 0
     for nome, info in TABELAS.items():
-        if criar_tabela(nome, info["numeros"]):
+        extras = info.get("extras")
+        if criar_tabela(nome, info["numeros"], extras):
             ok += 1
         else:
             print(f"   ⚠️ Falha ao criar {nome}")

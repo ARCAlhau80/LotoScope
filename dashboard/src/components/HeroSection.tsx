@@ -6,6 +6,7 @@ import type { UltimoSorteio, MediasHistoricas } from '@/types';
 export default function HeroSection({ u, concurso, total, medias, nomeJogo, numerosPorJogo, totalNumeros }: {
   u: UltimoSorteio; concurso: number; total: number; medias: MediasHistoricas; nomeJogo?: string; numerosPorJogo?: number; totalNumeros?: number;
 }) {
+  const temTrevos = u.trevos && u.trevos.length > 0;
   const npj = numerosPorJogo ?? 15;
   const meio = Math.floor((1 + (totalNumeros ?? 25)) / 2);
   const maxNum = (totalNumeros ?? 25);
@@ -27,13 +28,26 @@ export default function HeroSection({ u, concurso, total, medias, nomeJogo, nume
         </h2>
         <p className="text-muted text-sm mb-6 sm:mb-8">{concurso} sorteios analisados</p>
 
-        <div className="flex flex-wrap gap-2.5 mb-6 sm:mb-8">
+        <div className="flex flex-wrap gap-2.5 mb-4 sm:mb-6">
           {u.numeros.map((n, i) => (
             <div key={n} className={`animate-slide-up`} style={{ animationDelay: `${i * 0.04}s` }}>
               <NumBadge n={n} />
             </div>
           ))}
         </div>
+
+        {temTrevos && (
+          <div className="mb-6 sm:mb-8">
+            <p className="text-[11px] text-muted uppercase tracking-wider font-semibold mb-2">Trevos</p>
+            <div className="flex flex-wrap gap-2.5">
+              {u.trevos!.map((t, i) => (
+                <div key={`trevo-${i}`} className="animate-slide-up" style={{ animationDelay: `${i * 0.04}s` }}>
+                  <NumBadge n={t} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           <HeroCard value={String(u.soma)} label="Soma Total" tip={`Média histórica: ${medias.soma}`} idx={0} />
