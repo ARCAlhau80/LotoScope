@@ -91,6 +91,10 @@ export interface MediasHistoricas {
 }
 
 export interface DashboardData {
+  loteria: string;
+  nome_jogo: string;
+  total_numeros: number;
+  numeros_por_jogo: number;
   ultimo_concurso: number;
   total_sorteios: number;
   ultimo_sorteio: UltimoSorteio;

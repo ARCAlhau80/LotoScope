@@ -13,63 +13,17 @@ from collections import defaultdict
 
 import numpy as np
 
-from poc_regime_3_bandas_pool23 import BANDS, pick_band
-from poc_vizinhanca_historica_pool23 import (
-    FEATURE_WINDOW,
-    K_NEIGHBORS,
-    MIN_HISTORY,
-    build_context_features,
-    carregar_resultados,
-    random_combos,
+from pool23_hub import (
+    BANDS, pick_band,
+    FEATURE_WINDOW, K_NEIGHBORS, MIN_HISTORY,
+    build_context_features, carregar_resultados, random_combos,
     standardize_matrix,
+    RANDOM_SAMPLES, build_filters_for_level,
+    ALL_LEVELS, FEATURE_NAMES,
+    package_predicates, top_feature_deltas, summarize_context,
 )
-from poc_incompatibilidade_filtros_pool23 import RANDOM_SAMPLES, build_filters_for_level
 
 sys.stdout.reconfigure(encoding='utf-8')
-
-ALL_LEVELS = [1, 2, 3, 4, 5, 6]
-FEATURE_NAMES = [
-    'sum_last', 'pares_last', 'primos_last', 'fib_last', 'faixa_6_20_last',
-    'moldura_last', 'linha_spread_last', 'col_spread_last', 'seq_max_last',
-    'count_1_25_last', 'repeats_last', 'sum_mean_12', 'sum_std_12',
-    'pares_mean_12', 'primos_mean_12', 'fib_mean_12', 'faixa_6_20_mean_12',
-    'seq_max_mean_12', 'hot_12', 'warm_12', 'cold_12', 'absent_12',
-    'freq_1_12', 'freq_25_12'
-]
-
-
-def package_predicates(levels):
-    predicates = {}
-    for level in levels:
-        filters = build_filters_for_level(level)
-        predicates[level] = lambda combo, fns=list(filters.values()): all(fn(combo) for fn in fns)
-    return predicates
-
-
-def top_feature_deltas(target_vec, neighbor_matrix, top_n=5):
-    mean_neighbors = np.mean(neighbor_matrix, axis=0)
-    deltas = target_vec - mean_neighbors
-    order = np.argsort(np.abs(deltas))[::-1][:top_n]
-    return [(FEATURE_NAMES[idx], deltas[idx]) for idx in order]
-
-
-def summarize_context(raw_vec):
-    return {
-        'sum_last': raw_vec[0],
-        'pares_last': raw_vec[1],
-        'fib_last': raw_vec[3],
-        'faixa_6_20_last': raw_vec[4],
-        'moldura_last': raw_vec[5],
-        'linha_spread_last': raw_vec[6],
-        'col_spread_last': raw_vec[7],
-        'seq_max_last': raw_vec[8],
-        'sum_mean_12': raw_vec[11],
-        'sum_std_12': raw_vec[12],
-        'hot_12': raw_vec[18],
-        'cold_12': raw_vec[20],
-        'freq_1_12': raw_vec[22],
-        'freq_25_12': raw_vec[23],
-    }
 
 
 def main():

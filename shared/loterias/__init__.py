@@ -1,0 +1,10 @@
+from shared.loterias.config_base import LotteryConfig, LotteryRegistry
+from shared.loterias.config_lotofacil import CONFIG_LOTOFACIL
+from shared.loterias.config_megasena import CONFIG_MEGASENA
+from shared.loterias.config_quina import CONFIG_QUINA
+from shared.loterias.config_duplasena import CONFIG_DUPLASENA
+from shared.loterias.atualizador_base import AtualizadorBase
+from shared.loterias.atualizador_lotofacil import AtualizadorLotofacil
+from shared.loterias.atualizador_megasena import AtualizadorMegaSena
+from shared.loterias.atualizador_quina import AtualizadorQuina
+from shared.loterias.atualizador_duplasena import AtualizadorDuplaSena

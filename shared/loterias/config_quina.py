@@ -1,0 +1,35 @@
+from shared.loterias.config_base import LotteryConfig, FaixaConfig, EstrategiaConfig, LotteryRegistry
+
+CONFIG_QUINA = LotteryConfig(
+    id="quina",
+    nome_jogo="Quina",
+    total_numeros=80,
+    numeros_por_jogo=5,
+    numero_minimo=1,
+    db_name="LOTOFACIL",
+    tabela_resultados="Resultados_Quina",
+    tabela_combinacoes="COMBIN_QUINA",
+    faixas={
+        "baixa": FaixaConfig("Baixa (1-27)", 1, 27),
+        "media": FaixaConfig("Média (28-54)", 28, 54),
+        "alta": FaixaConfig("Alta (55-80)", 55, 80),
+    },
+    estrategias={
+        "equilibrada": EstrategiaConfig("Equilibrada", "Distribuicao uniforme por faixas", 0.4, 0.2, 0.4),
+        "quentes": EstrategiaConfig("Numeros Quentes", "Prioriza numeros mais frequentes", 0.7, 0.1, 0.2),
+        "frios": EstrategiaConfig("Numeros Frios", "Prioriza numeros menos frequentes", 0.1, 0.7, 0.2),
+        "contrarian": EstrategiaConfig("Contraria", "Mix de quentes e frios", 0.3, 0.3, 0.4),
+    },
+    primos={2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79},
+    fibonacci={1, 2, 3, 5, 8, 13, 21, 34, 55},
+    params_estatisticos={
+        "consecutivos_max_comum": 2,
+        "soma_minima": 15,
+        "soma_maxima": 390,
+        "soma_media_esperada": 202,
+        "pares_mais_comum": 2,
+        "impares_mais_comum": 3,
+    },
+)
+
+LotteryRegistry.registrar(CONFIG_QUINA)

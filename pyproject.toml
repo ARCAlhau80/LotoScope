@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=65.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "LotoScope"
+version = "1.0.0"
+description = "Sistema científico para análise e geração de combinações otimizadas para Lotofácil"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["lotofacil", "lottery", "analysis", "machine-learning"]
+authors = [
+    { name = "LotoScope Team" },
+]
+
+dependencies = [
+    "pyodbc>=5.0",
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "scikit-learn>=1.3",
+    "matplotlib>=3.7",
+    "seaborn>=0.12",
+    "tabulate>=0.9",
+    "colorama>=0.4",
+    "joblib>=1.3",
+    "xgboost>=2.0",
+    "flask>=2.3",
+    "flask-cors>=4.0",
+    "python-dotenv>=1.0",
+    "requests>=2.31",
+    "mcp>=1.0",
+    "openai>=1.0",
+    "uvicorn>=0.30",
+]
+
+[project.urls]
+Homepage = "https://github.com/SEU_USUARIO/LotoScope"
+Documentation = "https://github.com/SEU_USUARIO/LotoScope"
+
+[tool.setuptools.packages.find]
+include = ["lotofacil_lite*", "shared*", "web*"]

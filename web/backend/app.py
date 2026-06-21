@@ -8,6 +8,9 @@ from datetime import datetime
 import sys
 import os
 
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 # Adicionar o diretório do database ao path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'database'))
 
@@ -29,15 +32,36 @@ except Exception as e:
 app = Flask(__name__, 
            template_folder='../frontend/templates',
            static_folder='../frontend/static')
-CORS(app)  # Habilitar CORS para requisições do frontend
+CORS(app)
 
-# Configuração global
 app.config['SECRET_KEY'] = 'lotoscope-web-2025'
+
+# Dashboard analytics module
+try:
+    sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
+    from analise_completa import analise_completa
+    DASHBOARD_AVAILABLE = True
+    print("   Modulo de analise dashboard carregado")
+except Exception as e:
+    DASHBOARD_AVAILABLE = False
+    print(f"   Dashboard nao disponivel: {e}")
 
 @app.route('/')
 def index():
-    """Página principal"""
     return render_template('index.html')
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/api/dashboard-data')
+def dashboard_data():
+    if not DASHBOARD_AVAILABLE:
+        return jsonify({'error': 'Dashboard module not available'}), 500
+    try:
+        return jsonify(analise_completa())
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/health')
 def health_check():

@@ -13,56 +13,16 @@ from collections import Counter, defaultdict
 
 import numpy as np
 
-from poc_vizinhanca_historica_pool23 import (
-    FEATURE_WINDOW,
-    K_NEIGHBORS,
-    LEVELS,
-    MIN_HISTORY,
-    build_context_features,
-    build_filters_for_level,
-    carregar_resultados,
-    choose_best_level,
-    random_combos,
-    standardize_matrix,
+from pool23_hub import (
+    FEATURE_WINDOW, K_NEIGHBORS, LEVELS, MIN_HISTORY,
+    build_context_features, build_filters_for_level,
+    carregar_resultados, choose_best_level,
+    random_combos, standardize_matrix,
+    RANDOM_SAMPLES, FEATURE_NAMES,
+    package_predicates,
 )
-from poc_incompatibilidade_filtros_pool23 import RANDOM_SAMPLES
 
 sys.stdout.reconfigure(encoding='utf-8')
-
-FEATURE_NAMES = [
-    'sum_last',
-    'pares_last',
-    'primos_last',
-    'fib_last',
-    'faixa_6_20_last',
-    'moldura_last',
-    'linha_spread_last',
-    'col_spread_last',
-    'seq_max_last',
-    'count_1_25_last',
-    'repeats_last',
-    'sum_mean_12',
-    'sum_std_12',
-    'pares_mean_12',
-    'primos_mean_12',
-    'fib_mean_12',
-    'faixa_6_20_mean_12',
-    'seq_max_mean_12',
-    'hot_12',
-    'warm_12',
-    'cold_12',
-    'absent_12',
-    'freq_1_12',
-    'freq_25_12',
-]
-
-
-def package_predicates():
-    predicates = {}
-    for level in LEVELS:
-        filters = build_filters_for_level(level)
-        predicates[level] = lambda combo, fns=list(filters.values()): all(fn(combo) for fn in fns)
-    return predicates
 
 
 def main():

@@ -17618,6 +17618,85 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 print(f"      N{nivel:<7} {jackpots:<10} {barra_jack}")
         
         # ═══════════════════════════════════════════════════════════════════
+        # COMPARAÇÕES ESTRUTURADAS (Op. 30-4)
+        # ═══════════════════════════════════════════════════════════════════
+        if comparacoes:
+            print(f"\n   🔬 COMPARAÇÕES ESTRUTURADAS (30-4):")
+            print("   " + "─"*70)
+
+            # Agrupar por tipo
+            _tipos_count = {}
+            for _c in comparacoes:
+                _t = _c.get('tipo', 'unknown')
+                _tipos_count[_t] = _tipos_count.get(_t, 0) + 1
+            _tipo_summary = ' | '.join([f"{_t.replace('_', ' ').title()}: {_n}" for _t, _n in _tipos_count.items()])
+            print(f"      Total: {len(comparacoes)} | {_tipo_summary}")
+
+            # Mostrar últimas 8 comparações (mais recentes primeiro)
+            _ultimas_comp = list(reversed(comparacoes))[:8]
+            for _ci, _c in enumerate(_ultimas_comp):
+                _ts = _c.get('timestamp', '?')
+                _tipo = _c.get('tipo', '?')
+                _range = _c.get('range', {})
+                _r_inicio = _range.get('inicio', '?')
+                _r_fim = _range.get('fim', '?')
+                _r_qtd = _range.get('qtd', '?')
+                _estr = _c.get('estrategia_exclusao', '?')
+                _filtro = _c.get('filtro_probabilistico', '?')
+                _venc = _c.get('vencedora', {})
+                _venc_nome = _venc.get('nome', '?')
+                _venc_roi = _venc.get('roi') or _venc.get('roi_medio', 0)
+
+                # Formatar timestamp
+                try:
+                    _ts_fmt = _ts[:19] if len(_ts) >= 19 else _ts
+                except:
+                    _ts_fmt = _ts
+
+                print(f"\n      [{_ci+1}/{len(_ultimas_comp)}] {_ts_fmt}")
+                print(f"         Tipo: {_tipo.replace('_', ' ').title()}")
+                print(f"         Range: conc. {_r_inicio}→{_r_fim} ({_r_qtd} testes)")
+                if _estr and _estr != '?':
+                    print(f"         Estratégia: {_estr}")
+                if _filtro and _filtro != '?':
+                    print(f"         Filtro: {_filtro}")
+                if _venc_nome != '?':
+                    _roi_str = f"{_venc_roi:+.1f}%" if isinstance(_venc_roi, (int, float)) else _venc_roi
+                    _jp = _venc.get('jackpots', 0)
+                    print(f"         ⭐ Vencedor: {_venc_nome} | ROI: {_roi_str} | Jackpots: {_jp}")
+
+                # Mostrar top 3 resultados
+                _res = _c.get('resultados', [])
+                if _res:
+                    _res_sorted = sorted(_res, key=lambda r: (
+                        r.get('roi') or r.get('roi_medio', 0) or 0
+                    ), reverse=True)[:3]
+                    print(f"         Top resultados:")
+                    for _ri, _r in enumerate(_res_sorted):
+                        _r_nome = _r.get('nome') or _r.get('estrategia') or _r.get('filtro_prob') or f"N{_r.get('nivel', '?')}"
+                        _r_roi = _r.get('roi') or _r.get('roi_medio', 0) or 0
+                        _r_jp = _r.get('jackpots') or (_r.get('jackpots_por_nivel', {}) and list(_r['jackpots_por_nivel'].values())[0].get('quantidade', 0) if isinstance(_r.get('jackpots_por_nivel'), dict) else 0)
+                        if isinstance(_r_roi, (int, float)):
+                            _r_roi_str = f"{_r_roi:+.1f}%"
+                        else:
+                            _r_roi_str = str(_r_roi)
+                        print(f"            {_ri+1}. {_r_nome}: ROI {_r_roi_str}, JP {_r_jp}")
+
+            # Resumo agregado
+            print(f"\n      📊 AGREGADO:")
+            _melhores_estr = {}
+            for _c in comparacoes:
+                _venc = _c.get('vencedora', {})
+                _vn = _venc.get('nome', '?')
+                if _vn not in _melhores_estr:
+                    _melhores_estr[_vn] = 0
+                _melhores_estr[_vn] += 1
+            if _melhores_estr:
+                _top_estr = sorted(_melhores_estr.items(), key=lambda x: -x[1])[:3]
+                _top_str = ', '.join([f"{e} ({n}x)" for e, n in _top_estr])
+                print(f"         Estratégias/níveis mais vencedores: {_top_str}")
+
+        # ═══════════════════════════════════════════════════════════════════
         # HISTÓRICO DETALHADO DE EXCLUSÕES
         # ═══════════════════════════════════════════════════════════════════
         historico_det = historico.get('historico_detalhado', [])
@@ -19393,7 +19472,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
         print("   [6] Score Prem.:  Score >= 616       ( 6% — máximo sinal histórico)")
         print("   [7] 🥇 C. de Ouro: A14 últ. 100 conc. ( 0.46% — esteve a 1 do jackpot!)")
         print("   [0] Desativado:        Sem filtro probabilístico")
-        print("   [C] 🔄 Comparar TODOS modos — executa 0→4 e mostra ranking de ROI")
+        print("   [C] 🔄 Comparar TODOS modos — executa Desat. + 317 + 324 + 329 + 320 (custom)")
 
         _comparar_todos_prob_hist = False
         filtro_prob_ativo_hist = False
@@ -19722,284 +19801,284 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
 
         candidatos = []
         for n in range(1, 26):
-                    d = dados_num[n]
-                    if v_est == 1:
-                        score = calc_score_debito(n)
-                    elif v_est == 2:
-                        score = calc_score_invertida(n)
-                    elif v_est == 3:
-                        score = calc_score_quadrante(n)
-                    elif v_est == 4:
-                        s_inv = calc_score_invertida(n)
-                        s_q = calc_score_quadrante(n)
-                        score = s_inv * 0.6 + s_q * 0.4
-                    elif v_est == 5:
-                        s_deb = calc_score_debito(n)
-                        s_inv = calc_score_invertida(n)
-                        s_q = calc_score_quadrante(n)
-                        deb_norm = max(-5, min(7, s_deb / 10))
-                        score = deb_norm * 0.25 + s_inv * 0.50 + s_q * 0.25
-                    else:
-                        score = calc_score_invertida(n)
-                    candidatos.append({'num': n, 'score': score, 'consec': d['consec']})
+            d = dados_num[n]
+            if v_est == 1:
+                score = calc_score_debito(n)
+            elif v_est == 2:
+                score = calc_score_invertida(n)
+            elif v_est == 3:
+                score = calc_score_quadrante(n)
+            elif v_est == 4:
+                s_inv = calc_score_invertida(n)
+                s_q = calc_score_quadrante(n)
+                score = s_inv * 0.6 + s_q * 0.4
+            elif v_est == 5:
+                s_deb = calc_score_debito(n)
+                s_inv = calc_score_invertida(n)
+                s_q = calc_score_quadrante(n)
+                deb_norm = max(-5, min(7, s_deb / 10))
+                score = deb_norm * 0.25 + s_inv * 0.50 + s_q * 0.25
+            else:
+                score = calc_score_invertida(n)
+            candidatos.append({'num': n, 'score': score, 'consec': d['consec']})
 
-                candidatos.sort(key=lambda x: (-x['score'], -x['consec']))
-                excluir = set(candidatos[i]['num'] for i in range(qtd_excluir))
+        candidatos.sort(key=lambda x: (-x['score'], -x['consec']))
+        excluir = set(candidatos[i]['num'] for i in range(qtd_excluir))
 
-                excluidos_no_resultado = excluir & resultado_set
-                _erros['exclusao']['total'] += 1
-                if not excluidos_no_resultado:
-                    _ok += 1
-                else:
-                    _err += 1
-                    _erros['exclusao']['erros'] += 1
-                    for c in candidatos[:qtd_excluir]:
-                        if c['num'] in excluidos_no_resultado:
-                            _erros['consecutivos_excludos'].append(c['consec'])
-                            _erros['exclusao']['numeros_errados'].append(c['num'])
-                    _hist.append({
+        excluidos_no_resultado = excluir & resultado_set
+        _erros['exclusao']['total'] += 1
+        if not excluidos_no_resultado:
+            _ok += 1
+        else:
+            _err += 1
+            _erros['exclusao']['erros'] += 1
+            for c in candidatos[:qtd_excluir]:
+                if c['num'] in excluidos_no_resultado:
+                    _erros['consecutivos_excludos'].append(c['consec'])
+                    _erros['exclusao']['numeros_errados'].append(c['num'])
+            _hist.append({
                         'concurso': concurso_teste,
                         'excluidos': sorted(excluir),
                         'errados': sorted(excluidos_no_resultado)
                     })
 
-                # Tracking inversão posicional
-                conc_anterior = concurso_teste - 1
-                if conc_anterior in inversao_dados and concurso_teste in inversao_dados:
-                    _inv_total_pares += 1
-                    m_ant = inversao_dados[conc_anterior]['menor']
-                    m_atu = inversao_dados[concurso_teste]['maior']
-                    if m_ant >= 12:
-                        _inv_previsoes += 1
-                        if m_atu >= 10:
-                            _inv_acertos += 1
+        # Tracking inversão posicional
+        conc_anterior = concurso_teste - 1
+        if conc_anterior in inversao_dados and concurso_teste in inversao_dados:
+            _inv_total_pares += 1
+            m_ant = inversao_dados[conc_anterior]['menor']
+            m_atu = inversao_dados[concurso_teste]['maior']
+            if m_ant >= 12:
+                _inv_previsoes += 1
+                if m_atu >= 10:
+                    _inv_acertos += 1
 
-                ultimo_resultado_anterior = set(dados_ate_anterior[0]['numeros'])
-                soma_real = sum(resultado_set)
-                pares_real = len([n for n in resultado_set if n % 2 == 0])
-                primos_real = len(resultado_set & PRIMOS)
-                rep_real = len(resultado_set & ultimo_resultado_anterior)
-                filtros_ref = FILTROS_POR_NIVEL.get(3, {})
-                if 'soma_min' in filtros_ref:
-                    if soma_real < filtros_ref['soma_min']:
-                        _erros['soma']['fora_min'] += 1
-                        _erros['soma']['valores'].append(soma_real)
-                    elif soma_real > filtros_ref.get('soma_max', 999):
-                        _erros['soma']['fora_max'] += 1
-                        _erros['soma']['valores'].append(soma_real)
-                if 'pares_min' in filtros_ref:
-                    if pares_real < filtros_ref['pares_min']:
-                        _erros['pares']['fora_min'] += 1
-                    elif pares_real > filtros_ref.get('pares_max', 15):
-                        _erros['pares']['fora_max'] += 1
-                if 'primos_min' in filtros_ref:
-                    if primos_real < filtros_ref['primos_min']:
-                        _erros['primos']['fora_min'] += 1
-                    elif primos_real > filtros_ref.get('primos_max', 15):
-                        _erros['primos']['fora_max'] += 1
-                if 'rep_min' in filtros_ref:
-                    if rep_real < filtros_ref['rep_min']:
-                        _erros['repeticao']['fora_min'] += 1
-                    elif rep_real > filtros_ref.get('rep_max', 15):
-                        _erros['repeticao']['fora_max'] += 1
+        ultimo_resultado_anterior = set(dados_ate_anterior[0]['numeros'])
+        soma_real = sum(resultado_set)
+        pares_real = len([n for n in resultado_set if n % 2 == 0])
+        primos_real = len(resultado_set & PRIMOS)
+        rep_real = len(resultado_set & ultimo_resultado_anterior)
+        filtros_ref = FILTROS_POR_NIVEL.get(3, {})
+        if 'soma_min' in filtros_ref:
+            if soma_real < filtros_ref['soma_min']:
+                _erros['soma']['fora_min'] += 1
+                _erros['soma']['valores'].append(soma_real)
+            elif soma_real > filtros_ref.get('soma_max', 999):
+                _erros['soma']['fora_max'] += 1
+                _erros['soma']['valores'].append(soma_real)
+        if 'pares_min' in filtros_ref:
+            if pares_real < filtros_ref['pares_min']:
+                _erros['pares']['fora_min'] += 1
+            elif pares_real > filtros_ref.get('pares_max', 15):
+                _erros['pares']['fora_max'] += 1
+        if 'primos_min' in filtros_ref:
+            if primos_real < filtros_ref['primos_min']:
+                _erros['primos']['fora_min'] += 1
+            elif primos_real > filtros_ref.get('primos_max', 15):
+                _erros['primos']['fora_max'] += 1
+        if 'rep_min' in filtros_ref:
+            if rep_real < filtros_ref['rep_min']:
+                _erros['repeticao']['fora_min'] += 1
+            elif rep_real > filtros_ref.get('rep_max', 15):
+                _erros['repeticao']['fora_max'] += 1
 
-                pool_disponivel = sorted([n for n in range(1, 26) if n not in excluir])
-                ultimo_resultado = set(dados_ate_anterior[0]['numeros'])
-                freq_30 = Counter()
-                for r in dados_ate_anterior[:30]:
-                    freq_30.update(r['numeros'])
-                media_freq = sum(freq_30.values()) / 25
-                favorecidos = {n for n, f in freq_30.items() if f > media_freq}
+        pool_disponivel = sorted([n for n in range(1, 26) if n not in excluir])
+        ultimo_resultado = set(dados_ate_anterior[0]['numeros'])
+        freq_30 = Counter()
+        for r in dados_ate_anterior[:30]:
+            freq_30.update(r['numeros'])
+        media_freq = sum(freq_30.values()) / 25
+        favorecidos = {n for n, f in freq_30.items() if f > media_freq}
 
-                posicoes_frias_rejeitar = {}
-                niveis_com_frias = [n for n in niveis_testar if FILTROS_POR_NIVEL[n].get('usar_filtro_posicoes_frias')]
-                if niveis_com_frias:
-                    janela_frias = FILTROS_POR_NIVEL[niveis_com_frias[0]].get('posicoes_frias_janela', 6)
-                    debitos_frias, lista_debitos_frias = self._calcular_debitos_posicionais(
-                        dados_ate_anterior, janela=janela_frias
+        posicoes_frias_rejeitar = {}
+        niveis_com_frias = [n for n in niveis_testar if FILTROS_POR_NIVEL[n].get('usar_filtro_posicoes_frias')]
+        if niveis_com_frias:
+            janela_frias = FILTROS_POR_NIVEL[niveis_com_frias[0]].get('posicoes_frias_janela', 6)
+            debitos_frias, lista_debitos_frias = self._calcular_debitos_posicionais(
+                dados_ate_anterior, janela=janela_frias
+            )
+            for (num, pos), dados_deb in debitos_frias.items():
+                if dados_deb['freq_recente'] > 0:
+                    continue
+                if pos not in posicoes_frias_rejeitar:
+                    posicoes_frias_rejeitar[pos] = set()
+                posicoes_frias_rejeitar[pos].add(num)
+
+        # Calcular template de posições travadas para este concurso
+        _trav_template_bt = {}
+        if len(dados_ate_anterior) >= 3:
+            _ultimos_3_bt = [sorted(dados_ate_anterior[i]['numeros']) for i in range(3)]
+            for pos in POSICOES_TRAVADAS_ALVO:
+                vals = [_ultimos_3_bt[j][pos] for j in range(3)]
+                c_trav = Counter(vals)
+                best_v, best_c = c_trav.most_common(1)[0]
+                if best_c >= 2:
+                    _trav_template_bt[pos] = best_v
+
+        for nivel in niveis_testar:
+            filtros = FILTROS_POR_NIVEL[nivel]
+            combos_nivel = []
+
+            if nivel == 8 and filtros.get('nivel_base') == 'cascata':
+                tolerancia_8 = filtros.get('posicoes_frias_tolerancia', 4)
+                nivel_usado = 0
+                for nivel_tentativa in range(6, 0, -1):
+                    filtros_base = FILTROS_POR_NIVEL[nivel_tentativa]
+                    combos_tentativa = self._aplicar_filtros_com_posicoes_frias(
+                        combinations(pool_disponivel, 15),
+                        filtros_base,
+                        dados_ate_anterior,
+                        posicoes_frias_rejeitar,
+                        PRIMOS,
+                        NUCLEO_C1C2,
+                        FIBONACCI,
+                        ultimo_resultado,
+                        favorecidos,
+                        False, {}, False, 0, 0, {},
+                        posicoes_frias_tolerancia=tolerancia_8,
+                        posicoes_travadas_template_304=_trav_template_bt
                     )
-                    for (num, pos), dados_deb in debitos_frias.items():
-                        if dados_deb['freq_recente'] > 0:
-                            continue
-                        if pos not in posicoes_frias_rejeitar:
-                            posicoes_frias_rejeitar[pos] = set()
-                        posicoes_frias_rejeitar[pos].add(num)
-
-                # Calcular template de posições travadas para este concurso
-                _trav_template_bt = {}
-                if len(dados_ate_anterior) >= 3:
-                    _ultimos_3_bt = [sorted(dados_ate_anterior[i]['numeros']) for i in range(3)]
-                    for pos in POSICOES_TRAVADAS_ALVO:
-                        vals = [_ultimos_3_bt[j][pos] for j in range(3)]
-                        c_trav = Counter(vals)
-                        best_v, best_c = c_trav.most_common(1)[0]
-                        if best_c >= 2:
-                            _trav_template_bt[pos] = best_v
-
-                for nivel in niveis_testar:
-                    filtros = FILTROS_POR_NIVEL[nivel]
-                    combos_nivel = []
-
-                    if nivel == 8 and filtros.get('nivel_base') == 'cascata':
-                        tolerancia_8 = filtros.get('posicoes_frias_tolerancia', 4)
-                        nivel_usado = 0
-                        for nivel_tentativa in range(6, 0, -1):
-                            filtros_base = FILTROS_POR_NIVEL[nivel_tentativa]
-                            combos_tentativa = self._aplicar_filtros_com_posicoes_frias(
-                                combinations(pool_disponivel, 15),
-                                filtros_base,
-                                dados_ate_anterior,
-                                posicoes_frias_rejeitar,
-                                PRIMOS,
-                                NUCLEO_C1C2,
-                                FIBONACCI,
-                                ultimo_resultado,
-                                favorecidos,
-                                False, {}, False, 0, 0, {},
-                                posicoes_frias_tolerancia=tolerancia_8,
-                                posicoes_travadas_template_304=_trav_template_bt
-                            )
-                            if len(combos_tentativa) > 0:
-                                combos_nivel = [set(c) for c in combos_tentativa]
-                                nivel_usado = nivel_tentativa
-                                break
-                        if not combos_nivel:
-                            for combo in combinations(pool_disponivel, 15):
-                                combo_sorted = sorted(combo)
-                                violacoes = sum(1 for pos in range(1, 16)
-                                               if combo_sorted[pos - 1] in posicoes_frias_rejeitar.get(pos, set()))
-                                if violacoes <= tolerancia_8:
-                                    combos_nivel.append(set(combo))
-                        acertos = [len(c & resultado_set) for c in combos_nivel]
-                        tem_jackpot = any(a == 15 for a in acertos)
-                        count_11_mais = sum(1 for a in acertos if a >= 11)
-                        custo = len(combos_nivel) * 3.50
-                        premio = sum(7 if a == 11 else 14 if a == 12 else 35 if a == 13 else 1000 if a == 14 else 1800000 if a == 15 else 0 for a in acertos)
-                        _s[nivel]['combos_total'] += len(combos_nivel)
-                        _s[nivel]['custo_total'] += custo
-                        _s[nivel]['premio_total'] += premio
-                        _s[nivel]['acertos_11_mais'] += count_11_mais
-                        if tem_jackpot:
-                            _s[nivel]['jackpots'] += 1
-                        continue
-
-                    if nivel == 7 and filtros.get('usar_filtro_posicoes_frias'):
-                        tolerancia_7 = filtros.get('posicoes_frias_tolerancia', 5)
-                        for combo in combinations(pool_disponivel, 15):
-                            if v_fp and not v_fp.passa(combo):
-                                continue
-                            combo_sorted = sorted(combo)
-                            violacoes = sum(1 for pos in range(1, 16)
-                                           if combo_sorted[pos - 1] in posicoes_frias_rejeitar.get(pos, set()))
-                            if violacoes <= tolerancia_7:
-                                if combo_sorted[4] < 5 or combo_sorted[4] > 14: continue
-                                if combo_sorted[9] < 10 or combo_sorted[9] > 20: continue
-                                if combo_sorted[11] < 13 or combo_sorted[11] > 22: continue
-                                combos_nivel.append(set(combo))
-                        acertos = [len(c & resultado_set) for c in combos_nivel]
-                        tem_jackpot = any(a == 15 for a in acertos)
-                        count_11_mais = sum(1 for a in acertos if a >= 11)
-                        custo = len(combos_nivel) * 3.50
-                        premio = sum(7 if a == 11 else 14 if a == 12 else 35 if a == 13 else 1000 if a == 14 else 1800000 if a == 15 else 0 for a in acertos)
-                        _s[nivel]['combos_total'] += len(combos_nivel)
-                        _s[nivel]['custo_total'] += custo
-                        _s[nivel]['premio_total'] += premio
-                        _s[nivel]['acertos_11_mais'] += count_11_mais
-                        if tem_jackpot:
-                            _s[nivel]['jackpots'] += 1
-                        continue
-
-                    # Níveis 0-6: filtros normais
+                    if len(combos_tentativa) > 0:
+                        combos_nivel = [set(c) for c in combos_tentativa]
+                        nivel_usado = nivel_tentativa
+                        break
+                if not combos_nivel:
                     for combo in combinations(pool_disponivel, 15):
-                        if v_fp and not v_fp.passa(combo):
-                            continue
-                        combo_set = set(combo)
-                        combo_list = list(combo)
-                        soma = sum(combo)
-                        if 'soma_min' in filtros:
-                            if soma < filtros['soma_min'] or soma > filtros['soma_max']:
-                                continue
-                        pares = sum(1 for n in combo if n % 2 == 0)
-                        if 'pares_min' in filtros:
-                            if pares < filtros['pares_min'] or pares > filtros['pares_max']:
-                                continue
-                        primos = len(combo_set & PRIMOS)
-                        if 'primos_min' in filtros:
-                            if primos < filtros['primos_min'] or primos > filtros['primos_max']:
-                                continue
-                        if 'seq_max' in filtros:
-                            max_seq = 1
+                        combo_sorted = sorted(combo)
+                        violacoes = sum(1 for pos in range(1, 16)
+                                       if combo_sorted[pos - 1] in posicoes_frias_rejeitar.get(pos, set()))
+                        if violacoes <= tolerancia_8:
+                            combos_nivel.append(set(combo))
+                acertos = [len(c & resultado_set) for c in combos_nivel]
+                tem_jackpot = any(a == 15 for a in acertos)
+                count_11_mais = sum(1 for a in acertos if a >= 11)
+                custo = len(combos_nivel) * 3.50
+                premio = sum(7 if a == 11 else 14 if a == 12 else 35 if a == 13 else 1000 if a == 14 else 1800000 if a == 15 else 0 for a in acertos)
+                _s[nivel]['combos_total'] += len(combos_nivel)
+                _s[nivel]['custo_total'] += custo
+                _s[nivel]['premio_total'] += premio
+                _s[nivel]['acertos_11_mais'] += count_11_mais
+                if tem_jackpot:
+                    _s[nivel]['jackpots'] += 1
+                continue
+
+            if nivel == 7 and filtros.get('usar_filtro_posicoes_frias'):
+                tolerancia_7 = filtros.get('posicoes_frias_tolerancia', 5)
+                for combo in combinations(pool_disponivel, 15):
+                    if v_fp and not v_fp.passa(combo):
+                        continue
+                    combo_sorted = sorted(combo)
+                    violacoes = sum(1 for pos in range(1, 16)
+                                   if combo_sorted[pos - 1] in posicoes_frias_rejeitar.get(pos, set()))
+                    if violacoes <= tolerancia_7:
+                        if combo_sorted[4] < 5 or combo_sorted[4] > 14: continue
+                        if combo_sorted[9] < 10 or combo_sorted[9] > 20: continue
+                        if combo_sorted[11] < 13 or combo_sorted[11] > 22: continue
+                        combos_nivel.append(set(combo))
+                acertos = [len(c & resultado_set) for c in combos_nivel]
+                tem_jackpot = any(a == 15 for a in acertos)
+                count_11_mais = sum(1 for a in acertos if a >= 11)
+                custo = len(combos_nivel) * 3.50
+                premio = sum(7 if a == 11 else 14 if a == 12 else 35 if a == 13 else 1000 if a == 14 else 1800000 if a == 15 else 0 for a in acertos)
+                _s[nivel]['combos_total'] += len(combos_nivel)
+                _s[nivel]['custo_total'] += custo
+                _s[nivel]['premio_total'] += premio
+                _s[nivel]['acertos_11_mais'] += count_11_mais
+                if tem_jackpot:
+                    _s[nivel]['jackpots'] += 1
+                continue
+
+            # Níveis 0-6: filtros normais
+            for combo in combinations(pool_disponivel, 15):
+                if v_fp and not v_fp.passa(combo):
+                    continue
+                combo_set = set(combo)
+                combo_list = list(combo)
+                soma = sum(combo)
+                if 'soma_min' in filtros:
+                    if soma < filtros['soma_min'] or soma > filtros['soma_max']:
+                        continue
+                pares = sum(1 for n in combo if n % 2 == 0)
+                if 'pares_min' in filtros:
+                    if pares < filtros['pares_min'] or pares > filtros['pares_max']:
+                        continue
+                primos = len(combo_set & PRIMOS)
+                if 'primos_min' in filtros:
+                    if primos < filtros['primos_min'] or primos > filtros['primos_max']:
+                        continue
+                if 'seq_max' in filtros:
+                    max_seq = 1
+                    seq_atual = 1
+                    for i in range(1, 15):
+                        if combo_list[i] == combo_list[i-1] + 1:
+                            seq_atual += 1
+                            max_seq = max(max_seq, seq_atual)
+                        else:
                             seq_atual = 1
-                            for i in range(1, 15):
-                                if combo_list[i] == combo_list[i-1] + 1:
-                                    seq_atual += 1
-                                    max_seq = max(max_seq, seq_atual)
-                                else:
-                                    seq_atual = 1
-                            if max_seq > filtros['seq_max']:
-                                continue
-                        if 'rep_min' in filtros:
-                            rep = len(combo_set & ultimo_resultado)
-                            if rep < filtros['rep_min'] or rep > filtros['rep_max']:
-                                continue
-                        if 'nucleo_min' in filtros:
-                            if len(combo_set & NUCLEO_C1C2) < filtros['nucleo_min']:
-                                continue
-                        if 'favorecidos_min' in filtros:
-                            if len(combo_set & favorecidos) < filtros['favorecidos_min']:
-                                continue
-                        # Filtro FIBONACCI (POC 06/04/2026 — seletividade 1.084-1.139)
-                        if filtros.get('usar_filtro_fibonacci'):
-                            qtde_fib = len(combo_set & FIBONACCI)
-                            if qtde_fib < filtros.get('fibonacci_min', 3) or qtde_fib > filtros.get('fibonacci_max', 6):
-                                continue
-                        # Filtro QUINTIS (POC 06/04/2026 — seletividade 1.048-1.092)
-                        if filtros.get('usar_filtro_quintis'):
-                            quintis = [0, 0, 0, 0, 0]
-                            for n in combo:
-                                quintis[(n - 1) // 5] += 1
-                            q_min, q_max = filtros.get('quintis_min', 1), filtros.get('quintis_max', 4)
-                            if not all(q_min <= q <= q_max for q in quintis):
-                                continue
-                        # Filtro FAIXA 6-20 (POC 06/04/2026 — seletividade 1.028-1.115)
-                        if filtros.get('usar_filtro_faixa_6_20'):
-                            qtde_f620 = sum(1 for n in combo if 6 <= n <= 20)
-                            if qtde_f620 < filtros.get('faixa_6_20_min', 7) or qtde_f620 > filtros.get('faixa_6_20_max', 10):
-                                continue
-                        if nivel > 0:
-                            if combo_list[4] < 5 or combo_list[4] > 14:
-                                continue
-                            if combo_list[9] < 10 or combo_list[9] > 20:
-                                continue
-                            if combo_list[11] < 13 or combo_list[11] > 22:
-                                continue
-                        # Filtro POSIÇÕES TRAVADAS
-                        if (filtros.get('usar_filtro_posicoes_travadas', False)
-                                and _trav_template_bt):
-                            _trav_tol = filtros.get('posicoes_travadas_tolerancia', 3)
-                            _trav_viol = 0
-                            for _trav_pos, _trav_num in _trav_template_bt.items():
-                                if combo_list[_trav_pos] != _trav_num:
-                                    _trav_viol += 1
-                            if _trav_viol > _trav_tol:
-                                continue
-                        combos_nivel.append(combo_set)
+                    if max_seq > filtros['seq_max']:
+                        continue
+                if 'rep_min' in filtros:
+                    rep = len(combo_set & ultimo_resultado)
+                    if rep < filtros['rep_min'] or rep > filtros['rep_max']:
+                        continue
+                if 'nucleo_min' in filtros:
+                    if len(combo_set & NUCLEO_C1C2) < filtros['nucleo_min']:
+                        continue
+                if 'favorecidos_min' in filtros:
+                    if len(combo_set & favorecidos) < filtros['favorecidos_min']:
+                        continue
+                # Filtro FIBONACCI (POC 06/04/2026 — seletividade 1.084-1.139)
+                if filtros.get('usar_filtro_fibonacci'):
+                    qtde_fib = len(combo_set & FIBONACCI)
+                    if qtde_fib < filtros.get('fibonacci_min', 3) or qtde_fib > filtros.get('fibonacci_max', 6):
+                        continue
+                # Filtro QUINTIS (POC 06/04/2026 — seletividade 1.048-1.092)
+                if filtros.get('usar_filtro_quintis'):
+                    quintis = [0, 0, 0, 0, 0]
+                    for n in combo:
+                        quintis[(n - 1) // 5] += 1
+                    q_min, q_max = filtros.get('quintis_min', 1), filtros.get('quintis_max', 4)
+                    if not all(q_min <= q <= q_max for q in quintis):
+                        continue
+                # Filtro FAIXA 6-20 (POC 06/04/2026 — seletividade 1.028-1.115)
+                if filtros.get('usar_filtro_faixa_6_20'):
+                    qtde_f620 = sum(1 for n in combo if 6 <= n <= 20)
+                    if qtde_f620 < filtros.get('faixa_6_20_min', 7) or qtde_f620 > filtros.get('faixa_6_20_max', 10):
+                        continue
+                if nivel > 0:
+                    if combo_list[4] < 5 or combo_list[4] > 14:
+                        continue
+                    if combo_list[9] < 10 or combo_list[9] > 20:
+                        continue
+                    if combo_list[11] < 13 or combo_list[11] > 22:
+                        continue
+                # Filtro POSIÇÕES TRAVADAS
+                if (filtros.get('usar_filtro_posicoes_travadas', False)
+                        and _trav_template_bt):
+                    _trav_tol = filtros.get('posicoes_travadas_tolerancia', 3)
+                    _trav_viol = 0
+                    for _trav_pos, _trav_num in _trav_template_bt.items():
+                        if combo_list[_trav_pos] != _trav_num:
+                            _trav_viol += 1
+                    if _trav_viol > _trav_tol:
+                        continue
+                combos_nivel.append(combo_set)
 
-                    acertos = [len(c & resultado_set) for c in combos_nivel]
-                    tem_jackpot = any(a == 15 for a in acertos)
-                    count_11_mais = sum(1 for a in acertos if a >= 11)
-                    custo = len(combos_nivel) * 3.50
-                    premio = sum(7 if a == 11 else 14 if a == 12 else 35 if a == 13 else 1000 if a == 14 else 1800000 if a == 15 else 0 for a in acertos)
-                    _s[nivel]['combos_total'] += len(combos_nivel)
-                    _s[nivel]['custo_total'] += custo
-                    _s[nivel]['premio_total'] += premio
-                    _s[nivel]['acertos_11_mais'] += count_11_mais
-                    if tem_jackpot:
-                        _s[nivel]['jackpots'] += 1
+            acertos = [len(c & resultado_set) for c in combos_nivel]
+            tem_jackpot = any(a == 15 for a in acertos)
+            count_11_mais = sum(1 for a in acertos if a >= 11)
+            custo = len(combos_nivel) * 3.50
+            premio = sum(7 if a == 11 else 14 if a == 12 else 35 if a == 13 else 1000 if a == 14 else 1800000 if a == 15 else 0 for a in acertos)
+            _s[nivel]['combos_total'] += len(combos_nivel)
+            _s[nivel]['custo_total'] += custo
+            _s[nivel]['premio_total'] += premio
+            _s[nivel]['acertos_11_mais'] += count_11_mais
+            if tem_jackpot:
+                _s[nivel]['jackpots'] += 1
 
-                if (idx + 1) % 5 == 0 or idx == 0:
-                    pct = (idx + 1) / total_testes * 100
-                    print(f"   {prefixo}Progresso: {idx+1}/{total_testes} ({pct:.0f}%) - Concurso {concurso_teste}")
+        if (idx + 1) % 5 == 0 or idx == 0:
+            pct = (idx + 1) / total_testes * 100
+            print(f"   {prefixo}Progresso: {idx+1}/{total_testes} ({pct:.0f}%) - Concurso {concurso_teste}")
 
             return _s, _ok, _err, _hist, _erros, time.time() - _t0
 
@@ -20023,7 +20102,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             def _carregar_prob_cfgs_comp():
                 print(f"   ⏳ Carregando filtros probabilísticos...")
                 _fp_dict_c = {}
-                for _plim_c in [317, 324, 329]:
+                for _plim_c in [317, 320, 324, 329]:
                     try:
                         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
                         from filtro_probabilistico import FiltroProbabilistico as _FPC
@@ -20037,6 +20116,7 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 return [
                     (None,                "Desativado      "),
                     (_fp_dict_c.get(317), "Conserv. (≥317) "),
+                    (_fp_dict_c.get(320), "Custom   (≥320) "),
                     (_fp_dict_c.get(324), "Moderado (≥324) "),
                     (_fp_dict_c.get(329), "Agressivo(≥329) "),
                 ]
@@ -20173,10 +20253,35 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             if _comparar_estr_hist and _comparar_todos_prob_hist:
                 _tipo_comp = "composto_todos_x_todos" if _modo_composto_hist == 'todos_x_todos' else "composto_estrategia_x_prob"
 
+            # Montar label da estratégia de exclusão
+            _estr_label = NOMES_ESTRATEGIA.get(estrategia_excl, "Desconhecida")
+            if _comparar_estr_hist and _comparar_todos_prob_hist:
+                _estr_label = f"Composto ({NOMES_ESTRATEGIA.get(_estrategia_base_prob_hist, '?')} × prob)"
+            elif _comparar_estr_hist:
+                _estr_label = "Comparação de todas (1→5)"
+            elif _comparar_todos_prob_hist:
+                _estr_label = NOMES_ESTRATEGIA.get(estrategia_excl, "Desconhecida")
+
+            # Montar label do filtro probabilístico
+            _filtro_prob_label = "Desativado"
+            if _comparar_todos_prob_hist:
+                _filtro_prob_label = "Comparação (Desat. + ≥317 + ≥324 + ≥329)"
+            elif filtro_prob_ativo_hist:
+                if filtro_prob_score_hist:
+                    _filtro_prob_label = f"Score ≥ {filtro_prob_score_hist}"
+                elif filtro_prob_ouro_window_hist:
+                    _filtro_prob_label = f"C. de Ouro ({filtro_prob_ouro_window_hist} conc.)"
+                else:
+                    _filtro_prob_label = f"Acertos_11 ≥ {filtro_prob_limite_hist}"
+
             comparacao_para_gravar = {
                 "timestamp": datetime.now().isoformat(),
                 "tipo": _tipo_comp,
-                "nivel": niveis_testar[0] if len(niveis_testar) > 0 else 0,  # Primeiro nível testado
+                "nivel": niveis_testar[0] if len(niveis_testar) > 0 else 0,
+                "niveis_testados": sorted(niveis_testar),
+                "qtd_excluir": qtd_excluir,
+                "estrategia_exclusao": _estr_label,
+                "filtro_probabilistico": _filtro_prob_label,
                 "range": {
                     "inicio": concurso_inicio,
                     "fim": concurso_fim,
@@ -20970,7 +21075,8 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 'exclusao_errada': 0,
                 'previsoes': {'soma': {'acertos': 0, 'erros': 0}, 'compensacao': {'acertos': 0, 'erros': 0}},
                 'eventos_atipicos': [],
-                'historico_detalhado': []
+                'historico_detalhado': [],
+                'comparacoes': []
             }
             
             if os.path.exists(historico_path):
@@ -20980,6 +21086,10 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
                 except:
                     pass
             
+            # Garantir chaves
+            if 'comparacoes' not in historico:
+                historico['comparacoes'] = []
+            
             # Atualizar com resultados deste backtesting
             historico['total_backtests'] += total_testes
             historico['exclusao_correta'] += total_exclusao_correta
@@ -20988,6 +21098,61 @@ Se o resultado sorteado tem 15 números TODOS dentro do seu pool:
             for nivel in niveis_testar:
                 nivel_str = str(nivel)
                 historico['niveis_jackpot'][nivel_str] = historico['niveis_jackpot'].get(nivel_str, 0) + stats_por_nivel[nivel]['jackpots']
+            
+            # ── Salvar entrada estruturada em comparacoes[] também ──
+            try:
+                _nomes_est = NOMES_ESTRATEGIA  # já definido no escopo
+                _melhor_nivel_single = max(niveis_testar, key=lambda n: stats_por_nivel[n]['premio_total'] - stats_por_nivel[n]['custo_total'])
+                _s_melhor = stats_por_nivel[_melhor_nivel_single]
+                
+                _resultados_single = []
+                for _nv in niveis_testar:
+                    _s_nv = stats_por_nivel[_nv]
+                    _roi_nv = (_s_nv['premio_total'] / _s_nv['custo_total'] - 1) * 100 if _s_nv['custo_total'] > 0 else 0
+                    _resultados_single.append({
+                        "nivel": _nv,
+                        "combos_media": _s_nv['combos_total'] / total_testes if total_testes > 0 else 0,
+                        "custo_total": _s_nv['custo_total'],
+                        "premio_total": _s_nv['premio_total'],
+                        "jackpots": _s_nv['jackpots'],
+                        "roi": _roi_nv,
+                    })
+                
+                _filtro_label = "Desativado"
+                if filtro_prob_ativo_hist:
+                    if filtro_prob_score_hist:
+                        _filtro_label = f"Score >= {filtro_prob_score_hist}"
+                    elif filtro_prob_ouro_window_hist:
+                        _filtro_label = f"C. de Ouro ({filtro_prob_ouro_window_hist} conc.)"
+                    else:
+                        _filtro_label = f"Acertos_11 >= {filtro_prob_limite_hist}"
+                
+                _entry_single = {
+                    "timestamp": datetime.now().isoformat(),
+                    "tipo": "single_run",
+                    "nivel": niveis_testar[0] if niveis_testar else 0,
+                    "niveis_testados": sorted(niveis_testar),
+                    "qtd_excluir": qtd_excluir,
+                    "estrategia_exclusao": _nomes_est.get(estrategia_excl, "Desconhecida"),
+                    "filtro_probabilistico": _filtro_label,
+                    "range": {
+                        "inicio": concurso_inicio,
+                        "fim": concurso_fim,
+                        "qtd": total_testes
+                    },
+                    "resultados": _resultados_single,
+                    "vencedora": {
+                        "nivel": _melhor_nivel_single,
+                        "nome": f"N{_melhor_nivel_single}",
+                        "jackpots": _s_melhor['jackpots'],
+                        "roi": (_s_melhor['premio_total'] / _s_melhor['custo_total'] - 1) * 100 if _s_melhor['custo_total'] > 0 else 0,
+                    },
+                    "taxa_exclusao_correta": taxa_exc,
+                    "notas": f"Single run — {_nomes_est.get(estrategia_excl, '?')} | {_filtro_label}"
+                }
+                historico['comparacoes'].append(_entry_single)
+            except Exception as _e_single:
+                print(f"   ⚠️ Aviso: não foi possível salvar entrada estruturada: {_e_single}")
             
             # Salvar
             try:

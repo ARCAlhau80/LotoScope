@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LotoScope - Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#070b1a;color:#e0e0e0;min-height:100vh}
+a{color:#818cf8;text-decoration:none}
+.topbar{background:linear-gradient(135deg,#0f1429,#1a1040);padding:16px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(129,140,248,0.15)}
+.topbar h1{font-size:22px;font-weight:700;background:linear-gradient(135deg,#818cf8,#a78bfa,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar .subtitle{color:#94a3b8;font-size:13px}
+.container{max-width:1360px;margin:0 auto;padding:24px 20px}
+
+.hero{background:linear-gradient(135deg,#0f1429 0%,#1a1040 50%,#0f1a2e 100%);border-radius:20px;padding:40px;margin-bottom:32px;border:1px solid rgba(129,140,248,0.12);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 50%,rgba(129,140,248,0.06),transparent 50%),radial-gradient(circle at 70% 50%,rgba(52,211,153,0.04),transparent 50%);pointer-events:none}
+.hero-content{position:relative;z-index:1}
+.hero h2{font-size:32px;font-weight:700;margin-bottom:8px;background:linear-gradient(135deg,#e0e7ff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:#94a3b8;font-size:15px;margin-bottom:24px}
+.hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.hero-card{background:rgba(255,255,255,0.04);border-radius:12px;padding:20px;border:1px solid rgba(255,255,255,0.06);text-align:center}
+.hero-card .value{font-size:28px;font-weight:700;color:#fff}
+.hero-card .label{font-size:12px;color:#94a3b8;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px}
+.hero-card .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:6px}
+
+.section{margin-bottom:32px}
+.section h3{font-size:18px;font-weight:600;margin-bottom:16px;color:#e0e7ff;display:flex;align-items:center;gap:8px}
+.section h3 .badge{font-size:11px;background:rgba(129,140,248,0.15);color:#818cf8;padding:2px 8px;border-radius:6px;font-weight:400}
+
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{background:rgba(255,255,255,0.03);border-radius:14px;padding:20px;border:1px solid rgba(255,255,255,0.06)}
+.card h4{font-size:14px;font-weight:600;color:#e0e7ff;margin-bottom:12px}
+.card .num-grid{display:flex;flex-wrap:wrap;gap:6px}
+.num{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;font-weight:600}
+.num.hot{background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.3)}
+.num.cold{background:rgba(59,130,246,0.2);color:#93c5fd;border:1px solid rgba(59,130,246,0.3)}
+.num.cycle-up{background:rgba(52,211,153,0.2);color:#6ee7b7;border:1px solid rgba(52,211,153,0.3)}
+.num.cycle-down{background:rgba(251,146,60,0.2);color:#fdba74;border:1px solid rgba(251,146,60,0.3)}
+.num.cycle-stable{background:rgba(148,163,184,0.15);color:#cbd5e1;border:1px solid rgba(148,163,184,0.2)}
+
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:20px}
+.chart-box{background:rgba(255,255,255,0.03);border-radius:14px;padding:20px;border:1px solid rgba(255,255,255,0.06)}
+.chart-box h4{font-size:14px;font-weight:600;color:#e0e7ff;margin-bottom:12px}
+.chart-box canvas{max-height:280px}
+
+.previsao-table{width:100%;border-collapse:collapse;font-size:13px}
+.previsao-table th{text-align:left;padding:8px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid rgba(255,255,255,0.06);font-size:11px;text-transform:uppercase;letter-spacing:0.5px}
+.previsao-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.previsao-table tr:hover td{background:rgba(255,255,255,0.02)}
+.previsao-table .prob-bar{display:inline-block;height:6px;border-radius:3px;background:linear-gradient(90deg,#818cf8,#a78bfa);margin-right:6px}
+.previsao-table .atrasado-tag{background:rgba(239,68,68,0.15);color:#fca5a5;padding:1px 6px;border-radius:4px;font-size:10px}
+
+.palpite-box{background:linear-gradient(135deg,rgba(129,140,248,0.08),rgba(52,211,153,0.05));border-radius:14px;padding:24px;border:1px solid rgba(129,140,248,0.15);text-align:center}
+.palpite-box .nums{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0}
+.palpite-box .nums .num{width:40px;height:40px;border-radius:10px;background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.25);font-weight:700}
+.palpite-box .stats{display:flex;gap:24px;justify-content:center;margin-top:12px}
+.palpite-box .stats span{font-size:13px;color:#94a3b8}
+.palpite-box .stats strong{color:#e0e7ff}
+
+.atrasados-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.atrasado-card{background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;border:1px solid rgba(239,68,68,0.1)}
+.atrasado-card .pos{font-size:12px;color:#94a3b8;font-weight:500}
+.atrasado-card .nums-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.atrasado-card .nums-list .num{width:30px;height:30px;font-size:11px;background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.2);border-radius:6px}
+
+.loading{text-align:center;padding:80px;color:#94a3b8}
+.error{text-align:center;padding:40px;color:#fca5a5}
+
+.fade-in{animation:fadeIn 0.5s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:768px){
+  .container{padding:12px}
+  .hero{padding:24px}
+  .hero h2{font-size:24px}
+  .charts-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div>
+    <h1>LotoScope</h1>
+    <div class="subtitle">Dashboard de Analise Inteligente</div>
+  </div>
+  <a href="/">&larr; Voltar ao Gerador</a>
+</div>
+
+<div class="container" id="app">
+  <div class="loading" id="loading">Carregando dados da Lotofacil...</div>
+  <div id="content" style="display:none"></div>
+</div>
+
+<script>
+async function carregarDados() {
+  try {
+    const res = await fetch('/api/dashboard-data');
+    if (!res.ok) throw new Error('Erro HTTP ' + res.status);
+    const d = await res.json();
+    document.getElementById('loading').style.display = 'none';
+    renderizar(d);
+  } catch(e) {
+    document.getElementById('loading').innerHTML = '<div class="error">Erro ao carregar dados: ' + e.message + '</div>';
+  }
+}
+
+function renderizar(d) {
+  const el = document.getElementById('content');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="fade-in">
+      ${renderHero(d)}
+      ${renderPalpite(d)}
+      <div class="section">
+        <h3>Numeros Quentes, Mornos &amp; Frios <span class="badge">ultimos 30 sorteios</span></h3>
+        <div class="cards-grid">
+          <div class="card"><h4>🔥 Quentes</h4><div class="num-grid">${d.numeros_quentes.map(n => `<span class="num hot">${n[0]}</span>`).join('')}</div></div>
+          <div class="card"><h4>💨 Mornos</h4><div class="num-grid">${d.numeros_mornos.map(n => `<span class="num cycle-stable">${n[0]}</span>`).join('')}</div></div>
+          <div class="card"><h4>🧊 Frios</h4><div class="num-grid">${d.numeros_frios.map(n => `<span class="num cold">${n[0]}</span>`).join('')}</div></div>
+        </div>
+      </div>
+      ${renderTransicaoQMF(d)}
+      <div class="section">
+        <h3>Ciclos de Frequencia <span class="badge">freq 30 vs esperado</span></h3>
+        <div class="cards-grid">
+          <div class="card">
+            <h4>🟢 Aquecendo</h4>
+            <div class="num-grid">${Object.entries(d.ciclos).filter(([_,c]) => c.estado === 'aquecendo').map(([n]) => `<span class="num cycle-up">${n}</span>`).join('')}</div>
+          </div>
+          <div class="card">
+            <h4>🟠 Esfriando</h4>
+            <div class="num-grid">${Object.entries(d.ciclos).filter(([_,c]) => c.estado === 'esfriando').map(([n]) => `<span class="num cycle-down">${n}</span>`).join('')}</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <h3>Previsao Posicional (Poisson) <span class="badge">top 3 por posicao</span></h3>
+        <div class="charts-grid">
+          <div class="chart-box"><h4>Probabilidade por Posicao</h4><canvas id="chartPos"></canvas></div>
+          <div class="card" style="overflow-x:auto;padding:16px">
+            <table class="previsao-table">
+              <tr><th>Pos</th><th>#1</th><th>Prob</th><th>#2</th><th>Prob</th><th>#3</th><th>Prob</th></tr>
+              ${['N1','N2','N3','N4','N5','N6','N7','N8','N9','N10','N11','N12','N13','N14','N15'].map(pos => {
+                const p = d.previsao_posicional[pos];
+                return '<tr><td><strong>'+pos+'</strong></td>' +
+                  p.map(x => '<td>'+x.numero+'</td><td style="color:#818cf8">'+(x.prob*100).toFixed(1)+'%</td>').join('') +
+                  '</tr>';
+              }).join('')}
+            </table>
+          </div>
+        </div>
+      </div>
+      ${renderAtrasados(d)}
+    </div>
+  `;
+
+  renderChartPos(d);
+  renderChartTransicaoQMF(d);
+}
+
+function renderHero(d) {
+  const u = d.ultimo_sorteio;
+  return `
+    <div class="hero">
+      <div class="hero-content">
+        <h2>Ultimo Resultado &mdash; Concurso #${d.ultimo_concurso}</h2>
+        <p>Base historica: ${d.total_sorteios} sorteios analisados</p>
+        <div class="hero-grid">
+          <div class="hero-card">
+            <div class="value">${u.numeros.join(' - ')}</div>
+            <div class="label">Numeros Sorteados</div>
+          </div>
+          <div class="hero-card">
+            <div class="value">${u.soma}</div>
+            <div class="label">Soma Total</div>
+          </div>
+          <div class="hero-card">
+            <div class="value">${u.pares}</div>
+            <div class="label">Pares</div>
+          </div>
+          <div class="hero-card">
+            <div class="value">${u.impares}</div>
+            <div class="label">Impares</div>
+          </div>
+          <div class="hero-card">
+            <div class="value">${u.primos}</div>
+            <div class="label">Primos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderPalpite(d) {
+  const p = d.palpite;
+  const soma = p.reduce((a,b)=>a+b,0);
+  const pares = p.filter(n=>n%2===0).length;
+  const impares = p.filter(n=>n%2===1).length;
+  const primos = p.filter(n=>[2,3,5,7,11,13,17,19,23].includes(n)).length;
+  return `
+    <div class="section">
+      <h3>Previsao para o Proximo Sorteio <span class="badge">Poisson blend</span></h3>
+      <div class="palpite-box">
+        <div class="nums">${p.map(n => `<span class="num">${n}</span>`).join('')}</div>
+        <div class="stats">
+          <span>Soma: <strong>${soma}</strong></span>
+          <span>Pares: <strong>${pares}</strong></span>
+          <span>Impares: <strong>${impares}</strong></span>
+          <span>Primos: <strong>${primos}</strong></span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAtrasados(d) {
+  const atr = d.atrasados_posicionais;
+  const keys = Object.keys(atr);
+  if (!keys.length) return '';
+  return `
+    <div class="section">
+      <h3>Numeros Atrasados por Posicao <span class="badge">P(gap) &lt; 5%</span></h3>
+      <div class="atrasados-grid">
+        ${keys.map(pos => `
+          <div class="atrasado-card">
+            <div class="pos">${pos}</div>
+            <div class="nums-list">${atr[pos].map(x => `<span class="num" title="gap=${x.gap} P(gap)=${(x.p_gap*100).toFixed(1)}%">${x.numero}</span>`).join('')}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderTransicaoQMF(d) {
+  const t = d.transicao_qmf;
+  if (!t) return '';
+  const m = t.medias;
+  const te = t.tendencia;
+  return `
+    <div class="section">
+      <h3>De Onde Vem os Acertos? <span class="badge">Q/M/F no sorteio seguinte</span></h3>
+      <div class="cards-grid">
+        <div class="card">
+          <h4>🔥 Quentes</h4>
+          <div style="font-size:32px;font-weight:700;color:#fca5a5">${m.quentes}</div>
+          <div style="font-size:12px;color:#94a3b8">media por sorteio (${m.pct_q}%)</div>
+          <div style="margin-top:6px;font-size:12px;color:${te.quentes > 0 ? '#6ee7b7' : '#fca5a5'}">tendencia: ${te.quentes > 0 ? '+' : ''}${te.quentes}</div>
+        </div>
+        <div class="card">
+          <h4>💨 Mornos</h4>
+          <div style="font-size:32px;font-weight:700;color:#cbd5e1">${m.mornos}</div>
+          <div style="font-size:12px;color:#94a3b8">media por sorteio (${m.pct_m}%)</div>
+          <div style="margin-top:6px;font-size:12px;color:${te.mornos > 0 ? '#6ee7b7' : '#fca5a5'}">tendencia: ${te.mornos > 0 ? '+' : ''}${te.mornos}</div>
+        </div>
+        <div class="card">
+          <h4>🧊 Frios</h4>
+          <div style="font-size:32px;font-weight:700;color:#93c5fd">${m.frios}</div>
+          <div style="font-size:12px;color:#94a3b8">media por sorteio (${m.pct_f}%)</div>
+          <div style="margin-top:6px;font-size:12px;color:${te.frios > 0 ? '#6ee7b7' : '#fca5a5'}">tendencia: ${te.frios > 0 ? '+' : ''}${te.frios}</div>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="chart-box"><h4>Composicao Q/M/F nos ultimos 20 sorteios</h4><canvas id="chartTransicaoQMF" style="height:200px"></canvas></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderChartTransicaoQMF(d) {
+  const t = d.transicao_qmf;
+  if (!t) return;
+  const ctx = document.getElementById('chartTransicaoQMF');
+  if (!ctx) return;
+  new Chart(ctx.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: t.recentes.map(r => r.concurso.toString()),
+      datasets: [
+        { label: 'Quentes', data: t.recentes.map(r => r.quentes), backgroundColor: 'rgba(239,68,68,0.6)', borderColor: 'rgba(239,68,68,0.9)', borderWidth: 1 },
+        { label: 'Mornos', data: t.recentes.map(r => r.mornos), backgroundColor: 'rgba(148,163,184,0.5)', borderColor: 'rgba(148,163,184,0.8)', borderWidth: 1 },
+        { label: 'Frios', data: t.recentes.map(r => r.frios), backgroundColor: 'rgba(59,130,246,0.6)', borderColor: 'rgba(59,130,246,0.9)', borderWidth: 1 },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { stacked: true, ticks: { color: '#94a3b8', font: {size:9} }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { stacked: true, max: 15, ticks: { color: '#94a3b8', font: {size:10} }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      },
+      plugins: {
+        legend: { labels: { color: '#94a3b8', font: {size:11} } }
+      }
+    }
+  });
+}
+
+function renderChartPos(d) {
+  const labels = ['N1','N2','N3','N4','N5','N6','N7','N8','N9','N10','N11','N12','N13','N14','N15'];
+  const top1 = labels.map(p => {
+    const x = d.previsao_posicional[p][0];
+    return {num: x.numero, prob: x.prob};
+  });
+  const ctx = document.getElementById('chartPos').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels.map((p,i) => p + ' = ' + top1[i].num),
+      datasets: [{
+        label: 'Probabilidade do top-1',
+        data: top1.map(x => +(x.prob*100).toFixed(1)),
+        backgroundColor: top1.map(x => {
+          if (x.prob > 0.3) return 'rgba(52,211,153,0.6)';
+          if (x.prob > 0.15) return 'rgba(129,140,248,0.6)';
+          return 'rgba(148,163,184,0.4)';
+        }),
+        borderColor: top1.map(x => {
+          if (x.prob > 0.3) return 'rgba(52,211,153,0.9)';
+          if (x.prob > 0.15) return 'rgba(129,140,248,0.9)';
+          return 'rgba(148,163,184,0.6)';
+        }),
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#94a3b8', font: {size:11} } }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#94a3b8', font: {size:10 } },
+          grid: { color: 'rgba(255,255,255,0.04)' }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: '#94a3b8', font: {size:10}, callback: v => v+'%' },
+          grid: { color: 'rgba(255,255,255,0.04)' }
+        }
+      }
+    }
+  });
+}
+
+carregarDados();
+</script>
+</body>
+</html>

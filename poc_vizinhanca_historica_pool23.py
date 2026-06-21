@@ -19,131 +19,23 @@ from collections import Counter, defaultdict
 
 import numpy as np
 
-from poc_incompatibilidade_filtros_pool23 import (
+from pool23_hub import (
     RANDOM_SAMPLES,
     build_filters_for_level,
     carregar_resultados,
     random_combos,
+    LEVELS,
+    FEATURE_WINDOW,
+    K_NEIGHBORS,
+    MIN_HISTORY,
+    package_predicates,
+    combo_stats,
+    build_context_features,
+    standardize_matrix,
+    choose_best_level,
 )
 
 sys.stdout.reconfigure(encoding='utf-8')
-
-LEVELS = [1, 2, 3, 4, 5, 6]
-FEATURE_WINDOW = 12
-K_NEIGHBORS = 40
-MIN_HISTORY = 200
-
-PRIMOS = {2, 3, 5, 7, 11, 13, 17, 19, 23}
-FIBONACCI = {1, 2, 3, 5, 8, 13, 21}
-
-
-def package_predicates():
-    predicates = {}
-    for level in LEVELS:
-        filters = build_filters_for_level(level)
-        predicates[level] = lambda combo, fns=list(filters.values()): all(fn(combo) for fn in fns)
-    return predicates
-
-
-def combo_stats(combo):
-    nums = list(combo)
-    pares = sum(1 for n in nums if n % 2 == 0)
-    primos = sum(1 for n in nums if n in PRIMOS)
-    fib = sum(1 for n in nums if n in FIBONACCI)
-    faixa_6_20 = sum(1 for n in nums if 6 <= n <= 20)
-    moldura = sum(1 for n in nums if n in {1, 2, 3, 4, 5, 6, 10, 11, 15, 16, 20, 21, 22, 23, 24, 25})
-    centro = 15 - moldura
-    linhas = [0, 0, 0, 0, 0]
-    cols = [0, 0, 0, 0, 0]
-    for n in nums:
-        linhas[(n - 1) // 5] += 1
-        cols[(n - 1) % 5] += 1
-    seq_max = 1
-    seq = 1
-    nums_sorted = sorted(nums)
-    for idx in range(1, len(nums_sorted)):
-        if nums_sorted[idx] == nums_sorted[idx - 1] + 1:
-            seq += 1
-            seq_max = max(seq_max, seq)
-        else:
-            seq = 1
-    return {
-        'sum': sum(nums),
-        'pares': pares,
-        'primos': primos,
-        'fib': fib,
-        'faixa_6_20': faixa_6_20,
-        'moldura': moldura,
-        'centro': centro,
-        'linha_spread': max(linhas) - min(linhas),
-        'col_spread': max(cols) - min(cols),
-        'seq_max': seq_max,
-        'count_1_25': int(1 in nums) + int(25 in nums),
-    }
-
-
-def build_context_features(draws):
-    contexts = []
-    for idx in range(len(draws)):
-        if idx < FEATURE_WINDOW:
-            contexts.append(None)
-            continue
-
-        recent = draws[idx - FEATURE_WINDOW:idx]
-        recent_stats = [combo_stats(d['numeros']) for d in recent]
-        last_stats = recent_stats[-1]
-        prev_draw = set(draws[idx - 2]['numeros']) if idx >= 2 else set()
-        last_draw = set(draws[idx - 1]['numeros'])
-        repeats_last = len(last_draw & prev_draw) if prev_draw else 0
-
-        freq_counter = Counter()
-        for draw in recent:
-            freq_counter.update(draw['numeros'])
-
-        hot_12 = sum(1 for _, f in freq_counter.items() if f >= 8)
-        warm_12 = sum(1 for _, f in freq_counter.items() if f >= 6)
-        cold_12 = sum(1 for n in range(1, 26) if freq_counter[n] <= 2)
-        absent_12 = sum(1 for n in range(1, 26) if freq_counter[n] == 0)
-
-        vec = np.array([
-            last_stats['sum'],
-            last_stats['pares'],
-            last_stats['primos'],
-            last_stats['fib'],
-            last_stats['faixa_6_20'],
-            last_stats['moldura'],
-            last_stats['linha_spread'],
-            last_stats['col_spread'],
-            last_stats['seq_max'],
-            last_stats['count_1_25'],
-            repeats_last,
-            np.mean([s['sum'] for s in recent_stats]),
-            np.std([s['sum'] for s in recent_stats]),
-            np.mean([s['pares'] for s in recent_stats]),
-            np.mean([s['primos'] for s in recent_stats]),
-            np.mean([s['fib'] for s in recent_stats]),
-            np.mean([s['faixa_6_20'] for s in recent_stats]),
-            np.mean([s['seq_max'] for s in recent_stats]),
-            hot_12,
-            warm_12,
-            cold_12,
-            absent_12,
-            freq_counter[1],
-            freq_counter[25],
-        ], dtype=float)
-        contexts.append(vec)
-    return contexts
-
-
-def standardize_matrix(matrix):
-    mu = np.mean(matrix, axis=0)
-    sigma = np.std(matrix, axis=0)
-    sigma[sigma == 0] = 1.0
-    return (matrix - mu) / sigma
-
-
-def choose_best_level(scores_by_level):
-    return sorted(scores_by_level.items(), key=lambda x: (-x[1], x[0]))[0][0]
 
 
 def main():

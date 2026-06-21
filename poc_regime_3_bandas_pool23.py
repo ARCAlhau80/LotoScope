@@ -17,7 +17,7 @@ from collections import Counter
 
 import numpy as np
 
-from poc_vizinhanca_historica_pool23 import (
+from pool23_hub import (
     FEATURE_WINDOW,
     K_NEIGHBORS,
     MIN_HISTORY,
@@ -26,42 +26,15 @@ from poc_vizinhanca_historica_pool23 import (
     choose_best_level,
     random_combos,
     standardize_matrix,
+    RANDOM_SAMPLES,
+    build_filters_for_level,
+    ALL_LEVELS,
+    BANDS,
+    package_predicates,
+    pick_band,
 )
-from poc_incompatibilidade_filtros_pool23 import RANDOM_SAMPLES, build_filters_for_level
 
 sys.stdout.reconfigure(encoding='utf-8')
-
-ALL_LEVELS = [1, 2, 3, 4, 5, 6]
-BANDS = {
-    'CONS': [1, 2],
-    'MID': [3],
-    'AGGR': [6],
-}
-
-
-def package_predicates(levels):
-    predicates = {}
-    for level in levels:
-        filters = build_filters_for_level(level)
-        predicates[level] = lambda combo, fns=list(filters.values()): all(fn(combo) for fn in fns)
-    return predicates
-
-
-def pick_band(scores_by_level):
-    cons_level = choose_best_level({level: scores_by_level[level] for level in BANDS['CONS']})
-    cons_score = scores_by_level[cons_level]
-    mid_level = 3
-    mid_score = scores_by_level[mid_level]
-    aggr_level = 6
-    aggr_score = scores_by_level[aggr_level]
-
-    options = {
-        'CONS': (cons_level, cons_score),
-        'MID': (mid_level, mid_score),
-        'AGGR': (aggr_level, aggr_score),
-    }
-    best_band = sorted(options.items(), key=lambda x: (-x[1][1], x[1][0]))[0]
-    return best_band[0], best_band[1][0], options
 
 
 def main():

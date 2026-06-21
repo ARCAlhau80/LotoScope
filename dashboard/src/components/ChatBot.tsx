@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { LOTERIAS } from '@/lib/lottery-config';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -20,7 +21,7 @@ function TypingDots() {
   );
 }
 
-export default function ChatBot({ janela = 30 }: { janela?: number }) {
+export default function ChatBot({ janela = 30, loteria = 'lotofacil' }: { janela?: number; loteria?: string }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -51,7 +52,7 @@ export default function ChatBot({ janela = 30 }: { janela?: number }) {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history: messages, janela }),
+        body: JSON.stringify({ message: text, history: messages, janela, loteria }),
       });
 
       const data = await res.json();
@@ -91,7 +92,7 @@ export default function ChatBot({ janela = 30 }: { janela?: number }) {
           <div className="px-4 py-3 border-b border-[rgba(129,140,248,0.1)] flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold text-[#e0e7ff]">Assistente LotoScope</h3>
-              <p className="text-[10px] text-muted">Especialista em Lotofácil</p>
+              <p className="text-[10px] text-muted">Especialista em {LOTERIAS[loteria]?.nome_jogo || 'Lotofácil'}</p>
             </div>
             <span className="w-2 h-2 rounded-full bg-emerald animate-pulse" title="Online" />
           </div>
@@ -99,7 +100,7 @@ export default function ChatBot({ janela = 30 }: { janela?: number }) {
           <div ref={listRef} className="overflow-y-auto px-4 py-3 space-y-3" style={{ maxHeight: '320px' }}>
             {messages.length === 0 && (
               <p className="text-xs text-muted text-center py-6 animate-fade-in">
-                Pergunte sobre análises, números, estatísticas da Lotofácil.
+                Pergunte sobre análises, números, estatísticas da {LOTERIAS[loteria]?.nome_jogo || 'Lotofácil'}.
               </p>
             )}
             {messages.map((m, i) => (

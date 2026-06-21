@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { Suspense, useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { getDashboardData, getAnaliseGrupos } from '@/lib/api';
 import type { DashboardData } from '@/types';
 import type { AnaliseGruposData } from '@/lib/analise-grupos';
+import { LOTERIAS } from '@/lib/lottery-config';
 import TopBar from '@/components/TopBar';
 import HeroSection from '@/components/HeroSection';
 import PalpiteSection from '@/components/PalpiteSection';
@@ -48,20 +50,38 @@ function LoadingSkeleton() {
 }
 
 export default function Home() {
+  return (
+    <Suspense>
+      <HomePage />
+    </Suspense>
+  );
+}
+
+function HomePage() {
+  const searchParams = useSearchParams();
   const [data, setData] = useState<DashboardData | null>(null);
   const [grupos, setGrupos] = useState<AnaliseGruposData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [janela, setJanela] = useState<number>(30);
+  const [loteria, setLoteria] = useState<string>('lotofacil');
 
-  const fetchData = useCallback((jan?: number) => {
+  useEffect(() => {
+    const l = searchParams.get('loteria');
+    if (l && LOTERIAS[l]) setLoteria(l);
+  }, [searchParams]);
+
+  const fetchData = useCallback((jan?: number, lot?: string) => {
     const ctrl = new AbortController();
     setLoading(true);
     setError(null);
-    Promise.all([
-      getDashboardData(jan, ctrl.signal),
-      getAnaliseGrupos(ctrl.signal),
-    ])
+    const promises: Promise<any>[] = [getDashboardData(jan, ctrl.signal, lot)];
+    if (!lot || lot === 'lotofacil') {
+      promises.push(getAnaliseGrupos(ctrl.signal));
+    } else {
+      promises.push(Promise.resolve(null));
+    }
+    Promise.all(promises)
       .then(([d, g]) => { setData(d); setGrupos(g); })
       .catch(err => {
         if (err.name !== 'AbortError') setError(err.message);
@@ -70,15 +90,23 @@ export default function Home() {
     return () => ctrl.abort();
   }, []);
 
-  useEffect(() => fetchData(janela), [fetchData, janela]);
+  useEffect(() => fetchData(janela, loteria), [fetchData, janela, loteria]);
 
   const handleJanelaChange = useCallback((valor: number) => {
     setJanela(valor);
   }, []);
 
+  const handleLoteriaChange = useCallback((id: string) => {
+    const url = new URL(window.location.href);
+    if (id === 'lotofacil') url.searchParams.delete('loteria');
+    else url.searchParams.set('loteria', id);
+    window.history.pushState({}, '', url.toString());
+    setLoteria(id);
+  }, []);
+
   return (
     <div className="min-h-screen bg-base">
-      <TopBar />
+      <TopBar loteria={loteria} onLoteriaChange={handleLoteriaChange} />
       <main className="max-w-[1360px] mx-auto px-4 sm:px-5 py-4 sm:py-6">
         {loading && <LoadingSkeleton />}
 
@@ -91,7 +119,7 @@ export default function Home() {
             </div>
             <p className="text-[#fca5a5] text-sm mb-4">Erro ao carregar dados: {error}</p>
             <button
-              onClick={() => fetchData(janela)}
+              onClick={() => fetchData(janela, loteria)}
               className="px-5 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110"
               style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
             >
@@ -107,9 +135,12 @@ export default function Home() {
               concurso={data.ultimo_concurso}
               total={data.total_sorteios}
               medias={data.medias_historicas}
+              nomeJogo={data.nome_jogo || LOTERIAS[loteria]?.nome_jogo}
+              numerosPorJogo={data.numeros_por_jogo}
+              totalNumeros={data.total_numeros}
             />
             <div className="animate-slide-up stagger-1">
-              <PalpiteSection palpite={data.palpite} previsao_combinada={data.previsao_combinada} />
+              <PalpiteSection palpite={data.palpite} previsao_combinada={data.previsao_combinada} loteria={loteria} />
             </div>
             <div className="animate-slide-up stagger-2">
               <QmfSection
@@ -141,7 +172,7 @@ export default function Home() {
           </div>
         )}
       </main>
-      <ChatBot janela={janela} />
+      <ChatBot janela={janela} loteria={loteria} />
     </div>
   );
 }

@@ -1,12 +1,14 @@
 'use client';
 
-const PRIMOS = new Set([2, 3, 5, 7, 11, 13, 17, 19, 23]);
+import { getLotteryConfig } from '@/lib/lottery-config';
 
-function PalpiteCard({ titulo, badge, numeros }: { titulo: string; badge: string; numeros: number[] }) {
+const PRIMOS_LF = new Set([2, 3, 5, 7, 11, 13, 17, 19, 23]);
+
+function PalpiteCard({ titulo, badge, numeros, primosSet = PRIMOS_LF }: { titulo: string; badge: string; numeros: number[]; primosSet?: Set<number> }) {
   const soma = numeros.reduce((a, b) => a + b, 0);
   const pares = numeros.filter(n => n % 2 === 0).length;
   const impares = numeros.filter(n => n % 2 === 1).length;
-  const primos = numeros.filter(n => PRIMOS.has(n)).length;
+  const primos = numeros.filter(n => primosSet.has(n)).length;
 
   return (
     <div className="relative rounded-2xl p-6 text-center border border-[rgba(129,140,248,0.15)] animate-pulse-glow"
@@ -32,7 +34,8 @@ function PalpiteCard({ titulo, badge, numeros }: { titulo: string; badge: string
   );
 }
 
-export default function PalpiteSection({ palpite, previsao_combinada }: { palpite: number[]; previsao_combinada: number[] }) {
+export default function PalpiteSection({ palpite, previsao_combinada, loteria }: { palpite: number[]; previsao_combinada: number[]; loteria?: string }) {
+  const primosSet = loteria ? new Set(getLotteryConfig(loteria).primos) : PRIMOS_LF;
   if (!palpite || palpite.length === 0) return null;
 
   return (
@@ -42,7 +45,7 @@ export default function PalpiteSection({ palpite, previsao_combinada }: { palpit
           Previsão para o Próximo Sorteio
           <span className="text-[11px] bg-accent/15 text-accent-2 px-2 py-0.5 rounded font-normal">Poisson blend</span>
         </h3>
-        <PalpiteCard titulo="" badge="" numeros={palpite} />
+        <PalpiteCard titulo="" badge="" numeros={palpite} primosSet={primosSet} />
       </div>
       {previsao_combinada && previsao_combinada.length > 0 && (
         <div>
@@ -50,7 +53,7 @@ export default function PalpiteSection({ palpite, previsao_combinada }: { palpit
             Previsão Combinada
             <span className="text-[11px] bg-emerald/15 text-emerald px-2 py-0.5 rounded font-normal">Poisson + Pool23</span>
           </h3>
-          <PalpiteCard titulo="" badge="" numeros={previsao_combinada} />
+          <PalpiteCard titulo="" badge="" numeros={previsao_combinada} primosSet={primosSet} />
         </div>
       )}
     </div>

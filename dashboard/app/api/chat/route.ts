@@ -30,7 +30,7 @@ const comboStorage = new Map<string, string>();
 
 const TODAS_RE = /todas|todas\s*as|all|many|muitas|1000|[5-9]\d{2,}/i;
 
-function extrairQtdCombo(msg: string): { qtd: number; q: number; f: number; m: number } | null {
+function extrairQtdCombo(msg: string, jogosPorNumero: number = 15): { qtd: number; q: number; f: number; m: number } | null {
   const qtdMatch = msg.match(/(?:^|\D)(\d{1,3})\s*(?:combina|conjunto|jogo|aposta)s?/i);
   const qtd = qtdMatch ? parseInt(qtdMatch[1], 10) : 3;
 
@@ -44,7 +44,7 @@ function extrairQtdCombo(msg: string): { qtd: number; q: number; f: number; m: n
   const fv = parseInt(f[1], 10);
   const mv = parseInt(m[1], 10);
 
-  if (qv + fv + mv !== 15 || qv < 1 || fv < 1 || mv < 1) return null;
+  if (qv + fv + mv !== jogosPorNumero || qv < 1 || fv < 1 || mv < 1) return null;
 
   return { qtd, q: qv, f: fv, m: mv };
 }
@@ -59,7 +59,7 @@ function calcularScoreNumeros(
 
   const maxFreq = Math.max(...Object.values(freq30).map(Number), 1);
 
-  for (let n = 1; n <= 25; n++) {
+  for (let n = 1; n <= (dashboardData.total_numeros || 25); n++) {
     let s = 0;
     if (palpiteSet.has(n)) s += 5;
     const f = Number(freq30[String(n)] || 0);
@@ -128,9 +128,10 @@ function gerarCombinacoes(
   const selecionados: number[][] = [];
   for (const item of pool) {
     if (selecionados.length >= quantidade) break;
-    if (selecionados.some(s => {
+    const maxOverlap = dashboardData ? Math.floor((dashboardData.numeros_por_jogo || 15) * 0.8) : 12;
+  if (selecionados.some(s => {
       const overlap = s.filter(n => item.combo.includes(n)).length;
-      return overlap >= 12;
+      return overlap >= maxOverlap;
     })) continue;
     selecionados.push(item.combo);
   }
@@ -149,7 +150,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { message, history, janela: janelaParam } = body as { message?: string; history?: Message[]; janela?: number };
+    const { message, history, janela: janelaParam, loteria: loteriaParam } = body as { message?: string; history?: Message[]; janela?: number; loteria?: string };
 
     if (!message) {
       return NextResponse.json({ error: 'Mensagem nao fornecida.' }, { status: 400 });
@@ -162,13 +163,14 @@ export async function POST(req: Request) {
 
     const janela = typeof janelaParam === 'number' && janelaParam >= 2 ? janelaParam : undefined;
 
-    const dashboardData = await analiseCompleta(janela);
+    const loteria = loteriaParam || undefined;
+    const dashboardData = await analiseCompleta(janela, loteria);
 
     const qSet = [...new Set(dashboardData.numeros_quentes.map(n => n[0]))].sort((a, b) => a - b);
     const mSet = [...new Set(dashboardData.numeros_mornos.map(n => n[0]))].sort((a, b) => a - b);
     const fSet = [...new Set(dashboardData.numeros_frios.map(n => n[0]))].sort((a, b) => a - b);
 
-    const comboReq = extrairQtdCombo(message);
+    const comboReq = extrairQtdCombo(message, dashboardData.numeros_por_jogo || 15);
     if (comboReq) {
       const todas = TODAS_RE.test(message);
       const total = todas ? 100000 : Math.min(comboReq.qtd, 100000);
@@ -205,8 +207,8 @@ MORNOS  = [${mornosStr}]
 FRIOS   = [${friosStr}]
 
 ## REGRA DE COMBINACAO
-- Cada combinacao tem 15 numeros = X QUENTES + Y FRIOS + Z MORNOS
-- Ex: 6 QUENTES + 6 FRIOS + 3 MORNOS = 15
+- Cada combinacao tem ${dashboardData.numeros_por_jogo || 15} numeros = X QUENTES + Y FRIOS + Z MORNOS
+- Ex: 6 QUENTES + 6 FRIOS + 3 MORNOS = ${dashboardData.numeros_por_jogo || 15}
 - ESCOLHA os numeros DENTRO dos colchetes acima.
 - NAO crie suas proprias categorias.
 - NAO use numeros que nao estejam nas listas acima.
