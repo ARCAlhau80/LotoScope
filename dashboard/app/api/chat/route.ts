@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { validateInput } from '@/lib/chat-security';
-import { SYSTEM_PROMPT } from '@/lib/chat-prompt';
+import { buildSystemPrompt } from '@/lib/chat-prompt';
 import { analiseCompleta } from '@/lib/analise-completa';
 
 export const dynamic = 'force-dynamic';
@@ -215,8 +215,9 @@ FRIOS   = [${friosStr}]
 - Sempre ordene do menor para o maior.
 `.trim();
 
+    const systemPrompt = buildSystemPrompt(dashboardData.nome_jogo, dashboardData.numeros_por_jogo);
     const messages = [
-      { role: 'system', content: SYSTEM_PROMPT + '\n\n' + contextData },
+      { role: 'system', content: systemPrompt + '\n\n' + contextData },
       ...(history || []).slice(-10),
       { role: 'user', content: message },
     ];
