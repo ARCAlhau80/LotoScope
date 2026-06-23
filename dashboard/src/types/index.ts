@@ -115,4 +115,12 @@ export interface DashboardData {
   janela_usada: number;
   timestamp: string;
   repetidos_cadeia: number[];
+  tem_trevos?: boolean;
+  frequencia_trevos_total?: Record<string, number>;
+  frequencia_trevos_recente?: Record<string, number>;
+  gaps_trevos?: Record<string, number>;
+  trevos_quentes?: [number, number][];
+  trevos_frios?: [number, number][];
+  trevos_mornos?: [number, number][];
+  ciclos_trevos?: Record<string, CicloInfo>;
 }

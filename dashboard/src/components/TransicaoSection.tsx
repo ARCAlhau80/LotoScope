@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
 import type { TransicaoQMF } from '@/types';
 
-export default function TransicaoSection({ t, janela }: { t: TransicaoQMF; janela: number }) {
+export default function TransicaoSection({ t, janela, numerosPorJogo }: { t: TransicaoQMF; janela: number; numerosPorJogo: number }) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
 
@@ -30,7 +30,7 @@ export default function TransicaoSection({ t, janela }: { t: TransicaoQMF; janel
         maintainAspectRatio: false,
         scales: {
           x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.04)' } },
-          y: { stacked: true, max: 15, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+          y: { stacked: true, max: numerosPorJogo, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.04)' } },
         },
         plugins: {
           legend: { labels: { color: '#94a3b8', font: { size: 11 } } },

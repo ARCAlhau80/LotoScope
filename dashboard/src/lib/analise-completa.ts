@@ -61,7 +61,7 @@ function classificarQMF(
   freqTotalWindow: Record<number, number>,
   cfg: LotteryConfig
 ) {
-  const qty = Math.floor(cfg.total_numeros / 3) + 1;
+  const qty = cfg.qmf_scale;
   const s = Object.entries(freq30Window).sort((a, b) => b[1] - a[1]);
   const qSet = new Set(s.slice(0, qty).map(([n]) => Number(n)));
   const sortedFrios = Object.entries(freq30Window).sort((a, b) => {
@@ -223,7 +223,7 @@ export async function analiseCompleta(janela?: number, lotteryId?: string): Prom
   }
 
   const sortedFreq = Object.entries(freq30).sort((a, b) => b[1] - a[1]);
-  const qty = Math.floor(cfg.total_numeros / 3) + 1;
+  const qty = cfg.qmf_scale;
   const quentes: [number, number][] = sortedFreq.slice(0, qty).map(([n, f]) => [Number(n), f]);
   const frios: [number, number][] = Object.entries(freq30)
     .sort((a, b) => {
@@ -441,6 +441,75 @@ export async function analiseCompleta(janela?: number, lotteryId?: string): Prom
   const transicao: TransicaoQMF = analisarTransicaoQuentesFrios(resultados, cfg, janelaValida);
   const mediasHistoricas = calcularMediasHistoricas(resultados, cfg);
 
+  let temTrevos = false;
+  let frequenciaTrevosTotal: Record<string, number> = {};
+  let frequenciaTrevosRecente: Record<string, number> = {};
+  let gapsTrevos: Record<string, number> = {};
+  let trevosQuentes: [number, number][] = [];
+  let trevosFrios: [number, number][] = [];
+  let trevosMornos: [number, number][] = [];
+  let ciclosTrevos: Record<string, CicloInfo> = {};
+
+  if (cfg.trevos_cols && cfg.trevos_total) {
+    temTrevos = true;
+    const allTrevos = Array.from({ length: cfg.trevos_total }, (_, i) => i + (cfg.trevos_min ?? 1));
+
+    for (const n of allTrevos) {
+      frequenciaTrevosTotal[String(n)] = 0;
+      frequenciaTrevosRecente[String(n)] = 0;
+    }
+    for (const r of resultados) {
+      if (r.trevos) {
+        for (const t of r.trevos) frequenciaTrevosTotal[String(t)]++;
+      }
+    }
+    for (const r of resultados.slice(-janelaValida)) {
+      if (r.trevos) {
+        for (const t of r.trevos) frequenciaTrevosRecente[String(t)]++;
+      }
+    }
+
+    for (const n of allTrevos) {
+      let last = -1;
+      for (let idx = 0; idx < resultados.length; idx++) {
+        if (resultados[idx].trevos?.includes(n)) last = idx;
+      }
+      gapsTrevos[String(n)] = total - 1 - last;
+    }
+
+    const sortedFreqTrevos = Object.entries(frequenciaTrevosRecente).sort((a, b) => b[1] - a[1]);
+    const trevoQty = Math.min(2, Math.floor(allTrevos.length / 3) + 1);
+    trevosQuentes = sortedFreqTrevos.slice(0, trevoQty).map(([n, f]) => [Number(n), f]);
+    trevosFrios = Object.entries(frequenciaTrevosRecente)
+      .sort((a, b) => {
+        if (a[1] !== b[1]) return a[1] - b[1];
+        return (frequenciaTrevosTotal[Number(a[0])] || 0) - (frequenciaTrevosTotal[Number(b[0])] || 0);
+      })
+      .slice(0, trevoQty)
+      .map(([n, f]) => [Number(n), f]);
+    const trevosQSet = new Set(trevosQuentes.map(([n]) => n));
+    const trevosFSet = new Set(trevosFrios.map(([n]) => n));
+    trevosMornos = sortedFreqTrevos
+      .filter(([n]) => !trevosQSet.has(Number(n)) && !trevosFSet.has(Number(n)))
+      .map(([n, f]) => [Number(n), f]);
+
+    for (const n of allTrevos) {
+      const fTotal = (frequenciaTrevosTotal[String(n)] || 0) / total * janelaValida;
+      const fRecente = frequenciaTrevosRecente[String(n)] || 0;
+      const diff = fRecente - fTotal;
+      let estado: 'aquecendo' | 'esfriando' | 'estavel';
+      if (diff > 0.8) estado = 'aquecendo';
+      else if (diff < -0.8) estado = 'esfriando';
+      else estado = 'estavel';
+      ciclosTrevos[String(n)] = {
+        freq_30: fRecente,
+        freq_esperada: Math.round(fTotal * 10) / 10,
+        diferenca: Math.round(diff * 10) / 10,
+        estado,
+      };
+    }
+  }
+
   return {
     loteria: cfg.id,
     nome_jogo: cfg.nome_jogo,
@@ -465,5 +534,13 @@ export async function analiseCompleta(janela?: number, lotteryId?: string): Prom
     janela_usada: janelaValida,
     timestamp: new Date().toISOString(),
     repetidos_cadeia: repetidosCadeia,
+    tem_trevos: temTrevos,
+    frequencia_trevos_total: frequenciaTrevosTotal,
+    frequencia_trevos_recente: frequenciaTrevosRecente,
+    gaps_trevos: gapsTrevos,
+    trevos_quentes: trevosQuentes,
+    trevos_frios: trevosFrios,
+    trevos_mornos: trevosMornos,
+    ciclos_trevos: ciclosTrevos,
   };
 }

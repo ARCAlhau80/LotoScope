@@ -14,6 +14,7 @@ import TransicaoSection from '@/components/TransicaoSection';
 import CiclosSection from '@/components/CiclosSection';
 import PrevisaoSection from '@/components/PrevisaoSection';
 import AtrasadosSection from '@/components/AtrasadosSection';
+import TrevoSection from '@/components/TrevoSection';
 import GruposSection from '@/components/GruposSection';
 import ChatBot from '@/components/ChatBot';
 
@@ -139,7 +140,22 @@ function HomePage() {
               numerosPorJogo={data.numeros_por_jogo}
               totalNumeros={data.total_numeros}
             />
-            <div className="animate-slide-up stagger-1">
+            {data.tem_trevos && data.frequencia_trevos_total && (
+              <div className="animate-slide-up stagger-1">
+                <TrevoSection
+                  trevosUltimo={data.ultimo_sorteio.trevos ?? []}
+                  frequenciaTotal={data.frequencia_trevos_total}
+                  frequenciaRecente={data.frequencia_trevos_recente!}
+                  gaps={data.gaps_trevos!}
+                  quentes={data.trevos_quentes!}
+                  frios={data.trevos_frios!}
+                  mornos={data.trevos_mornos!}
+                  ciclos={data.ciclos_trevos!}
+                  janela={data.janela_usada}
+                />
+              </div>
+            )}
+            <div className="animate-slide-up stagger-2">
               <PalpiteSection palpite={data.palpite} previsao_combinada={data.previsao_combinada} loteria={loteria} />
             </div>
             <div className="animate-slide-up stagger-2">
@@ -153,7 +169,7 @@ function HomePage() {
               />
             </div>
             <div className="animate-slide-up stagger-3">
-              <TransicaoSection t={data.transicao_qmf} janela={data.janela_usada} />
+              <TransicaoSection t={data.transicao_qmf} janela={data.janela_usada} numerosPorJogo={data.numeros_por_jogo} />
             </div>
             <div className="animate-slide-up stagger-4">
               <CiclosSection ciclos={data.ciclos} />

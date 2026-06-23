@@ -30,7 +30,7 @@ export default function HeroSection({ u, concurso, total, medias, nomeJogo, nume
 
         <div className="flex flex-wrap gap-2.5 mb-4 sm:mb-6">
           {u.numeros.map((n, i) => (
-            <div key={n} className={`animate-slide-up`} style={{ animationDelay: `${i * 0.04}s` }}>
+            <div key={`num-${i}`} className={`animate-slide-up`} style={{ animationDelay: `${i * 0.04}s` }}>
               <NumBadge n={n} />
             </div>
           ))}
