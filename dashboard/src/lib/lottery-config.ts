@@ -33,6 +33,7 @@ export interface LotteryConfig {
   trevos_min?: number;
   trevos_max?: number;
   qmf_scale: number;
+  is_positional?: boolean;
 }
 
 export const LOTERIAS: Record<string, LotteryConfig> = {
@@ -246,6 +247,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     fibonacci: [0, 1, 2, 3, 5, 8],
     params_estatisticos: { consecutivos_max_comum: 0, soma_minima: 0, soma_maxima: 63, soma_media_esperada: 31, pares_mais_comum: 3, impares_mais_comum: 4 },
     qmf_scale: 3,
+    is_positional: true,
   },
   maismilionaria: {
     id: "maismilionaria",

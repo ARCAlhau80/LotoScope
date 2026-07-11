@@ -6,6 +6,7 @@ import { getDashboardData, getAnaliseGrupos } from '@/lib/api';
 import type { DashboardData } from '@/types';
 import type { AnaliseGruposData } from '@/lib/analise-grupos';
 import { LOTERIAS } from '@/lib/lottery-config';
+import { DrawnNumbersProvider } from '@/lib/DrawnNumbersContext';
 import TopBar from '@/components/TopBar';
 import HeroSection from '@/components/HeroSection';
 import PalpiteSection from '@/components/PalpiteSection';
@@ -17,6 +18,10 @@ import AtrasadosSection from '@/components/AtrasadosSection';
 import TrevoSection from '@/components/TrevoSection';
 import GruposSection from '@/components/GruposSection';
 import ChatBot from '@/components/ChatBot';
+import ReentradasSection from '@/components/ReentradasSection';
+import ConcursoSelector from '@/components/ConcursoSelector';
+import ConferidorSection from '@/components/ConferidorSection';
+import SuperSeteSection from '@/components/SuperSeteSection';
 
 function LoadingSkeleton() {
   return (
@@ -66,24 +71,26 @@ function HomePage() {
   const [loading, setLoading] = useState(true);
   const [janela, setJanela] = useState<number>(30);
   const [loteria, setLoteria] = useState<string>('lotofacil');
+  const [concurso, setConcurso] = useState<number | undefined>(undefined);
+  const [concursosDisponiveis, setConcursosDisponiveis] = useState<number[]>([]);
 
   useEffect(() => {
     const l = searchParams.get('loteria');
     if (l && LOTERIAS[l]) setLoteria(l);
   }, [searchParams]);
 
-  const fetchData = useCallback((jan?: number, lot?: string) => {
+  const fetchData = useCallback((jan?: number, lot?: string, conc?: number) => {
     const ctrl = new AbortController();
     setLoading(true);
     setError(null);
-    const promises: Promise<any>[] = [getDashboardData(jan, ctrl.signal, lot)];
+    const promises: Promise<any>[] = [getDashboardData(jan, ctrl.signal, lot, conc)];
     if (!lot || lot === 'lotofacil') {
       promises.push(getAnaliseGrupos(ctrl.signal));
     } else {
       promises.push(Promise.resolve(null));
     }
     Promise.all(promises)
-      .then(([d, g]) => { setData(d); setGrupos(g); })
+      .then(([d, g]) => { setData(d); setGrupos(g); setConcursosDisponiveis(d.concursos_disponiveis); })
       .catch(err => {
         if (err.name !== 'AbortError') setError(err.message);
       })
@@ -91,7 +98,7 @@ function HomePage() {
     return () => ctrl.abort();
   }, []);
 
-  useEffect(() => fetchData(janela, loteria), [fetchData, janela, loteria]);
+  useEffect(() => fetchData(janela, loteria, concurso), [fetchData, janela, loteria, concurso]);
 
   const handleJanelaChange = useCallback((valor: number) => {
     setJanela(valor);
@@ -103,9 +110,12 @@ function HomePage() {
     else url.searchParams.set('loteria', id);
     window.history.pushState({}, '', url.toString());
     setLoteria(id);
+    setConcurso(undefined);
+    setConcursosDisponiveis([]);
   }, []);
 
   return (
+    <DrawnNumbersProvider numeros={data?.ultimo_sorteio?.numeros ?? []}>
     <div className="min-h-screen bg-base">
       <TopBar loteria={loteria} onLoteriaChange={handleLoteriaChange} />
       <main className="max-w-[1360px] mx-auto px-4 sm:px-5 py-4 sm:py-6">
@@ -120,7 +130,7 @@ function HomePage() {
             </div>
             <p className="text-[#fca5a5] text-sm mb-4">Erro ao carregar dados: {error}</p>
             <button
-              onClick={() => fetchData(janela, loteria)}
+              onClick={() => fetchData(janela, loteria, concurso)}
               className="px-5 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110"
               style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
             >
@@ -131,6 +141,24 @@ function HomePage() {
 
         {data && (
           <div className="animate-fade-in">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <label className="text-sm text-muted">Concurso base:</label>
+              <ConcursoSelector
+                concursos={concursosDisponiveis}
+                value={concurso}
+                onChange={setConcurso}
+                totalSorteios={data.total_sorteios}
+              />
+              {concurso ? (
+                <span className="text-xs text-accent-2">
+                  análise até concurso <strong>{data.concurso_analisado}</strong> ({concursosDisponiveis.indexOf(concurso) + 1} sorteios)
+                </span>
+              ) : (
+                <span className="text-xs text-muted">
+                  todos os {concursosDisponiveis.length} sorteios
+                </span>
+              )}
+            </div>
             <HeroSection
               u={data.ultimo_sorteio}
               concurso={data.ultimo_concurso}
@@ -140,6 +168,16 @@ function HomePage() {
               numerosPorJogo={data.numeros_por_jogo}
               totalNumeros={data.total_numeros}
             />
+            {data.supersete && (
+              <div className="animate-slide-up stagger-1 mt-6">
+                <SuperSeteSection data={data.supersete} />
+              </div>
+            )}
+            {loteria === 'lotofacil' && (
+              <div className="mb-6">
+                <ReentradasSection />
+              </div>
+            )}
             {data.tem_trevos && data.frequencia_trevos_total && (
               <div className="animate-slide-up stagger-1">
                 <TrevoSection
@@ -165,6 +203,9 @@ function HomePage() {
                 frios={data.numeros_frios}
                 janela={data.janela_usada}
                 totalSorteios={data.total_sorteios}
+                numerosPorJogo={data.numeros_por_jogo}
+                totalNumeros={data.total_numeros}
+                loteria={loteria}
                 onJanelaChange={handleJanelaChange}
               />
             </div>
@@ -185,10 +226,18 @@ function HomePage() {
                 <GruposSection data={grupos} />
               </div>
             )}
+            <div className="animate-slide-up stagger-8">
+              <ConferidorSection
+                sorteioAtual={data.ultimo_sorteio.numeros}
+                numerosPorJogo={data.numeros_por_jogo}
+                loteria={loteria}
+              />
+            </div>
           </div>
         )}
       </main>
-      <ChatBot janela={janela} loteria={loteria} />
+      <ChatBot janela={janela} loteria={loteria} concurso={concurso} />
     </div>
+    </DrawnNumbersProvider>
   );
 }

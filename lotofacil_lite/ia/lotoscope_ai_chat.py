@@ -7,6 +7,7 @@ Chat integrado com o assistente IA especializado
 import os
 import sys
 from datetime import datetime
+from itertools import combinations
 from lotoscope_ai_assistant import LotoScopeAIAssistant
 
 class LotoScopeAIChat:
@@ -30,6 +31,7 @@ class LotoScopeAIChat:
         print("   /analyze [arquivo.py] - Analisa código")
         print("   /improve [tópico]     - Sugere melhorias") 
         print("   /patterns [loteria]   - Pesquisa padrões")
+        print("   /combinacoes [fixos]  - Gera combinações com números fixos")
         print("   /status               - Status do sistema")
         print("   /history              - Histórico da sessão")
         print("   /help                 - Ajuda")
@@ -49,6 +51,8 @@ class LotoScopeAIChat:
                 return self.analyze_file(args)
             elif command == '/improve':
                 return self.suggest_improvements(args)
+            elif command == '/combinacoes':
+                return self.gerar_combinacoes(args)
             elif command == '/patterns':
                 return self.research_patterns(args)
             elif command == '/history':
@@ -102,6 +106,52 @@ class LotoScopeAIChat:
         print("💡 Gerando sugestões... (pode demorar alguns segundos)")
         return self.assistant.suggest_improvements(topic)
     
+    def gerar_combinacoes(self, args):
+        """Gera todas combinações de 15 números com fixos"""
+        if not args:
+            return "❌ Use: /combinacoes 2,3,4,8,10,11,12,14,15,18,19"
+
+        try:
+            fixos = [int(n.strip()) for n in args.replace(",", " ").split()]
+            fixos = sorted(set(fixos))
+
+            if len(fixos) < 1 or len(fixos) > 14:
+                return "❌ Informe entre 1 e 14 números fixos."
+            if any(n < 1 or n > 25 for n in fixos):
+                return "❌ Números devem estar entre 1 e 25."
+
+            restantes = [n for n in range(1, 26) if n not in fixos]
+            precisamos = 15 - len(fixos)
+
+            if precisamos < 1 or precisamos > len(restantes):
+                return f"❌ Impossível: {len(fixos)} fixos precisam de {precisamos} números, mas só há {len(restantes)} disponíveis."
+
+            combinacoes = []
+            for comb in combinations(restantes, precisamos):
+                combinacoes.append(tuple(sorted(fixos + list(comb))))
+
+            combinacoes.sort()
+
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f'combinacoes_fixas_{timestamp}.txt'
+            filepath = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), filename)
+
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(f"Fixos: {fixos}\n")
+                f.write(f"Total: {len(combinacoes)} combinacoes\n")
+                f.write("=" * 50 + "\n\n")
+                for i, combo in enumerate(combinacoes, 1):
+                    f.write(f"{i:4d}. {str(list(combo))}\n")
+
+            return f"[OK] {len(combinacoes)} combinacoes geradas!\n[ARQUIVO] {filepath}\n[FIXOS] {fixos}\n[AMOSTRA]:\n" + \
+                   "\n".join(f"   {str(list(c))}" for c in combinacoes[:5]) + \
+                   ("\n   ..." if len(combinacoes) > 5 else "")
+
+        except ValueError:
+            return "❌ Formato invalido. Use: /combinacoes 2,3,4,8,10,11,12,14,15,18,19"
+        except Exception as e:
+            return f"❌ Erro: {e}"
+
     def research_patterns(self, lottery_type):
         """Pesquisa padrões em loteria"""
         if not lottery_type:
@@ -133,6 +183,7 @@ COMANDOS ESPECIAIS:
 • /analyze gerador_megasena.py - Analisa código específico
 • /improve "baixa sobreposição" - Sugere melhorias
 • /patterns megasena - Pesquisa padrões numéricos
+• /combinacoes 2,3,4,8,10,11,12,14,15,18,19 - Gera combinações com fixos
 • /status - Mostra status do sistema
 • /history - Histórico das consultas
 • /quit - Sair do chat

@@ -1,456 +1,426 @@
 #!/usr/bin/env python3
 """
-LotoScope AI Assistant - Prototype
-Assistente IA local especializado em análise de loterias
+LotoScope AI Assistant - v2 com Tool-Use
+Assistente IA local com capacidade de executar ferramentas Python
+O LLM entende o pedido e decide qual ferramenta chamar
 """
 
 import os
+import re
+import sys
 import json
 import subprocess
 import requests
 from datetime import datetime
 from pathlib import Path
+from itertools import combinations
+
+# ── Tools ──────────────────────────────────────────────────────────────
+
+TOOLS_REGISTRY = {}
+
+def tool(name, desc, example):
+    def decorator(fn):
+        fn.tool_name = name
+        fn.tool_desc = desc
+        fn.tool_example = example
+        TOOLS_REGISTRY[name] = fn
+        return fn
+    return decorator
+
+@tool(
+    name="combinacoes_fixas",
+    desc="Gera todas as combinacoes de 15 numeros para Lotofacil contendo obrigatoriamente os numeros fixos informados.",
+    example="Use quando o usuario pedir combinacoes com numeros fixos. Ex: 'combinacoes com fixos 2,3,4,8,10'"
+)
+def tool_combinacoes_fixas(fixos):
+    if not isinstance(fixos, list) or not all(isinstance(n, int) for n in fixos):
+        fixos = [int(n) for n in str(fixos).split(",")]
+    fixos = sorted(set(fixos))
+    if any(n < 1 or n > 25 for n in fixos):
+        return "Erro: numeros devem estar entre 1 e 25."
+    if len(fixos) > 14:
+        return "Erro: maximo 14 numeros fixos."
+
+    restantes = [n for n in range(1, 26) if n not in fixos]
+    precisamos = 15 - len(fixos)
+
+    if precisamos < 1 or precisamos > len(restantes):
+        return f"Erro: {len(fixos)} fixos precisam de {precisamos} numeros, mas ha {len(restantes)} disponiveis."
+
+    combinacoes = [tuple(sorted(fixos + list(comb))) for comb in combinations(restantes, precisamos)]
+    combinacoes.sort()
+
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    filename = f'combinacoes_fixas_{timestamp}.txt'
+    filepath = os.path.join(base_dir, filename)
+
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(f"Fixos: {fixos}\n")
+        f.write(f"Total: {len(combinacoes)} combinacoes\n")
+        f.write("=" * 50 + "\n\n")
+        for i, combo in enumerate(combinacoes, 1):
+            f.write(f"{i:4d}. {str(list(combo))}\n")
+
+    amostra = [str(list(c)) for c in combinacoes[:5]]
+    return (
+        f"{len(combinacoes)} combinacoes geradas!\n"
+        f"Arquivo: {filepath}\n"
+        f"Fixos: {fixos}\n"
+        f"Amostra:\n  " + "\n  ".join(amostra) +
+        ("\n  ..." if len(combinacoes) > 5 else "")
+    )
+
+@tool(
+    name="combinacoes_repetidos",
+    desc="Gera combinacoes filtrando por numeros que se repetem do ultimo concurso e/ou numeros fixos.",
+    example="Use quando o usuario pedir combinacoes com 'X repetidos do ultimo concurso' ou 'X fixos'."
+)
+def tool_combinacoes_repetidos(repetidos=None, fixos=None):
+    if fixos is None:
+        fixos = []
+    if repetidos is None:
+        repetidos = []
+
+    fixos = sorted(set(int(n) for n in (fixos if isinstance(fixos, list) else [])))
+    if isinstance(repetidos, list):
+        repetidos = [int(n) for n in repetidos]
+
+    todos_fixos = sorted(set(fixos + repetidos))
+
+    if any(n < 1 or n > 25 for n in todos_fixos):
+        return "Erro: numeros devem estar entre 1 e 25."
+    if len(todos_fixos) > 14:
+        return "Erro: muitos numeros fixos."
+
+    restantes = [n for n in range(1, 26) if n not in todos_fixos]
+    precisamos = 15 - len(todos_fixos)
+
+    if precisamos < 1 or precisamos > len(restantes):
+        return f"Erro: {len(todos_fixos)} fixos precisam de {precisamos} numeros, mas ha {len(restantes)} disponiveis."
+
+    combinacoes = [tuple(sorted(todos_fixos + list(comb))) for comb in combinations(restantes, precisamos)]
+    combinacoes.sort()
+
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    filename = f'combinacoes_repetidos_{timestamp}.txt'
+    filepath = os.path.join(base_dir, filename)
+
+    with open(filepath, 'w', encoding='utf-8') as f:
+        if repetidos:
+            f.write(f"Repetidos do ultimo concurso: {repetidos}\n")
+        if fixos:
+            f.write(f"Fixos: {fixos}\n")
+        f.write(f"Total: {len(combinacoes)} combinacoes\n")
+        f.write("=" * 50 + "\n\n")
+        for i, combo in enumerate(combinacoes, 1):
+            f.write(f"{i:4d}. {str(list(combo))}\n")
+
+    amostra = [str(list(c)) for c in combinacoes[:5]]
+    return (
+        f"{len(combinacoes)} combinacoes geradas!\n"
+        f"Arquivo: {filepath}\n"
+        f"Fixos: {todos_fixos}\n"
+        f"Amostra:\n  " + "\n  ".join(amostra) +
+        ("\n  ..." if len(combinacoes) > 5 else "")
+    )
+
+@tool(
+    name="analisar_frequencias",
+    desc="Analisa a frequencia dos numeros nos ultimos N concursos da Lotofacil.",
+    example="Use quando o usuario pedir frequencia, numeros quentes/frios, estatisticas."
+)
+def tool_analisar_frequencias(janela=10):
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    sys.path.insert(0, base_dir)
+    from shared.database import cached_query
+
+    rows = cached_query(
+        f'SELECT TOP {janela} N1,N2,N3,N4,N5,N6,N7,N8,N9,N10,N11,N12,N13,N14,N15 '
+        'FROM Resultados_INT ORDER BY Concurso DESC'
+    )
+
+    freq = {i: 0 for i in range(1, 26)}
+    for row in rows:
+        for j in range(15):
+            freq[row[j]] += 1
+
+    sorted_nums = sorted(freq.items(), key=lambda x: (-x[1], x[0]))
+    resultado = f"Frequencia nos ultimos {janela} concursos:\n\n"
+    for n, f in sorted_nums:
+        barra = "#" * f + "." * (janela - f)
+        resultado += f"  {n:2d}: {barra} ({f}/{janela})\n"
+    return resultado
+
 
 class LotoScopeAIAssistant:
-    """Assistente IA especializado no projeto LotoScope"""
-    
+    """Assistente IA especializado no projeto LotoScope com tool-use"""
+
     def __init__(self):
         self.model = "llama3:8b"
         self.project_root = Path(__file__).parent
         self.context_history = []
         self.knowledge_base = self._build_knowledge_base()
-        
-        # Detectar melhor modelo disponível
         self.model = self._detect_best_model()
-    
+
     def _detect_best_model(self):
-        """Detecta o melhor modelo disponível no sistema"""
         preferred_models = [
-            "llama3.2:3b",     # Mais rápido
-            "llama3.2:1b",     # Muito rápido
-            "llama3:8b",
-            "llama3:latest", 
-            "llama3.1:8b",
-            "phi:latest",      # Modelo leve
-            "gemma:7b",
-            "gpt-oss:20b"      # Movido para último (muito pesado)
+            "llama3.2:3b", "llama3.2:1b", "llama3:8b",
+            "llama3:latest", "llama3.1:8b", "phi:latest",
+            "gemma:7b", "gpt-oss:20b"
         ]
-        
         try:
-            # Obter lista de modelos instalados
-            import os
             possivel_paths = [
                 f"C:\\Users\\{os.environ.get('USERNAME', '')}\\AppData\\Local\\Programs\\Ollama\\ollama.exe",
                 "ollama"
             ]
-            
             for ollama_path in possivel_paths:
                 try:
                     if ollama_path != "ollama" and not os.path.exists(ollama_path):
                         continue
-                        
-                    result = subprocess.run([ollama_path, 'list'], 
+                    result = subprocess.run([ollama_path, 'list'],
                                           capture_output=True, text=True, timeout=10)
-                    
                     if result.returncode == 0:
                         models_output = result.stdout.lower()
-                        
-                        # Procurar modelo preferido
                         for model in preferred_models:
                             if model.lower() in models_output:
-                                print(f"🤖 Usando modelo: {model}")
+                                print(f"Usando modelo: {model}")
                                 return model
-                        
-                        # Se não encontrou preferido, usar o primeiro disponível
-                        lines = result.stdout.split('\n')[1:]  # Pular header
+                        lines = result.stdout.split('\n')[1:]
                         for line in lines:
                             if line.strip():
                                 model_name = line.split()[0]
-                                print(f"🤖 Usando modelo disponível: {model_name}")
+                                print(f"Usando modelo: {model_name}")
                                 return model_name
-                        
                         break
                 except:
                     continue
-            
         except Exception as e:
-            print(f"⚠️  Erro ao detectar modelo: {e}")
-        
-        # Fallback para modelo padrão
+            print(f"Erro ao detectar modelo: {e}")
         return "llama3:8b"
-    
+
     def _build_knowledge_base(self):
-        """Constrói base de conhecimento do projeto"""
         knowledge = {
             "project_name": "LotoScope",
-            "focus_areas": ["Lotofácil", "Mega-Sena", "Análise Preditiva"],
+            "focus_areas": ["Lotofacil", "Mega-Sena", "Analise Preditiva"],
             "technologies": ["Python", "SQL Server", "Machine Learning"],
-            "key_algorithms": [
-                "Gerador Acadêmico Dinâmico",
-                "Sistema de Baixa Sobreposição", 
-                "Análise de Correlações Temporais",
-                "Insights em Tempo Real"
-            ],
-            "database_tables": [
-                "Resultados_MegaSenaFechado",
-                "COMBIN_MEGASENA", 
-                "NumerosCiclosMega"
-            ],
-            "number_ranges": {
-                "lotofacil": "1-25 (15 números)",
-                "megasena": "1-60 (6 números)"
-            }
+            "number_ranges": {"lotofacil": "1-25 (15 numeros)", "megasena": "1-60 (6 numeros)"}
         }
-        
-        # Analisar arquivos Python no projeto
         try:
-            arquivos_encontrados = []
-            for arquivo in self.project_root.glob("*.py"):
-                if arquivo.name != "lotoscope_ai_assistant.py":  # Evitar recursão
-                    arquivos_encontrados.append(arquivo.name)
-            
-            knowledge["arquivos_python"] = arquivos_encontrados[:10]  # Primeiros 10
-            
-        except Exception:
-            knowledge["arquivos_python"] = ["Erro ao listar arquivos"]
-        
+            arquivos = []
+            for f in self.project_root.glob("*.py"):
+                if f.name != "lotoscope_ai_assistant.py":
+                    arquivos.append(f.name)
+            knowledge["arquivos_python"] = arquivos[:10]
+        except:
+            knowledge["arquivos_python"] = []
         return knowledge
-    
+
     def check_ollama_status(self):
-        """Verifica se Ollama está instalado e funcionando"""
         try:
-            # Caminhos possíveis do Ollama
             import os
             possivel_paths = [
                 f"C:\\Users\\{os.environ.get('USERNAME', '')}\\AppData\\Local\\Programs\\Ollama\\ollama.exe",
-                "C:\\Program Files\\Ollama\\ollama.exe",
-                "ollama"  # Se estiver no PATH
+                "C:\\Program Files\\Ollama\\ollama.exe", "ollama"
             ]
-            
             for ollama_path in possivel_paths:
                 try:
-                    # Verificar se existe (para caminhos absolutos)
                     if ollama_path != "ollama" and not os.path.exists(ollama_path):
                         continue
-                        
-                    # Tentar listar modelos
-                    result = subprocess.run([ollama_path, 'list'], 
+                    result = subprocess.run([ollama_path, 'list'],
                                           capture_output=True, text=True, timeout=10)
                     if result.returncode == 0:
                         models = result.stdout
                         if self.model.split(':')[0] in models:
-                            return True, f"✅ Ollama OK - {self.model} disponível"
+                            return True, f"Ollama OK - {self.model} disponivel"
                         else:
-                            return False, f"⚠️ Ollama OK, mas modelo {self.model} não instalado. Execute: {ollama_path} pull {self.model}"
+                            return False, f"Ollama OK, mas {self.model} nao instalado. Execute: {ollama_path} pull {self.model}"
                     else:
                         continue
-                except subprocess.TimeoutExpired:
+                except:
                     continue
-                except Exception:
-                    continue
-            
-            return False, "❌ Ollama não encontrado"
-            
+            return False, "Ollama nao encontrado"
         except Exception as e:
-            return False, f"❌ Erro: {e}"
-    
-    def analyze_project_structure(self):
-        """Analisa estrutura do projeto LotoScope"""
-        analysis = {
-            "python_files": [],
-            "key_modules": [],
-            "databases": [],
-            "tests": [],
-            "documentation": []
-        }
-        
-        for file_path in self.project_root.glob("**/*.py"):
-            file_name = file_path.name
-            analysis["python_files"].append(file_name)
-            
-            # Categorizar arquivos importantes
-            if "gerador" in file_name.lower():
-                analysis["key_modules"].append(file_name)
-            elif "test" in file_name.lower():
-                analysis["tests"].append(file_name)
-            elif "conector" in file_name.lower() or "db" in file_name.lower():
-                analysis["databases"].append(file_name)
-        
-        # Procurar documentação
-        for ext in ["*.md", "*.txt"]:
-            for doc_path in self.project_root.glob(ext):
-                analysis["documentation"].append(doc_path.name)
-        
-        return analysis
-    
+            return False, f"Erro: {e}"
+
+    def _tools_prompt(self):
+        tools_desc = ""
+        for name, fn in TOOLS_REGISTRY.items():
+            tools_desc += f"\n- {name}: {fn.tool_desc}"
+            tools_desc += f"\n  Exemplo: {fn.tool_example}\n"
+        return tools_desc
+
     def query_llama(self, prompt, context=""):
-        """Faz consulta ao Llama local"""
+        """Faz consulta ao Llama local com suporte a tool-use"""
         try:
-            # Prompt otimizado para respostas completas
-            if "20b" in self.model:
-                specialized_prompt = f"""Você é um assistente especializado no projeto LotoScope - um sistema de análise de loterias brasileiras.
+            tools_desc = self._tools_prompt()
 
-CONHECIMENTO DO PROJETO:
-- Foco: Lotofácil e Mega-Sena
-- Linguagem: Python
-- Banco: SQL Server
-- Algoritmos: Gerador Dinâmico, Baixa Sobreposição
-- Tabelas: Resultados_MegaSenaFechado, COMBIN_MEGASENA
-- Arquivos: {', '.join(self.knowledge_base.get('arquivos_python', [])[:5])}
+            system_prompt = f"""Voce e um assistente especializado no projeto LotoScope (analise de loterias).
 
-INSTRUÇÃO: Responda de forma completa e detalhada. Complete todas as tabelas e explicações que iniciar.
+VOCE TEM FERRAMENTAS DISPONIVEIS. Se o usuario pedir algo que uma ferramenta faz, responda APENAS com um JSON:
+{{"tool": "nome_da_ferramenta", "params": {{...}}}}
 
-PERGUNTA: {prompt}
+Ferramentas disponiveis:{tools_desc}
 
-Resposta completa e técnica:"""
-            else:
-                # Construir prompt especializado completo para modelos menores
-                specialized_prompt = f"""
-            Você é um assistente especializado no projeto LotoScope, focado em análise de loterias brasileiras (Lotofácil e Mega-Sena).
-            
-            CONTEXTO DO PROJETO:
-            - Linguagem: Python
-            - Foco: Algoritmos preditivos para loterias
-            - Banco: SQL Server 
-            - Tecnologias: Machine Learning, análise estatística
-            
-            BASE DE CONHECIMENTO:
-            {json.dumps(self.knowledge_base, indent=2)}
-            
-            CONTEXTO ADICIONAL:
-            {context}
-            
-            PERGUNTA/SOLICITAÇÃO:
-            {prompt}
-            
-            Por favor, responda de forma técnica, prática e focada no desenvolvimento do projeto LotoScope.
-            """
-            
-            # Executar consulta via Ollama API HTTP
+Se nao precisar de ferramenta, responda normalmente em texto.
+
+Regras:
+- Para "combinacoes com fixos" use a ferramenta combinacoes_fixas com params {{"fixos": [lista de numeros]}}
+- Para "combinacoes com X repetidos do ultimo concurso" use combinacoes_repetidos com params {{"repetidos": [lista], "fixos": [lista]}}
+- Para "frequencia", "numeros quentes/frios" use analisar_frequencias com params {{"janela": numero}}
+- Para perguntas gerais, responda em texto
+- O nome do parametro DEVE ser "fixos" (nao "numeros_fixo", nao "numeros_fixos")
+- Exemplo correto: {{"tool": "combinacoes_fixas", "params": {{"fixos": [2,3,4,8,10,11,12,14,15,18,19]}}}}
+
+Pergunta: {prompt}
+
+Contexto: {context}
+Resposta:"""
+
             data = {
                 "model": self.model,
-                "prompt": specialized_prompt,
+                "prompt": system_prompt,
                 "stream": False,
                 "options": {
-                    "temperature": 0.4,      # Aumentado para mais variação
-                    "top_p": 0.9,           # Mais flexível
-                    "num_predict": 500,     # Muito mais tokens
-                    "repeat_penalty": 1.05, # Menos restritivo
-                    "top_k": 50,            # Mais opções
-                    "stop": ["👤 Você:", "\n👤", "🤖 Assistente:"]  # Só parar em novos turnos
+                    "temperature": 0.2,
+                    "num_predict": 800,
+                    "repeat_penalty": 1.1,
+                    "stop": ["\nPergunta:", "\nContexto:"]
                 }
             }
-            
-            # Timeout adaptativo baseado no modelo
-            if "20b" in self.model:
-                timeout = 180  # 3 minutos para modelo muito grande
-            elif "8b" in self.model:
-                timeout = 90   # 1.5 minuto para modelo médio
-            else:
-                timeout = 60   # 1 minuto para modelos menores
-            
+
+            timeout = 180 if "20b" in self.model else (90 if "8b" in self.model else 60)
+
             response = requests.post(
-                f"http://localhost:11434/api/generate",
+                "http://localhost:11434/api/generate",
                 json=data,
                 timeout=timeout
             )
-            
-            if response.status_code == 200:
-                result = response.json()
-                resposta = result.get('response', '❌ Resposta vazia').strip()
-                
-                # Limitar tamanho da resposta
-                if len(resposta) > 1000:
-                    resposta = resposta[:1000] + "..."
-                
-                return resposta
-            else:
-                return f"❌ Erro HTTP {response.status_code}: {response.text[:100]}"
-            
+
+            if response.status_code != 200:
+                return f"Erro HTTP {response.status_code}"
+
+            result = response.json()
+            resposta = result.get('response', '').strip()
+
+            # Tentar interpretar como tool call
+            tool_result = self._try_execute_tool(resposta)
+            if tool_result is not None:
+                return tool_result
+
+            # Se nao for tool call, retorna texto normal
+            if len(resposta) > 1500:
+                resposta = resposta[:1500] + "..."
+            return resposta if resposta else "Nao entendi. Pode reformular?"
+
+        except requests.Timeout:
+            return "O modelo demorou muito para responder. Tente com um modelo menor."
         except Exception as e:
-            return f"❌ Erro ao consultar Llama: {e}"
-    
+            return f"Erro ao consultar Llama: {e}"
+
+    def _try_execute_tool(self, llm_response):
+        """Tenta extrair e executar uma tool call da resposta do LLM"""
+        # Procura JSON com balancing de chaves {} para suportar nested
+        json_str = None
+        depth = 0
+        start = -1
+        for i, ch in enumerate(llm_response):
+            if ch == '{':
+                if depth == 0:
+                    start = i
+                depth += 1
+            elif ch == '}':
+                depth -= 1
+                if depth == 0 and start >= 0:
+                    json_str = llm_response[start:i+1]
+                    break
+        if not json_str:
+            return None
+
+        try:
+            call = json.loads(json_str)
+        except json.JSONDecodeError:
+            return None
+
+        tool_name = call.get("tool")
+        params = call.get("params", {})
+
+        if not tool_name or tool_name not in TOOLS_REGISTRY:
+            return None
+
+        fn = TOOLS_REGISTRY[tool_name]
+        # Normaliza params: mapeia variacoes comuns de nomes de parametro
+        normalized = {}
+        param_aliases = {
+            "fixos": ["fixos", "numeros_fixo", "numeros_fixos", "fixo", "fixed", "numeros_fixed"],
+            "repetidos": ["repetidos", "numeros_repetidos", "repetido", "repeat", "rep", "ultimo_concurso"],
+            "janela": ["janela", "window", "ultimos", "n", "quantidade"],
+        }
+        for key, value in params.items():
+            key_lower = key.lower().replace(" ", "_")
+            matched = False
+            for canonical, aliases in param_aliases.items():
+                if key_lower in aliases:
+                    normalized[canonical] = value
+                    matched = True
+                    break
+            if not matched:
+                normalized[key_lower] = value
+        try:
+            return fn(**normalized)
+        except TypeError as e:
+            return f"Erro de parametros na ferramenta {tool_name}: {e}. Parametros recebidos: {normalized}"
+        except Exception as e:
+            return f"Erro ao executar {tool_name}: {e}"
+
     def responder(self, pergunta):
-        """Responde perguntas usando o modelo de IA"""
-        prompt = f"""
-        Você é um assistente especializado em análise de loterias e o projeto LotoScope.
-        
-        Pergunta: {pergunta}
-        
-        Responda de forma clara e útil, considerando:
-        - Expertise em algoritmos de loteria
-        - Conhecimento do projeto LotoScope
-        - Análise de padrões e estatísticas
-        - Otimização de código Python
-        
-        Resposta:
-        """
-        
-        return self.query_llama(prompt)
-    
+        """Responde perguntas usando o modelo de IA com tool-use"""
+        return self.query_llama(pergunta)
+
     def analisar_codigo_python(self, codigo, nome_arquivo=""):
-        """Analisa código Python específico"""
-        prompt = f"""
-        Analise este código Python do projeto LotoScope:
-        
-        ARQUIVO: {nome_arquivo}
-        
-        CÓDIGO:
-        {codigo}
-        
-        Forneça análise detalhada incluindo:
-        1. Funcionalidade principal
-        2. Qualidade do código
-        3. Possíveis melhorias
-        4. Bugs ou problemas
-        5. Sugestões de otimização
-        
-        Análise:
-        """
-        
+        prompt = f"Analise este codigo Python do projeto LotoScope:\n\nARQUIVO: {nome_arquivo}\n\nCODIGO:\n{codigo[:2000]}\n\nAnalise: funcionalidade, qualidade, melhorias, bugs, otimizacao."
         return self.query_llama(prompt)
-    
+
     def analisar_estrutura_projeto(self):
-        """Analisa estrutura geral do projeto"""
         try:
             arquivos = list(self.project_root.glob("*.py"))
-            estrutura = "\n".join([f"- {arquivo.name}" for arquivo in arquivos[:10]])
-            
-            prompt = f"""
-            Analise a estrutura do projeto LotoScope:
-            
-            ARQUIVOS PYTHON ENCONTRADOS:
-            {estrutura}
-            
-            Forneça insights sobre:
-            1. Organização do projeto
-            2. Arquitetura geral
-            3. Pontos fortes
-            4. Áreas de melhoria
-            5. Sugestões de estruturação
-            
-            Análise:
-            """
-            
-            return self.query_llama(prompt)
-            
+            estrutura = "\n".join([f"- {f.name}" for f in arquivos[:10]])
+            return self.query_llama(f"Analise a estrutura deste projeto:\n{estrutura}")
         except Exception as e:
-            return f"❌ Erro na análise: {e}"
-    
-    def sugerir_melhorias(self, topico):
-        """Sugere melhorias para tópicos específicos"""
-        prompt = f"""
-        Como especialista em loterias e LotoScope, sugira melhorias para: {topico}
-        
-        Considere:
-        - Algoritmos mais eficientes
-        - Melhores práticas Python
-        - Otimização de performance
-        - Integração com banco de dados
-        
-        Sugestões:
-        """
-        
-        return self.query_llama(prompt)
-    
+            return f"Erro: {e}"
+
+    def suggest_improvements(self, topic):
+        return self.query_llama(f"Sugira melhorias para: {topic}")
+
     def analyze_code_file(self, file_path):
-        """Analisa arquivo de código específico"""
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 code = f.read()
-            
-            prompt = f"""
-            Analise este arquivo Python do projeto LotoScope:
-            
-            ARQUIVO: {file_path}
-            
-            CÓDIGO:
-            {code[:2000]}  # Limita para não sobrecarregar
-            
-            Por favor, forneça:
-            1. Resumo da funcionalidade
-            2. Pontos fortes do código
-            3. Sugestões de melhorias
-            4. Possíveis bugs ou problemas
-            5. Como integrar melhor com outros módulos do LotoScope
-            """
-            
-            return self.query_llama(prompt)
-            
+            return self.analisar_codigo_python(code, file_path)
         except Exception as e:
-            return f"❌ Erro ao analisar arquivo: {e}"
-    
-    def suggest_improvements(self, topic):
-        """Sugere melhorias para tópicos específicos"""
-        prompt = f"""
-        Como especialista em análise de loterias e algoritmos preditivos, sugira melhorias para:
-        
-        TÓPICO: {topic}
-        
-        Considere:
-        - Algoritmos mais eficientes
-        - Melhores práticas de código Python
-        - Estratégias matemáticas avançadas
-        - Otimizações de performance
-        - Integração com banco de dados
-        - Experiência do usuário
-        
-        Seja específico e prático, com exemplos de código quando apropriado.
-        """
-        
-        return self.query_llama(prompt, f"Projeto atual: {self.analyze_project_structure()}")
-    
+            return f"Erro ao analisar: {e}"
+
     def research_patterns(self, lottery_type, data_sample=""):
-        """Pesquisa padrões em dados de loteria"""
-        prompt = f"""
-        Como pesquisador especialista em {lottery_type}, analise padrões e sugira estratégias:
-        
-        DADOS AMOSTRA:
-        {data_sample}
-        
-        Por favor, identifique:
-        1. Padrões numéricos interessantes
-        2. Frequências e tendências
-        3. Correlações entre números
-        4. Estratégias de seleção
-        5. Algoritmos recomendados para implementar
-        
-        Foque em insights práticos para o desenvolvimento de algoritmos preditivos.
-        """
-        
-        return self.query_llama(prompt)
+        return self.query_llama(f"Pesquise padroes em {lottery_type}. Dados: {data_sample}")
+
 
 def main():
-    """Função principal - demonstração do assistente"""
-    print("🤖 LOTOSCOPE AI ASSISTANT - PROTOTYPE")
+    print("LOTOSCOPE AI ASSISTANT v2 - Tool Use")
     print("=" * 50)
-    
+
     assistant = LotoScopeAIAssistant()
-    
-    # Verificar status do Ollama
     status_ok, status_msg = assistant.check_ollama_status()
-    print(f"🔧 Status Ollama: {status_msg}")
-    
+    print(f"Status: {status_msg}")
+
     if not status_ok:
-        print("\n💡 PRÓXIMOS PASSOS:")
-        print("1. Instalar Ollama: https://ollama.ai/download")
-        print("2. Executar: ollama pull llama3:8b")
-        print("3. Testar: ollama run llama3:8b")
         return
-    
-    # Analisar projeto
-    print(f"\n📊 Analisando projeto LotoScope...")
-    structure = assistant.analyze_project_structure()
-    print(f"   📁 {len(structure['python_files'])} arquivos Python encontrados")
-    print(f"   🎯 {len(structure['key_modules'])} módulos principais")
-    print(f"   🧪 {len(structure['tests'])} arquivos de teste")
-    
-    # Exemplo de consulta
-    print(f"\n🤖 Testando consulta ao assistente...")
-    response = assistant.query_llama("Qual a melhor estratégia para otimizar o gerador dinâmico da Mega-Sena?")
-    print(f"📝 Resposta: {response[:200]}...")
-    
-    print(f"\n✅ Prototype funcionando! Assistente IA pronto para uso.")
+
+    response = assistant.query_llama(
+        "Me gere todas as combinacoes de 15 numeros com os fixos 2,3,4,8,10,11,12,14,15,18,19"
+    )
+    print(f"\nResposta:\n{response}")
 
 if __name__ == "__main__":
     main()

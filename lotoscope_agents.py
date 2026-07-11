@@ -24,7 +24,7 @@ AGENTS_DIR = BASE_DIR / ".github" / "agents"
 OPENCODE_CONFIG = {
     "base_url": os.environ.get("OPENCODE_BASE_URL", "http://localhost:11434/v1"),
     "api_key": os.environ.get("OPENCODE_API_KEY", "opencode-go"),
-    "model": os.environ.get("OPENCODE_MODEL", "qwen3.7-plus"),
+    "model": os.environ.get("OPENCODE_MODEL", "gpt-oss:20b"),
     "timeout": 60
 }
 

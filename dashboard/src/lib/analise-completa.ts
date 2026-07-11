@@ -1,6 +1,7 @@
 import { carregarResultados, type Resultado } from './database';
 import { getLotteryConfig, type LotteryConfig } from './lottery-config';
 import type { DashboardData, UltimoSorteio, PrevisaoItem, AtrasadoItem, TransicaoRegistro, TransicaoQMF, CicloInfo, MediasHistoricas } from '@/types';
+import { analiseSuperSete } from './analise-supersete';
 
 const WINDOW = 50;
 const ALPHA = 0.6;
@@ -190,9 +191,21 @@ function calcularMediasHistoricas(resultados: Resultado[], cfg: LotteryConfig): 
   };
 }
 
-export async function analiseCompleta(janela?: number, lotteryId?: string): Promise<DashboardData> {
+export async function analiseCompleta(janela?: number, lotteryId?: string, concurso?: number): Promise<DashboardData> {
   const cfg = lotteryId ? getLotteryConfig(lotteryId) : getLotteryConfig('lotofacil');
-  const resultados = await carregarResultados(cfg.id);
+  if (cfg.is_positional && cfg.id === 'supersete') {
+    return analiseSuperSete(janela, concurso);
+  }
+  let resultados = await carregarResultados(cfg.id);
+
+  const concursosDisponiveis = resultados.map(r => r.concurso);
+
+  if (concurso !== undefined) {
+    const idx = resultados.findIndex(r => r.concurso === concurso);
+    if (idx === -1) throw new Error(`Concurso ${concurso} não encontrado`);
+    resultados = resultados.slice(0, idx + 1);
+  }
+
   const total = resultados.length;
   const occ = buildOcorrencias(resultados, cfg);
   const dados = calcularLambdas(occ, total, cfg);
@@ -428,6 +441,9 @@ export async function analiseCompleta(janela?: number, lotteryId?: string): Prom
     consecutivas: consecPares.length,
     consecutivas_pares: consecPares,
     amplitude: Math.max(...numsUltimo) - Math.min(...numsUltimo),
+    nao_sorteados: cfg.total_numeros - numsUltimo.length,
+    nao_sorteados_numeros: Array.from({ length: cfg.total_numeros }, (_, i) => i + cfg.numero_minimo)
+      .filter(n => !numsUltimo.includes(n)),
     baixos: numsUltimo.filter(n => n <= meio).length,
     baixos_numeros: numsUltimo.filter(n => n <= meio),
     altos: numsUltimo.filter(n => n > meio).length,
@@ -532,6 +548,8 @@ export async function analiseCompleta(janela?: number, lotteryId?: string): Prom
     transicao_qmf: transicao,
     medias_historicas: mediasHistoricas,
     janela_usada: janelaValida,
+    concurso_analisado: ultimo.concurso,
+    concursos_disponiveis: concursosDisponiveis,
     timestamp: new Date().toISOString(),
     repetidos_cadeia: repetidosCadeia,
     tem_trevos: temTrevos,

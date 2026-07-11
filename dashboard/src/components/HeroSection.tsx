@@ -31,7 +31,7 @@ export default function HeroSection({ u, concurso, total, medias, nomeJogo, nume
         <div className="flex flex-wrap gap-2.5 mb-4 sm:mb-6">
           {u.numeros.map((n, i) => (
             <div key={`num-${i}`} className={`animate-slide-up`} style={{ animationDelay: `${i * 0.04}s` }}>
-              <NumBadge n={n} />
+              <NumBadge n={n} isDrawn />
             </div>
           ))}
         </div>
@@ -57,7 +57,7 @@ export default function HeroSection({ u, concurso, total, medias, nomeJogo, nume
           <HeroCard value={String(u.fibonacci)} label="Fibonacci" sub={u.fibonacci_numeros.join(', ')} tip={`Média: ${medias.fibonacci} por concurso`} idx={4} />
           <HeroCard value={String(u.repetidos)} label="Repetidos" sub={u.repetidos_numeros.join(', ')} tip={`Média: ${medias.repetidos} por concurso`} idx={5} />
           <HeroCard value={String(u.consecutivas)} label="Consecutivas" sub={u.consecutivas_pares.join(' · ')} tip={`Média: ${medias.consecutivas} pares consecutivos por concurso`} idx={6} />
-          <HeroCard value={String(u.amplitude)} label="Amplitude" tip={`Média histórica: ${medias.amplitude}`} idx={7} />
+          <HeroCard value={String(u.nao_sorteados)} label="Não Sorteados" sub={u.nao_sorteados_numeros.join(', ')} tip={`Números que não saíram no último sorteio (${u.nao_sorteados_numeros.length} de ${maxNum})`} idx={7} />
           <HeroCard value={String(u.baixos)} label={`Baixos (1-${meio})`} sub={u.baixos_numeros.join(', ')} tip={`Média: ${medias.baixos} por concurso`} idx={8} />
           <HeroCard value={String(u.altos)} label={`Altos (${meio+1}-${maxNum})`} sub={u.altos_numeros.join(', ')} tip={`Média: ${medias.altos} por concurso`} idx={9} />
           <HeroCard value={String(u.multiplos_3)} label="Múlt. 3" sub={u.multiplos_3_numeros.join(', ')} tip={`Média: ${medias.multiplos_3} por concurso`} idx={10} />

@@ -16,6 +16,8 @@ export interface UltimoSorteio {
   consecutivas: number;
   consecutivas_pares: string[];
   amplitude: number;
+  nao_sorteados: number;
+  nao_sorteados_numeros: number[];
   baixos: number;
   baixos_numeros: number[];
   altos: number;
@@ -113,6 +115,8 @@ export interface DashboardData {
   transicao_qmf: TransicaoQMF;
   medias_historicas: MediasHistoricas;
   janela_usada: number;
+  concurso_analisado: number;
+  concursos_disponiveis: number[];
   timestamp: string;
   repetidos_cadeia: number[];
   tem_trevos?: boolean;
@@ -123,4 +127,65 @@ export interface DashboardData {
   trevos_frios?: [number, number][];
   trevos_mornos?: [number, number][];
   ciclos_trevos?: Record<string, CicloInfo>;
+  is_positional?: boolean;
+  supersete?: AnaliseSuperSete;
+}
+
+export interface ColunaAnaliseSS {
+  coluna: string;
+  frequencia_total: Record<number, number>;
+  frequencia_recente: Record<number, number>;
+  lambda_blend: Record<number, number>;
+  quentes: number[];
+  mornos: number[];
+  frios: number[];
+  gap: Record<number, number>;
+  atrasados: { digito: number; gap: number; p_gap: number }[];
+  ciclo: Record<number, { freq_recente: number; freq_esperada: number; diferenca: number; estado: 'aquecendo' | 'esfriando' | 'estavel' }>;
+  previsao: { digito: number; prob: number }[];
+}
+
+export interface CorrelacaoColunasSS {
+  col_a: string;
+  col_b: string;
+  pares_frequentes: { dig_a: number; dig_b: number; freq: number }[];
+  correlacao: number;
+}
+
+export interface PadraoParidadeSS {
+  por_coluna: Record<string, { pares: number; impares: number; pct_par: number }>;
+  distribuicao: Record<string, number>;
+  mais_comum: string;
+}
+
+export interface DistribuicaoSomaSS {
+  media: number;
+  mediana: number;
+  desvio: number;
+  min: number;
+  max: number;
+  faixas: { faixa: string; count: number; pct: number }[];
+  histograma: Record<number, number>;
+}
+
+export interface RepeticaoColunasSS {
+  media_repeticoes: number;
+  pct_com_repeticao: number;
+  distribuicao: Record<number, number>;
+  digitos_mais_repetidos: { digito: number; count: number }[];
+}
+
+export interface ApostaMultiplaSS {
+  colunas: Record<string, { digitos: number[]; confianca: number[] }>;
+  combinacoes_possiveis: number;
+  palpite_multipla: Record<string, number[]>;
+}
+
+export interface AnaliseSuperSete {
+  colunas: Record<string, ColunaAnaliseSS>;
+  correlacoes: CorrelacaoColunasSS[];
+  paridade: PadraoParidadeSS;
+  soma: DistribuicaoSomaSS;
+  repeticao: RepeticaoColunasSS;
+  aposta_multipla: ApostaMultiplaSS;
 }

@@ -21,7 +21,7 @@ function TypingDots() {
   );
 }
 
-export default function ChatBot({ janela = 30, loteria = 'lotofacil' }: { janela?: number; loteria?: string }) {
+export default function ChatBot({ janela = 30, loteria = 'lotofacil', concurso }: { janela?: number; loteria?: string; concurso?: number }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -52,7 +52,7 @@ export default function ChatBot({ janela = 30, loteria = 'lotofacil' }: { janela
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history: messages, janela, loteria }),
+        body: JSON.stringify({ message: text, history: messages, janela, loteria, concurso }),
       });
 
       const data = await res.json();
@@ -63,6 +63,18 @@ export default function ChatBot({ janela = 30, loteria = 'lotofacil' }: { janela
       }
 
       setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+
+      if (data.rawContent) {
+        const blob = new Blob([data.rawContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = data.filename || 'combinacoes.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
     } catch {
       setError('Erro de conexão');
     }

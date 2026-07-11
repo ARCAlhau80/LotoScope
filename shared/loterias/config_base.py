@@ -39,6 +39,8 @@ class LotteryConfig:
         "consecutivos_max_comum": 2,
     })
 
+    is_positional: bool = False
+
     def __post_init__(self):
         if not self.colunas_resultado:
             self.colunas_resultado = [f"N{i}" for i in range(1, self.numeros_por_jogo + 1)]

@@ -26,6 +26,7 @@ CONFIG_SUPERSETE = LotteryConfig(
         "soma_maxima": 63,
         "soma_media_esperada": 31,
     },
+    is_positional=True,
 )
 
 LotteryRegistry.registrar(CONFIG_SUPERSETE)
