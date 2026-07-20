@@ -22,6 +22,9 @@ import ReentradasSection from '@/components/ReentradasSection';
 import ConcursoSelector from '@/components/ConcursoSelector';
 import ConferidorSection from '@/components/ConferidorSection';
 import SuperSeteSection from '@/components/SuperSeteSection';
+import QuarantineMatrixLotofacil from '@/components/QuarantineMatrixLotofacil';
+import ComparativoSection from '@/components/ComparativoSection';
+import AiAnalysis from '@/components/AiAnalysis';
 
 function LoadingSkeleton() {
   return (
@@ -167,6 +170,7 @@ function HomePage() {
               nomeJogo={data.nome_jogo || LOTERIAS[loteria]?.nome_jogo}
               numerosPorJogo={data.numeros_por_jogo}
               totalNumeros={data.total_numeros}
+              comparativo={data.comparativo_posicional}
             />
             {data.supersete && (
               <div className="animate-slide-up stagger-1 mt-6">
@@ -176,6 +180,11 @@ function HomePage() {
             {loteria === 'lotofacil' && (
               <div className="mb-6">
                 <ReentradasSection />
+              </div>
+            )}
+            {data.tendencia_comparativo && data.tendencia_comparativo.length > 0 && loteria === 'lotofacil' && (
+              <div className="mb-6">
+                <ComparativoSection data={data.tendencia_comparativo} />
               </div>
             )}
             {data.tem_trevos && data.frequencia_trevos_total && (
@@ -207,6 +216,7 @@ function HomePage() {
                 totalNumeros={data.total_numeros}
                 loteria={loteria}
                 onJanelaChange={handleJanelaChange}
+                quarentenaPosicoes={data.quarentena_posicoes}
               />
             </div>
             <div className="animate-slide-up stagger-3">
@@ -221,11 +231,19 @@ function HomePage() {
             <div className="animate-slide-up stagger-6">
               <AtrasadosSection atrasados={data.atrasados_posicionais} />
             </div>
+            {data.quarentena_posicoes && loteria !== 'supersete' && (
+              <div className="animate-slide-up stagger-6">
+                <QuarantineMatrixLotofacil quarentena={data.quarentena_posicoes} />
+              </div>
+            )}
             {grupos && (
               <div className="animate-slide-up stagger-7">
                 <GruposSection data={grupos} />
               </div>
             )}
+            <div className="animate-slide-up stagger-8">
+              <AiAnalysis loteria={loteria} />
+            </div>
             <div className="animate-slide-up stagger-8">
               <ConferidorSection
                 sorteioAtual={data.ultimo_sorteio.numeros}
