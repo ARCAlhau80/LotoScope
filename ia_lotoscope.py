@@ -377,7 +377,48 @@ def carregar_quarentena_posicoes(
     return quarentena
 
 
-# ── FORMATACAO DE CICLOS / QUARENTENA PARA PROMPT ───────────────────────────
+# ── FREQUENCIA POR POSICAO ──────────────────────────────────────────────────
+
+def carregar_frequencia_posicoes(
+    resultados: list[list[int]],
+    loteria_id: str,
+) -> dict[str, dict]:
+    """Computa frequencia de cada numero por posicao (N1..N15).
+    Retorna top 5 numeros + ultimos 3 que apareceram em cada posicao.
+    """
+    cfg = LOTERIAS[loteria_id]
+    total = len(resultados)
+    if total == 0:
+        return {}
+    num_pos = cfg["numeros_por_jogo"]
+    all_nums = list(range(cfg["min"], cfg["max"] + 1))
+    freq_posicoes: dict[str, dict] = {}
+
+    for p in range(num_pos):
+        pos = f"N{p + 1}"
+        sequencia = [r[p] for r in resultados]
+        freq = Counter(sequencia)
+        ordenados = sorted(freq.items(), key=lambda x: -x[1])
+        top5 = [(int(n), c) for n, c in ordenados[:5]]
+        ultimos3 = [int(sequencia[-(i + 1)]) for i in range(min(3, total))]
+
+        freq_info: dict[str, list | dict] = {}
+        for n in all_nums:
+            freq_info[str(n)] = {
+                "freq": freq.get(n, 0),
+                "pct": round(freq.get(n, 0) / total * 100, 1),
+            }
+
+        freq_posicoes[pos] = {
+            "top5": top5,
+            "ultimos3": ultimos3,
+            "frequencia": freq_info,
+        }
+
+    return freq_posicoes
+
+
+# ── FORMATACAO DE CICLOS / QUARENTENA / FREQ POSICOES PARA PROMPT ───────────
 
 def _formatar_ciclos_para_prompt(ciclos: dict[str, dict]) -> str:
     saida = "### Ciclos (freq_30 vs esperada)\n"
@@ -410,6 +451,16 @@ def _formatar_quarentena_para_prompt(q: dict[str, dict]) -> str:
     return saida
 
 
+def _formatar_frequencia_posicoes_para_prompt(fp: dict[str, dict]) -> str:
+    saida = "### Freq. por Posicao (top 5 numeros)\n"
+    for pos, info in fp.items():
+        top5 = info["top5"]
+        ultimos3 = info["ultimos3"]
+        saida += f"{pos}: top={[n for n, _ in top5]} ultimos={ultimos3}\n"
+    saida += "Os numeros em cada posicao sao ordenados do menor (N1) ao maior (N15).\n"
+    return saida
+
+
 # ── PROMPTS ────────────────────────────────────────────────────────────────────
 
 def _top_diferencas(est: dict) -> str:
@@ -426,7 +477,8 @@ def _top_diferencas(est: dict) -> str:
 
 def montar_prompt(est: dict, cfg: dict, contexto_anterior: str = "",
                   ciclos: dict[str, dict] | None = None,
-                  quarentena: dict[str, dict] | None = None) -> str:
+                  quarentena: dict[str, dict] | None = None,
+                  freq_posicoes: dict[str, dict] | None = None) -> str:
     ctx = ""
     if contexto_anterior:
         ctx = f"\n### Contexto de analises anteriores\n{contexto_anterior}\n"
@@ -436,6 +488,8 @@ def montar_prompt(est: dict, cfg: dict, contexto_anterior: str = "",
         extra += "\n" + _formatar_ciclos_para_prompt(ciclos)
     if quarentena:
         extra += "\n" + _formatar_quarentena_para_prompt(quarentena)
+    if freq_posicoes:
+        extra += "\n" + _formatar_frequencia_posicoes_para_prompt(freq_posicoes)
 
     return f"""## Dados Estatisticos - {cfg['nome']}{ctx}
 
@@ -465,9 +519,9 @@ Com base estritamente nos dados acima, realize uma analise em portugues do Brasi
 1. Distribuicao do ultimo sorteio vs media historica (soma, paridade, primos)
 2. Anomalias de frequencia (numeros muito acima ou abaixo do esperado)
 3. Tendencias de atraso - gaps acima do P90
-4. Ciclos: numeros aquecendo (freq_30 acima da esperada) e esfriando (abaixo)
-5. Matriz de Quarentena: numeros em quarentena (acabaram de sair), atrasados e muito atrasados por posicao
-6. Sugestao de enfoque para os proximos sorteios com base nos dados
+4. Ciclos: numeros aquecendo e esfriando
+5. Matriz de Quarentena: numeros por posicao (Q/A/MA)
+6. Sugestao de NUMEROS POR POSICAO (N1 a N15) — para cada posicao, indique 1 a 3 numeros candidatos com base na frequencia historica da posicao, gaps, quarentena e tendencias de ciclo. Justifique cada sugestao.
 Use formato estruturado com topicos. Seja analitico, nao especulativo.
 """
 
@@ -695,11 +749,14 @@ def analisar_loteria(conn: pyodbc.Connection, loteria_id: str,
             pos = analise_posicional_supersete(resultados)
             prompt = montar_prompt_supersete(est, pos, contexto_anterior)
         else:
-            ciclos_dados = carregar_ciclos(resultados, loteria_id) if loteria_id == "lotofacil" else None
-            quarentena_dados = carregar_quarentena_posicoes(resultados, loteria_id) if loteria_id == "lotofacil" else None
+            eh_lf = loteria_id == "lotofacil"
+            ciclos_dados = carregar_ciclos(resultados, loteria_id) if eh_lf else None
+            quarentena_dados = carregar_quarentena_posicoes(resultados, loteria_id) if eh_lf else None
+            freq_pos_dados = carregar_frequencia_posicoes(resultados, loteria_id) if eh_lf else None
             prompt = montar_prompt(est, cfg, contexto_anterior,
                                    ciclos=ciclos_dados,
-                                   quarentena=quarentena_dados)
+                                   quarentena=quarentena_dados,
+                                   freq_posicoes=freq_pos_dados)
 
     resposta = chamar_ollama(prompt)
     resultado["analise"] = resposta
