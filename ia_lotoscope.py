@@ -418,6 +418,67 @@ def carregar_frequencia_posicoes(
     return freq_posicoes
 
 
+# ── TENDENCIA POSICIONAL (subindo/descendo) ────────────────────────────────
+
+def carregar_tendencia_posicoes(
+    resultados: list[list[int]],
+    loteria_id: str,
+    janela: int = 10,
+) -> dict[str, dict]:
+    """Analisa tendencia de cada posicao (subindo/descendo/estavel).
+    Compara a media dos ultimos N sorteios com a media dos N anteriores.
+    """
+    cfg = LOTERIAS[loteria_id]
+    total = len(resultados)
+    if total < janela * 2:
+        return {}
+    num_pos = cfg["numeros_por_jogo"]
+    tendencias: dict[str, dict] = {}
+
+    for p in range(num_pos):
+        pos = f"N{p + 1}"
+        sequencia = [r[p] for r in resultados]
+        recente = sequencia[-janela:]
+        anterior = sequencia[-janela * 2:-janela]
+        media_ant = sum(anterior) / len(anterior)
+        media_rec = sum(recente) / len(recente)
+        diff = media_rec - media_ant
+
+        if diff > 0.3:
+            tendencia = "subindo"
+        elif diff < -0.3:
+            tendencia = "descendo"
+        else:
+            tendencia = "estavel"
+
+        ultimos = sequencia[-5:]
+        minimo = min(ultimos)
+        maximo = max(ultimos)
+
+        tendencias[pos] = {
+            "posicao": pos,
+            "media_anterior": round(media_ant, 1),
+            "media_recente": round(media_rec, 1),
+            "diferenca": round(diff, 1),
+            "tendencia": tendencia,
+            "ultimos_vals": ultimos,
+            "min_recente": minimo,
+            "max_recente": maximo,
+        }
+
+    return tendencias
+
+
+def _formatar_tendencia_posicoes_para_prompt(t: dict[str, dict]) -> str:
+    saida = "### Tendencia por Posicao (subindo/descendo)\n"
+    for pos, info in t.items():
+        seta = "↑" if info["tendencia"] == "subindo" else ("↓" if info["tendencia"] == "descendo" else "→")
+        saida += f"{pos}: {seta} {info['tendencia']} "
+        saida += f"(media ant={info['media_anterior']}→rec={info['media_recente']}) "
+        saida += f"ultimos={info['ultimos_vals']}\n"
+    return saida
+
+
 # ── CICLOS (NumerosCiclos table - SQL Server) ──────────────────────────────
 
 def carregar_ciclos_tabela(conn: pyodbc.Connection) -> dict:
@@ -573,7 +634,8 @@ def montar_prompt(est: dict, cfg: dict, contexto_anterior: str = "",
                   ciclos: dict[str, dict] | None = None,
                   quarentena: dict[str, dict] | None = None,
                   freq_posicoes: dict[str, dict] | None = None,
-                  ciclos_tabela: dict | None = None) -> str:
+                  ciclos_tabela: dict | None = None,
+                  tendencia_pos: dict[str, dict] | None = None) -> str:
     ctx = ""
     if contexto_anterior:
         ctx = f"\n### Contexto de analises anteriores\n{contexto_anterior}\n"
@@ -587,6 +649,8 @@ def montar_prompt(est: dict, cfg: dict, contexto_anterior: str = "",
         extra += "\n" + _formatar_frequencia_posicoes_para_prompt(freq_posicoes)
     if ciclos_tabela:
         extra += "\n" + _formatar_ciclos_tabela_para_prompt(ciclos_tabela)
+    if tendencia_pos:
+        extra += "\n" + _formatar_tendencia_posicoes_para_prompt(tendencia_pos)
 
     return f"""## Dados Estatisticos - {cfg['nome']}{ctx}
 
@@ -619,7 +683,7 @@ Com base estritamente nos dados acima, realize uma analise em portugues do Brasi
 4. Ciclos: numeros aquecendo e esfriando
 5. Matriz de Quarentena: numeros por posicao (Q/A/MA)
 6. Analise da tabela NumerosCiclos: compare o ciclo atual com ciclos anteriores — quais numeros estao acima/abaixo da media? Quais ainda nao sairam? O que isso sugere?
-7. Sugestao de NUMEROS POR POSICAO (N1 a N15) — para cada posicao, indique 1 a 3 numeros candidatos com base na frequencia historica da posicao, gaps, quarentena, ciclo atual vs historico e tendencias de ciclo. Justifique cada sugestao.
+7. Sugestao de NUMEROS POR POSICAO (N1 a N15) — para cada posicao, indique 1 a 3 numeros candidatos. Leve em conta: frequencia historica da posicao, gaps, quarentena, ciclo atual vs historico, tendencias de ciclo, E a tendencia posicional (se a posicao esta subindo ou descendo de valor). Justifique cada sugestao.
 Use formato estruturado com topicos. Seja analitico, nao especulativo.
 """
 
@@ -852,11 +916,13 @@ def analisar_loteria(conn: pyodbc.Connection, loteria_id: str,
             quarentena_dados = carregar_quarentena_posicoes(resultados, loteria_id) if eh_lf else None
             freq_pos_dados = carregar_frequencia_posicoes(resultados, loteria_id) if eh_lf else None
             ciclos_tabela_dados = carregar_ciclos_tabela(conn) if eh_lf else None
+            tendencia_pos_dados = carregar_tendencia_posicoes(resultados, loteria_id) if eh_lf else None
             prompt = montar_prompt(est, cfg, contexto_anterior,
                                    ciclos=ciclos_dados,
                                    quarentena=quarentena_dados,
                                    freq_posicoes=freq_pos_dados,
-                                   ciclos_tabela=ciclos_tabela_dados)
+                                   ciclos_tabela=ciclos_tabela_dados,
+                                   tendencia_pos=tendencia_pos_dados)
 
     resposta = chamar_ollama(prompt)
     resultado["analise"] = resposta
