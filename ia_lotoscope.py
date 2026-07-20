@@ -418,6 +418,100 @@ def carregar_frequencia_posicoes(
     return freq_posicoes
 
 
+# ── CICLOS (NumerosCiclos table - SQL Server) ──────────────────────────────
+
+def carregar_ciclos_tabela(conn: pyodbc.Connection) -> dict:
+    """Carrega dados da tabela NumerosCiclos para Lotofacil.
+    Retorna ciclo atual, historico por numero e comparacao.
+    """
+    cur = conn.cursor()
+    # Ultimos 20 ciclos completos + atual
+    cur.execute("""
+        SELECT Ciclo, Numero, QtdSorteados, ConcursoInicio, ConcursoFechamento
+        FROM NumerosCiclos
+        WHERE Ciclo > (SELECT MAX(Ciclo) - 20 FROM NumerosCiclos)
+        ORDER BY Ciclo, Numero
+    """)
+    linhas = cur.fetchall()
+    if not linhas:
+        return {}
+
+    ciclos: dict[int, dict] = {}
+    for r in linhas:
+        ciclo = r.Ciclo
+        if ciclo not in ciclos:
+            total_conc = (r.ConcursoFechamento or 0) - (r.ConcursoInicio or 0)
+            fechado = r.ConcursoFechamento is not None
+            ciclos[ciclo] = {
+                "ciclo": ciclo,
+                "inicio": r.ConcursoInicio,
+                "fim": r.ConcursoFechamento,
+                "total_concursos": total_conc if fechado else None,
+                "fechado": fechado,
+                "numeros": {},
+            }
+        ciclos[ciclo]["numeros"][str(r.Numero)] = r.QtdSorteados
+
+    # Ordenar por ciclo
+    sorted_ciclos = sorted(ciclos.values(), key=lambda x: -x["ciclo"])
+    if not sorted_ciclos:
+        return {}
+
+    atual = sorted_ciclos[0]
+    historicos = sorted_ciclos[1:]
+
+    # Media historica por numero (ciclos anteriores)
+    medias: dict[str, dict] = {}
+    for n in range(1, 26):
+        ns = str(n)
+        vals = [c["numeros"].get(ns, 0) for c in historicos if ns in c["numeros"]]
+        if vals:
+            media = sum(vals) / len(vals)
+            qtd_atual = atual["numeros"].get(ns, 0)
+            diff = qtd_atual - media
+            medias[ns] = {
+                "qtd_atual": qtd_atual,
+                "media_historica": round(media, 1),
+                "diferenca": round(diff, 1),
+                "tendencia": "acima" if diff > 1 else ("abaixo" if diff < -1 else "normal"),
+            }
+        else:
+            medias[ns] = {
+                "qtd_atual": atual["numeros"].get(ns, 0),
+                "media_historica": 0,
+                "diferenca": 0,
+                "tendencia": "normal",
+            }
+
+    return {
+        "ciclo_atual": atual["ciclo"],
+        "concursos_ciclo_atual": atual.get("total_concursos"),
+        "fechado": atual["fechado"],
+        "numeros": medias,
+        "historico_media_geral": round(
+            sum(m["media_historica"] for m in medias.values()) / 25, 1
+        ) if medias else 0,
+    }
+
+
+def _formatar_ciclos_tabela_para_prompt(dados: dict) -> str:
+    saida = f"### Ciclo {dados['ciclo_atual']} (NumerosCiclos)\n"
+    if dados["concursos_ciclo_atual"] is not None:
+        saida += f"Concursos no ciclo atual: {dados['concursos_ciclo_atual']}\n"
+    acima = [n for n, m in dados["numeros"].items() if m["tendencia"] == "acima"]
+    abaixo = [n for n, m in dados["numeros"].items() if m["tendencia"] == "abaixo"]
+    zerados = [n for n, m in dados["numeros"].items() if m["qtd_atual"] == 0]
+    if acima:
+        saida += f"Acima da media historica: {', '.join(acima)}\n"
+    if abaixo:
+        saida += f"Abaixo da media historica: {', '.join(abaixo)}\n"
+    if zerados:
+        saida += f"Ainda nao sorteados neste ciclo: {', '.join(zerados)}\n"
+    saida += f"Media historica geral do ciclo: {dados['historico_media_geral']} sorteios/numero\n"
+    saida += "Legenda: acima/abaixo = diferenca >|1| sorteio vs media historica\n"
+    return saida
+
+
 # ── FORMATACAO DE CICLOS / QUARENTENA / FREQ POSICOES PARA PROMPT ───────────
 
 def _formatar_ciclos_para_prompt(ciclos: dict[str, dict]) -> str:
@@ -478,7 +572,8 @@ def _top_diferencas(est: dict) -> str:
 def montar_prompt(est: dict, cfg: dict, contexto_anterior: str = "",
                   ciclos: dict[str, dict] | None = None,
                   quarentena: dict[str, dict] | None = None,
-                  freq_posicoes: dict[str, dict] | None = None) -> str:
+                  freq_posicoes: dict[str, dict] | None = None,
+                  ciclos_tabela: dict | None = None) -> str:
     ctx = ""
     if contexto_anterior:
         ctx = f"\n### Contexto de analises anteriores\n{contexto_anterior}\n"
@@ -490,6 +585,8 @@ def montar_prompt(est: dict, cfg: dict, contexto_anterior: str = "",
         extra += "\n" + _formatar_quarentena_para_prompt(quarentena)
     if freq_posicoes:
         extra += "\n" + _formatar_frequencia_posicoes_para_prompt(freq_posicoes)
+    if ciclos_tabela:
+        extra += "\n" + _formatar_ciclos_tabela_para_prompt(ciclos_tabela)
 
     return f"""## Dados Estatisticos - {cfg['nome']}{ctx}
 
@@ -521,7 +618,8 @@ Com base estritamente nos dados acima, realize uma analise em portugues do Brasi
 3. Tendencias de atraso - gaps acima do P90
 4. Ciclos: numeros aquecendo e esfriando
 5. Matriz de Quarentena: numeros por posicao (Q/A/MA)
-6. Sugestao de NUMEROS POR POSICAO (N1 a N15) — para cada posicao, indique 1 a 3 numeros candidatos com base na frequencia historica da posicao, gaps, quarentena e tendencias de ciclo. Justifique cada sugestao.
+6. Analise da tabela NumerosCiclos: compare o ciclo atual com ciclos anteriores — quais numeros estao acima/abaixo da media? Quais ainda nao sairam? O que isso sugere?
+7. Sugestao de NUMEROS POR POSICAO (N1 a N15) — para cada posicao, indique 1 a 3 numeros candidatos com base na frequencia historica da posicao, gaps, quarentena, ciclo atual vs historico e tendencias de ciclo. Justifique cada sugestao.
 Use formato estruturado com topicos. Seja analitico, nao especulativo.
 """
 
@@ -753,10 +851,12 @@ def analisar_loteria(conn: pyodbc.Connection, loteria_id: str,
             ciclos_dados = carregar_ciclos(resultados, loteria_id) if eh_lf else None
             quarentena_dados = carregar_quarentena_posicoes(resultados, loteria_id) if eh_lf else None
             freq_pos_dados = carregar_frequencia_posicoes(resultados, loteria_id) if eh_lf else None
+            ciclos_tabela_dados = carregar_ciclos_tabela(conn) if eh_lf else None
             prompt = montar_prompt(est, cfg, contexto_anterior,
                                    ciclos=ciclos_dados,
                                    quarentena=quarentena_dados,
-                                   freq_posicoes=freq_pos_dados)
+                                   freq_posicoes=freq_pos_dados,
+                                   ciclos_tabela=ciclos_tabela_dados)
 
     resposta = chamar_ollama(prompt)
     resultado["analise"] = resposta
