@@ -99,6 +99,8 @@ LOTERIAS = {
     },
 }
 
+COLUNAS_SS = ["N1", "N2", "N3", "N4", "N5", "N6", "N7"]
+
 PRIMOS = {
     "lotofacil": [2, 3, 5, 7, 11, 13, 17, 19, 23],
     "megasena": [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59],
@@ -250,6 +252,19 @@ def analise_posicional_supersete(resultados: list[list[int]]) -> dict:
         })
 
     return saida
+
+
+def carregar_backtest_supersete() -> dict | None:
+    """Carrega dados de backtesting da Super Sete salvos por backtest_supersete.py."""
+    import os as _os
+    caminho_bt = "backtest_supersete_resultados.json"
+    if not _os.path.exists(caminho_bt):
+        return None
+    try:
+        with open(caminho_bt, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
 
 
 # ── CICLOS (aquecendo/esfriando) ───────────────────────────────────────────────
@@ -409,10 +424,13 @@ def carregar_frequencia_posicoes(
                 "pct": round(freq.get(n, 0) / total * 100, 1),
             }
 
+        vals = set(sequencia)
         freq_posicoes[pos] = {
             "top5": top5,
             "ultimos3": ultimos3,
             "frequencia": freq_info,
+            "min_historico": min(vals) if vals else cfg["min"],
+            "max_historico": max(vals) if vals else cfg["max"],
         }
 
     return freq_posicoes
@@ -611,7 +629,9 @@ def _formatar_frequencia_posicoes_para_prompt(fp: dict[str, dict]) -> str:
     for pos, info in fp.items():
         top5 = info["top5"]
         ultimos3 = info["ultimos3"]
-        saida += f"{pos}: top={[n for n, _ in top5]} ultimos={ultimos3}\n"
+        min_h = info["min_historico"]
+        max_h = info["max_historico"]
+        saida += f"{pos}: top={[n for n, _ in top5]} ultimos={ultimos3} faixa=[{min_h}-{max_h}]\n"
     saida += "Os numeros em cada posicao sao ordenados do menor (N1) ao maior (N15).\n"
     return saida
 
@@ -683,12 +703,14 @@ Com base estritamente nos dados acima, realize uma analise em portugues do Brasi
 4. Ciclos: numeros aquecendo e esfriando
 5. Matriz de Quarentena: numeros por posicao (Q/A/MA)
 6. Analise da tabela NumerosCiclos: compare o ciclo atual com ciclos anteriores — quais numeros estao acima/abaixo da media? Quais ainda nao sairam? O que isso sugere?
-7. Sugestao de NUMEROS POR POSICAO (N1 a N15) — para cada posicao, indique 1 a 3 numeros candidatos. Leve em conta: frequencia historica da posicao, gaps, quarentena, ciclo atual vs historico, tendencias de ciclo, E a tendencia posicional (se a posicao esta subindo ou descendo de valor). Justifique cada sugestao.
+7. Sugestao de NUMEROS POR POSICAO (N1 a N15) — para cada posicao, indique 1 a 3 numeros candidatos. Leve em conta: frequencia historica da posicao, gaps, quarentena, ciclo atual vs historico, tendencias de ciclo, e a tendencia posicional (se a posicao esta subindo ou descendo de valor). Respeite o intervalo de numeros da loteria (1-25 para Lotofacil) e a faixa historica de cada posicao (ex.: N1 nunca ultrapassa ~8, N15 nunca fica abaixo de ~17). Justifique cada sugestao.
 Use formato estruturado com topicos. Seja analitico, nao especulativo.
 """
 
 
-def montar_prompt_supersete(est: dict, pos: dict, contexto_anterior: str = "") -> str:
+def montar_prompt_supersete(est: dict, pos: dict,
+                            contexto_anterior: str = "",
+                            backtest_data: dict | None = None) -> str:
     ctx = ""
     if contexto_anterior:
         ctx = f"\n### Contexto de analises anteriores\n{contexto_anterior}\n"
@@ -727,8 +749,33 @@ Maiores gaps: {', '.join(f'{n}({est["gaps"][str(n)]})' for n in sorted(est['gaps
         sorted_freq = sorted(pos_info["frequencia_posicional"].items(), key=lambda x: -x[1])
         prompt += "\n  Frequencia: " + ", ".join(f"{d}({c}x)" for d, c in sorted_freq[:5])
 
-    prompt += """
+    # Secao de backtesting (se disponivel)
+    bt = backtest_data
+    if bt and bt.get("total_testes", 0) > 0:
+        est_bt = bt.get("estatisticas", {})
+        pred = bt.get("previsao_futura", {})
+        ranking = pred.get("ranking", {})
+        prompt += f"""
+### Backtesting com IA (gemma-lotto)
+Testes realizados: {bt['total_testes']} concursos
+Acertou >=3 colunas: {est_bt.get('acertos_3_colunas', 'N/A')}
+Media tentativas/coluna: {est_bt.get('media_tentativas_por_coluna', 'N/A')}
+Win rate janela: {est_bt.get('win_rate_janela', 'N/A')}
 
+### Predicao IA para o proximo concurso
+Ranking completo por coluna (do mais provavel ao menos provavel):"""
+        for col in COLUNAS_SS:
+            rnk = ranking.get(col, [])
+            prompt += f"\n  {col}: {rnk}"
+        prompt += f"""
+
+Melhores 3 tentativas por coluna:"""
+        melhores3 = pred.get("melhores_3_tentativas", {})
+        for col in COLUNAS_SS:
+            prompt += f"\n  {col}: {melhores3.get(col, [])}"
+
+    prompt += """
+ 
 ---
 Com base estritamente nos dados acima, realize uma analise em portugues do Brasil cobrindo:
 1. Distribuicao do ultimo sorteio vs media historica (soma, paridade)
@@ -909,7 +956,8 @@ def analisar_loteria(conn: pyodbc.Connection, loteria_id: str,
         est = estatisticas_globais(resultados, loteria_id)
         if loteria_id == "supersete" and cfg.get("is_positional"):
             pos = analise_posicional_supersete(resultados)
-            prompt = montar_prompt_supersete(est, pos, contexto_anterior)
+            bt_data = carregar_backtest_supersete()
+            prompt = montar_prompt_supersete(est, pos, contexto_anterior, bt_data)
         else:
             eh_lf = loteria_id == "lotofacil"
             ciclos_dados = carregar_ciclos(resultados, loteria_id) if eh_lf else None
@@ -927,6 +975,13 @@ def analisar_loteria(conn: pyodbc.Connection, loteria_id: str,
     resposta = chamar_ollama(prompt)
     resultado["analise"] = resposta
     resultado["prompt"] = prompt
+
+    # Predicao da IA para Super Sete (se disponivel)
+    if loteria_id == "supersete":
+        bt_data = carregar_backtest_supersete()
+        if bt_data and "previsao_futura" in bt_data:
+            resultado["previsao_ia"] = bt_data["previsao_futura"]
+            resultado["backtest"] = bt_data.get("estatisticas", {})
 
     # Salva memoria no grafo
     salvar_memoria(loteria_id, cfg["nome"], resposta, args)
