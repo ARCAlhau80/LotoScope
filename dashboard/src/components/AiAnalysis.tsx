@@ -11,6 +11,7 @@ export default function AiAnalysis({ loteria }: AiAnalysisProps) {
   const [loading, setLoading] = useState(false);
   const [analise, setAnalise] = useState<string | null>(null);
   const [compare, setCompare] = useState<number>(0);
+  const [pedido, setPedido] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
   async function rodarAnalise() {
@@ -24,6 +25,7 @@ export default function AiAnalysis({ loteria }: AiAnalysisProps) {
         body: JSON.stringify({
           loteria,
           compare: compare > 0 ? compare : undefined,
+          pedido: pedido.trim() || undefined,
         }),
       });
       const data = await r.json();
@@ -73,6 +75,17 @@ export default function AiAnalysis({ loteria }: AiAnalysisProps) {
                 <option value={100}>100 concursos</option>
               </select>
             </label>
+            <input
+              type="text"
+              value={pedido}
+              onChange={e => setPedido(e.target.value)}
+              placeholder="Filtro / pedido p/ IA..."
+              className="flex-1 min-w-[120px] bg-[rgba(129,140,248,0.08)]
+                border border-[rgba(129,140,248,0.2)] rounded-lg px-3 py-1.5
+                text-sm text-fg placeholder:text-muted/50
+                focus:outline-none focus:border-[rgba(129,140,248,0.5)]"
+              onKeyDown={e => { if (e.key === 'Enter') rodarAnalise(); }}
+            />
             <button
               onClick={rodarAnalise}
               disabled={loading}

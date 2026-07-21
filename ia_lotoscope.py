@@ -972,6 +972,10 @@ def analisar_loteria(conn: pyodbc.Connection, loteria_id: str,
                                    ciclos_tabela=ciclos_tabela_dados,
                                    tendencia_pos=tendencia_pos_dados)
 
+    # Pedido/filtro extra do usuario
+    if args.pedido:
+        prompt += f"\n### Pedido do usuario\n{args.pedido}\n"
+
     resposta = chamar_ollama(prompt)
     resultado["analise"] = resposta
     resultado["prompt"] = prompt
@@ -1081,6 +1085,8 @@ def main():
                         help="Nao salva memoria no grafo")
     parser.add_argument("--no-context", action="store_true",
                         help="Nao carrega contexto de memorias anteriores")
+    parser.add_argument("--pedido", type=str, default=None,
+                        help="Filtro ou pedido extra para a analise (ex: 'foco em numeros quentes')")
     parser.add_argument("loteria", nargs="?", default=None,
                         help="ID da loteria (ou vazio para menu interativo)")
     args = parser.parse_args()

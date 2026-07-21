@@ -10,6 +10,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const loteria: string | undefined = body.loteria;
     const compare: number | undefined = body.compare;
+    const pedido: string | undefined = body.pedido;
 
     const projectRoot = path.resolve(process.cwd(), '..');
     const scriptPath = path.join(projectRoot, 'ia_lotoscope.py');
@@ -17,6 +18,9 @@ export async function POST(request: Request) {
     let cmd = `python "${scriptPath}" --json --no-save --no-context`;
     if (compare && compare > 0) {
       cmd += ` --compare ${compare}`;
+    }
+    if (pedido) {
+      cmd += ` --pedido "${pedido.replace(/"/g, '\\"')}"`;
     }
     if (loteria) {
       cmd += ` "${loteria}"`;
