@@ -35,6 +35,24 @@ export default function RankingCombinacoesSection({ ranking: rankingInicial }: R
     }
   }
 
+  function exportarTxt() {
+    if (!ranking || ranking.length === 0) return;
+    const linhas = ranking.map(item =>
+      item.numeros.map(n => n.toString().padStart(2, '0')).join(',')
+    );
+    const cabecalho = `# Ranking COMBINACOES_LOTOFACIL - Perfil: ${perfis[perfil]} - Top ${ranking.length}\n`;
+    const conteudo = cabecalho + linhas.join('\n') + '\n';
+    const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ranking_lotofacil_${perfil}_${ranking.length}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   if (!ranking) return null;
 
   return (
@@ -70,6 +88,13 @@ export default function RankingCombinacoesSection({ ranking: rankingInicial }: R
             className="px-3 py-1 rounded-lg text-xs font-medium bg-[rgba(129,140,248,0.15)] text-[#a5b4fc] hover:bg-[rgba(129,140,248,0.25)] transition-all disabled:opacity-50"
           >
             {loading ? 'Carregando...' : 'Atualizar'}
+          </button>
+          <button
+            onClick={exportarTxt}
+            disabled={!ranking || ranking.length === 0}
+            className="px-3 py-1 rounded-lg text-xs font-medium bg-[rgba(52,211,153,0.15)] text-[#34d399] hover:bg-[rgba(52,211,153,0.25)] transition-all disabled:opacity-50"
+          >
+            Exportar .txt
           </button>
         </div>
       </div>
