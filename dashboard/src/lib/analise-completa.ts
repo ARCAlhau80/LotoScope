@@ -1,10 +1,12 @@
-import { carregarResultados, type Resultado } from './database';
+import { carregarResultados, carregarRankingCombinacoes, type Resultado, type RankingCombinacaoItem, type RankingPerfil } from './database';
 import { getLotteryConfig, type LotteryConfig } from './lottery-config';
-import type { DashboardData, UltimoSorteio, PrevisaoItem, AtrasadoItem, TransicaoRegistro, TransicaoQMF, CicloInfo, MediasHistoricas } from '@/types';
+import type { DashboardData, UltimoSorteio, PrevisaoItem, AtrasadoItem, TransicaoRegistro, TransicaoQMF, CicloInfo, MediasHistoricas, QuarentenaPosicaoLF, QuarentenaInfo, ComparativoPosicional, ComparativoItem, TendenciaComparativo } from '@/types';
 import { analiseSuperSete } from './analise-supersete';
 
 const WINDOW = 50;
 const ALPHA = 0.6;
+const RANKING_BONUS_PESO = 0.25;
+const RANKING_TOP_ANALISE = 30;
 
 function buildOcorrencias(resultados: Resultado[], cfg: LotteryConfig): Record<string, Record<number, number[]>> {
   const positions = Array.from({ length: cfg.numeros_por_jogo }, (_, i) => `N${i + 1}`);
@@ -21,6 +23,47 @@ function buildOcorrencias(resultados: Resultado[], cfg: LotteryConfig): Record<s
     }
   }
   return occ;
+}
+
+function calcularBonusRanking(
+  ranking: RankingCombinacaoItem[],
+  cfg: LotteryConfig
+): Record<number, number> {
+  const allNums = Array.from({ length: cfg.total_numeros }, (_, i) => i + cfg.numero_minimo);
+  const contagem: Record<number, number> = {};
+  for (const n of allNums) contagem[n] = 0;
+  for (const item of ranking) {
+    for (const n of item.numeros) {
+      if (n in contagem) contagem[n] += 1;
+    }
+  }
+  const total = ranking.length * cfg.numeros_por_jogo;
+  const bonus: Record<number, number> = {};
+  const esperada = cfg.numeros_por_jogo / cfg.total_numeros;
+  for (const n of allNums) {
+    const freq = contagem[n] / total;
+    bonus[n] = (freq / esperada) - 1.0;
+  }
+  return bonus;
+}
+
+function aplicarBonusRanking(
+  dados: Record<string, Record<number, { lambda_hist: number; lambda_recent: number; lambda_blend: number; count_hist: number; count_recent: number; gap: number }>>,
+  ranking: RankingCombinacaoItem[],
+  cfg: LotteryConfig,
+  peso: number = RANKING_BONUS_PESO
+) {
+  const bonus = calcularBonusRanking(ranking, cfg);
+  const positions = Object.keys(dados);
+  for (const pos of positions) {
+    for (const n of Object.keys(dados[pos])) {
+      const num = Number(n);
+      const b = bonus[num] || 0;
+      if (b > 0) {
+        dados[pos][num].lambda_blend *= (1 + b * peso);
+      }
+    }
+  }
 }
 
 function calcularLambdas(
@@ -191,9 +234,146 @@ function calcularMediasHistoricas(resultados: Resultado[], cfg: LotteryConfig): 
   };
 }
 
+function calcularQuarentenaPorPosicao(
+  resultados: Resultado[],
+  cfg: LotteryConfig,
+  fatorQuarentena: number = 0.35
+): Record<string, QuarentenaPosicaoLF> {
+  const positions = Array.from({ length: cfg.numeros_por_jogo }, (_, i) => `N${i + 1}`);
+  const allNums = Array.from({ length: cfg.total_numeros }, (_, i) => i + cfg.numero_minimo);
+  const quarentena: Record<string, QuarentenaPosicaoLF> = {};
+
+  for (const pos of positions) {
+    const posIdx = parseInt(pos.substring(1)) - 1;
+    const sequencia = resultados.map(r => r.numeros[posIdx]);
+    const numeros: QuarentenaInfo[] = [];
+    const emQuarentena: number[] = [];
+    const atrasadosList: number[] = [];
+    const muitoAtrasados: number[] = [];
+
+    for (const num of allNums) {
+      const gaps: number[] = [];
+      let ultimaPos: number | null = null;
+
+      for (let i = 0; i < sequencia.length; i++) {
+        if (sequencia[i] === num) {
+          if (ultimaPos !== null) {
+            gaps.push(i - ultimaPos);
+          }
+          ultimaPos = i;
+        }
+      }
+
+      const gapAtual = ultimaPos !== null ? sequencia.length - 1 - ultimaPos : sequencia.length;
+
+      if (gaps.length < 2) {
+        numeros.push({
+          digito: num,
+          gap_atual: gapAtual,
+          media: 0,
+          mediana: 0,
+          sigma: 0,
+          p90: 0,
+          status: 'normal',
+        });
+        continue;
+      }
+
+      const sorted = [...gaps].sort((a, b) => a - b);
+      const media = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+      const mediana = sorted.length % 2 === 0
+        ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+        : sorted[Math.floor(sorted.length / 2)];
+      const variance = gaps.reduce((s, g) => s + (g - media) ** 2, 0) / gaps.length;
+      const sigma = Math.sqrt(variance);
+      const p90Idx = Math.ceil(sorted.length * 0.9) - 1;
+      const p90 = sorted[Math.max(0, p90Idx)];
+
+      let status: QuarentenaInfo['status'];
+      if (gapAtual <= 3) {
+        status = 'quarentena';
+        emQuarentena.push(num);
+      } else if (gapAtual > p90) {
+        status = 'muito_atrasado';
+        muitoAtrasados.push(num);
+      } else if (gapAtual > media + fatorQuarentena * sigma) {
+        status = 'atrasado';
+        atrasadosList.push(num);
+      } else {
+        status = 'normal';
+      }
+
+      numeros.push({
+        digito: num,
+        gap_atual: gapAtual,
+        media: Math.round(media * 10) / 10,
+        mediana: Math.round(mediana * 10) / 10,
+        sigma: Math.round(sigma * 10) / 10,
+        p90: Math.round(p90 * 10) / 10,
+        status,
+      });
+    }
+
+    quarentena[pos] = {
+      posicao: pos,
+      numeros,
+      em_quarentena: emQuarentena,
+      atrasados: atrasadosList,
+      muito_atrasados: muitoAtrasados,
+    };
+  }
+
+  return quarentena;
+}
+
+function calcularComparativoPosicional(resultados: Resultado[]): { comparativo_posicional: ComparativoPosicional; tendencia_comparativo: TendenciaComparativo[] } | null {
+  if (resultados.length < 2) return null;
+
+  const ultimo = resultados[resultados.length - 1];
+  const anterior = resultados[resultados.length - 2];
+  const itens: ComparativoItem[] = [];
+  let maiores = 0, menores = 0, iguais = 0;
+
+  for (let i = 0; i < Math.min(ultimo.numeros.length, anterior.numeros.length); i++) {
+    const a = ultimo.numeros[i];
+    const b = anterior.numeros[i];
+    let dir: 'maior' | 'menor' | 'igual';
+    if (a > b) { dir = 'maior'; maiores++; }
+    else if (a < b) { dir = 'menor'; menores++; }
+    else { dir = 'igual'; iguais++; }
+    itens.push({ posicao: i + 1, atual: a, anterior: b, direcao: dir });
+  }
+
+  const tendencia: TendenciaComparativo[] = [];
+  const start = Math.max(0, resultados.length - 11);
+  for (let i = start + 1; i < resultados.length; i++) {
+    const curr = resultados[i];
+    const prev = resultados[i - 1];
+    let m = 0, men = 0, ig = 0;
+    for (let j = 0; j < Math.min(curr.numeros.length, prev.numeros.length); j++) {
+      if (curr.numeros[j] > prev.numeros[j]) m++;
+      else if (curr.numeros[j] < prev.numeros[j]) men++;
+      else ig++;
+    }
+    tendencia.push({ concurso: curr.concurso, maiores: m, menores: men, iguais: ig });
+  }
+
+  return {
+    comparativo_posicional: {
+      concurso_atual: ultimo.concurso,
+      concurso_anterior: anterior.concurso,
+      itens,
+      total_maiores: maiores,
+      total_menores: menores,
+      total_iguais: iguais,
+    },
+    tendencia_comparativo: tendencia,
+  };
+}
+
 export async function analiseCompleta(janela?: number, lotteryId?: string, concurso?: number): Promise<DashboardData> {
   const cfg = lotteryId ? getLotteryConfig(lotteryId) : getLotteryConfig('lotofacil');
-  if (cfg.is_positional && cfg.id === 'supersete') {
+  if (cfg.is_positional) {
     return analiseSuperSete(janela, concurso);
   }
   let resultados = await carregarResultados(cfg.id);
@@ -209,6 +389,20 @@ export async function analiseCompleta(janela?: number, lotteryId?: string, concu
   const total = resultados.length;
   const occ = buildOcorrencias(resultados, cfg);
   const dados = calcularLambdas(occ, total, cfg);
+
+  let rankingCombinacoes: RankingCombinacaoItem[] = [];
+  if (cfg.id === 'lotofacil') {
+    try {
+      rankingCombinacoes = await carregarRankingCombinacoes('altovalor', RANKING_TOP_ANALISE, cfg.id);
+      if (rankingCombinacoes.length > 0) {
+        aplicarBonusRanking(dados, rankingCombinacoes, cfg, RANKING_BONUS_PESO);
+      }
+    } catch (e) {
+      // ranking e opcional; nao quebra analise
+      console.warn('Falha ao carregar ranking de combinacoes:', e);
+    }
+  }
+
   const ultimo = resultados[total - 1];
 
   const janelaValida = Math.max(2, Math.min(janela ?? 30, total));
@@ -252,6 +446,7 @@ export async function analiseCompleta(janela?: number, lotteryId?: string, concu
     .map(([n, f]) => [Number(n), f]);
 
   const positions = Array.from({ length: cfg.numeros_por_jogo }, (_, i) => `N${i + 1}`);
+  const apostaSize = cfg.numeros_por_aposta ?? cfg.numeros_por_jogo;
   const previsao: Record<string, PrevisaoItem[]> = {};
   for (const pos of positions) {
     const nums = dados[pos];
@@ -263,7 +458,17 @@ export async function analiseCompleta(janela?: number, lotteryId?: string, concu
     previsao[pos] = top3;
   }
 
-  const palpite: number[] = positions.map(p => previsao[p]?.[0]?.numero ?? 0).filter(n => n > 0);
+  let palpite: number[];
+  if (apostaSize > cfg.numeros_por_jogo) {
+    const aggScore: Record<number, number> = {};
+    for (const n of allNums) aggScore[n] = 0;
+    for (const pos of positions) {
+      for (const n of allNums) aggScore[n] += dados[pos]?.[n]?.lambda_blend || 0;
+    }
+    palpite = allNums.filter(n => aggScore[n] > 0).sort((a, b) => aggScore[b] - aggScore[a]).slice(0, apostaSize);
+  } else {
+    palpite = positions.map(p => previsao[p]?.[0]?.numero ?? 0).filter(n => n > 0);
+  }
 
   function gerarPrevisaoCombinada(
     cadeiaRep: number[],
@@ -354,12 +559,12 @@ export async function analiseCompleta(janela?: number, lotteryId?: string, concu
       }
     }
 
-    if (resultado.length < cfg.numeros_por_jogo) {
+    if (resultado.length < apostaSize) {
       const restantes = poolN.filter(n => !usado.has(n)).sort((a, b) => {
         return (aggPoisson[b] + sumBias(b)) - (aggPoisson[a] + sumBias(a));
       });
       for (const n of restantes) {
-        if (resultado.length >= cfg.numeros_por_jogo) break;
+        if (resultado.length >= apostaSize) break;
         resultado.push(n);
         usado.add(n);
       }
@@ -526,11 +731,14 @@ export async function analiseCompleta(janela?: number, lotteryId?: string, concu
     }
   }
 
+  const quarentenaPosicoes = calcularQuarentenaPorPosicao(resultados, cfg);
+
   return {
     loteria: cfg.id,
     nome_jogo: cfg.nome_jogo,
     total_numeros: cfg.total_numeros,
     numeros_por_jogo: cfg.numeros_por_jogo,
+    numeros_por_aposta: apostaSize,
     ultimo_concurso: ultimo.concurso,
     total_sorteios: total,
     ultimo_sorteio: ultimoStats,
@@ -560,5 +768,8 @@ export async function analiseCompleta(janela?: number, lotteryId?: string, concu
     trevos_frios: trevosFrios,
     trevos_mornos: trevosMornos,
     ciclos_trevos: ciclosTrevos,
+    quarentena_posicoes: quarentenaPosicoes,
+    ranking_combinacoes: rankingCombinacoes,
+    ...calcularComparativoPosicional(resultados),
   };
 }

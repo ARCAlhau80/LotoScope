@@ -33,6 +33,20 @@ export interface PrevisaoItem {
   prob: number;
 }
 
+export interface RankingCombinacaoItem {
+  id: number;
+  numeros: number[];
+  acertos_11: number;
+  acertos_12: number;
+  acertos_13: number;
+  acertos_14: number;
+  atraso_11: number;
+  atraso_12: number;
+  atraso_13: number;
+  atraso_14: number;
+  score: number;
+}
+
 export interface CicloInfo {
   freq_30: number;
   freq_esperada: number;
@@ -98,6 +112,7 @@ export interface DashboardData {
   nome_jogo: string;
   total_numeros: number;
   numeros_por_jogo: number;
+  numeros_por_aposta: number;
   ultimo_concurso: number;
   total_sorteios: number;
   ultimo_sorteio: UltimoSorteio;
@@ -129,6 +144,37 @@ export interface DashboardData {
   ciclos_trevos?: Record<string, CicloInfo>;
   is_positional?: boolean;
   supersete?: AnaliseSuperSete;
+  quarentena_posicoes?: Record<string, QuarentenaPosicaoLF>;
+  comparativo_posicional?: ComparativoPosicional;
+  tendencia_comparativo?: TendenciaComparativo[];
+  ranking_combinacoes?: RankingCombinacaoItem[];
+}
+
+export type DirecaoComparativo = 'maior' | 'menor' | 'igual';
+
+export interface ComparativoItem {
+  posicao: number;
+  atual: number;
+  anterior: number;
+  direcao: DirecaoComparativo;
+  expectativa?: DirecaoComparativo;
+  acertou?: boolean;
+}
+
+export interface ComparativoPosicional {
+  concurso_atual: number;
+  concurso_anterior: number;
+  itens: ComparativoItem[];
+  total_maiores: number;
+  total_menores: number;
+  total_iguais: number;
+}
+
+export interface TendenciaComparativo {
+  concurso: number;
+  maiores: number;
+  menores: number;
+  iguais: number;
 }
 
 export interface ColunaAnaliseSS {
@@ -181,6 +227,46 @@ export interface ApostaMultiplaSS {
   palpite_multipla: Record<string, number[]>;
 }
 
+export interface PrevisaoExclusaoItem {
+  digito: number;
+  score: number;
+  status: 'mantido' | 'excluido';
+}
+
+export interface PrevisaoExclusaoSS {
+  colunas: Record<string, {
+    estrategia: string;
+    scores: PrevisaoExclusaoItem[];
+    top3: number[];
+  }>;
+}
+
+export interface QuarentenaInfo {
+  digito: number;
+  gap_atual: number;
+  media: number;
+  mediana: number;
+  sigma: number;
+  p90: number;
+  status: 'quarentena' | 'normal' | 'atrasado' | 'muito_atrasado';
+}
+
+export interface QuarentenaColuna {
+  coluna: string;
+  digitos: QuarentenaInfo[];
+  em_quarentena: number[];
+  atrasados: number[];
+  muito_atrasados: number[];
+}
+
+export interface QuarentenaPosicaoLF {
+  posicao: string;
+  numeros: QuarentenaInfo[];
+  em_quarentena: number[];
+  atrasados: number[];
+  muito_atrasados: number[];
+}
+
 export interface AnaliseSuperSete {
   colunas: Record<string, ColunaAnaliseSS>;
   correlacoes: CorrelacaoColunasSS[];
@@ -188,4 +274,30 @@ export interface AnaliseSuperSete {
   soma: DistribuicaoSomaSS;
   repeticao: RepeticaoColunasSS;
   aposta_multipla: ApostaMultiplaSS;
+  previsao_exclusao: PrevisaoExclusaoSS;
+  quarentena: Record<string, QuarentenaColuna>;
+  comparativo_posicional?: ComparativoSuperSete;
+}
+
+export interface TransicaoDigitoSS {
+  digito: number;
+  total: number;
+  mesmo: number;
+  maior: number;
+  menor: number;
+  pct_mesmo: number;
+  pct_maior: number;
+  pct_menor: number;
+}
+
+export interface ComparativoSuperSete {
+  por_coluna: Record<string, {
+    transicoes: TransicaoDigitoSS[];
+    mesmo: number;
+    maior: number;
+    menor: number;
+    total: number;
+  }>;
+  ultimo_sorteio: number[];
+  penultimo_sorteio: number[];
 }

@@ -1,4 +1,4 @@
-import type { DashboardData } from '@/types';
+import type { DashboardData, RankingCombinacaoItem } from '@/types';
 import type { AnaliseGruposData } from '@/lib/analise-grupos';
 
 export async function getDashboardData(janela?: number, signal?: AbortSignal, loteria?: string, concurso?: number): Promise<DashboardData> {
@@ -20,6 +20,21 @@ export async function getAnaliseGrupos(signal?: AbortSignal): Promise<AnaliseGru
   const data = await res.json();
   if (data.error) throw new Error(data.error);
   return data;
+}
+
+export async function getRankingCombinacoes(
+  perfil: string = 'altovalor',
+  top: number = 10,
+  signal?: AbortSignal
+): Promise<RankingCombinacaoItem[]> {
+  const params = new URLSearchParams();
+  params.set('perfil', perfil);
+  params.set('top', String(top));
+  const res = await fetch(`/api/ranking-combinacoes?${params.toString()}`, { signal });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.ranking || [];
 }
 
 export async function generateCombinations(params: {

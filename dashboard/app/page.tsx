@@ -25,6 +25,7 @@ import SuperSeteSection from '@/components/SuperSeteSection';
 import QuarantineMatrixLotofacil from '@/components/QuarantineMatrixLotofacil';
 import ComparativoSection from '@/components/ComparativoSection';
 import AiAnalysis from '@/components/AiAnalysis';
+import RankingCombinacoesSection from '@/components/RankingCombinacoesSection';
 
 function LoadingSkeleton() {
   return (
@@ -239,6 +240,11 @@ function HomePage() {
             {grupos && (
               <div className="animate-slide-up stagger-7">
                 <GruposSection data={grupos} />
+              </div>
+            )}
+            {loteria === 'lotofacil' && data.ranking_combinacoes && (
+              <div className="animate-slide-up stagger-8">
+                <RankingCombinacoesSection ranking={data.ranking_combinacoes} />
               </div>
             )}
             <div className="animate-slide-up stagger-8">
