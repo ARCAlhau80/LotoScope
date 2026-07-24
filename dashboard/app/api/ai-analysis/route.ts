@@ -11,6 +11,8 @@ export async function POST(request: Request) {
     const loteria: string | undefined = body.loteria;
     const compare: number | undefined = body.compare;
     const pedido: string | undefined = body.pedido;
+    const rankingPerfil: string | undefined = body.rankingPerfil;
+    const rankingTop: number | undefined = body.rankingTop;
 
     const projectRoot = path.resolve(process.cwd(), '..');
     const scriptPath = path.join(projectRoot, 'ia_lotoscope.py');
@@ -21,6 +23,12 @@ export async function POST(request: Request) {
     }
     if (pedido) {
       cmd += ` --pedido "${pedido.replace(/"/g, '\\"')}"`;
+    }
+    if (rankingPerfil) {
+      cmd += ` --ranking-perfil ${rankingPerfil}`;
+    }
+    if (rankingTop && rankingTop > 0) {
+      cmd += ` --ranking-top ${rankingTop}`;
     }
     if (loteria) {
       cmd += ` "${loteria}"`;

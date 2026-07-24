@@ -12,6 +12,8 @@ export default function AiAnalysis({ loteria }: AiAnalysisProps) {
   const [analise, setAnalise] = useState<string | null>(null);
   const [compare, setCompare] = useState<number>(0);
   const [pedido, setPedido] = useState<string>('');
+  const [rankingPerfil, setRankingPerfil] = useState<string>('');
+  const [rankingTop, setRankingTop] = useState<number>(20);
   const [error, setError] = useState<string | null>(null);
 
   async function rodarAnalise() {
@@ -26,6 +28,8 @@ export default function AiAnalysis({ loteria }: AiAnalysisProps) {
           loteria,
           compare: compare > 0 ? compare : undefined,
           pedido: pedido.trim() || undefined,
+          rankingPerfil: rankingPerfil || undefined,
+          rankingTop: rankingPerfil ? rankingTop : undefined,
         }),
       });
       const data = await r.json();
@@ -86,6 +90,28 @@ export default function AiAnalysis({ loteria }: AiAnalysisProps) {
                 focus:outline-none focus:border-[rgba(129,140,248,0.5)]"
               onKeyDown={e => { if (e.key === 'Enter') rodarAnalise(); }}
             />
+            <select
+              value={rankingPerfil}
+              onChange={e => setRankingPerfil(e.target.value)}
+              className="bg-[rgba(129,140,248,0.08)] border border-[rgba(129,140,248,0.2)]
+                rounded-lg px-2 py-1.5 text-sm text-fg"
+            >
+              <option value="">Sem ranking</option>
+              <option value="foco11">Foco 11</option>
+              <option value="equilibrado">Equilibrado</option>
+              <option value="altovalor">Alto valor</option>
+            </select>
+            {rankingPerfil && (
+              <input
+                type="number"
+                min={1}
+                max={50}
+                value={rankingTop}
+                onChange={e => setRankingTop(Number(e.target.value))}
+                className="w-16 bg-[rgba(129,140,248,0.08)] border border-[rgba(129,140,248,0.2)]
+                  rounded-lg px-2 py-1.5 text-sm text-fg"
+              />
+            )}
             <button
               onClick={rodarAnalise}
               disabled={loading}

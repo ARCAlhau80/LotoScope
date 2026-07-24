@@ -636,6 +636,112 @@ def _formatar_frequencia_posicoes_para_prompt(fp: dict[str, dict]) -> str:
     return saida
 
 
+# ── RANKING DE COMBINACOES (COMBINACOES_LOTOFACIL) ─────────────────────────────
+
+def carregar_ranking_combinacoes(perfil: str, top: int = 20) -> list[dict]:
+    """Carrega ranking de combinacoes do JSON ou do banco.
+    Perfis: foco11, equilibrado, altovalor.
+    """
+    json_path = Path(f"ranking_{perfil}.json")
+    if json_path.exists():
+        try:
+            data = json.loads(json_path.read_text(encoding="utf-8"))
+            return data.get("ranking", [])[:top]
+        except Exception:
+            pass
+    # Fallback: query direta no banco (mais lento, mas funciona)
+    return _gerar_ranking_combinacoes(perfil, top)
+
+
+def _gerar_ranking_combinacoes(perfil: str, top: int) -> list[dict]:
+    pesos = {
+        "foco11": {"11": 1.0, "12": 0.25, "13": 0.05, "14": 0.01},
+        "equilibrado": {"11": 1.0, "12": 1.0, "13": 1.0, "14": 1.0},
+        "altovalor": {"11": 0.3, "12": 1.0, "13": 5.0, "14": 20.0},
+    }
+    if perfil not in pesos:
+        return []
+    p = pesos[perfil]
+    conn = pyodbc.connect(CONN_STR)
+    cur = conn.cursor()
+    for row in cur.execute("SELECT MAX(UltimoConcursoAtualizado) FROM COMBINACOES_LOTOFACIL"):
+        ultimo_concurso = row[0]
+    medias = {}
+    for cat in ["11", "12", "13", "14"]:
+        cur.execute(f"""
+            SELECT AVG(CAST(Acertos_{cat} AS FLOAT)),
+                   AVG(CAST(? - Ultimo_Acertos_{cat} AS FLOAT))
+            FROM COMBINACOES_LOTOFACIL
+            WHERE Acertos_{cat} > 0
+        """, (ultimo_concurso,))
+        row = cur.fetchone()
+        medias[cat] = {"freq": row[0] or 1.0, "atraso": row[1] or 1.0}
+    cols = ", ".join([f"N{i}" for i in range(1, 16)])
+    acertos_cols = ", ".join([f"Acertos_{c}" for c in ["11", "12", "13", "14"]])
+    ultimo_cols = ", ".join([f"Ultimo_Acertos_{c}" for c in ["11", "12", "13", "14"]])
+    freq_expr = " + ".join(
+        f"(CAST(Acertos_{c} AS FLOAT) / {medias[c]['freq']}) * {p[c]}"
+        for c in ["11", "12", "13", "14"]
+    )
+    atraso_expr = " + ".join(
+        f"(CAST({ultimo_concurso} - Ultimo_Acertos_{c} AS FLOAT) / {medias[c]['atraso']}) * {p[c]}"
+        for c in ["11", "12", "13", "14"]
+    )
+    query = f"""
+        SELECT TOP {top}
+            ID, {cols},
+            {acertos_cols},
+            {ultimo_cols},
+            ({freq_expr}) + ({atraso_expr}) AS score
+        FROM COMBINACOES_LOTOFACIL
+        ORDER BY score DESC
+    """
+    resultados = []
+    for row in cur.execute(query):
+        nums = row[1:16]
+        resultados.append({
+            "id": row[0],
+            "combinacao": list(nums),
+            "acertos": {"11": row[16], "12": row[17], "13": row[18], "14": row[19]},
+            "atrasos": {
+                "11": ultimo_concurso - row[20],
+                "12": ultimo_concurso - row[21],
+                "13": ultimo_concurso - row[22],
+                "14": ultimo_concurso - row[23],
+            },
+            "score": row[24],
+        })
+    conn.close()
+    return resultados
+
+
+def _formatar_ranking_combinacoes_para_prompt(ranking: list[dict], perfil: str) -> str:
+    if not ranking:
+        return ""
+    desc = {
+        "foco11": "foco em 11 acertos",
+        "equilibrado": "peso equilibrado 11/12/13/14",
+        "altovalor": "peso maior para 13 e 14 acertos",
+    }.get(perfil, perfil)
+    saida = f"### Ranking de Combinacoes (perfil: {desc})\n"
+    saida += "Top combinacoes da tabela COMBINACOES_LOTOFACIL por score (frequencia + atraso):\n"
+    for i, item in enumerate(ranking, 1):
+        nums = " ".join(f"{n:02d}" for n in item["combinacao"])
+        a = item["acertos"]
+        at = item["atrasos"]
+        saida += (
+            f"{i:2}. {nums} | 11={a['11']:3} (A{at['11']}) "
+            f"12={a['12']:2} (A{at['12']}) 13={a['13']:2} (A{at['13']}) "
+            f"14={a['14']:2} (A{at['14']}) score={item['score']:.2f}\n"
+        )
+    saida += (
+        "Use essas combinacoes como referencia de padroes historicos. "
+        "Nao as copie diretamente, mas analise: quais numeros/posicoes se repetem, "
+        "quais estao atrasados e como elas se comparam com a situacao atual.\n"
+    )
+    return saida
+
+
 # ── PROMPTS ────────────────────────────────────────────────────────────────────
 
 def _top_diferencas(est: dict) -> str:
@@ -655,7 +761,9 @@ def montar_prompt(est: dict, cfg: dict, contexto_anterior: str = "",
                   quarentena: dict[str, dict] | None = None,
                   freq_posicoes: dict[str, dict] | None = None,
                   ciclos_tabela: dict | None = None,
-                  tendencia_pos: dict[str, dict] | None = None) -> str:
+                  tendencia_pos: dict[str, dict] | None = None,
+                  ranking_combinacoes: list[dict] | None = None,
+                  ranking_perfil: str | None = None) -> str:
     ctx = ""
     if contexto_anterior:
         ctx = f"\n### Contexto de analises anteriores\n{contexto_anterior}\n"
@@ -671,6 +779,8 @@ def montar_prompt(est: dict, cfg: dict, contexto_anterior: str = "",
         extra += "\n" + _formatar_ciclos_tabela_para_prompt(ciclos_tabela)
     if tendencia_pos:
         extra += "\n" + _formatar_tendencia_posicoes_para_prompt(tendencia_pos)
+    if ranking_combinacoes:
+        extra += "\n" + _formatar_ranking_combinacoes_para_prompt(ranking_combinacoes, ranking_perfil or "foco11")
 
     return f"""## Dados Estatisticos - {cfg['nome']}{ctx}
 
@@ -703,7 +813,8 @@ Com base estritamente nos dados acima, realize uma analise em portugues do Brasi
 4. Ciclos: numeros aquecendo e esfriando
 5. Matriz de Quarentena: numeros por posicao (Q/A/MA)
 6. Analise da tabela NumerosCiclos: compare o ciclo atual com ciclos anteriores — quais numeros estao acima/abaixo da media? Quais ainda nao sairam? O que isso sugere?
-7. Sugestao de NUMEROS POR POSICAO (N1 a N15) — para cada posicao, indique 1 a 3 numeros candidatos. Leve em conta: frequencia historica da posicao, gaps, quarentena, ciclo atual vs historico, tendencias de ciclo, e a tendencia posicional (se a posicao esta subindo ou descendo de valor). Respeite o intervalo de numeros da loteria (1-25 para Lotofacil) e a faixa historica de cada posicao (ex.: N1 nunca ultrapassa ~8, N15 nunca fica abaixo de ~17). Justifique cada sugestao.
+7. Ranking de Combinacoes: analise as combinacoes historicas de maior score (frequencia + atraso de 11/12/13/14 acertos). Quais numeros e posicoes aparecem com mais frequencia nessas combinacoes? Ha sobreposicao com numeros quentes/gaps/ciclos? Use isso como referencia, nao como garantia.
+8. Sugestao de NUMEROS POR POSICAO (N1 a N15) — para cada posicao, indique 1 a 3 numeros candidatos. Leve em conta: frequencia historica da posicao, gaps, quarentena, ciclo atual vs historico, tendencias de ciclo, ranking de combinacoes e a tendencia posicional (se a posicao esta subindo ou descendo de valor). Respeite o intervalo de numeros da loteria (1-25 para Lotofacil) e a faixa historica de cada posicao (ex.: N1 nunca ultrapassa ~8, N15 nunca fica abaixo de ~17). Justifique cada sugestao.
 Use formato estruturado com topicos. Seja analitico, nao especulativo.
 """
 
@@ -965,12 +1076,17 @@ def analisar_loteria(conn: pyodbc.Connection, loteria_id: str,
             freq_pos_dados = carregar_frequencia_posicoes(resultados, loteria_id) if eh_lf else None
             ciclos_tabela_dados = carregar_ciclos_tabela(conn) if eh_lf else None
             tendencia_pos_dados = carregar_tendencia_posicoes(resultados, loteria_id) if eh_lf else None
+            ranking_comb_dados = None
+            if eh_lf and args.ranking_perfil:
+                ranking_comb_dados = carregar_ranking_combinacoes(args.ranking_perfil, args.ranking_top)
             prompt = montar_prompt(est, cfg, contexto_anterior,
                                    ciclos=ciclos_dados,
                                    quarentena=quarentena_dados,
                                    freq_posicoes=freq_pos_dados,
                                    ciclos_tabela=ciclos_tabela_dados,
-                                   tendencia_pos=tendencia_pos_dados)
+                                   tendencia_pos=tendencia_pos_dados,
+                                   ranking_combinacoes=ranking_comb_dados,
+                                   ranking_perfil=args.ranking_perfil)
 
     # Pedido/filtro extra do usuario
     if args.pedido:
@@ -1087,6 +1203,11 @@ def main():
                         help="Nao carrega contexto de memorias anteriores")
     parser.add_argument("--pedido", type=str, default=None,
                         help="Filtro ou pedido extra para a analise (ex: 'foco em numeros quentes')")
+    parser.add_argument("--ranking-perfil", type=str, default=None,
+                        choices=["foco11", "equilibrado", "altovalor"],
+                        help="Inclui ranking de combinacoes da COMBINACOES_LOTOFACIL no prompt (Lotofacil)")
+    parser.add_argument("--ranking-top", type=int, default=20,
+                        help="Quantidade de combinacoes do ranking a incluir no prompt")
     parser.add_argument("loteria", nargs="?", default=None,
                         help="ID da loteria (ou vazio para menu interativo)")
     args = parser.parse_args()
