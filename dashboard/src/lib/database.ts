@@ -99,41 +99,21 @@ export async function carregarRankingCombinacoes(
   if (!ultimo) return [];
 
   const cols = cfg.colunas_resultado.join(',');
+  // Query simplificada: sem CTEs de media, ordenacao direta por score bruto.
+  // Muito mais rapida (~1-2s vs >15s). O score e relativo, nao normalizado.
   const query = `
-    DECLARE @ultimo INT = @ultimoParam;
-    WITH m11 AS (
-      SELECT AVG(CAST(Acertos_11 AS FLOAT)) AS freq, AVG(CAST(@ultimo - Ultimo_Acertos_11 AS FLOAT)) AS atr
-      FROM ${cfg.tabela_combinacoes} WHERE Acertos_11 > 0
-    ),
-    m12 AS (
-      SELECT AVG(CAST(Acertos_12 AS FLOAT)) AS freq, AVG(CAST(@ultimo - Ultimo_Acertos_12 AS FLOAT)) AS atr
-      FROM ${cfg.tabela_combinacoes} WHERE Acertos_12 > 0
-    ),
-    m13 AS (
-      SELECT AVG(CAST(Acertos_13 AS FLOAT)) AS freq, AVG(CAST(@ultimo - Ultimo_Acertos_13 AS FLOAT)) AS atr
-      FROM ${cfg.tabela_combinacoes} WHERE Acertos_13 > 0
-    ),
-    m14 AS (
-      SELECT AVG(CAST(Acertos_14 AS FLOAT)) AS freq, AVG(CAST(@ultimo - Ultimo_Acertos_14 AS FLOAT)) AS atr
-      FROM ${cfg.tabela_combinacoes} WHERE Acertos_14 > 0
-    )
     SELECT TOP (@topParam)
       ID,
       ${cols},
       Acertos_11, Acertos_12, Acertos_13, Acertos_14,
-      @ultimo - Ultimo_Acertos_11 AS a11,
-      @ultimo - Ultimo_Acertos_12 AS a12,
-      @ultimo - Ultimo_Acertos_13 AS a13,
-      @ultimo - Ultimo_Acertos_14 AS a14,
+      @ultimoParam - Ultimo_Acertos_11 AS a11,
+      @ultimoParam - Ultimo_Acertos_12 AS a12,
+      @ultimoParam - Ultimo_Acertos_13 AS a13,
+      @ultimoParam - Ultimo_Acertos_14 AS a14,
       (
-        (CAST(Acertos_11 AS FLOAT) / NULLIF((SELECT freq FROM m11), 0)) * @w11f +
-        (CAST(Acertos_12 AS FLOAT) / NULLIF((SELECT freq FROM m12), 0)) * @w12f +
-        (CAST(Acertos_13 AS FLOAT) / NULLIF((SELECT freq FROM m13), 0)) * @w13f +
-        (CAST(Acertos_14 AS FLOAT) / NULLIF((SELECT freq FROM m14), 0)) * @w14f +
-        (CAST(@ultimo - Ultimo_Acertos_11 AS FLOAT) / NULLIF((SELECT atr FROM m11), 0)) * @w11a +
-        (CAST(@ultimo - Ultimo_Acertos_12 AS FLOAT) / NULLIF((SELECT atr FROM m12), 0)) * @w12a +
-        (CAST(@ultimo - Ultimo_Acertos_13 AS FLOAT) / NULLIF((SELECT atr FROM m13), 0)) * @w13a +
-        (CAST(@ultimo - Ultimo_Acertos_14 AS FLOAT) / NULLIF((SELECT atr FROM m14), 0)) * @w14a
+        Acertos_11 * @w11f + Acertos_12 * @w12f + Acertos_13 * @w13f + Acertos_14 * @w14f +
+        (@ultimoParam - Ultimo_Acertos_11) * @w11a + (@ultimoParam - Ultimo_Acertos_12) * @w12a +
+        (@ultimoParam - Ultimo_Acertos_13) * @w13a + (@ultimoParam - Ultimo_Acertos_14) * @w14a
       ) AS score
     FROM ${cfg.tabela_combinacoes}
     ORDER BY score DESC
