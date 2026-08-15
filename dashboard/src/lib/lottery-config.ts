@@ -17,11 +17,14 @@ export interface LotteryConfig {
   nome_jogo: string;
   total_numeros: number;
   numeros_por_jogo: number;
+  numeros_por_aposta?: number;
+  dezenas_opcoes?: number[];
   numero_minimo: number;
   numero_maximo: number;
   colunas_resultado: string[];
   tabela_resultados: string;
   tabela_combinacoes: string;
+  tabela_ciclos?: string;
   db_name: string;
   faixas: Record<string, FaixaConfig>;
   estrategias: Record<string, EstrategiaConfig>;
@@ -42,11 +45,13 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     nome_jogo: "Lotofácil",
     total_numeros: 25,
     numeros_por_jogo: 15,
+    dezenas_opcoes: [15, 16, 17, 18, 19, 20],
     numero_minimo: 1,
     numero_maximo: 25,
     colunas_resultado: Array.from({ length: 15 }, (_, i) => `N${i + 1}`),
     tabela_resultados: "Resultados_INT",
     tabela_combinacoes: "COMBINACOES_LOTOFACIL",
+    tabela_ciclos: "NumerosCiclos",
     db_name: "LOTOFACIL",
     faixas: {
       baixa: { nome: "Baixa (1-12)", inicio: 1, fim: 12 },
@@ -73,6 +78,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     colunas_resultado: Array.from({ length: 6 }, (_, i) => `N${i + 1}`),
     tabela_resultados: "Resultados_MegaSenaFechado",
     tabela_combinacoes: "COMBIN_MEGASENA",
+    tabela_ciclos: "NumerosCiclosMega",
     db_name: "LOTOFACIL",
     faixas: {
       baixa: { nome: "Baixa (1-20)", inicio: 1, fim: 20 },
@@ -149,11 +155,13 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     nome_jogo: "Lotomania",
     total_numeros: 100,
     numeros_por_jogo: 20,
+    numeros_por_aposta: 50,
     numero_minimo: 0,
     numero_maximo: 99,
     colunas_resultado: Array.from({ length: 20 }, (_, i) => `N${i + 1}`),
     tabela_resultados: "Resultados_Lotomania",
     tabela_combinacoes: "COMBIN_LOTOMANIA",
+    tabela_ciclos: "NumerosCiclos_Lotomania",
     db_name: "LOTOFACIL",
     faixas: {
       baixa: { nome: "Baixa (0-33)", inicio: 0, fim: 33 },
@@ -284,7 +292,47 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
 export function getLotteryConfig(id: string): LotteryConfig {
   const cfg = LOTERIAS[id];
   if (!cfg) throw new Error(`Loteria desconhecida: ${id}`);
-  return cfg;
+  return { ...cfg, numeros_por_aposta: cfg.numeros_por_aposta ?? cfg.numeros_por_jogo };
 }
 
 export const LOTTERY_IDS = Object.keys(LOTERIAS);
+
+export const PRECO_BASE: Record<string, number> = {
+  lotofacil: 3.5,
+  megasena: 6.0,
+  quina: 3.0,
+  duplasena: 3.0,
+  lotomania: 3.0,
+  diadesorte: 2.5,
+  timemania: 3.5,
+  supersete: 3.0,
+  maismilionaria: 6.0,
+};
+
+function combinacoes(n: number, k: number): number {
+  if (k < 0 || k > n) return 0;
+  if (k === 0 || k === n) return 1;
+  let res = 1;
+  for (let i = 1; i <= k; i++) {
+    res = (res * (n - k + i)) / i;
+  }
+  return Math.round(res);
+}
+
+export function calcularPrecoAposta(loteriaId: string, dezenas: number): number {
+  const cfg = LOTERIAS[loteriaId];
+  const base = PRECO_BASE[loteriaId] ?? 2.5;
+  if (!cfg || dezenas <= cfg.numeros_por_jogo) return base;
+  return base * combinacoes(dezenas, cfg.numeros_por_jogo);
+}
+
+export function dezenasValidas(cfg: LotteryConfig): number[] {
+  return cfg.dezenas_opcoes ?? [cfg.numeros_por_jogo];
+}
+
+export function validarDezenas(cfg: LotteryConfig, dezenas: number | undefined): number {
+  if (dezenas === undefined || !dezenasValidas(cfg).includes(dezenas)) {
+    return cfg.numeros_por_jogo;
+  }
+  return dezenas;
+}

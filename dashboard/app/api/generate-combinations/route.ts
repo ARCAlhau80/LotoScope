@@ -126,7 +126,7 @@ export async function POST(request: Request) {
       });
     }
 
-    const numerosPorJogo = game_size || cfg.numeros_por_jogo;
+    const numerosPorJogo = game_size || (cfg.numeros_por_aposta ?? cfg.numeros_por_jogo);
 
     const mandatory = mandatory_numbers.length > 0 ? mandatory_numbers : selected_numbers.length > 0 ? selected_numbers : fixed_numbers;
     const excluded = excluded_numbers;

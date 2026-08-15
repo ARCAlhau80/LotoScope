@@ -5,7 +5,9 @@ import type {
   TransicaoQMF, TransicaoRegistro, MediasHistoricas, CicloInfo,
   ColunaAnaliseSS, CorrelacaoColunasSS, PadraoParidadeSS,
   DistribuicaoSomaSS, RepeticaoColunasSS, ApostaMultiplaSS,
-  AnaliseSuperSete,
+  AnaliseSuperSete, PrevisaoExclusaoSS, QuarentenaColuna, QuarentenaInfo,
+  ComparativoSuperSete, TransicaoDigitoSS,
+  ComparativoPosicional, DirecaoComparativo,
 } from '@/types';
 
 const ALPHA = 0.6;
@@ -165,6 +167,96 @@ function calcularAtrasadosPorColuna(
     atrasados[col] = atr.sort((a, b) => a.p_gap - b.p_gap);
   }
   return atrasados;
+}
+
+function calcularQuarentenaPorColuna(
+  resultados: Resultado[],
+  fatorQuarentena: number = 0.35
+): Record<string, QuarentenaColuna> {
+  const cols = colNames();
+  const quarentena: Record<string, QuarentenaColuna> = {};
+
+  for (const col of cols) {
+    const colIdx = parseInt(col.substring(1)) - 1;
+    const sequencia = resultados.map(r => r.numeros[colIdx]);
+    const digitos: QuarentenaInfo[] = [];
+    const emQuarentena: number[] = [];
+    const atrasadosList: number[] = [];
+    const muitoAtrasados: number[] = [];
+
+    for (const d of DIGITS) {
+      const gaps: number[] = [];
+      let ultimaPos: number | null = null;
+
+      for (let i = 0; i < sequencia.length; i++) {
+        if (sequencia[i] === d) {
+          if (ultimaPos !== null) {
+            gaps.push(i - ultimaPos);
+          }
+          ultimaPos = i;
+        }
+      }
+
+      const gapAtual = ultimaPos !== null ? sequencia.length - 1 - ultimaPos : sequencia.length;
+
+      if (gaps.length < 2) {
+        digitos.push({
+          digito: d,
+          gap_atual: gapAtual,
+          media: 0,
+          mediana: 0,
+          sigma: 0,
+          p90: 0,
+          status: 'normal',
+        });
+        continue;
+      }
+
+      const sorted = [...gaps].sort((a, b) => a - b);
+      const media = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+      const mediana = sorted.length % 2 === 0
+        ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+        : sorted[Math.floor(sorted.length / 2)];
+      const variance = gaps.reduce((s, g) => s + (g - media) ** 2, 0) / gaps.length;
+      const sigma = Math.sqrt(variance);
+      const p90Idx = Math.ceil(sorted.length * 0.9) - 1;
+      const p90 = sorted[Math.max(0, p90Idx)];
+
+      let status: QuarentenaInfo['status'];
+      if (gapAtual <= 3) {
+        status = 'quarentena';
+        emQuarentena.push(d);
+      } else if (gapAtual > p90) {
+        status = 'muito_atrasado';
+        muitoAtrasados.push(d);
+      } else if (gapAtual > media + fatorQuarentena * sigma) {
+        status = 'atrasado';
+        atrasadosList.push(d);
+      } else {
+        status = 'normal';
+      }
+
+      digitos.push({
+        digito: d,
+        gap_atual: gapAtual,
+        media: Math.round(media * 10) / 10,
+        mediana: Math.round(mediana * 10) / 10,
+        sigma: Math.round(sigma * 10) / 10,
+        p90: Math.round(p90 * 10) / 10,
+        status,
+      });
+    }
+
+    quarentena[col] = {
+      coluna: col,
+      digitos,
+      em_quarentena: emQuarentena,
+      atrasados: atrasadosList,
+      muito_atrasados: muitoAtrasados,
+    };
+  }
+
+  return quarentena;
 }
 
 function previsaoPorColuna(
@@ -334,6 +426,80 @@ function analisarRepeticao(resultados: Resultado[]): RepeticaoColunasSS {
     distribuicao: dist,
     digitos_mais_repetidos: digitosMaisRepetidos.slice(0, 10),
   };
+}
+
+function calcularExclusaoPorColuna(
+  resultados: Resultado[],
+  janela: number
+): PrevisaoExclusaoSS {
+  const cols = colNames();
+  const colunas: PrevisaoExclusaoSS['colunas'] = {};
+
+  for (const col of cols) {
+    const ci = cols.indexOf(col);
+    const valCol = resultados.map(r => r.numeros[ci]);
+
+    // Media Ponderada (janela=5) - melhor heuristica geral
+    const pesoRecente5 = (h: number[]) => {
+      const n = h.length;
+      const pesos = h.map((_, i) => 1 + (i / n) * 2);
+      const score: Record<number, number> = {};
+      for (const d of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]) score[d] = 0;
+      for (let i = 0; i < n; i++) score[h[i]] += pesos[i];
+      return score;
+    };
+
+    // Alternancia+Freq(15) - melhor para N6
+    const altFreq15 = (h: number[]) => {
+      const n = h.length;
+      const ultimo = n > 0 ? h[n - 1] : -1;
+      const rec = h.slice(-15);
+      const freq: Record<number, number> = {};
+      for (const d of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]) freq[d] = 0;
+      for (const d of rec) freq[d]++;
+      const candidatos = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(d => d !== ultimo);
+      for (const d of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+        if (!candidatos.includes(d)) freq[d] = -1;
+      }
+      return freq;
+    };
+
+    // Escolhe estrategia por coluna baseado na analise previa
+    const estrategiaPorColuna: Record<string, string> = {
+      N1: 'MediaPonderada5', N2: 'MediaPonderada5', N3: 'MediaPonderada5',
+      N4: 'MediaPonderada5', N5: 'MediaPonderada5', N6: 'AlternanciaFreq15', N7: 'MediaPonderada5',
+    };
+
+    const hist = valCol.slice(0, -1);
+    let score: Record<number, number>;
+    if (estrategiaPorColuna[col] === 'AlternanciaFreq15') {
+      score = altFreq15(hist);
+    } else {
+      score = pesoRecente5(hist);
+    }
+
+    // Normaliza scores para 0-1
+    const vals = Object.values(score);
+    const maxScore = Math.max(...vals, 0.001);
+    const minScore = Math.min(...vals);
+    const range = maxScore - minScore || 1;
+
+    const scores: { digito: number; score: number; status: 'mantido' | 'excluido' }[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+      .map(d => ({
+        digito: d,
+        score: (score[d] - minScore) / range,
+        status: 'excluido' as const,
+      }))
+      .sort((a, b) => b.score - a.score);
+
+    // Top 3 = mantidos
+    const top3 = scores.slice(0, 3).map(s => s.digito);
+    for (const s of scores.slice(0, 3)) s.status = 'mantido';
+
+    colunas[col] = { estrategia: estrategiaPorColuna[col], scores, top3 };
+  }
+
+  return { colunas };
 }
 
 function gerarApostaMultipla(
@@ -521,6 +687,60 @@ function analisarTransicaoQMFPorColuna(
   return { medias, recentes, tendencia };
 }
 
+function calcularComparativoSuperSete(resultados: Resultado[]): ComparativoSuperSete | null {
+  if (resultados.length < 2) return null;
+  const NUM_COLS = 7;
+  const DIGITOS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const ultimo = resultados[resultados.length - 1];
+  const penultimo = resultados[resultados.length - 2];
+  const porColuna: ComparativoSuperSete['por_coluna'] = {};
+
+  for (let col = 0; col < NUM_COLS; col++) {
+    const transMap: Record<number, { total: number; mesmo: number; maior: number; menor: number }> = {};
+    for (const d of DIGITOS) transMap[d] = { total: 0, mesmo: 0, maior: 0, menor: 0 };
+
+    for (let i = 1; i < resultados.length; i++) {
+      const ant = resultados[i - 1].numeros[col];
+      const atu = resultados[i].numeros[col];
+      if (ant === undefined || atu === undefined) continue;
+      const t = transMap[ant];
+      t.total++;
+      if (atu === ant) t.mesmo++;
+      else if (atu > ant) t.maior++;
+      else t.menor++;
+    }
+
+    const transicoes: TransicaoDigitoSS[] = DIGITOS.map(d => {
+      const t = transMap[d];
+      return {
+        digito: d,
+        total: t.total,
+        mesmo: t.mesmo,
+        maior: t.maior,
+        menor: t.menor,
+        pct_mesmo: t.total > 0 ? Math.round(t.mesmo / t.total * 1000) / 10 : 0,
+        pct_maior: t.total > 0 ? Math.round(t.maior / t.total * 1000) / 10 : 0,
+        pct_menor: t.total > 0 ? Math.round(t.menor / t.total * 1000) / 10 : 0,
+      };
+    });
+
+    const agg = transicoes.reduce((acc, t) => ({
+      mesmo: acc.mesmo + t.mesmo,
+      maior: acc.maior + t.maior,
+      menor: acc.menor + t.menor,
+      total: acc.total + t.total,
+    }), { mesmo: 0, maior: 0, menor: 0, total: 0 });
+
+    porColuna[`N${col + 1}`] = { transicoes, ...agg };
+  }
+
+  return {
+    por_coluna: porColuna,
+    ultimo_sorteio: ultimo.numeros,
+    penultimo_sorteio: penultimo.numeros,
+  };
+}
+
 export async function analiseSuperSete(janela?: number, concurso?: number): Promise<DashboardData> {
   const cfg = getLotteryConfig('supersete');
   let resultados = await carregarResultados(cfg.id);
@@ -550,6 +770,8 @@ export async function analiseSuperSete(janela?: number, concurso?: number): Prom
   const soma = analisarSoma(resultados);
   const repeticao = analisarRepeticao(resultados);
   const apostaMultipla = gerarApostaMultipla(lambdas, freqRecente);
+  const previsaoExclusao = calcularExclusaoPorColuna(resultados, janelaValida);
+  const quarentena = calcularQuarentenaPorColuna(resultados);
 
   const analiseSS: AnaliseSuperSete = {
     colunas: colunasAnalise,
@@ -558,6 +780,9 @@ export async function analiseSuperSete(janela?: number, concurso?: number): Prom
     soma,
     repeticao,
     aposta_multipla: apostaMultipla,
+    previsao_exclusao: previsaoExclusao,
+    quarentena,
+    comparativo_posicional: calcularComparativoSuperSete(resultados) ?? undefined,
   };
 
   const ultimo = resultados[total - 1];
@@ -631,15 +856,30 @@ export async function analiseSuperSete(janela?: number, concurso?: number): Prom
     .map(([n, f]) => [Number(n), f]);
 
   const previsaoPosicional: Record<string, PrevisaoItem[]> = {};
-  const palpite: number[] = [];
   for (const col of cols) {
     previsaoPosicional[col] = prev[col].slice(0, 3).map(p => ({ numero: p.digito, prob: p.prob }));
-    if (prev[col].length > 0) palpite.push(prev[col][0].digito);
   }
 
+  const palpite = cols.map(col => {
+    const q = quarentena[col];
+    if (!q) return prev[col]?.[0]?.digito ?? 0;
+    const candidatos = q.digitos
+      .filter(d => d.status === 'normal' || d.status === 'atrasado')
+      .sort((a, b) => {
+        const distA = Math.abs(a.gap_atual - a.media);
+        const distB = Math.abs(b.gap_atual - b.media);
+        return distA - distB;
+      });
+    return candidatos.length > 0 ? candidatos[0].digito : prev[col]?.[0]?.digito ?? 0;
+  });
+
   const previsaoCombinada = cols.map(col => {
-    const top = prev[col];
-    return top.length > 0 ? top[0].digito : 0;
+    const q = quarentena[col];
+    if (!q) return prev[col]?.[0]?.digito ?? 0;
+    const candidatos = q.digitos
+      .filter(d => d.status === 'muito_atrasado' || d.status === 'atrasado')
+      .sort((a, b) => (b.gap_atual / Math.max(b.p90, 1)) - (a.gap_atual / Math.max(a.p90, 1)));
+    return candidatos.length > 0 ? candidatos[0].digito : prev[col]?.[0]?.digito ?? 0;
   });
 
   const atrasadosPosicionais: Record<string, AtrasadoItem[]> = {};
@@ -702,11 +942,35 @@ export async function analiseSuperSete(janela?: number, concurso?: number): Prom
   const transicao = analisarTransicaoQMFPorColuna(resultados, janelaValida);
   const mediasHistoricas = calcularMediasHistoricasSS(resultados);
 
+  const penultimoResultado = total > 1 ? resultados[total - 2] : null;
+  const comparativoSS: ComparativoPosicional | undefined = penultimoResultado ? {
+    concurso_atual: ultimo.concurso,
+    concurso_anterior: penultimoResultado.concurso,
+    itens: ultimo.numeros.map((atual, i) => {
+      const anterior = penultimoResultado!.numeros[i];
+      const dir = atual > anterior ? 'maior' : atual < anterior ? 'menor' : 'igual';
+      const colKey = `N${i + 1}`;
+      const transicoes = analiseSS.comparativo_posicional?.por_coluna[colKey]?.transicoes;
+      const t = transicoes?.find(t => t.digito === anterior);
+      let expectativa: DirecaoComparativo | undefined;
+      if (t && t.total > 0) {
+        if (t.pct_maior >= t.pct_menor && t.pct_maior >= t.pct_mesmo) expectativa = 'maior';
+        else if (t.pct_menor >= t.pct_maior && t.pct_menor >= t.pct_mesmo) expectativa = 'menor';
+        else expectativa = 'igual';
+      }
+      return { posicao: i + 1, atual, anterior, direcao: dir, expectativa, acertou: expectativa ? dir === expectativa : undefined };
+    }),
+    total_maiores: ultimo.numeros.filter((n, i) => n > penultimoResultado!.numeros[i]).length,
+    total_menores: ultimo.numeros.filter((n, i) => n < penultimoResultado!.numeros[i]).length,
+    total_iguais: ultimo.numeros.filter((n, i) => n === penultimoResultado!.numeros[i]).length,
+  } : undefined;
+
   return {
     loteria: cfg.id,
     nome_jogo: cfg.nome_jogo,
     total_numeros: cfg.total_numeros,
     numeros_por_jogo: cfg.numeros_por_jogo,
+    numeros_por_aposta: cfg.numeros_por_aposta ?? cfg.numeros_por_jogo,
     ultimo_concurso: ultimo.concurso,
     total_sorteios: total,
     ultimo_sorteio: ultimoStats,
@@ -731,5 +995,6 @@ export async function analiseSuperSete(janela?: number, concurso?: number): Prom
     tem_trevos: false,
     is_positional: true,
     supersete: analiseSS,
+    comparativo_posicional: comparativoSS,
   };
 }

@@ -38,7 +38,7 @@ BEGIN
     DECLARE @N11 INT, @N12 INT, @N13 INT, @N14 INT, @N15 INT;
     DECLARE @UltimoAtualizado INT;
     DECLARE @TotalConcursos INT = 0;
-    DECLARE @QtdAfetadas_11 INT, @QtdAfetadas_12 INT, @QtdAfetadas_13 INT;
+    DECLARE @QtdAfetadas_10 INT, @QtdAfetadas_11 INT, @QtdAfetadas_12 INT, @QtdAfetadas_13 INT;
     DECLARE @QtdAfetadas_14 INT, @QtdAfetadas_15 INT;
     
     -- Determinar concursos a processar
@@ -73,7 +73,14 @@ BEGIN
     BEGIN
         SET @TotalConcursos = @TotalConcursos + 1;
         
-        -- ACERTOS 15 (combinação = sorteio)
+        -- ACERTOS 10
+        UPDATE COMBINACOES_LOTOFACIL
+        SET Acertos_10 = Acertos_10 + 1, Ultimo_Acertos_10 = @ConcursoAtual
+        WHERE (SELECT COUNT(*) FROM (VALUES (N1),(N2),(N3),(N4),(N5),(N6),(N7),(N8),(N9),(N10),(N11),(N12),(N13),(N14),(N15)) AS comb(numero)
+               WHERE numero IN (@N1,@N2,@N3,@N4,@N5,@N6,@N7,@N8,@N9,@N10,@N11,@N12,@N13,@N14,@N15)) = 10;
+        SET @QtdAfetadas_10 = @@ROWCOUNT;
+
+        -- ACERTOS 15
         UPDATE COMBINACOES_LOTOFACIL
         SET Acertos_15 = Acertos_15 + 1, Ultimo_Acertos_15 = @ConcursoAtual
         WHERE (SELECT COUNT(*) FROM (VALUES (N1),(N2),(N3),(N4),(N5),(N6),(N7),(N8),(N9),(N10),(N11),(N12),(N13),(N14),(N15)) AS comb(numero)
@@ -165,7 +172,7 @@ BEGIN
         RETURN;
     
     -- Verificar se colunas existem
-    IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'COMBINACOES_LOTOFACIL' AND COLUMN_NAME = 'Acertos_15')
+    IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'COMBINACOES_LOTOFACIL' AND COLUMN_NAME = 'Acertos_10')
         RETURN;
     
     DECLARE @Concurso INT;
@@ -185,6 +192,12 @@ BEGIN
     
     WHILE @@FETCH_STATUS = 0
     BEGIN
+        -- ACERTOS 10
+        UPDATE COMBINACOES_LOTOFACIL
+        SET Acertos_10 = Acertos_10 + 1, Ultimo_Acertos_10 = @Concurso
+        WHERE (SELECT COUNT(*) FROM (VALUES (N1),(N2),(N3),(N4),(N5),(N6),(N7),(N8),(N9),(N10),(N11),(N12),(N13),(N14),(N15)) AS comb(numero)
+               WHERE numero IN (@N1,@N2,@N3,@N4,@N5,@N6,@N7,@N8,@N9,@N10,@N11,@N12,@N13,@N14,@N15)) = 10;
+
         -- ACERTOS 15
         UPDATE COMBINACOES_LOTOFACIL
         SET Acertos_15 = Acertos_15 + 1, Ultimo_Acertos_15 = @Concurso

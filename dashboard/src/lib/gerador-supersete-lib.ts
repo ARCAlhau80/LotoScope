@@ -14,6 +14,8 @@ export interface RestricoesSS {
   max_colunas_quentes?: number;
   coluna_nao_repetir_anterior?: boolean;
   ultimo_sorteio?: number[];
+  modo_quarentena?: 'curta' | 'atrasados' | 'combinado';
+  quarentena_concursos?: number;
 }
 
 function calcularLambdaBlend(resultados: number[][], janelaRecente: number = 0) {
@@ -60,10 +62,62 @@ function getQuentesPorColuna(lambdaBlend: Record<number, Record<number, number>>
   return quentes;
 }
 
+function calcularQuarentenaGerador(
+  resultados: number[][],
+  modo: 'curta' | 'atrasados' | 'combinado',
+  concursos: number
+): {
+  emQuarentena: Record<number, Set<number>>;
+  muitoAtrasados: Record<number, Set<number>>;
+} {
+  const emQuarentena: Record<number, Set<number>> = {};
+  const muitoAtrasados: Record<number, Set<number>> = {};
+  for (let col = 0; col < NUM_COLUNAS; col++) {
+    emQuarentena[col] = new Set();
+    muitoAtrasados[col] = new Set();
+    const sequencia = resultados.map(r => r[col]);
+
+    for (const d of DIGITOS) {
+      const gaps: number[] = [];
+      let ultimaPos: number | null = null;
+
+      for (let i = 0; i < sequencia.length; i++) {
+        if (sequencia[i] === d) {
+          if (ultimaPos !== null) gaps.push(i - ultimaPos);
+          ultimaPos = i;
+        }
+      }
+
+      const gapAtual = ultimaPos !== null ? sequencia.length - 1 - ultimaPos : sequencia.length;
+
+      if (gaps.length < 2) continue;
+
+      const sorted = [...gaps].sort((a, b) => a - b);
+      const p90Idx = Math.ceil(sorted.length * 0.9) - 1;
+      const p90 = sorted[Math.max(0, p90Idx)];
+
+      if (modo === 'curta' || modo === 'combinado') {
+        if (gapAtual <= 3) {
+          emQuarentena[col].add(d);
+        }
+      }
+
+      if (modo === 'atrasados' || modo === 'combinado') {
+        if (gapAtual > p90) {
+          muitoAtrasados[col].add(d);
+        }
+      }
+    }
+  }
+
+  return { emQuarentena, muitoAtrasados };
+}
+
 function gerarJogo(
   lambdaBlend: Record<number, Record<number, number>>,
   restricoes: RestricoesSS,
   ultimoSorteio: number[] | null,
+  quarentenaData?: { emQuarentena: Record<number, Set<number>>; muitoAtrasados: Record<number, Set<number>> },
 ): number[] | null {
   const quentes = getQuentesPorColuna(lambdaBlend);
 
@@ -88,9 +142,28 @@ function gerarJogo(
         disponiveis = disponiveis.filter(d => d !== ultimoSorteio[col]);
       }
 
+      if (quarentenaData && restricoes.modo_quarentena) {
+        const modo = restricoes.modo_quarentena;
+        if (modo === 'curta' || modo === 'combinado') {
+          disponiveis = disponiveis.filter(d => !quarentenaData.emQuarentena[col]?.has(d));
+        }
+      }
+
       if (disponiveis.length === 0) { valido = false; break; }
 
-      const pesos = disponiveis.map(d => Math.max(lambdaBlend[col][d], 0.001));
+      let pesos = disponiveis.map(d => Math.max(lambdaBlend[col][d], 0.001));
+
+      if (quarentenaData && restricoes.modo_quarentena) {
+        const modo = restricoes.modo_quarentena;
+        if (modo === 'atrasados' || modo === 'combinado') {
+          pesos = pesos.map((p, i) => {
+            const d = disponiveis[i];
+            if (quarentenaData.muitoAtrasados[col]?.has(d)) return p * 5;
+            return p;
+          });
+        }
+      }
+
       const totalPeso = pesos.reduce((a, b) => a + b, 0);
       const probs = pesos.map(p => p / totalPeso);
 
@@ -144,13 +217,19 @@ export async function gerarCombinacoesSuperSete(
   const lambdaBlend = calcularLambdaBlend(resultados, restricoes.janela_recente || 0);
   const ultimoSorteio = restricoes.ultimo_sorteio ?? resultados[resultados.length - 1];
 
+  let quarentenaData: ReturnType<typeof calcularQuarentenaGerador> | undefined;
+  if (restricoes.modo_quarentena) {
+    const concursos = restricoes.quarentena_concursos ?? 3;
+    quarentenaData = calcularQuarentenaGerador(resultados, restricoes.modo_quarentena, concursos);
+  }
+
   const jogos: number[][] = [];
   const vistos = new Set<string>();
   let tentativas = 0;
   const maxTentativas = quantidade * 500;
 
   while (jogos.length < quantidade && tentativas < maxTentativas) {
-    const jogo = gerarJogo(lambdaBlend, restricoes, ultimoSorteio);
+    const jogo = gerarJogo(lambdaBlend, restricoes, ultimoSorteio, quarentenaData);
     if (jogo) {
       const chave = jogo.join(',');
       if (!vistos.has(chave)) {

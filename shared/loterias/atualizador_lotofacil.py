@@ -90,6 +90,7 @@ class AtualizadorLotofacil(AtualizadorBase):
                 cursor = conn.cursor()
                 procs = [
                     "PROC_ATUALIZAR_COMBIN_10",
+                    "sp_AtualizarAcertos_LF15",
                     "AtualizaNumerosCiclos",
                     "PROC_ATUALIZAR_QUINA",
                     "SP_AtualizarCamposComparacao",

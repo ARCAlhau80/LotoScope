@@ -234,27 +234,74 @@ function calcularMediasHistoricas(resultados: Resultado[], cfg: LotteryConfig): 
   };
 }
 
+// Matriz de Quarentena por Posição — regra corrigida (handoff 12/08/2026, aprovada pelo usuário):
+// - Viabilidade: posição k (1..m) só admite valor v (1-indexado no range) com k <= v <= total-m+k.
+//   Fora disso a célula é 'inviavel' (ex.: N11:23 — em N11 o máximo é 21 na Lotofácil).
+// - p(k,v) = C(v-1,k-1) * C(total-v, m-k) / C(total, m); gap esperado = 1/p concursos.
+// - Q: saiu em um dos últimos JANELA_Q concursos (gap_atual <= JANELA_Q-1).
+// - A: gap >= LIM_ATRASO_A * (1/p) | M: gap >= LIM_ATRASO_M * (1/p) — gap SEMPRE normalizado pela
+//   probabilidade teórica da célula (nunca contagem fixa de concursos).
+// - R (rara estrutural): p * total_concursos < RARO_MIN_HITS → atraso não é mensurável; nunca A/M.
+// - Célula viável que nunca saiu e não é R → N (sem evidência de atraso).
+const JANELA_Q = 3;
+const LIM_ATRASO_A = 1.75;
+const LIM_ATRASO_M = 3.0;
+const RARO_MIN_HITS = 10;
+
+function logChoose(n: number, k: number): number {
+  if (k < 0 || k > n) return Number.NEGATIVE_INFINITY;
+  let s = 0;
+  for (let i = 0; i < k; i++) s += Math.log(n - i) - Math.log(i + 1);
+  return s;
+}
+
+function probTeoricaPosicao(k: number, v: number, total: number, m: number): number {
+  return Math.exp(logChoose(v - 1, k - 1) + logChoose(total - v, m - k) - logChoose(total, m));
+}
+
 function calcularQuarentenaPorPosicao(
   resultados: Resultado[],
-  cfg: LotteryConfig,
-  fatorQuarentena: number = 0.35
+  cfg: LotteryConfig
 ): Record<string, QuarentenaPosicaoLF> {
-  const positions = Array.from({ length: cfg.numeros_por_jogo }, (_, i) => `N${i + 1}`);
-  const allNums = Array.from({ length: cfg.total_numeros }, (_, i) => i + cfg.numero_minimo);
+  const m = cfg.numeros_por_jogo;
+  const totalNumeros = cfg.total_numeros;
+  const totalConcursos = resultados.length;
+  const positions = Array.from({ length: m }, (_, i) => `N${i + 1}`);
   const quarentena: Record<string, QuarentenaPosicaoLF> = {};
+  const r1 = (x: number) => Math.round(x * 10) / 10;
 
   for (const pos of positions) {
-    const posIdx = parseInt(pos.substring(1)) - 1;
-    const sequencia = resultados.map(r => r.numeros[posIdx]);
+    const k = parseInt(pos.substring(1), 10);
+    const sequencia = resultados.map(r => r.numeros[k - 1]);
     const numeros: QuarentenaInfo[] = [];
     const emQuarentena: number[] = [];
     const atrasadosList: number[] = [];
     const muitoAtrasados: number[] = [];
 
-    for (const num of allNums) {
+    const vMin = k;
+    const vMax = totalNumeros - m + k;
+
+    for (let v = 1; v <= totalNumeros; v++) {
+      const num = v + cfg.numero_minimo - 1;
+
+      if (v < vMin || v > vMax) {
+        numeros.push({
+          digito: num,
+          gap_atual: 0,
+          media: 0,
+          mediana: 0,
+          sigma: 0,
+          p90: 0,
+          status: 'inviavel',
+        });
+        continue;
+      }
+
+      const p = probTeoricaPosicao(k, v, totalNumeros, m);
+      const gapEsperado = 1 / p;
+
       const gaps: number[] = [];
       let ultimaPos: number | null = null;
-
       for (let i = 0; i < sequencia.length; i++) {
         if (sequencia[i] === num) {
           if (ultimaPos !== null) {
@@ -266,37 +313,33 @@ function calcularQuarentenaPorPosicao(
 
       const gapAtual = ultimaPos !== null ? sequencia.length - 1 - ultimaPos : sequencia.length;
 
-      if (gaps.length < 2) {
-        numeros.push({
-          digito: num,
-          gap_atual: gapAtual,
-          media: 0,
-          mediana: 0,
-          sigma: 0,
-          p90: 0,
-          status: 'normal',
-        });
-        continue;
+      let media = 0, mediana = 0, sigma = 0, p90 = 0;
+      if (gaps.length >= 2) {
+        const sorted = [...gaps].sort((a, b) => a - b);
+        media = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+        mediana = sorted.length % 2 === 0
+          ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+          : sorted[Math.floor(sorted.length / 2)];
+        const variance = gaps.reduce((s, g) => s + (g - media) ** 2, 0) / gaps.length;
+        sigma = Math.sqrt(variance);
+        const p90Idx = Math.ceil(sorted.length * 0.9) - 1;
+        p90 = sorted[Math.max(0, p90Idx)];
       }
 
-      const sorted = [...gaps].sort((a, b) => a - b);
-      const media = gaps.reduce((a, b) => a + b, 0) / gaps.length;
-      const mediana = sorted.length % 2 === 0
-        ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
-        : sorted[Math.floor(sorted.length / 2)];
-      const variance = gaps.reduce((s, g) => s + (g - media) ** 2, 0) / gaps.length;
-      const sigma = Math.sqrt(variance);
-      const p90Idx = Math.ceil(sorted.length * 0.9) - 1;
-      const p90 = sorted[Math.max(0, p90Idx)];
+      const raraEstrutural = p * totalConcursos < RARO_MIN_HITS;
 
       let status: QuarentenaInfo['status'];
-      if (gapAtual <= 3) {
+      if (gapAtual <= JANELA_Q - 1 && ultimaPos !== null) {
         status = 'quarentena';
         emQuarentena.push(num);
-      } else if (gapAtual > p90) {
+      } else if (raraEstrutural) {
+        status = 'rara';
+      } else if (ultimaPos === null) {
+        status = 'normal';
+      } else if (gapAtual >= LIM_ATRASO_M * gapEsperado) {
         status = 'muito_atrasado';
         muitoAtrasados.push(num);
-      } else if (gapAtual > media + fatorQuarentena * sigma) {
+      } else if (gapAtual >= LIM_ATRASO_A * gapEsperado) {
         status = 'atrasado';
         atrasadosList.push(num);
       } else {
@@ -306,10 +349,12 @@ function calcularQuarentenaPorPosicao(
       numeros.push({
         digito: num,
         gap_atual: gapAtual,
-        media: Math.round(media * 10) / 10,
-        mediana: Math.round(mediana * 10) / 10,
-        sigma: Math.round(sigma * 10) / 10,
-        p90: Math.round(p90 * 10) / 10,
+        media: r1(media),
+        mediana: r1(mediana),
+        sigma: r1(sigma),
+        p90: r1(p90),
+        prob_teorica: p,
+        gap_esperado: r1(gapEsperado),
         status,
       });
     }

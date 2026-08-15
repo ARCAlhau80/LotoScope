@@ -31,9 +31,16 @@ env/
 # IDEs
 .vscode/
 .idea/
+.cursor/
+.windsurf/
 *.swp
 *.swo
 *~
+
+# Node
+node_modules/
+.next/
+*.tsbuildinfo
 
 # Database files (sensitive data)
 *.db
@@ -93,3 +100,6 @@ Desktop.ini
 # Cache
 .cache/
 workflow-graph/
+
+# Testes/browser tools
+.playwright-mcp/

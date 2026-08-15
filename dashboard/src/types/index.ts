@@ -248,7 +248,9 @@ export interface QuarentenaInfo {
   mediana: number;
   sigma: number;
   p90: number;
-  status: 'quarentena' | 'normal' | 'atrasado' | 'muito_atrasado';
+  prob_teorica?: number;
+  gap_esperado?: number;
+  status: 'quarentena' | 'normal' | 'atrasado' | 'muito_atrasado' | 'rara' | 'inviavel';
 }
 
 export interface QuarentenaColuna {

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "skills": {
+    "paths": [".agents/skills"]
+  },
+  "mcp": {
+    "mcp-graph": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@mcp-graph-workflow/mcp-graph"
+      ],
+      "enabled": true
+    },
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "@playwright/mcp@latest"
+      ],
+      "enabled": true
+    },
+    "browser-use": {
+      "enabled": true,
+      "type": "local",
+      "command": [
+        "uvx",
+        "browser-use-mcp"
+      ]
+    },
+    "context7": {
+      "enabled": true,
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@upstash/context7-mcp"
+      ]
+    }
+  }
+}

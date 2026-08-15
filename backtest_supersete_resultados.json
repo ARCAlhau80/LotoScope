@@ -1,0 +1,247 @@
+{
+  "data_geracao": "2026-07-21 00:48",
+  "modelo": "gemma-lotto",
+  "total_testes": 5,
+  "periodo_inicio": 860,
+  "periodo_fim": 864,
+  "estatisticas": {
+    "total_testes": 5,
+    "acertos_3_colunas": "2/5 (40.0%)",
+    "media_tentativas_por_coluna": 5.14,
+    "win_rate_janela": "2/5 (40.0%)"
+  },
+  "previsao_futura": {
+    "ranking": {
+      "N1": [
+        8,
+        6,
+        3,
+        4,
+        5,
+        2,
+        7,
+        9,
+        1,
+        0
+      ],
+      "N2": [
+        4,
+        5,
+        6,
+        7,
+        2,
+        8,
+        9,
+        3,
+        1,
+        0
+      ],
+      "N3": [
+        4,
+        5,
+        6,
+        7,
+        2,
+        3,
+        8,
+        9,
+        0,
+        1
+      ],
+      "N4": [
+        5,
+        6,
+        4,
+        2,
+        8,
+        9,
+        3,
+        7,
+        1,
+        0
+      ],
+      "N5": [
+        7,
+        6,
+        4,
+        3,
+        8,
+        9,
+        5,
+        2,
+        1,
+        0
+      ],
+      "N6": [
+        6,
+        7,
+        8,
+        9,
+        5,
+        4,
+        2,
+        3,
+        1,
+        0
+      ],
+      "N7": [
+        5,
+        6,
+        7,
+        8,
+        4,
+        2,
+        3,
+        9,
+        1,
+        0
+      ]
+    },
+    "melhores_1_tentativa": {
+      "N1": 8,
+      "N2": 4,
+      "N3": 4,
+      "N4": 5,
+      "N5": 7,
+      "N6": 6,
+      "N7": 5
+    },
+    "melhores_3_tentativas": {
+      "N1": [
+        8,
+        6,
+        3
+      ],
+      "N2": [
+        4,
+        5,
+        6
+      ],
+      "N3": [
+        4,
+        5,
+        6
+      ],
+      "N4": [
+        5,
+        6,
+        4
+      ],
+      "N5": [
+        7,
+        6,
+        4
+      ],
+      "N6": [
+        6,
+        7,
+        8
+      ],
+      "N7": [
+        5,
+        6,
+        7
+      ]
+    }
+  },
+  "ultimo_sorteio_real": {
+    "concurso": 874,
+    "data": "17/07/2026",
+    "digitos": {
+      "N1": 5,
+      "N2": 9,
+      "N3": 1,
+      "N4": 5,
+      "N5": 1,
+      "N6": 8,
+      "N7": 8
+    }
+  },
+  "resultados_por_concurso": [
+    {
+      "concurso": 860,
+      "tentativas_por_coluna": {
+        "N1": 5,
+        "N2": 5,
+        "N3": 2,
+        "N4": 2,
+        "N5": 8,
+        "N6": 7,
+        "N7": 5
+      },
+      "media_tentativas": 4.86,
+      "col1": 0,
+      "col3": 2,
+      "col5": 5,
+      "acertou_3_mais": false
+    },
+    {
+      "concurso": 861,
+      "tentativas_por_coluna": {
+        "N1": 3,
+        "N2": 4,
+        "N3": 4,
+        "N4": 9,
+        "N5": 3,
+        "N6": 2,
+        "N7": 8
+      },
+      "media_tentativas": 4.71,
+      "col1": 0,
+      "col3": 3,
+      "col5": 5,
+      "acertou_3_mais": true
+    },
+    {
+      "concurso": 862,
+      "tentativas_por_coluna": {
+        "N1": 9,
+        "N2": 2,
+        "N3": 1,
+        "N4": 10,
+        "N5": 3,
+        "N6": 1,
+        "N7": 8
+      },
+      "media_tentativas": 4.86,
+      "col1": 2,
+      "col3": 4,
+      "col5": 4,
+      "acertou_3_mais": true
+    },
+    {
+      "concurso": 863,
+      "tentativas_por_coluna": {
+        "N1": 4,
+        "N2": 6,
+        "N3": 8,
+        "N4": 2,
+        "N5": 4,
+        "N6": 6,
+        "N7": 7
+      },
+      "media_tentativas": 5.29,
+      "col1": 0,
+      "col3": 1,
+      "col5": 3,
+      "acertou_3_mais": false
+    },
+    {
+      "concurso": 864,
+      "tentativas_por_coluna": {
+        "N1": 10,
+        "N2": 3,
+        "N3": 1,
+        "N4": 9,
+        "N5": 5,
+        "N6": 10,
+        "N7": 4
+      },
+      "media_tentativas": 6.0,
+      "col1": 1,
+      "col3": 2,
+      "col5": 4,
+      "acertou_3_mais": false
+    }
+  ]
+}

@@ -10,6 +10,7 @@ import { DrawnNumbersProvider } from '@/lib/DrawnNumbersContext';
 import TopBar from '@/components/TopBar';
 import HeroSection from '@/components/HeroSection';
 import PalpiteSection from '@/components/PalpiteSection';
+import JogosDiversosSection from '@/components/JogosDiversosSection';
 import QmfSection from '@/components/QmfSection';
 import TransicaoSection from '@/components/TransicaoSection';
 import CiclosSection from '@/components/CiclosSection';
@@ -207,6 +208,9 @@ function HomePage() {
               <PalpiteSection palpite={data.palpite} previsao_combinada={data.previsao_combinada} loteria={loteria} />
             </div>
             <div className="animate-slide-up stagger-2">
+              <JogosDiversosSection loteria={loteria} concursoBase={concurso} numerosSorteadosAtual={data.ultimo_sorteio.numeros} />
+            </div>
+            <div className="animate-slide-up stagger-2">
               <QmfSection
                 quentes={data.numeros_quentes}
                 mornos={data.numeros_mornos}
@@ -234,7 +238,7 @@ function HomePage() {
             </div>
             {data.quarentena_posicoes && loteria !== 'supersete' && (
               <div className="animate-slide-up stagger-6">
-                <QuarantineMatrixLotofacil quarentena={data.quarentena_posicoes} />
+                <QuarantineMatrixLotofacil quarentena={data.quarentena_posicoes} numerosSorteados={data.ultimo_sorteio.numeros} />
               </div>
             )}
             {grupos && (

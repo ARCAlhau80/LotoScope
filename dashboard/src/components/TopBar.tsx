@@ -20,7 +20,7 @@ function LotteryTab({ id, active, onClick }: { id: string; active: boolean; onCl
       style={active ? { background: 'linear-gradient(135deg, rgba(129,140,248,0.18), rgba(167,139,250,0.1))', border: '1px solid rgba(129,140,248,0.2)' } : { border: '1px solid transparent' }}
     >
       <span className="text-[13px] font-semibold tracking-tight">{cfg.nome_jogo}</span>
-      <span className="text-[9px] opacity-50 mt-0.5 font-mono">{cfg.total_numeros} números · {cfg.numeros_por_jogo}/jogo</span>
+      <span className="text-[9px] opacity-50 mt-0.5 font-mono">{cfg.total_numeros} números · {cfg.numeros_por_aposta ?? cfg.numeros_por_jogo}/jogo</span>
       {active && (
         <span className="absolute -bottom-[7px] left-1/2 -translate-x-1/2 w-6 h-[3px] rounded-full bg-[#818cf8] shadow-sm shadow-[#818cf8]" />
       )}

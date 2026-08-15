@@ -54,7 +54,7 @@ class AtualizadorAcertosLotofacil15:
     """
     
     TABELA = 'COMBINACOES_LOTOFACIL'
-    NIVEIS_ACERTOS = [11, 12, 13, 14, 15]
+    NIVEIS_ACERTOS = [10, 11, 12, 13, 14, 15]
     
     def __init__(self):
         self.db = DatabaseConfig()
@@ -62,7 +62,7 @@ class AtualizadorAcertosLotofacil15:
             'combinacoes_processadas': 0,
             'concursos_processados': 0,
             'tempo_total': 0,
-            'atualizacoes': {11: 0, 12: 0, 13: 0, 14: 0, 15: 0}
+            'atualizacoes': {10: 0, 11: 0, 12: 0, 13: 0, 14: 0, 15: 0}
         }
     
     def verificar_estrutura_tabela(self) -> bool:
@@ -70,8 +70,8 @@ class AtualizadorAcertosLotofacil15:
         print("\n🔍 Verificando estrutura da tabela COMBINACOES_LOTOFACIL...")
         
         colunas_necessarias = [
-            'Acertos_11', 'Acertos_12', 'Acertos_13', 'Acertos_14', 'Acertos_15',
-            'Ultimo_Acertos_11', 'Ultimo_Acertos_12', 'Ultimo_Acertos_13', 
+            'Acertos_10', 'Acertos_11', 'Acertos_12', 'Acertos_13', 'Acertos_14', 'Acertos_15',
+            'Ultimo_Acertos_10', 'Ultimo_Acertos_11', 'Ultimo_Acertos_12', 'Ultimo_Acertos_13',
             'Ultimo_Acertos_14', 'Ultimo_Acertos_15', 'UltimoConcursoAtualizado'
         ]
         
@@ -348,11 +348,13 @@ class AtualizadorAcertosLotofacil15:
         sql_reset = f"""
         UPDATE {self.TABELA}
         SET 
+            Acertos_10 = 0,
             Acertos_11 = 0,
             Acertos_12 = 0,
             Acertos_13 = 0,
             Acertos_14 = 0,
             Acertos_15 = 0,
+            Ultimo_Acertos_10 = NULL,
             Ultimo_Acertos_11 = NULL,
             Ultimo_Acertos_12 = NULL,
             Ultimo_Acertos_13 = NULL,
@@ -382,11 +384,12 @@ class AtualizadorAcertosLotofacil15:
         # Consultar estatísticas finais
         query_stats = f"""
         SELECT 
-            SUM(Acertos_15) as total_15,
-            SUM(Acertos_14) as total_14,
-            SUM(Acertos_13) as total_13,
-            SUM(Acertos_12) as total_12,
+            SUM(Acertos_10) as total_10,
             SUM(Acertos_11) as total_11,
+            SUM(Acertos_12) as total_12,
+            SUM(Acertos_13) as total_13,
+            SUM(Acertos_14) as total_14,
+            SUM(Acertos_15) as total_15,
             MAX(UltimoConcursoAtualizado) as ultimo_atualizado
         FROM {self.TABELA}
         """
@@ -394,11 +397,12 @@ class AtualizadorAcertosLotofacil15:
         stats = self.db.execute_query_dataframe(query_stats).iloc[0]
         
         print(f"\n📈 Estado final da tabela:")
-        print(f"   • Total acertos 15: {int(stats['total_15']):,}")
-        print(f"   • Total acertos 14: {int(stats['total_14']):,}")
-        print(f"   • Total acertos 13: {int(stats['total_13']):,}")
-        print(f"   • Total acertos 12: {int(stats['total_12']):,}")
+        print(f"   • Total acertos 10: {int(stats['total_10']):,}")
         print(f"   • Total acertos 11: {int(stats['total_11']):,}")
+        print(f"   • Total acertos 12: {int(stats['total_12']):,}")
+        print(f"   • Total acertos 13: {int(stats['total_13']):,}")
+        print(f"   • Total acertos 14: {int(stats['total_14']):,}")
+        print(f"   • Total acertos 15: {int(stats['total_15']):,}")
         print(f"   • Último concurso atualizado: {int(stats['ultimo_atualizado'])}")
         
         print("\n" + "=" * 70)

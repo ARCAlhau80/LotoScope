@@ -1,10 +1,10 @@
 'use client';
 
 import NumBadge from './NumBadge';
-import type { UltimoSorteio, MediasHistoricas } from '@/types';
+import type { UltimoSorteio, MediasHistoricas, ComparativoPosicional } from '@/types';
 
-export default function HeroSection({ u, concurso, total, medias, nomeJogo, numerosPorJogo, totalNumeros }: {
-  u: UltimoSorteio; concurso: number; total: number; medias: MediasHistoricas; nomeJogo?: string; numerosPorJogo?: number; totalNumeros?: number;
+export default function HeroSection({ u, concurso, total, medias, nomeJogo, numerosPorJogo, totalNumeros, comparativo }: {
+  u: UltimoSorteio; concurso: number; total: number; medias: MediasHistoricas; nomeJogo?: string; numerosPorJogo?: number; totalNumeros?: number; comparativo?: ComparativoPosicional | null;
 }) {
   const temTrevos = u.trevos && u.trevos.length > 0;
   const npj = numerosPorJogo ?? 15;
@@ -29,11 +29,24 @@ export default function HeroSection({ u, concurso, total, medias, nomeJogo, nume
         <p className="text-muted text-sm mb-6 sm:mb-8">{concurso} sorteios analisados</p>
 
         <div className="flex flex-wrap gap-2.5 mb-4 sm:mb-6">
-          {u.numeros.map((n, i) => (
-            <div key={`num-${i}`} className={`animate-slide-up`} style={{ animationDelay: `${i * 0.04}s` }}>
-              <NumBadge n={n} isDrawn />
-            </div>
-          ))}
+          {u.numeros.map((n, i) => {
+            const item = comparativo?.itens[i];
+            return (
+              <div key={`num-${i}`} className={`animate-slide-up relative`} style={{ animationDelay: `${i * 0.04}s` }}>
+                <NumBadge n={n} isDrawn />
+                {item && item.direcao !== 'igual' && (
+                  <span className={`absolute -top-1.5 -right-1.5 text-[10px] font-bold drop-shadow-lg ${item.direcao === 'maior' ? 'text-emerald' : 'text-hot'}`}>
+                    {item.direcao === 'maior' ? '▲' : '▼'}
+                  </span>
+                )}
+                {item?.expectativa && (
+                  <span className={`absolute -bottom-1.5 -right-1.5 w-2 h-2 rounded-full border border-base/50 ${item.acertou ? 'bg-emerald' : 'bg-hot'}`}
+                    title={`Esperado: ${item.expectativa}${item.acertou !== undefined ? (item.acertou ? ' ✓ acertou' : ' ✗ errou') : ''}`}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {temTrevos && (
@@ -62,6 +75,19 @@ export default function HeroSection({ u, concurso, total, medias, nomeJogo, nume
           <HeroCard value={String(u.altos)} label={`Altos (${meio+1}-${maxNum})`} sub={u.altos_numeros.join(', ')} tip={`Média: ${medias.altos} por concurso`} idx={9} />
           <HeroCard value={String(u.multiplos_3)} label="Múlt. 3" sub={u.multiplos_3_numeros.join(', ')} tip={`Média: ${medias.multiplos_3} por concurso`} idx={10} />
           <HeroCard value={String(u.multiplos_5)} label="Múlt. 5" sub={u.multiplos_5_numeros.join(', ')} tip={`Média: ${medias.multiplos_5} por concurso`} idx={11} />
+          {comparativo && (
+            <HeroCard
+              value={`${comparativo.total_maiores}↑ ${comparativo.total_menores}↓`}
+              label="Posicional vs anterior"
+              tip={`Concurso ${comparativo.concurso_anterior} → ${comparativo.concurso_atual}: ${comparativo.total_maiores} maiores, ${comparativo.total_menores} menores, ${comparativo.total_iguais} iguais` +
+                `${comparativo.itens.some(i => i.expectativa) ? `\n\nLegenda: ▲▼ = direção · ● = acertou expectativa` : ''}\n\n` +
+                `${comparativo.itens.map(i =>
+                  `N${i.posicao}: ${i.anterior}→${i.atual} ${i.direcao === 'maior' ? '▲' : i.direcao === 'menor' ? '▼' : '='}` +
+                  (i.expectativa ? ` (esperado: ${i.expectativa === 'maior' ? '▲' : i.expectativa === 'menor' ? '▼' : '='}${i.acertou ? ' ✓' : ' ✗'})` : '')
+                ).join('\n')}`}
+              idx={12}
+            />
+          )}
         </div>
       </div>
     </div>

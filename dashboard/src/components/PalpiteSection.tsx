@@ -36,6 +36,7 @@ function PalpiteCard({ titulo, badge, numeros, primosSet = PRIMOS_LF }: { titulo
 
 export default function PalpiteSection({ palpite, previsao_combinada, loteria }: { palpite: number[]; previsao_combinada: number[]; loteria?: string }) {
   const primosSet = loteria ? new Set(getLotteryConfig(loteria).primos) : PRIMOS_LF;
+  const isSS = loteria === 'supersete';
   if (!palpite || palpite.length === 0) return null;
 
   return (
@@ -43,7 +44,9 @@ export default function PalpiteSection({ palpite, previsao_combinada, loteria }:
       <div>
         <h3 className="text-lg font-semibold mb-4 text-[#e0e7ff] flex items-center gap-2">
           Previsão para o Próximo Sorteio
-          <span className="text-[11px] bg-accent/15 text-accent-2 px-2 py-0.5 rounded font-normal">Poisson blend</span>
+          <span className="text-[11px] bg-accent/15 text-accent-2 px-2 py-0.5 rounded font-normal">
+            {isSS ? 'Quarentena (média)' : 'Poisson blend'}
+          </span>
         </h3>
         <PalpiteCard titulo="" badge="" numeros={palpite} primosSet={primosSet} />
       </div>
@@ -51,7 +54,9 @@ export default function PalpiteSection({ palpite, previsao_combinada, loteria }:
         <div>
           <h3 className="text-lg font-semibold mb-4 text-[#e0e7ff] flex items-center gap-2">
             Previsão Combinada
-            <span className="text-[11px] bg-emerald/15 text-emerald px-2 py-0.5 rounded font-normal">Poisson + Pool23</span>
+            <span className="text-[11px] bg-emerald/15 text-emerald px-2 py-0.5 rounded font-normal">
+              {isSS ? 'Foco em atrasados (P90)' : 'Poisson + Pool23'}
+            </span>
           </h3>
           <PalpiteCard titulo="" badge="" numeros={previsao_combinada} primosSet={primosSet} />
         </div>

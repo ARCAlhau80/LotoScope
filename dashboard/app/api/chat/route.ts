@@ -465,7 +465,8 @@ function gerarCombinacoes(
 
   const selecionados: number[][] = [];
   const posSatisfeitas = new Set<number>();
-  const maxOverlapVal = maxOverlap ?? (dashboardData ? Math.floor((dashboardData.numeros_por_jogo || 15) * 0.8) : 12);
+  const gameSz = dashboardData ? (dashboardData.numeros_por_aposta || dashboardData.numeros_por_jogo || 15) : 15;
+  const maxOverlapVal = maxOverlap ?? (dashboardData ? Math.floor(gameSz * 0.8) : 12);
 
   for (const item of pool) {
     if (selecionados.length >= quantidade) break;
@@ -533,9 +534,11 @@ export async function POST(req: Request) {
     const mSet = [...new Set(dashboardData.numeros_mornos.map(n => n[0]))].sort((a, b) => a - b);
     const fSet = [...new Set(dashboardData.numeros_frios.map(n => n[0]))].sort((a, b) => a - b);
 
+    const apostaSize = () => dashboardData?.numeros_por_aposta || dashboardData?.numeros_por_jogo || 15;
+
     const multiGrupo = extrairMultiGrupo(message);
     if (multiGrupo) {
-      const totalJogo = dashboardData.numeros_por_jogo || 15;
+      const totalJogo = apostaSize();
       const exaustivas = combinacoesMultiGrupo(multiGrupo.grupos, multiGrupo.fixos, totalJogo);
       if (exaustivas.length === 0) {
         return NextResponse.json({ reply: 'Nao foi possivel gerar combinacoes com essas restricoes — total de numeros nao fecha com 15.' });
@@ -555,7 +558,7 @@ export async function POST(req: Request) {
 
     const gruposInline = extrairGruposInline(message, dashboardData.total_numeros || 80);
     if (gruposInline) {
-      const totalJogo = dashboardData.numeros_por_jogo || 15;
+      const totalJogo = apostaSize();
       const allNums = Array.from({ length: dashboardData.total_numeros || 80 }, (_, i) => i + 1);
       const userMaxOverlap = extrairMaxOverlapJogos(message);
       const overlap = userMaxOverlap !== null ? userMaxOverlap : Math.max(1, Math.floor(totalJogo * 0.8));
@@ -573,7 +576,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: combos.join('\n') });
     }
 
-    const comboReq = extrairQtdCombo(message, dashboardData.numeros_por_jogo || 15, qSet, mSet, fSet);
+    const comboReq = extrairQtdCombo(message, apostaSize(), qSet, mSet, fSet);
     if (comboReq) {
       const fixos = comboReq.fixos;
       const hasQFM = /quentes?|frios?|mornos?|repetidos?\s*(?:do\s*)?sorteio|grupo|em\s+comum|entre/i.test(message);

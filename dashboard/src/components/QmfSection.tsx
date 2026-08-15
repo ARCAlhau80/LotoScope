@@ -3,10 +3,11 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import NumBadge, { type NumState } from './NumBadge';
 import { LOTERIAS } from '@/lib/lottery-config';
+import type { QuarentenaPosicaoLF } from '@/types';
 
 const stateCycle: NumState[] = ['neutral', 'fixed', 'excluded'];
 
-export default function QmfSection({ quentes, mornos, frios, janela, totalSorteios, numerosPorJogo, totalNumeros, loteria, onJanelaChange }: {
+export default function QmfSection({ quentes, mornos, frios, janela, totalSorteios, numerosPorJogo, totalNumeros, loteria, onJanelaChange, quarentenaPosicoes }: {
   quentes: [number, number][];
   mornos: [number, number][];
   frios: [number, number][];
@@ -16,6 +17,7 @@ export default function QmfSection({ quentes, mornos, frios, janela, totalSortei
   totalNumeros: number;
   loteria?: string;
   onJanelaChange: (valor: number) => void;
+  quarentenaPosicoes?: Record<string, QuarentenaPosicaoLF>;
 }) {
   const [inputValue, setInputValue] = useState(String(janela));
   const [erro, setErro] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export default function QmfSection({ quentes, mornos, frios, janela, totalSortei
   }, [totalSorteios, onJanelaChange]);
 
   const cfg = loteria && LOTERIAS[loteria] ? LOTERIAS[loteria] : null;
-  const gameSize = cfg ? cfg.numeros_por_jogo : numerosPorJogo;
+  const gameSize = cfg ? (cfg.numeros_por_aposta ?? cfg.numeros_por_jogo) : numerosPorJogo;
   const totalNums = cfg ? cfg.total_numeros : totalNumeros;
   const maxFixar = gameSize - 1;
 
@@ -108,7 +110,7 @@ export default function QmfSection({ quentes, mornos, frios, janela, totalSortei
     [allNumbers, numStates]
   );
 
-  const hasSelection = fixedNumbers.length > 0;
+  const hasSelection = fixedNumbers.length > 0 || excludedNumbers.length > 0;
 
   const getNumState = useCallback((n: number) => numStates[n] || 'neutral', [numStates]);
 
@@ -140,6 +142,21 @@ export default function QmfSection({ quentes, mornos, frios, janela, totalSortei
 
   const sortedFixed = [...fixedNumbers].sort((a, b) => a - b);
   const sortedExcluded = [...excludedNumbers].sort((a, b) => a - b);
+
+  const strPossivel = useMemo(() => {
+    const fixos = fixedNumbers.length;
+    const excluidos = excludedNumbers.length;
+    const n = totalNums - excluidos - fixos;
+    const k = gameSize - fixos;
+    if (k < 0 || k > n) return '0';
+    const kk = k > n - k ? n - k : k;
+    let logR = 0;
+    for (let i = 1; i <= kk; i++) logR += Math.log10(n - kk + i) - Math.log10(i);
+    if (logR > 15) return `~${(10 ** (logR - Math.floor(logR))).toFixed(2)} × 10^${Math.floor(logR)}`;
+    let r = 1n;
+    for (let i = 1; i <= kk; i++) r = r * BigInt(n - kk + i) / BigInt(i);
+    return r.toLocaleString('pt-BR');
+  }, [fixedNumbers, excludedNumbers, totalNums, gameSize]);
 
   return (
     <div className="mb-8">
@@ -193,8 +210,85 @@ export default function QmfSection({ quentes, mornos, frios, janela, totalSortei
               <span className="text-muted">Excluídos ({excludedNumbers.length}):</span>
               <span className="text-hot font-semibold">{sortedExcluded.join(', ') || '—'}</span>
             </div>
+            <div className="w-full text-xs text-muted mt-1">
+              Combinações possíveis: <span className="text-fg font-semibold">{strPossivel}</span>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-3 mt-3">
+            {quarentenaPosicoes && loteria !== 'supersete' && (
+              <>
+                <button
+                  onClick={() => {
+                    const emQuarentena = new Set<number>();
+                    Object.values(quarentenaPosicoes).forEach(pos => {
+                      pos.em_quarentena.forEach(num => emQuarentena.add(num));
+                    });
+                    setNumStates(prev => {
+                      const next = { ...prev };
+                      emQuarentena.forEach(num => {
+                        if (!next[num] || next[num] === 'neutral') {
+                          next[num] = 'excluded';
+                        }
+                      });
+                      return next;
+                    });
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#fca5a5] bg-[#ef4444]/10 border border-[#ef4444]/20 hover:bg-[#ef4444]/20 transition-all"
+                  title="Excluir números que saíram recentemente em qualquer posição"
+                >
+                  🛡️ Excluir Recentes
+                </button>
+                <button
+                  onClick={() => {
+                    const muitoAtrasados = new Set<number>();
+                    Object.values(quarentenaPosicoes).forEach(pos => {
+                      pos.muito_atrasados.forEach(num => muitoAtrasados.add(num));
+                    });
+                    setNumStates(prev => {
+                      const next = { ...prev };
+                      muitoAtrasados.forEach(num => {
+                        if (!next[num] || next[num] === 'neutral') {
+                          next[num] = 'fixed';
+                        }
+                      });
+                      return next;
+                    });
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#93c5fd] bg-[#3b82f6]/10 border border-[#3b82f6]/20 hover:bg-[#3b82f6]/20 transition-all"
+                  title="Fixar números muito atrasados (acima do P90)"
+                >
+                  ⏰ Focar Atrasados
+                </button>
+                <button
+                  onClick={() => {
+                    const emQuarentena = new Set<number>();
+                    const muitoAtrasados = new Set<number>();
+                    Object.values(quarentenaPosicoes).forEach(pos => {
+                      pos.em_quarentena.forEach(num => emQuarentena.add(num));
+                      pos.muito_atrasados.forEach(num => muitoAtrasados.add(num));
+                    });
+                    setNumStates(prev => {
+                      const next = { ...prev };
+                      emQuarentena.forEach(num => {
+                        if (!next[num] || next[num] === 'neutral') {
+                          next[num] = 'excluded';
+                        }
+                      });
+                      muitoAtrasados.forEach(num => {
+                        if (!next[num] || next[num] === 'neutral') {
+                          next[num] = 'fixed';
+                        }
+                      });
+                      return next;
+                    });
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#c7d2fe] bg-[#818cf8]/10 border border-[#818cf8]/20 hover:bg-[#818cf8]/20 transition-all"
+                  title="Combinado: excluir recentes + focar atrasados"
+                >
+                  🎯 Combinado
+                </button>
+              </>
+            )}
             <label className="text-sm text-muted">Qtd:</label>
             <input
               type="number"
