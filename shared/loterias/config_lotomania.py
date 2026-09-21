@@ -5,6 +5,7 @@ CONFIG_LOTOMANIA = LotteryConfig(
     nome_jogo="Lotomania",
     total_numeros=100,
     numeros_por_jogo=20,
+    dezenas_max=20,
     numero_minimo=0,
     db_name="LOTOFACIL",
     tabela_resultados="Resultados_Lotomania",

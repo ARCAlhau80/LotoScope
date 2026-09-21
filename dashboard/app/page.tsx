@@ -27,6 +27,7 @@ import QuarantineMatrixLotofacil from '@/components/QuarantineMatrixLotofacil';
 import ComparativoSection from '@/components/ComparativoSection';
 import AiAnalysis from '@/components/AiAnalysis';
 import RankingCombinacoesSection from '@/components/RankingCombinacoesSection';
+import ApostadorSection from '@/components/ApostadorSection';
 
 function LoadingSkeleton() {
   return (
@@ -75,6 +76,7 @@ function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [janela, setJanela] = useState<number>(30);
+  const [poissonJanela, setPoissonJanela] = useState<number | undefined>(undefined);
   const [loteria, setLoteria] = useState<string>('lotofacil');
   const [concurso, setConcurso] = useState<number | undefined>(undefined);
   const [concursosDisponiveis, setConcursosDisponiveis] = useState<number[]>([]);
@@ -84,11 +86,11 @@ function HomePage() {
     if (l && LOTERIAS[l]) setLoteria(l);
   }, [searchParams]);
 
-  const fetchData = useCallback((jan?: number, lot?: string, conc?: number) => {
+  const fetchData = useCallback((jan?: number, lot?: string, conc?: number, poissonJan?: number) => {
     const ctrl = new AbortController();
     setLoading(true);
     setError(null);
-    const promises: Promise<any>[] = [getDashboardData(jan, ctrl.signal, lot, conc)];
+    const promises: Promise<any>[] = [getDashboardData(jan, ctrl.signal, lot, conc, poissonJan)];
     if (!lot || lot === 'lotofacil') {
       promises.push(getAnaliseGrupos(ctrl.signal));
     } else {
@@ -103,7 +105,7 @@ function HomePage() {
     return () => ctrl.abort();
   }, []);
 
-  useEffect(() => fetchData(janela, loteria, concurso), [fetchData, janela, loteria, concurso]);
+  useEffect(() => fetchData(janela, loteria, concurso, poissonJanela), [fetchData, janela, loteria, concurso, poissonJanela]);
 
   const handleJanelaChange = useCallback((valor: number) => {
     setJanela(valor);
@@ -135,7 +137,7 @@ function HomePage() {
             </div>
             <p className="text-[#fca5a5] text-sm mb-4">Erro ao carregar dados: {error}</p>
             <button
-              onClick={() => fetchData(janela, loteria, concurso)}
+              onClick={() => fetchData(janela, loteria, concurso, poissonJanela)}
               className="px-5 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110"
               style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
             >
@@ -160,7 +162,7 @@ function HomePage() {
                 </span>
               ) : (
                 <span className="text-xs text-muted">
-                  todos os {concursosDisponiveis.length} sorteios
+                  todos os {data.total_sorteios} sorteios
                 </span>
               )}
             </div>
@@ -184,9 +186,9 @@ function HomePage() {
                 <ReentradasSection />
               </div>
             )}
-            {data.tendencia_comparativo && data.tendencia_comparativo.length > 0 && loteria === 'lotofacil' && (
+            {data.tendencia_comparativo && data.tendencia_comparativo.length > 0 && (
               <div className="mb-6">
-                <ComparativoSection data={data.tendencia_comparativo} />
+                <ComparativoSection data={data.tendencia_comparativo} previsao={data.previsao_tendencia} />
               </div>
             )}
             {data.tem_trevos && data.frequencia_trevos_total && (
@@ -208,7 +210,7 @@ function HomePage() {
               <PalpiteSection palpite={data.palpite} previsao_combinada={data.previsao_combinada} loteria={loteria} />
             </div>
             <div className="animate-slide-up stagger-2">
-              <JogosDiversosSection loteria={loteria} concursoBase={concurso} numerosSorteadosAtual={data.ultimo_sorteio.numeros} />
+              <JogosDiversosSection loteria={loteria} concursoBase={concurso} numerosSorteadosAtual={data.ultimo_sorteio.numeros} previsaoPosicional={data.previsao_posicional} previsaoTendencia={data.previsao_tendencia} previsaoColunas={data.previsao_colunas} />
             </div>
             <div className="animate-slide-up stagger-2">
               <QmfSection
@@ -231,7 +233,12 @@ function HomePage() {
               <CiclosSection ciclos={data.ciclos} />
             </div>
             <div className="animate-slide-up stagger-5">
-              <PrevisaoSection previsao={data.previsao_posicional} />
+              <PrevisaoSection
+                previsao={data.previsao_posicional}
+                poissonJanela={poissonJanela}
+                onPoissonJanelaChange={setPoissonJanela}
+                sorteadoAtual={data.ultimo_sorteio.numeros}
+              />
             </div>
             <div className="animate-slide-up stagger-6">
               <AtrasadosSection atrasados={data.atrasados_posicionais} />
@@ -260,6 +267,9 @@ function HomePage() {
                 numerosPorJogo={data.numeros_por_jogo}
                 loteria={loteria}
               />
+            </div>
+            <div className="animate-slide-up stagger-8">
+              <ApostadorSection loteria={loteria} />
             </div>
           </div>
         )}

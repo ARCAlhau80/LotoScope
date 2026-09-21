@@ -5,6 +5,7 @@ CONFIG_DIADESORTE = LotteryConfig(
     nome_jogo="Dia de Sorte",
     total_numeros=31,
     numeros_por_jogo=7,
+    dezenas_max=15,
     numero_minimo=1,
     db_name="LOTOFACIL",
     tabela_resultados="Resultados_DiaDeSorte",

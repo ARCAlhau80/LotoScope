@@ -1,11 +1,12 @@
 import type { DashboardData, RankingCombinacaoItem } from '@/types';
 import type { AnaliseGruposData } from '@/lib/analise-grupos';
 
-export async function getDashboardData(janela?: number, signal?: AbortSignal, loteria?: string, concurso?: number): Promise<DashboardData> {
+export async function getDashboardData(janela?: number, signal?: AbortSignal, loteria?: string, concurso?: number, poissonJanela?: number): Promise<DashboardData> {
   const params = new URLSearchParams();
   if (janela) params.set('janela', String(janela));
   if (loteria && loteria !== 'lotofacil') params.set('loteria', loteria);
   if (concurso !== undefined) params.set('concurso', String(concurso));
+  if (poissonJanela !== undefined) params.set('poisson_janela', String(poissonJanela));
   const qs = params.toString();
   const res = await fetch(`/api/dashboard-data${qs ? `?${qs}` : ''}`, { signal });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);

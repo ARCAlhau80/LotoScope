@@ -40,6 +40,7 @@ class LotteryConfig:
     })
 
     is_positional: bool = False
+    dezenas_max: Optional[int] = None
 
     def __post_init__(self):
         if not self.colunas_resultado:
@@ -48,6 +49,11 @@ class LotteryConfig:
             self.tabela_resultados = f"Resultados_{self.id}"
         if not self.tabela_combinacoes:
             self.tabela_combinacoes = f"COMBIN_{self.id}"
+
+    @property
+    def max_dezenas(self) -> int:
+        """Máximo de dezenas apostáveis (apostas múltiplas)."""
+        return self.dezenas_max if self.dezenas_max is not None else self.numeros_por_jogo
 
     @property
     def numeros(self):

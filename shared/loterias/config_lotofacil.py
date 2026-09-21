@@ -6,6 +6,7 @@ CONFIG_LOTOFACIL = LotteryConfig(
     total_numeros=25,
     numeros_por_jogo=15,
     numero_minimo=1,
+    dezenas_max=20,
     db_name="LOTOFACIL",
     tabela_resultados="Resultados_INT",
     tabela_combinacoes="COMBINACOES_LOTOFACIL",

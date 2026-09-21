@@ -5,6 +5,7 @@ CONFIG_QUINA = LotteryConfig(
     nome_jogo="Quina",
     total_numeros=80,
     numeros_por_jogo=5,
+    dezenas_max=15,
     numero_minimo=1,
     db_name="LOTOFACIL",
     tabela_resultados="Resultados_Quina",

@@ -5,6 +5,7 @@ CONFIG_TIMEMANIA = LotteryConfig(
     nome_jogo="Timemania",
     total_numeros=80,
     numeros_por_jogo=7,
+    dezenas_max=10,
     numero_minimo=1,
     db_name="LOTOFACIL",
     tabela_resultados="Resultados_Timemania",

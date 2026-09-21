@@ -147,6 +147,8 @@ export interface DashboardData {
   quarentena_posicoes?: Record<string, QuarentenaPosicaoLF>;
   comparativo_posicional?: ComparativoPosicional;
   tendencia_comparativo?: TendenciaComparativo[];
+  previsao_tendencia?: PrevisaoTendenciaComparativo;
+  previsao_colunas?: PrevisaoColunaRange[];
   ranking_combinacoes?: RankingCombinacaoItem[];
 }
 
@@ -175,6 +177,36 @@ export interface TendenciaComparativo {
   maiores: number;
   menores: number;
   iguais: number;
+}
+
+export type CategoriaComparativo = 'maiores' | 'menores' | 'iguais';
+
+export interface PrevisaoCategoriaComparativo {
+  atual: number;
+  banda_atual: string;
+  casos: number;
+  min: number;
+  max: number;
+  mediana: number;
+  p25: number;
+  p75: number;
+  pct_le_5: number;
+  pct_le_10: number;
+  tendencia: 'cair' | 'subir' | 'estavel';
+}
+
+export interface PrevisaoTendenciaComparativo {
+  base_concurso: number;
+  concurso_alvo: number;
+  total_historico: number;
+  categorias: Record<CategoriaComparativo, PrevisaoCategoriaComparativo>;
+  dominante: CategoriaComparativo;
+}
+
+export interface PrevisaoColunaRange {
+  p25: number;
+  p75: number;
+  mediana: number;
 }
 
 export interface ColunaAnaliseSS {

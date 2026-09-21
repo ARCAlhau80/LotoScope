@@ -1,5 +1,6 @@
 import { carregarResultados, type Resultado } from './database';
 import { getLotteryConfig, type LotteryConfig } from './lottery-config';
+import { calcularTendenciaComparativo } from './tendencia-comparativo';
 import type {
   DashboardData, UltimoSorteio, PrevisaoItem, AtrasadoItem,
   TransicaoQMF, TransicaoRegistro, MediasHistoricas, CicloInfo,
@@ -857,7 +858,7 @@ export async function analiseSuperSete(janela?: number, concurso?: number): Prom
 
   const previsaoPosicional: Record<string, PrevisaoItem[]> = {};
   for (const col of cols) {
-    previsaoPosicional[col] = prev[col].slice(0, 3).map(p => ({ numero: p.digito, prob: p.prob }));
+    previsaoPosicional[col] = prev[col].slice(0, 5).map(p => ({ numero: p.digito, prob: p.prob }));
   }
 
   const palpite = cols.map(col => {
@@ -965,6 +966,8 @@ export async function analiseSuperSete(janela?: number, concurso?: number): Prom
     total_iguais: ultimo.numeros.filter((n, i) => n === penultimoResultado!.numeros[i]).length,
   } : undefined;
 
+  const { tendencia_comparativo, previsao_tendencia } = calcularTendenciaComparativo(resultados);
+
   return {
     loteria: cfg.id,
     nome_jogo: cfg.nome_jogo,
@@ -996,5 +999,7 @@ export async function analiseSuperSete(janela?: number, concurso?: number): Prom
     is_positional: true,
     supersete: analiseSS,
     comparativo_posicional: comparativoSS,
+    tendencia_comparativo,
+    previsao_tendencia,
   };
 }

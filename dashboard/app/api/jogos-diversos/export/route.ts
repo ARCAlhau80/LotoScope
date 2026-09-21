@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { carregarResultados } from '@/lib/database';
 import { gerarJogosDiversificados, calcularEstimativaCombinacoes } from '@/lib/gerador-diversificado';
+import { parseColunasPosicionais, parseFiltroComparativo } from '@/lib/colunas-posicionais';
 import sql from 'mssql';
 import { getLotteryConfig, validarDezenas } from '@/lib/lottery-config';
 
@@ -91,6 +92,9 @@ function parseParams(searchParams: URLSearchParams) {
   const excluidosParam = searchParams.get('excluidos');
   const concursoParam = searchParams.get('concurso');
   const dezenasParam = searchParams.get('dezenas');
+  const colunasParam = searchParams.get('colunas_posicionais');
+  const colunasSetsParam = searchParams.get('colunas_sets');
+  const comparativoParam = searchParams.get('comparativo');
 
   const seed = seedParam ? parseInt(seedParam, 10) : undefined;
   const concursoBase = concursoParam ? parseInt(concursoParam, 10) : undefined;
@@ -98,13 +102,15 @@ function parseParams(searchParams: URLSearchParams) {
   const dezenas = validarDezenas(cfg, dezenasRaw);
   const fixos = fixosParam ? fixosParam.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n >= cfg.numero_minimo && n <= cfg.numero_maximo) : undefined;
   const excluidos = excluidosParam ? excluidosParam.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n >= cfg.numero_minimo && n <= cfg.numero_maximo) : undefined;
+  const colunasPosicionais = parseColunasPosicionais(colunasParam, colunasSetsParam);
+  const filtroComparativo = parseFiltroComparativo(comparativoParam);
 
-  return { loteria, seed, concursoBase, fixos, excluidos, dezenas, cfg };
+  return { loteria, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, filtroComparativo };
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const { loteria, seed, concursoBase, fixos, excluidos, dezenas, cfg } = parseParams(new URL(request.url).searchParams);
+    const { loteria, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, filtroComparativo } = parseParams(new URL(request.url).searchParams);
 
     const resultados = await carregarResultados(loteria);
     const resultadosAteBase = concursoBase !== undefined
@@ -134,6 +140,8 @@ export async function GET(request: NextRequest) {
       numerosPorJogo: dezenas,
       numeroMinimo: cfg.numero_minimo,
       primos: cfg.primos,
+      colunasPosicionais,
+      filtroComparativo,
     });
 
     const texto = jogos.map(j => j.numeros.join(',')).join('\n');
@@ -157,12 +165,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { loteria = 'lotofacil', seed, fixos, excluidos, concurso, dezenas: dezenasBody } = body || {};
+    const { loteria = 'lotofacil', seed, fixos, excluidos, concurso, dezenas: dezenasBody, colunas_posicionais: colunasParam, colunas_sets: colunasSetsParam, comparativo: comparativoParam } = body || {};
     const cfg = getLotteryConfig(loteria);
     const concursoBase = concurso !== undefined ? parseInt(String(concurso), 10) : undefined;
     const dezenas = validarDezenas(cfg, dezenasBody !== undefined ? parseInt(String(dezenasBody), 10) : undefined);
     const fixosNorm = Array.isArray(fixos) ? fixos.map(Number).filter((n: number) => n >= cfg.numero_minimo && n <= cfg.numero_maximo) : undefined;
     const excluidosNorm = Array.isArray(excluidos) ? excluidos.map(Number).filter((n: number) => n >= cfg.numero_minimo && n <= cfg.numero_maximo) : undefined;
+    const colunasPosicionais = parseColunasPosicionais(typeof colunasParam === 'string' ? colunasParam : null, typeof colunasSetsParam === 'string' ? colunasSetsParam : null);
+    const filtroComparativo = parseFiltroComparativo(typeof comparativoParam === 'string' ? comparativoParam : null);
 
     const resultados = await carregarResultados(loteria);
     const resultadosAteBase = concursoBase !== undefined
@@ -192,6 +202,8 @@ export async function POST(request: NextRequest) {
       numerosPorJogo: dezenas,
       numeroMinimo: cfg.numero_minimo,
       primos: cfg.primos,
+      colunasPosicionais,
+      filtroComparativo,
     });
 
     const texto = jogos.map(j => j.numeros.join(',')).join('\n');

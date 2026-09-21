@@ -8,6 +8,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     let janela: number | undefined;
     let concurso: number | undefined;
+    let poissonJanela: number | undefined;
     const loteria = searchParams.get('loteria') || undefined;
 
     const janelaStr = searchParams.get('janela');
@@ -16,13 +17,19 @@ export async function GET(request: Request) {
       if (!isNaN(parsed) && parsed >= 2) janela = parsed;
     }
 
+    const poissonJanelaStr = searchParams.get('poisson_janela');
+    if (poissonJanelaStr) {
+      const parsed = parseInt(poissonJanelaStr, 10);
+      if (!isNaN(parsed) && parsed >= 2) poissonJanela = parsed;
+    }
+
     const concursoStr = searchParams.get('concurso');
     if (concursoStr) {
       const parsed = parseInt(concursoStr, 10);
       if (!isNaN(parsed) && parsed > 0) concurso = parsed;
     }
 
-    const data = await analiseCompleta(janela, loteria, concurso);
+    const data = await analiseCompleta(janela, loteria, concurso, poissonJanela);
     return NextResponse.json(data);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';

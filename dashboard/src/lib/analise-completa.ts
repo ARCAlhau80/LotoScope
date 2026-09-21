@@ -1,6 +1,7 @@
 import { carregarResultados, carregarRankingCombinacoes, type Resultado, type RankingCombinacaoItem, type RankingPerfil } from './database';
 import { getLotteryConfig, type LotteryConfig } from './lottery-config';
-import type { DashboardData, UltimoSorteio, PrevisaoItem, AtrasadoItem, TransicaoRegistro, TransicaoQMF, CicloInfo, MediasHistoricas, QuarentenaPosicaoLF, QuarentenaInfo, ComparativoPosicional, ComparativoItem, TendenciaComparativo } from '@/types';
+import { calcularTendenciaComparativo } from './tendencia-comparativo';
+import type { DashboardData, UltimoSorteio, PrevisaoItem, AtrasadoItem, TransicaoRegistro, TransicaoQMF, CicloInfo, MediasHistoricas, QuarentenaPosicaoLF, QuarentenaInfo, ComparativoPosicional, ComparativoItem, TendenciaComparativo, PrevisaoTendenciaComparativo, PrevisaoColunaRange } from '@/types';
 import { analiseSuperSete } from './analise-supersete';
 
 const WINDOW = 50;
@@ -80,10 +81,11 @@ function calcularLambdas(
       const o = ocorrencias[pos][num];
       const ch = o.length;
       const lh = totalDraws > 0 ? ch / totalDraws : 0;
-      const cutoff = totalDraws - WINDOW;
+      const recentWin = Math.min(WINDOW, totalDraws);
+      const cutoff = totalDraws - recentWin;
       const oRec = o.filter(i => i >= cutoff);
       const cr = oRec.length;
-      const lr = (totalDraws >= WINDOW && WINDOW > 0) ? cr / WINDOW : 0;
+      const lr = recentWin > 0 ? cr / recentWin : 0;
       const lb = ALPHA * lh + (1 - ALPHA) * lr;
       const ui = o.length > 0 ? Math.max(...o) : null;
       const gap = ui !== null ? totalDraws - 1 - ui : totalDraws;
@@ -371,7 +373,7 @@ function calcularQuarentenaPorPosicao(
   return quarentena;
 }
 
-function calcularComparativoPosicional(resultados: Resultado[]): { comparativo_posicional: ComparativoPosicional; tendencia_comparativo: TendenciaComparativo[] } | null {
+function calcularComparativoPosicional(resultados: Resultado[]): { comparativo_posicional: ComparativoPosicional; tendencia_comparativo: TendenciaComparativo[]; previsao_tendencia: PrevisaoTendenciaComparativo } | null {
   if (resultados.length < 2) return null;
 
   const ultimo = resultados[resultados.length - 1];
@@ -389,19 +391,7 @@ function calcularComparativoPosicional(resultados: Resultado[]): { comparativo_p
     itens.push({ posicao: i + 1, atual: a, anterior: b, direcao: dir });
   }
 
-  const tendencia: TendenciaComparativo[] = [];
-  const start = Math.max(0, resultados.length - 11);
-  for (let i = start + 1; i < resultados.length; i++) {
-    const curr = resultados[i];
-    const prev = resultados[i - 1];
-    let m = 0, men = 0, ig = 0;
-    for (let j = 0; j < Math.min(curr.numeros.length, prev.numeros.length); j++) {
-      if (curr.numeros[j] > prev.numeros[j]) m++;
-      else if (curr.numeros[j] < prev.numeros[j]) men++;
-      else ig++;
-    }
-    tendencia.push({ concurso: curr.concurso, maiores: m, menores: men, iguais: ig });
-  }
+  const { tendencia_comparativo, previsao_tendencia } = calcularTendenciaComparativo(resultados);
 
   return {
     comparativo_posicional: {
@@ -412,14 +402,44 @@ function calcularComparativoPosicional(resultados: Resultado[]): { comparativo_p
       total_menores: menores,
       total_iguais: iguais,
     },
-    tendencia_comparativo: tendencia,
+    tendencia_comparativo,
+    previsao_tendencia,
   };
 }
 
-export async function analiseCompleta(janela?: number, lotteryId?: string, concurso?: number): Promise<DashboardData> {
+function calcularPrevisaoColunas(
+  previsao: Record<string, PrevisaoItem[]>,
+  resultados: Resultado[]
+): PrevisaoColunaRange[] {
+  const sets: number[][] = [[], [], [], [], []];
+  for (const pos of Object.keys(previsao)) {
+    const preds = previsao[pos] || [];
+    preds.slice(0, 5).forEach((x, c) => sets[c].push(x.numero));
+  }
+  const unicos = sets.map(s => [...new Set(s)]);
+  const janela = resultados.slice(-100);
+  const ranges: PrevisaoColunaRange[] = [];
+  for (const s of unicos) {
+    const vals = janela
+      .map(r => s.reduce((k, n) => k + (r.numeros.includes(n) ? 1 : 0), 0))
+      .sort((a, b) => a - b);
+    if (vals.length === 0) {
+      ranges.push({ p25: 0, p75: 0, mediana: 0 });
+      continue;
+    }
+    ranges.push({
+      p25: vals[Math.floor(vals.length * 0.25)],
+      p75: vals[Math.min(vals.length - 1, Math.floor(vals.length * 0.75))],
+      mediana: vals[Math.floor(vals.length / 2)],
+    });
+  }
+  return ranges;
+}
+
+export async function analiseCompleta(janela?: number, lotteryId?: string, concurso?: number, poissonJanela?: number): Promise<DashboardData> {
   const cfg = lotteryId ? getLotteryConfig(lotteryId) : getLotteryConfig('lotofacil');
   if (cfg.is_positional) {
-    return analiseSuperSete(janela, concurso);
+    return analiseSuperSete(poissonJanela ?? janela, concurso);
   }
   let resultados = await carregarResultados(cfg.id);
 
@@ -432,8 +452,11 @@ export async function analiseCompleta(janela?: number, lotteryId?: string, concu
   }
 
   const total = resultados.length;
-  const occ = buildOcorrencias(resultados, cfg);
-  const dados = calcularLambdas(occ, total, cfg);
+  const poissonJanelaValida = poissonJanela !== undefined ? Math.max(2, Math.min(poissonJanela, total)) : undefined;
+  const baseResultados = poissonJanelaValida !== undefined ? resultados.slice(-poissonJanelaValida) : resultados;
+  const baseTotal = poissonJanelaValida ?? total;
+  const occ = buildOcorrencias(baseResultados, cfg);
+  const dados = calcularLambdas(occ, baseTotal, cfg);
 
   let rankingCombinacoes: RankingCombinacaoItem[] = [];
   if (cfg.id === 'lotofacil') {
@@ -498,10 +521,12 @@ export async function analiseCompleta(janela?: number, lotteryId?: string, concu
     const top3 = Object.entries(nums)
       .filter(([_, v]) => v.lambda_blend > 0)
       .sort((a, b) => b[1].lambda_blend - a[1].lambda_blend)
-      .slice(0, 3)
+      .slice(0, 5)
       .map(([n, v]) => ({ numero: Number(n), prob: Math.round(v.lambda_blend * 10000) / 10000 }));
     previsao[pos] = top3;
   }
+
+  const previsaoColunas = calcularPrevisaoColunas(previsao, resultados);
 
   let palpite: number[];
   if (apostaSize > cfg.numeros_por_jogo) {
@@ -785,7 +810,7 @@ export async function analiseCompleta(janela?: number, lotteryId?: string, concu
     numeros_por_jogo: cfg.numeros_por_jogo,
     numeros_por_aposta: apostaSize,
     ultimo_concurso: ultimo.concurso,
-    total_sorteios: total,
+    total_sorteios: ultimo.concurso,
     ultimo_sorteio: ultimoStats,
     frequencia_total: Object.fromEntries(allNums.map(n => [String(n), freqTotal[n]])),
     frequencia_30: Object.fromEntries(allNums.map(n => [String(n), freq30[n]])),
@@ -794,6 +819,7 @@ export async function analiseCompleta(janela?: number, lotteryId?: string, concu
     numeros_frios: frios,
     numeros_mornos: mornos,
     previsao_posicional: previsao,
+    previsao_colunas: previsaoColunas,
     palpite,
     previsao_combinada: previsaoCombinada,
     atrasados_posicionais: atrasadosPos,

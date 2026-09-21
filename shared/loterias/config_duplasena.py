@@ -5,6 +5,7 @@ CONFIG_DUPLASENA = LotteryConfig(
     nome_jogo="Dupla Sena",
     total_numeros=50,
     numeros_por_jogo=6,
+    dezenas_max=15,
     numero_minimo=1,
     db_name="LOTOFACIL",
     tabela_resultados="Resultados_DuplaSena",

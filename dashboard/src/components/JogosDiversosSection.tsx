@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { getLotteryConfig, dezenasValidas, calcularPrecoAposta } from '@/lib/lottery-config';
+import type { PrevisaoItem, PrevisaoTendenciaComparativo, PrevisaoColunaRange } from '@/types';
+import GeneratingOverlay from '@/components/GeneratingOverlay';
 
 interface JogoGerado {
   numeros: number[];
@@ -35,6 +37,9 @@ interface JogosDiversosSectionProps {
   loteria?: string;
   concursoBase?: number;
   numerosSorteadosAtual?: number[];
+  previsaoPosicional?: Record<string, PrevisaoItem[]> | null;
+  previsaoTendencia?: PrevisaoTendenciaComparativo;
+  previsaoColunas?: PrevisaoColunaRange[];
 }
 
 const ESTRATEGIA_LABEL: Record<string, string> = {
@@ -43,11 +48,13 @@ const ESTRATEGIA_LABEL: Record<string, string> = {
   persistencia: 'Persistência',
   aleatorio: 'Aleatório',
   ciclo: 'Ciclo',
+  colunas: 'Colunas',
+  comparativo: 'Comparativo',
 };
 
 type NumeroEstado = 'normal' | 'fixo' | 'excluido';
 
-export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBase, numerosSorteadosAtual = [] }: JogosDiversosSectionProps) {
+export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBase, numerosSorteadosAtual = [], previsaoPosicional, previsaoTendencia, previsaoColunas }: JogosDiversosSectionProps) {
   const cfg = getLotteryConfig(loteria);
   const opcoesDezenas = dezenasValidas(cfg);
   const [quantidade, setQuantidade] = useState<number>(5);
@@ -59,8 +66,21 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [estimativaTotal, setEstimativaTotal] = useState<number | null>(null);
   const [modoTodas, setModoTodas] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [progresso, setProgresso] = useState(0);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [colunasInputs, setColunasInputs] = useState<string[]>(['', '', '', '', '']);
+  const [comparativoInputs, setComparativoInputs] = useState<string[]>(['', '', '']);
+
+  const colunasSets = useMemo(() => {
+    if (!previsaoPosicional) return null;
+    const sets: number[][] = [[], [], [], [], []];
+    for (const pos of Object.keys(previsaoPosicional)) {
+      const preds = previsaoPosicional[pos] || [];
+      preds.slice(0, 5).forEach((x, c) => sets[c].push(x.numero));
+    }
+    return sets.map(s => [...new Set(s)]);
+  }, [previsaoPosicional]);
 
   useEffect(() => {
     const novoCfg = getLotteryConfig(loteria);
@@ -70,11 +90,68 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setCicloAtual(null);
     setEstimativaTotal(null);
     setDezenas(novoCfg.numeros_por_jogo);
+    setColunasInputs(['', '', '', '', '']);
+    setComparativoInputs(['', '', '']);
   }, [loteria]);
+
+  useEffect(() => {
+    setJogos(null);
+    setEstatisticas(null);
+    setEstimativaTotal(null);
+    setError(null);
+  }, [colunasInputs, comparativoInputs]);
+
+  useEffect(() => {
+    if (!loading) return;
+    setProgresso(0);
+    const id = setInterval(() => {
+      setProgresso(p => (p >= 90 ? p : Math.min(90, Math.round(p + Math.max(1, (90 - p) * 0.09)))));
+    }, 130);
+    return () => clearInterval(id);
+  }, [loading]);
 
   const fixos = Object.entries(estados).filter(([, e]) => e === 'fixo').map(([n]) => Number(n));
   const excluidos = Object.entries(estados).filter(([, e]) => e === 'excluido').map(([n]) => Number(n));
   const sorteadosAtualSet = new Set(numerosSorteadosAtual);
+
+  const colunasPosicionaisStr = colunasInputs.map(v => v.trim().replace(/\s+/g, '')).join(',');
+  const colunasSetsStr = colunasSets ? colunasSets.map(s => s.join(',')).join(';') : '';
+  const temColunas = colunasInputs.some(v => v.trim() !== '') && colunasSets !== null;
+
+  const comparativoStr = comparativoInputs.map(v => v.trim()).join(',');
+  const temComparativo = comparativoInputs.some(v => v.trim() !== '');
+
+  const usarPrevisaoTendencia = () => {
+    if (!previsaoTendencia) {
+      setError('Previsão da Tendência Posicional indisponível. Recarregue o dashboard.');
+      return;
+    }
+    const cats = previsaoTendencia.categorias;
+    setComparativoInputs([
+      `${cats.maiores.p25}-${cats.maiores.p75}`,
+      `${cats.iguais.p25}-${cats.iguais.p75}`,
+      `${cats.menores.p25}-${cats.menores.p75}`,
+    ]);
+  };
+
+  const usarPrevisaoColunas = () => {
+    if (!previsaoColunas || previsaoColunas.length < 5) {
+      setError('Faixas da Previsão Posicional indisponíveis. Recarregue o dashboard.');
+      return;
+    }
+    setColunasInputs(previsaoColunas.map(r => `${r.p25}-${r.p75}`));
+  };
+
+  const validarColunas = (): string | null => {
+    if (!colunasInputs.some(v => v.trim() !== '')) return null;
+    if (!colunasSets) return 'Dados de previsão posicional indisponíveis. Recarregue o dashboard.';
+    const pattern = /^\d+(-\d+)?$/;
+    for (const v of colunasInputs) {
+      if (v.trim() === '') continue;
+      if (!pattern.test(v.trim())) return 'Formato inválido nas colunas posicionais. Use "min" ou "min-max", ex.: 7-8';
+    }
+    return null;
+  };
 
   const toggleNumero = useCallback((n: number) => {
     setEstados(prev => {
@@ -92,6 +169,15 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   }, []);
 
   const gerar = useCallback(async () => {
+    const colunasErr = validarColunas();
+    if (colunasErr) {
+      setError(colunasErr);
+      return;
+    }
+    if (temComparativo && comparativoInputs.some(v => v.trim() !== '' && !/^\d+(-\d+)?$/.test(v.trim()))) {
+      setError('Formato inválido no filtro comparativo. Use "min-max" ou "min", ex.: 2-5');
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -104,6 +190,11 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       if (fixos.length > 0) params.set('fixos', fixos.join(','));
       if (excluidos.length > 0) params.set('excluidos', excluidos.join(','));
       if (concursoBase !== undefined) params.set('concurso', String(concursoBase));
+      if (temColunas) {
+        params.set('colunas_posicionais', colunasPosicionaisStr);
+        params.set('colunas_sets', colunasSetsStr);
+      }
+      if (temComparativo) params.set('comparativo', comparativoStr);
 
       const res = await fetch(`/api/jogos-diversos?${params.toString()}`);
       const data = await res.json();
@@ -117,11 +208,21 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao gerar jogos');
     } finally {
-      setLoading(false);
+      setProgresso(100);
+      setTimeout(() => setLoading(false), 450);
     }
-  }, [loteria, quantidade, dezenas, fixos, excluidos, concursoBase]);
+  }, [loteria, quantidade, dezenas, fixos, excluidos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, validarColunas, temComparativo, comparativoStr]);
 
   const exportarTodas = useCallback(async () => {
+    const colunasErr = validarColunas();
+    if (colunasErr) {
+      setError(colunasErr);
+      return;
+    }
+    if (temComparativo && comparativoInputs.some(v => v.trim() !== '' && !/^\d+(-\d+)?$/.test(v.trim()))) {
+      setError('Formato inválido no filtro comparativo. Use "min-max" ou "min", ex.: 2-5');
+      return;
+    }
     setExporting(true);
     setError(null);
     try {
@@ -133,6 +234,11 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       if (fixos.length > 0) params.set('fixos', fixos.join(','));
       if (excluidos.length > 0) params.set('excluidos', excluidos.join(','));
       if (concursoBase !== undefined) params.set('concurso', String(concursoBase));
+      if (temColunas) {
+        params.set('colunas_posicionais', colunasPosicionaisStr);
+        params.set('colunas_sets', colunasSetsStr);
+      }
+      if (temComparativo) params.set('comparativo', comparativoStr);
 
       const res = await fetch(`/api/jogos-diversos/export?${params.toString()}`);
       if (!res.ok) {
@@ -151,7 +257,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     } finally {
       setExporting(false);
     }
-  }, [loteria, dezenas, fixos, excluidos, concursoBase]);
+  }, [loteria, dezenas, fixos, excluidos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, validarColunas, temComparativo, comparativoStr, comparativoInputs]);
 
   const getNumeroClasses = (n: number) => {
     const estado = estados[n] || 'normal';
@@ -232,6 +338,101 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}>
             {loading ? 'Gerando...' : 'Gerar'}
           </button>
+        </div>
+      </div>
+
+      {previsaoPosicional && (
+        <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div className="text-sm font-semibold text-[#e0e7ff]">Colunas Posicionais (Previsão Posicional)</div>
+            <div className="text-xs text-muted">
+              min-max de números de cada coluna <strong className="text-fg">#1..#5</strong> por jogo. Ex.: <strong className="text-fg">7-8</strong> (min 7, máx 8) ou <strong className="text-fg">3</strong> (mínimo 3, sem limite). Vazio = sem restrição.
+            </div>
+          </div>
+          <div className="flex flex-wrap items-end gap-3">
+            {colunasInputs.map((v, i) => (
+              <label key={i} className="flex flex-col items-center gap-1">
+                <span className="text-[11px] text-muted">
+                  #{i + 1}
+                  {colunasSets && <span className="ml-1 text-accent-2">({colunasSets[i]?.length ?? 0} nºs)</span>}
+                </span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={v}
+                  onChange={e => setColunasInputs(prev => prev.map((x, j) => (j === i ? e.target.value : x)))}
+                  placeholder="min-max"
+                  className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8] text-center placeholder:text-muted/50"
+                />
+              </label>
+            ))}
+            <button
+              onClick={usarPrevisaoColunas}
+              disabled={!previsaoColunas || previsaoColunas.length < 5}
+              className="px-3 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: 'linear-gradient(135deg,#10b981,#34d399)' }}
+              title={previsaoColunas && previsaoColunas.length >= 5
+                ? 'Preenche com as faixas P25–P75 de acerto histórico de cada coluna'
+                : 'Faixas indisponíveis para esta loteria'}
+            >
+              Usar previsão da Posicional
+            </button>
+            <button
+              onClick={() => setColunasInputs(['', '', '', '', ''])}
+              className="px-3 py-2 rounded-lg text-xs bg-white/5 border border-white/10 text-muted hover:text-fg hover:bg-white/10 transition-colors"
+            >
+              Limpar
+            </button>
+            <div className="flex-1 text-[11px] text-muted leading-relaxed">
+              A soma dos mínimos nunca pode ultrapassar as <strong className="text-fg">{dezenas}</strong> dezenas por jogo (a distribuição é adaptada
+              automaticamente). Se a soma for menor que o jogo, os números restantes são preenchidos <strong className="text-fg">aleatoriamente</strong>.
+              O botão <strong className="text-fg">"Usar previsão da Posicional"</strong> preenche com a faixa central (P25–P75) de quantos
+              números de cada coluna costumaram sair nos últimos 100 sorteios.
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div className="text-sm font-semibold text-[#e0e7ff]">Filtro Comparativo (Tendência Posicional)</div>
+          <div className="text-xs text-muted">
+            Cada jogo é comparado posição a posição com o último sorteio: quantas posições ficam ▲ maiores / ▼ menores / = iguais.
+            Ex.: <strong className="text-fg">2-5</strong> = a quantidade de iguais no jogo deve ficar entre 2 e 5.
+          </div>
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
+          {comparativoInputs.map((v, i) => (
+            <label key={i} className="flex flex-col items-center gap-1">
+              <span className="text-[11px] text-muted">{['▲ Maiores', '= Iguais', '▼ Menores'][i]}</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={v}
+                onChange={e => setComparativoInputs(prev => prev.map((x, j) => (j === i ? e.target.value : x)))}
+                placeholder="min-max"
+                className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8] text-center placeholder:text-muted/50"
+              />
+            </label>
+          ))}
+          <button
+            onClick={usarPrevisaoTendencia}
+            className="px-3 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110"
+            style={{ background: 'linear-gradient(135deg,#10b981,#34d399)' }}
+            title="Preenche com as faixas P25–P75 da previsão da Tendência Posicional"
+          >
+            Usar previsão da Tendência
+          </button>
+          <button
+            onClick={() => setComparativoInputs(['', '', ''])}
+            className="px-3 py-2 rounded-lg text-xs bg-white/5 border border-white/10 text-muted hover:text-fg hover:bg-white/10 transition-colors"
+          >
+            Limpar
+          </button>
+          <div className="flex-1 text-[11px] text-muted leading-relaxed">
+            Vazio = sem restrição na categoria. O botão <strong className="text-fg">"Usar previsão"</strong> usa as faixas
+            centrais (P25–P75) calculadas na Tendência Posicional.
+          </div>
         </div>
       </div>
 
@@ -391,6 +592,16 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               Exibindo as 50 primeiras apostas. Use <strong>Exportar todas</strong> para baixar o arquivo completo.
             </div>
           )}
+          {jogos.length === 0 ? (
+            <div className="text-xs text-amber-200 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2">
+              Nenhum jogo atende às restrições de colunas posicionais. Ajuste os mínimos/máximos ou remova exclusões.
+            </div>
+          ) : jogos.length < quantidade && !modoTodas ? (
+            <div className="text-xs text-amber-200 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2">
+              Pedidos {quantidade} jogo(s), mas apenas <strong>{jogos.length}</strong> atendem às restrições de colunas posicionais.
+              Os demais foram descartados.
+            </div>
+          ) : null}
           {jogos.slice(0, 50).map((jogo, idx) => (
             <div key={idx} className="rounded-xl bg-white/5 border border-white/10 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -442,6 +653,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           Clique em <strong>Gerar</strong> para criar jogos diversificados.
         </div>
       )}
+
+      <GeneratingOverlay show={loading} progress={progresso} />
     </div>
   );
 }
