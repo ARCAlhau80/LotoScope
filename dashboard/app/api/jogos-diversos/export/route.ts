@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { carregarResultados } from '@/lib/database';
-import { gerarJogosDiversificados, calcularEstimativaCombinacoes } from '@/lib/gerador-diversificado';
-import { parseColunasPosicionais, parseFiltroComparativo } from '@/lib/colunas-posicionais';
+import { gerarJogosDiversificados, calcularEstimativaCombinacoes, type JogoGerado, type ColunasPosicionaisConstraint, type FiltroComparativo } from '@/lib/gerador-diversificado';
+import { parseColunasPosicionais, parseFiltroComparativo, parseFixosPosicoes, parseExcluidosPosicoes } from '@/lib/colunas-posicionais';
 import sql from 'mssql';
 import { getLotteryConfig, validarDezenas } from '@/lib/lottery-config';
 
@@ -84,6 +84,65 @@ async function carregarCicloNoConcurso(loteriaId: string = 'lotofacil', concurso
   }
 }
 
+interface GerarExportOptions {
+  resultados: number[][];
+  cicloDados?: Record<number, number>;
+  seed?: number;
+  fixos?: number[];
+  excluidos?: number[];
+  totalNumeros: number;
+  numerosPorJogo: number;
+  numeroMinimo: number;
+  primos: number[];
+  colunasPosicionais?: ColunasPosicionaisConstraint;
+  filtroComparativo?: FiltroComparativo;
+  fixosPosicoes?: Record<number, number[]>;
+  excluidosPosicoes?: Record<number, number[]>;
+}
+
+function gerarExportJogos(options: GerarExportOptions, limiteMemoria: number): JogoGerado[] | null {
+  const { resultados, cicloDados, seed, fixos, excluidos, totalNumeros, numerosPorJogo, numeroMinimo, primos, colunasPosicionais, filtroComparativo, fixosPosicoes, excluidosPosicoes } = options;
+  let jogos = gerarJogosDiversificados({
+    resultados,
+    cicloDados,
+    nJogos: 0,
+    seed,
+    fixos,
+    excluidos,
+    totalNumeros,
+    numerosPorJogo,
+    numeroMinimo,
+    primos,
+    colunasPosicionais,
+    filtroComparativo,
+    fixosPosicoes,
+    excluidosPosicoes,
+  });
+
+  if (jogos.length === 0 && (colunasPosicionais || filtroComparativo || fixosPosicoes || excluidosPosicoes)) {
+    const bruta = calcularEstimativaCombinacoes(fixos, excluidos, totalNumeros, numerosPorJogo, numeroMinimo);
+    if (bruta > limiteMemoria) return null;
+    jogos = gerarJogosDiversificados({
+      resultados,
+      cicloDados,
+      nJogos: 0,
+      seed,
+      fixos,
+      excluidos,
+      totalNumeros,
+      numerosPorJogo,
+      numeroMinimo,
+      primos,
+      colunasPosicionais: undefined,
+      filtroComparativo: undefined,
+      fixosPosicoes: undefined,
+      excluidosPosicoes: undefined,
+    });
+  }
+
+  return jogos;
+}
+
 function parseParams(searchParams: URLSearchParams) {
   const loteria = searchParams.get('loteria') || 'lotofacil';
   const cfg = getLotteryConfig(loteria);
@@ -95,6 +154,8 @@ function parseParams(searchParams: URLSearchParams) {
   const colunasParam = searchParams.get('colunas_posicionais');
   const colunasSetsParam = searchParams.get('colunas_sets');
   const comparativoParam = searchParams.get('comparativo');
+  const fixosPosicoesParam = searchParams.get('fixos_posicoes');
+  const excluidosPosicoesParam = searchParams.get('excluidos_posicoes');
 
   const seed = seedParam ? parseInt(seedParam, 10) : undefined;
   const concursoBase = concursoParam ? parseInt(concursoParam, 10) : undefined;
@@ -104,13 +165,15 @@ function parseParams(searchParams: URLSearchParams) {
   const excluidos = excluidosParam ? excluidosParam.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n >= cfg.numero_minimo && n <= cfg.numero_maximo) : undefined;
   const colunasPosicionais = parseColunasPosicionais(colunasParam, colunasSetsParam);
   const filtroComparativo = parseFiltroComparativo(comparativoParam);
+  const fixosPosicoes = parseFixosPosicoes(fixosPosicoesParam);
+  const excluidosPosicoes = parseExcluidosPosicoes(excluidosPosicoesParam);
 
-  return { loteria, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, filtroComparativo };
+  return { loteria, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, filtroComparativo, fixosPosicoes, excluidosPosicoes };
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const { loteria, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, filtroComparativo } = parseParams(new URL(request.url).searchParams);
+    const { loteria, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, filtroComparativo, fixosPosicoes, excluidosPosicoes } = parseParams(new URL(request.url).searchParams);
 
     const resultados = await carregarResultados(loteria);
     const resultadosAteBase = concursoBase !== undefined
@@ -119,7 +182,7 @@ export async function GET(request: NextRequest) {
     const numeros = resultadosAteBase.map(r => r.numeros);
     const cicloDados = await carregarCicloNoConcurso(loteria, concursoBase);
 
-    const estimativa = calcularEstimativaCombinacoes(fixos, excluidos, cfg.total_numeros, dezenas, cfg.numero_minimo);
+    const estimativa = calcularEstimativaCombinacoes(fixos, excluidos, cfg.total_numeros, dezenas, cfg.numero_minimo, colunasPosicionais, filtroComparativo, numeros[numeros.length - 1], fixosPosicoes, excluidosPosicoes);
 
     const LIMITE_MEMORIA = 500000;
     if (estimativa > LIMITE_MEMORIA) {
@@ -129,10 +192,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const jogos = gerarJogosDiversificados({
+    const jogos = gerarExportJogos({
       resultados: numeros,
       cicloDados,
-      nJogos: 0,
       seed,
       fixos,
       excluidos,
@@ -142,7 +204,16 @@ export async function GET(request: NextRequest) {
       primos: cfg.primos,
       colunasPosicionais,
       filtroComparativo,
-    });
+      fixosPosicoes,
+      excluidosPosicoes,
+    }, LIMITE_MEMORIA);
+
+    if (jogos === null) {
+      return NextResponse.json(
+        { success: false, error: `Nenhum jogo atende aos filtros e o total de combinações sem filtros excede o limite seguro de ${LIMITE_MEMORIA.toLocaleString('pt-BR')}. Reduza fixos ou remova exclusões.` },
+        { status: 400 }
+      );
+    }
 
     const texto = jogos.map(j => j.numeros.join(',')).join('\n');
     const blob = new Blob([texto], { type: 'text/plain; charset=utf-8' });
@@ -165,7 +236,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { loteria = 'lotofacil', seed, fixos, excluidos, concurso, dezenas: dezenasBody, colunas_posicionais: colunasParam, colunas_sets: colunasSetsParam, comparativo: comparativoParam } = body || {};
+    const { loteria = 'lotofacil', seed, fixos, excluidos, concurso, dezenas: dezenasBody, colunas_posicionais: colunasParam, colunas_sets: colunasSetsParam, comparativo: comparativoParam, fixos_posicoes: fixosPosicoesParam, excluidos_posicoes: excluidosPosicoesParam } = body || {};
     const cfg = getLotteryConfig(loteria);
     const concursoBase = concurso !== undefined ? parseInt(String(concurso), 10) : undefined;
     const dezenas = validarDezenas(cfg, dezenasBody !== undefined ? parseInt(String(dezenasBody), 10) : undefined);
@@ -173,6 +244,8 @@ export async function POST(request: NextRequest) {
     const excluidosNorm = Array.isArray(excluidos) ? excluidos.map(Number).filter((n: number) => n >= cfg.numero_minimo && n <= cfg.numero_maximo) : undefined;
     const colunasPosicionais = parseColunasPosicionais(typeof colunasParam === 'string' ? colunasParam : null, typeof colunasSetsParam === 'string' ? colunasSetsParam : null);
     const filtroComparativo = parseFiltroComparativo(typeof comparativoParam === 'string' ? comparativoParam : null);
+    const fixosPosicoes = parseFixosPosicoes(typeof fixosPosicoesParam === 'string' ? fixosPosicoesParam : null);
+    const excluidosPosicoes = parseExcluidosPosicoes(typeof excluidosPosicoesParam === 'string' ? excluidosPosicoesParam : null);
 
     const resultados = await carregarResultados(loteria);
     const resultadosAteBase = concursoBase !== undefined
@@ -181,7 +254,7 @@ export async function POST(request: NextRequest) {
     const numeros = resultadosAteBase.map(r => r.numeros);
     const cicloDados = await carregarCicloNoConcurso(loteria, concursoBase);
 
-    const estimativa = calcularEstimativaCombinacoes(fixosNorm, excluidosNorm, cfg.total_numeros, dezenas, cfg.numero_minimo);
+    const estimativa = calcularEstimativaCombinacoes(fixosNorm, excluidosNorm, cfg.total_numeros, dezenas, cfg.numero_minimo, colunasPosicionais, filtroComparativo, numeros[numeros.length - 1], fixosPosicoes, excluidosPosicoes);
 
     const LIMITE_MEMORIA = 500000;
     if (estimativa > LIMITE_MEMORIA) {
@@ -191,10 +264,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const jogos = gerarJogosDiversificados({
+    const jogos = gerarExportJogos({
       resultados: numeros,
       cicloDados,
-      nJogos: 0,
       seed: seed ? parseInt(String(seed), 10) : undefined,
       fixos: fixosNorm,
       excluidos: excluidosNorm,
@@ -204,7 +276,16 @@ export async function POST(request: NextRequest) {
       primos: cfg.primos,
       colunasPosicionais,
       filtroComparativo,
-    });
+      fixosPosicoes,
+      excluidosPosicoes,
+    }, LIMITE_MEMORIA);
+
+    if (jogos === null) {
+      return NextResponse.json(
+        { success: false, error: `Nenhum jogo atende aos filtros e o total de combinações sem filtros excede o limite seguro de ${LIMITE_MEMORIA.toLocaleString('pt-BR')}. Reduza fixos ou remova exclusões.` },
+        { status: 400 }
+      );
+    }
 
     const texto = jogos.map(j => j.numeros.join(',')).join('\n');
     const blob = new Blob([texto], { type: 'text/plain; charset=utf-8' });

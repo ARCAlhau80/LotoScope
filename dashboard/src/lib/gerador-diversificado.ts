@@ -11,6 +11,8 @@ export interface GeradorDiversificadoOptions {
   primos?: number[];
   colunasPosicionais?: ColunasPosicionaisConstraint;
   filtroComparativo?: FiltroComparativo;
+  fixosPosicoes?: Record<number, number[]>;
+  excluidosPosicoes?: Record<number, number[]>;
 }
 
 export interface ColunasPosicionaisConstraint {
@@ -126,35 +128,78 @@ export function calcularEstimativaCombinacoes(
   numeroMinimo = 1,
   colunasPosicionais?: ColunasPosicionaisConstraint,
   filtroComparativo?: FiltroComparativo,
-  baseComparativo: number[] = []
+  baseComparativo: number[] = [],
+  fixosPosicoes?: Record<number, number[]>,
+  excluidosPosicoes?: Record<number, number[]>
 ): number {
-  const { fixosNorm, excluidosNorm, disponiveis } = normalizarConstraints(fixos, excluidos, totalNumeros, numeroMinimo);
+  const excluidosCompletos = (excluidos ?? []).filter(n => !(excluidosPosicoes?.[n]?.length));
+  const { fixosNorm, excluidosNorm, disponiveis } = normalizarConstraints(fixos, excluidosCompletos, totalNumeros, numeroMinimo);
   const totalDisp = totalNumeros - fixosNorm.length - excluidosNorm.length;
   const escolher = numerosPorJogo - fixosNorm.length;
   const base = combinacoes(totalDisp, escolher);
 
-  const temColunas = colunasPosicionais !== undefined && colunasPosicionais.sets.length > 0;
-  const temCmp = filtroComparativo !== undefined && baseComparativo.length === numerosPorJogo;
+  const temCmp = filtroComparativo !== undefined && baseComparativo.length > 0;
+  const temPos = fixosPosicoes !== undefined && fixosNorm.some(n => (fixosPosicoes[n] ?? []).length > 0);
+  const temExclPos = excluidosPosicoes !== undefined
+    && Object.keys(excluidosPosicoes).some(n => {
+      const num = Number(n);
+      return (excluidosPosicoes[num] ?? []).length > 0 && num >= numeroMinimo && num < numeroMinimo + totalNumeros && !fixosNorm.includes(num);
+    });
 
-  if (!temColunas && !temCmp) return base;
+  // normaliza as colunas exatamente como a geração faz (fixos/excluídos fora dos conjuntos,
+  // mins/maxs limitados ao tamanho do conjunto) para a estimativa bater com o gerado
+  const colunasNorm = normalizarColunas(colunasPosicionais, {
+    totalNumeros,
+    numerosPorJogo,
+    numeroMinimo,
+    numeroMaximo: numeroMinimo + totalNumeros - 1,
+    primosSet: new Set<number>(),
+  }, fixosNorm, excluidosNorm);
+  const temColunas = colunasNorm !== undefined && colunasNorm.sets.length > 0;
 
-  if (temColunas && !temCmp) {
-    return contarCombinacoesComColunas(fixosNorm, excluidosNorm, disponiveis, totalNumeros, numerosPorJogo, numeroMinimo, colunasPosicionais!, base);
+  if (!temColunas && !temCmp && !temPos && !temExclPos) return base;
+
+  if (temPos && !temColunas && !temCmp && !temExclPos) {
+    return contarCombinacoesComPosicoes(fixosNorm, fixosPosicoes, disponiveis, totalNumeros, numerosPorJogo, numeroMinimo);
   }
 
-  if (!temColunas && temCmp) {
+  if (temColunas && !temCmp && !temPos && !temExclPos) {
+    return contarCombinacoesComColunas(fixosNorm, excluidosNorm, disponiveis, totalNumeros, numerosPorJogo, numeroMinimo, colunasNorm!, base);
+  }
+
+  if (!temColunas && temCmp && !temPos && !temExclPos) {
     const est = contarCombinacoesColunasComparativo(fixosNorm, excluidosNorm, totalNumeros, numerosPorJogo, numeroMinimo, undefined, filtroComparativo, baseComparativo);
     return Math.min(est ?? base, base);
   }
 
-  // ambos os filtros: DP combinada exata; se estourar orçamento, estimativa Monte Carlo
-  const est = contarCombinacoesColunasComparativo(fixosNorm, excluidosNorm, totalNumeros, numerosPorJogo, numeroMinimo, colunasPosicionais!, filtroComparativo, baseComparativo);
+  // combinação de filtros (colunas e/ou comparativo e/ou posições e/ou exclusões por posição):
+  // DP combinada exata com rastreamento de posição
+  const est = contarCombinacoesColunasComparativo(
+    fixosNorm, excluidosNorm, totalNumeros, numerosPorJogo, numeroMinimo,
+    temColunas ? colunasNorm : undefined,
+    temCmp ? filtroComparativo : undefined,
+    baseComparativo,
+    fixosPosicoes,
+    excluidosPosicoes
+  );
   if (est !== null) return Math.min(est, base);
 
-  const estMC = estimativaMonteCarlo(fixosNorm, excluidosNorm, totalNumeros, numerosPorJogo, numeroMinimo, colunasPosicionais!, filtroComparativo!, baseComparativo, totalDisp, escolher);
-  const estCol = contarCombinacoesComColunas(fixosNorm, excluidosNorm, disponiveis, totalNumeros, numerosPorJogo, numeroMinimo, colunasPosicionais!, base);
-  const estCmp = contarCombinacoesColunasComparativo(fixosNorm, excluidosNorm, totalNumeros, numerosPorJogo, numeroMinimo, undefined, filtroComparativo, baseComparativo) ?? base;
-  return Math.min(estMC, estCol, estCmp, base);
+  // orçamento da DP estourou: aproximação conservadora (menor dos limites individuais)
+  const estCol = temColunas
+    ? contarCombinacoesComColunas(fixosNorm, excluidosNorm, disponiveis, totalNumeros, numerosPorJogo, numeroMinimo, colunasNorm!, base)
+    : base;
+  const estPos = temPos
+    ? contarCombinacoesComPosicoes(fixosNorm, fixosPosicoes, disponiveis, totalNumeros, numerosPorJogo, numeroMinimo)
+    : base;
+  const estCmp = temCmp
+    ? (contarCombinacoesColunasComparativo(fixosNorm, excluidosNorm, totalNumeros, numerosPorJogo, numeroMinimo, undefined, filtroComparativo, baseComparativo) ?? base)
+    : base;
+
+  if (temColunas && temCmp) {
+    const estMC = estimativaMonteCarlo(fixosNorm, excluidosNorm, totalNumeros, numerosPorJogo, numeroMinimo, colunasNorm!, filtroComparativo!, baseComparativo, totalDisp, escolher, 20260921, fixosPosicoes, excluidosPosicoes);
+    return Math.min(estMC, estCol, estCmp, estPos, base);
+  }
+  return Math.min(estCol, estCmp, estPos, base);
 }
 
 function estimativaMonteCarlo(
@@ -168,7 +213,9 @@ function estimativaMonteCarlo(
   base: number[],
   totalDisp: number,
   escolher: number,
-  seed = 20260921
+  seed = 20260921,
+  fixosPosicoes?: Record<number, number[]>,
+  excluidosPosicoes?: Record<number, number[]>
 ): number {
   const numeroMaximo = numeroMinimo + totalNumeros - 1;
   const pool = Array.from({ length: totalNumeros }, (_, i) => i + numeroMinimo).filter(n => !excluidosNorm.includes(n) && !fixosNorm.includes(n));
@@ -194,9 +241,10 @@ function estimativaMonteCarlo(
       const cnt = setC[c].reduce((k, n) => k + (jogo.includes(n) ? 1 : 0), 0);
       if (cnt < minC[c] || cnt > maxC[c]) { ok = false; break; }
     }
-    if (ok && base.length === numerosPorJogo) {
+    if (ok && base.length > 0) {
+      const nCmp = posicoesComparaveis(numerosPorJogo, base.length);
       let m = 0, men = 0, ig = 0;
-      for (let i2 = 0; i2 < numerosPorJogo; i2++) {
+      for (let i2 = 0; i2 < nCmp; i2++) {
         if (jogo[i2] > base[i2]) m++;
         else if (jogo[i2] < base[i2]) men++;
         else ig++;
@@ -204,6 +252,8 @@ function estimativaMonteCarlo(
       const r = (v: { min: number; max: number } | undefined, cnt: number) => !v || (cnt >= v.min && cnt <= v.max);
       ok = r(filtro.maiores, m) && r(filtro.iguais, ig) && r(filtro.menores, men);
     }
+    if (ok && !satisfazPosicoes(jogo, fixosPosicoes)) ok = false;
+    if (ok && !satisfazExclusaoPosicoes(jogo, excluidosPosicoes)) ok = false;
     if (ok) hits++;
   }
   return Math.round(hits / N * combinacoes(totalDisp, escolher));
@@ -217,10 +267,13 @@ function contarCombinacoesColunasComparativo(
   numeroMinimo: number,
   col: ColunasPosicionaisConstraint | undefined,
   filtro: FiltroComparativo | undefined,
-  base: number[]
+  base: number[],
+  fixosPosicoes?: Record<number, number[]>,
+  excluidosPosicoes?: Record<number, number[]>
 ): number | null {
   const numeroMaximo = numeroMinimo + totalNumeros - 1;
-  if (filtro && base.length !== numerosPorJogo) return null;
+  if (filtro && base.length === 0) return null;
+  const nCmp = filtro ? posicoesComparaveis(numerosPorJogo, base.length) : 0;
   const nCols = col ? Math.min(col.sets.length, 5) : 0;
 
   const setC: number[][] = [];
@@ -255,13 +308,13 @@ function contarCombinacoesColunasComparativo(
     const mn = r ? Math.max(0, r.min) : 0;
     const mx = r ? (Number.isFinite(r.max) ? r.max : Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY;
     cmpMax.push(mx);
-    const cap = Number.isFinite(mx) ? Math.min(mx, numerosPorJogo) : Math.min(mn, numerosPorJogo);
+    const cap = Number.isFinite(mx) ? Math.min(mx, nCmp) : Math.min(mn, nCmp);
     capM.push(Math.max(0, cap));
     needM.push(Math.min(mn, capM[capM.length - 1]));
   }
   if (cmpMax.some((mx, i) => {
     const mn = (filtro ? filtro[cmKeys[i]] : undefined)?.min ?? 0;
-    return mn > numerosPorJogo || (Number.isFinite(mx) && mn > mx);
+    return mn > nCmp || (Number.isFinite(mx) && mn > mx);
   })) return 0;
 
   const fixoSet = new Set(fixosNorm);
@@ -283,7 +336,7 @@ function contarCombinacoesColunasComparativo(
     return { k: key, m, cols };
   };
 
-  const BUDGET = 400_000;
+  const BUDGET = 1_000_000;
   let dp = new Map<number, number>();
   dp.set(encode(0, [0, 0, 0], capC.map(() => 0)), 1);
 
@@ -303,18 +356,28 @@ function contarCombinacoesColunasComparativo(
       }
       if (!isFixo) add(next, key, ways);
 
-      const b = base[k];
+      if (isFixo) {
+        const pj = fixosPosicoes?.[x];
+        if (pj && pj.length > 0 && !pj.includes(k + 1)) continue;
+      }
+
+      const qj = excluidosPosicoes?.[x];
+      if (qj && qj.length > 0 && qj.includes(k + 1)) continue;
+
       let ok = true;
       const nm = [m[0], m[1], m[2]];
-      if (x > b) {
-        if (Number.isFinite(cmpMax[0])) { nm[0] = m[0] + 1; if (nm[0] > cmpMax[0]) ok = false; }
-        else nm[0] = Math.min(m[0] + 1, capM[0]);
-      } else if (x < b) {
-        if (Number.isFinite(cmpMax[2])) { nm[2] = m[2] + 1; if (nm[2] > cmpMax[2]) ok = false; }
-        else nm[2] = Math.min(m[2] + 1, capM[2]);
-      } else {
-        if (Number.isFinite(cmpMax[1])) { nm[1] = m[1] + 1; if (nm[1] > cmpMax[1]) ok = false; }
-        else nm[1] = Math.min(m[1] + 1, capM[1]);
+      if (k < nCmp) {
+        const b = base[k];
+        if (x > b) {
+          if (Number.isFinite(cmpMax[0])) { nm[0] = m[0] + 1; if (nm[0] > cmpMax[0]) ok = false; }
+          else nm[0] = Math.min(m[0] + 1, capM[0]);
+        } else if (x < b) {
+          if (Number.isFinite(cmpMax[2])) { nm[2] = m[2] + 1; if (nm[2] > cmpMax[2]) ok = false; }
+          else nm[2] = Math.min(m[2] + 1, capM[2]);
+        } else {
+          if (Number.isFinite(cmpMax[1])) { nm[1] = m[1] + 1; if (nm[1] > cmpMax[1]) ok = false; }
+          else nm[1] = Math.min(m[1] + 1, capM[1]);
+        }
       }
       if (!ok) continue;
 
@@ -459,6 +522,71 @@ function contarCombinacoesComColunas(
   return Math.min(total, base);
 }
 
+function contarCombinacoesComPosicoes(
+  fixosNorm: number[],
+  fixosPosicoes: Record<number, number[]> | undefined,
+  disponiveis: number[],
+  totalNumeros: number,
+  numerosPorJogo: number,
+  numeroMinimo: number
+): number {
+  const numeroMaximo = numeroMinimo + totalNumeros - 1;
+  const fixosOrdenados = [...fixosNorm].sort((a, b) => a - b);
+  const F = fixosOrdenados.length;
+
+  const fixoSet = new Set(fixosNorm);
+  const excluidoSet = new Set(Array.from({ length: totalNumeros }, (_, i) => i + numeroMinimo).filter(n => !disponiveis.includes(n)));
+  const available = (n: number) => !fixoSet.has(n) && !excluidoSet.has(n);
+
+  const posMap: Record<number, number[]> = {};
+  for (const n of fixosOrdenados) {
+    const p = fixosPosicoes?.[n];
+    if (p && p.length > 0) posMap[n] = p;
+  }
+  if (Object.keys(posMap).length === 0) {
+    return combinacoes(disponiveis.length - fixoSet.size, numerosPorJogo - F);
+  }
+
+  const bounds = [numeroMinimo - 1, ...fixosOrdenados, numeroMaximo + 1];
+  const b: number[] = [];
+  for (let j = 0; j < bounds.length - 1; j++) {
+    let cnt = 0;
+    for (let n = bounds[j] + 1; n <= bounds[j + 1] - 1; n++) if (available(n)) cnt++;
+    b.push(cnt);
+  }
+
+  let dp = new Map<number, number>();
+  for (let a = 0; a <= b[0]; a++) {
+    const pos = a + 1;
+    const pj = posMap[fixosOrdenados[0]];
+    if (!pj || pj.includes(pos)) dp.set(a, combinacoes(b[0], a));
+  }
+
+  for (let j = 1; j < F; j++) {
+    const next = new Map<number, number>();
+    const pj = posMap[fixosOrdenados[j]];
+    for (const [c, ways] of dp) {
+      for (let a = 0; a <= b[j]; a++) {
+        const c2 = c + a;
+        const pos = c2 + (j + 1);
+        if (!pj || pj.includes(pos)) {
+          next.set(c2, (next.get(c2) ?? 0) + ways * combinacoes(b[j], a));
+        }
+      }
+    }
+    dp = next;
+    if (dp.size === 0) return 0;
+  }
+
+  const alvo = numerosPorJogo - F;
+  let total = 0;
+  for (const [c, ways] of dp) {
+    const a = alvo - c;
+    if (a >= 0 && a <= b[F]) total += ways * combinacoes(b[F], a);
+  }
+  return total;
+}
+
 function aplicarConstraints(jogo: number[], rand: () => number, lp: LP, fixos?: number[], excluidos?: number[]): number[] {
   const { fixosNorm, excluidosNorm, disponiveis } = normalizarConstraints(fixos, excluidos, lp.totalNumeros, lp.numeroMinimo);
   const jogoSet = new Set(jogo);
@@ -515,11 +643,34 @@ function satisfazColunas(jogo: number[], col: ColunasPosicionaisConstraint): boo
   return true;
 }
 
+function satisfazPosicoes(jogo: number[], fixosPosicoes: Record<number, number[]> | undefined): boolean {
+  if (!fixosPosicoes) return true;
+  for (let i = 0; i < jogo.length; i++) {
+    const p = fixosPosicoes[jogo[i]];
+    if (p && p.length > 0 && !p.includes(i + 1)) return false;
+  }
+  return true;
+}
+
+function satisfazExclusaoPosicoes(jogo: number[], excluidosPosicoes: Record<number, number[]> | undefined): boolean {
+  if (!excluidosPosicoes) return true;
+  for (let i = 0; i < jogo.length; i++) {
+    const q = excluidosPosicoes[jogo[i]];
+    if (q && q.length > 0 && q.includes(i + 1)) return false;
+  }
+  return true;
+}
+
+function posicoesComparaveis(tamanhoJogo: number, tamanhoBase: number): number {
+  return Math.min(tamanhoJogo, tamanhoBase);
+}
+
 function satisfazComparativo(jogo: number[], base: number[], filtro: FiltroComparativo | undefined): boolean {
   if (!filtro) return true;
-  if (base.length === 0 || jogo.length !== base.length) return true;
+  if (base.length === 0 || jogo.length === 0) return true;
+  const n = posicoesComparaveis(jogo.length, base.length);
   let m = 0, men = 0, ig = 0;
-  for (let i = 0; i < jogo.length; i++) {
+  for (let i = 0; i < n; i++) {
     if (jogo[i] > base[i]) m++;
     else if (jogo[i] < base[i]) men++;
     else ig++;
@@ -739,53 +890,89 @@ function mediaIntersecoes(jogo: number[], jogos: number[][]): number {
   return soma / jogos.length;
 }
 
-function garantirCobertura(jogos: number[][], rand: () => number, lp: LP, fixos: number[] = [], excluidos: number[] = []): number[][] {
-  const cobertura = new Set(jogos.flat());
-  const faltando = Array.from({ length: lp.totalNumeros }, (_, i) => i + lp.numeroMinimo)
-    .filter(n => !cobertura.has(n) && !excluidos.includes(n));
-  if (faltando.length === 0 || jogos.length < 3) return jogos;
+interface FiltrosCobertura {
+  colunas?: ColunasPosicionaisConstraint;
+  fixosPosicoes?: Record<number, number[]>;
+  excluidosPosicoes?: Record<number, number[]>;
+  baseComparativo?: number[];
+  filtroComparativo?: FiltroComparativo;
+}
 
+function jogoValido(jogo: number[], filtros?: FiltrosCobertura): boolean {
+  if (!filtros) return true;
+  if (filtros.colunas && !satisfazColunas(jogo, filtros.colunas)) return false;
+  if (filtros.fixosPosicoes && !satisfazPosicoes(jogo, filtros.fixosPosicoes)) return false;
+  if (filtros.excluidosPosicoes && !satisfazExclusaoPosicoes(jogo, filtros.excluidosPosicoes)) return false;
+  if (filtros.filtroComparativo && !satisfazComparativo(jogo, filtros.baseComparativo ?? [], filtros.filtroComparativo)) return false;
+  return true;
+}
+
+function garantirCobertura(jogos: number[][], rand: () => number, lp: LP, fixos: number[] = [], excluidos: number[] = [], filtros?: FiltrosCobertura): number[][] {
   const result = jogos.map(j => [...j]);
-  for (const numFaltando of faltando) {
-    let melhorIdx = 0;
-    let melhorScore = -1;
-    for (let idx = 0; idx < result.length; idx++) {
-      const outras = result.filter((_, i) => i !== idx);
-      const score = mediaIntersecoes(result[idx], outras);
-      if (score > melhorScore) {
-        melhorScore = score;
-        melhorIdx = idx;
-      }
-    }
+  if (result.length < 3) return result;
 
-    const jogo = result[melhorIdx];
-    const candidatosTroca = jogo
-      .map((n, pos) => ({ n, pos }))
-      .filter(({ n }) => !fixos.includes(n) && result.filter(j => j.includes(n)).length > 1)
-      .sort(() => rand() - 0.5);
+  const pool = Array.from({ length: lp.totalNumeros }, (_, i) => i + lp.numeroMinimo)
+    .filter(n => !excluidos.includes(n) && !fixos.includes(n));
+  const freq: Record<number, number> = {};
+  for (const n of pool) freq[n] = 0;
+  for (const j of result) for (const n of j) if (n in freq) freq[n]++;
+
+  const ideal = (result.length * lp.numerosPorJogo) / Math.max(1, pool.length);
+
+  // alvos: números sub-representados (prioridade: os que faltam totalmente)
+  const alvos = pool.filter(n => freq[n] < ideal).sort((a, b) => freq[a] - freq[b]);
+
+  for (const alvo of alvos) {
+    // ordena jogos por redundância (maior média de interseção primeiro)
+    const scores: number[] = result.map((j, idx) => {
+      const outras = result.filter((_, i) => i !== idx);
+      return mediaIntersecoes(j, outras);
+    });
+    const ordem = result.map((_, idx) => idx).sort((a, b) => scores[b] - scores[a]);
 
     let trocou = false;
-    for (const { pos } of candidatosTroca) {
-      const novoJogo = sorted([...jogo.slice(0, pos), ...jogo.slice(pos + 1), numFaltando]);
-      if (!excluidos.includes(numFaltando) && !result.some(j => JSON.stringify(j) === JSON.stringify(novoJogo))) {
-        result[melhorIdx] = novoJogo;
-        trocou = true;
-        break;
-      }
-    }
+    for (const idx of ordem) {
+      const jogo = result[idx];
 
-    if (!trocou) {
-      const candidatosTroca2 = jogo
+      // tenta trocar um número super-representado (> ideal) por um não-fixo
+      const candidatos = jogo
         .map((n, pos) => ({ n, pos }))
-        .filter(({ n }) => !fixos.includes(n))
+        .filter(({ n }) => !fixos.includes(n) && freq[n] > ideal)
         .sort(() => rand() - 0.5);
-      for (const { pos } of candidatosTroca2) {
-        const novoJogo = sorted([...jogo.slice(0, pos), ...jogo.slice(pos + 1), numFaltando]);
-        if (!excluidos.includes(numFaltando) && !result.some(j => JSON.stringify(j) === JSON.stringify(novoJogo))) {
-          result[melhorIdx] = novoJogo;
+      for (const { pos } of candidatos) {
+        if (jogo.includes(alvo)) break;
+        const novoJogo = sorted([...jogo.slice(0, pos), ...jogo.slice(pos + 1), alvo]);
+        if (novoJogo.length === new Set(novoJogo).size
+          && !result.some(j => JSON.stringify(j) === JSON.stringify(novoJogo))
+          && jogoValido(novoJogo, filtros)) {
+          result[idx] = novoJogo;
+          freq[alvo] = (freq[alvo] ?? 0) + 1;
+          freq[jogo[pos]] = freq[jogo[pos]] - 1;
+          trocou = true;
           break;
         }
       }
+      if (trocou) break;
+
+      // fallback: qualquer número não-fixo
+      const candidatos2 = jogo
+        .map((n, pos) => ({ n, pos }))
+        .filter(({ n }) => !fixos.includes(n))
+        .sort(() => rand() - 0.5);
+      for (const { pos } of candidatos2) {
+        if (jogo.includes(alvo)) break;
+        const novoJogo = sorted([...jogo.slice(0, pos), ...jogo.slice(pos + 1), alvo]);
+        if (novoJogo.length === new Set(novoJogo).size
+          && !result.some(j => JSON.stringify(j) === JSON.stringify(novoJogo))
+          && jogoValido(novoJogo, filtros)) {
+          result[idx] = novoJogo;
+          freq[alvo] = (freq[alvo] ?? 0) + 1;
+          freq[jogo[pos]] = freq[jogo[pos]] - 1;
+          trocou = true;
+          break;
+        }
+      }
+      if (trocou) break;
     }
   }
 
@@ -793,10 +980,12 @@ function garantirCobertura(jogos: number[][], rand: () => number, lp: LP, fixos:
 }
 
 export function gerarJogosDiversificados(options: GeradorDiversificadoOptions): JogoGerado[] {
-  const { resultados, cicloDados, nJogos = 5, seed, fixos, excluidos, colunasPosicionais, filtroComparativo } = options;
+  const { resultados, cicloDados, nJogos = 5, seed, fixos, excluidos, colunasPosicionais, filtroComparativo, fixosPosicoes, excluidosPosicoes } = options;
   const lp = buildLP(options);
   const rand = rng(seed);
-  const { fixosNorm, excluidosNorm, disponiveis } = normalizarConstraints(fixos, excluidos, lp.totalNumeros, lp.numeroMinimo);
+  // números com exclusão apenas por posição permanecem no pool (só evitam certas posições)
+  const excluidosCompletos = (excluidos ?? []).filter(n => !(excluidosPosicoes?.[n]?.length));
+  const { fixosNorm, excluidosNorm, disponiveis } = normalizarConstraints(fixos, excluidosCompletos, lp.totalNumeros, lp.numeroMinimo);
 
   if (fixosNorm.length > lp.numerosPorJogo) {
     throw new Error(`Não é possível fixar mais de ${lp.numerosPorJogo} números. Recebido: ${fixosNorm.length}`);
@@ -809,7 +998,7 @@ export function gerarJogosDiversificados(options: GeradorDiversificadoOptions): 
   const baseComparativo = resultados.length > 0 ? resultados[resultados.length - 1] : [];
 
   if (nJogos === 0) {
-    return gerarTodasAsCombinacoes(rand, lp, fixos, excluidos, colunasNorm, baseComparativo, filtroComparativo);
+    return gerarTodasAsCombinacoes(rand, lp, fixos, excluidosCompletos, colunasNorm, baseComparativo, filtroComparativo, fixosPosicoes, excluidosPosicoes);
   }
 
   const count = nJogos;
@@ -819,14 +1008,17 @@ export function gerarJogosDiversificados(options: GeradorDiversificadoOptions): 
       const jogos: number[][] = [];
       for (let i = 0; i < count; i++) {
         const jogo = gerarComColunas(rand, lp, fixosNorm, excluidosNorm, disponiveis, colunasNorm);
-        if (satisfazColunas(jogo, colunasNorm) && !jogos.some(ex => JSON.stringify(ex) === JSON.stringify(jogo))) {
+        if (satisfazColunas(jogo, colunasNorm)
+          && satisfazPosicoes(jogo, fixosPosicoes)
+          && satisfazExclusaoPosicoes(jogo, excluidosPosicoes)
+          && !jogos.some(ex => JSON.stringify(ex) === JSON.stringify(jogo))) {
           jogos.push(jogo);
         }
       }
       return jogos.map(numeros => buildJogo(numeros, 'colunas', lp.primosSet));
     }
     return Array.from({ length: count }, () => {
-      const numeros = gerarAleatorio(rand, lp, fixos, excluidos);
+      const numeros = gerarAleatorio(rand, lp, fixos, excluidosCompletos);
       return buildJogo(numeros, 'aleatorio', lp.primosSet);
     });
   }
@@ -840,16 +1032,17 @@ export function gerarJogosDiversificados(options: GeradorDiversificadoOptions): 
   const maxIntersecao = Math.max(Math.ceil(lp.numerosPorJogo * 0.6), minOverlap + 2);
 
   const estrategias: { nome: string; fn: () => number[] }[] = [
-    { nome: 'atraso', fn: () => gerarAtraso(ultimos, rand, lp, fixos, excluidos) },
-    { nome: 'hot7-9', fn: () => gerarHot(ultimos3, Math.min(Math.floor(rand() * 3) + baseHot, lp.numerosPorJogo), rand, lp, fixos, excluidos) },
-    { nome: 'persistencia', fn: () => gerarPersistenciaCategoria(ultimos2, shuffle(['pares', 'impares', 'primos'], rand)[0], rand, lp, fixos, excluidos) },
-    { nome: 'aleatorio', fn: () => gerarAleatorio(rand, lp, fixos, excluidos) },
-    { nome: 'ciclo', fn: () => gerarCiclo(cicloDados, rand, lp, fixos, excluidos) },
+    { nome: 'atraso', fn: () => gerarAtraso(ultimos, rand, lp, fixos, excluidosCompletos) },
+    { nome: 'hot7-9', fn: () => gerarHot(ultimos3, Math.min(Math.floor(rand() * 3) + baseHot, lp.numerosPorJogo), rand, lp, fixos, excluidosCompletos) },
+    { nome: 'persistencia', fn: () => gerarPersistenciaCategoria(ultimos2, shuffle(['pares', 'impares', 'primos'], rand)[0], rand, lp, fixos, excluidosCompletos) },
+    { nome: 'aleatorio', fn: () => gerarAleatorio(rand, lp, fixos, excluidosCompletos) },
+    { nome: 'ciclo', fn: () => gerarCiclo(cicloDados, rand, lp, fixos, excluidosCompletos) },
+    ...(colunasNorm ? [{ nome: 'colunas', fn: () => gerarComColunas(rand, lp, fixosNorm, excluidosNorm, disponiveis, colunasNorm) }] : []),
   ];
 
   const jogos: number[][] = [];
   const nomes: string[] = [];
-  const temComparativo = filtroComparativo !== undefined && baseComparativo.length === lp.numerosPorJogo;
+  const temComparativo = filtroComparativo !== undefined && baseComparativo.length > 0;
   let tentativa = 0;
   let semProgresso = 0;
   const maxSemProgresso = temComparativo ? Math.max(count * 4000, 10000) : Math.max(count * 5, 100);
@@ -857,25 +1050,23 @@ export function gerarJogosDiversificados(options: GeradorDiversificadoOptions): 
 
   while (jogos.length < count && tentativa < maxTentativas && semProgresso < maxSemProgresso) {
     tentativa++;
-    let jogo: number[];
-    let nome: string;
-    if (temComparativo) {
-      jogo = gerarAleatorio(rand, lp, fixos, excluidos);
-      nome = 'comparativo';
-    } else if (colunasNorm) {
-      jogo = gerarComColunas(rand, lp, fixosNorm, excluidosNorm, disponiveis, colunasNorm);
-      nome = 'colunas';
-    } else {
-      const estrategia = estrategias[jogos.length % estrategias.length];
-      jogo = aplicarConstraints(estrategia.fn(), rand, lp, fixos, excluidos);
-      nome = estrategia.nome;
-    }
+    const estrategia = estrategias[jogos.length % estrategias.length];
+    const jogo = aplicarConstraints(estrategia.fn(), rand, lp, fixos, excluidosCompletos);
+    const nome = estrategia.nome;
 
     if (jogo.length !== lp.numerosPorJogo || jogos.some(ex => JSON.stringify(ex) === JSON.stringify(jogo))) {
       semProgresso++;
       continue;
     }
     if (colunasNorm && !satisfazColunas(jogo, colunasNorm)) {
+      semProgresso++;
+      continue;
+    }
+    if (fixosPosicoes && !satisfazPosicoes(jogo, fixosPosicoes)) {
+      semProgresso++;
+      continue;
+    }
+    if (excluidosPosicoes && !satisfazExclusaoPosicoes(jogo, excluidosPosicoes)) {
       semProgresso++;
       continue;
     }
@@ -902,12 +1093,20 @@ export function gerarJogosDiversificados(options: GeradorDiversificadoOptions): 
   const maxFallback = temComparativo ? Math.max(count * 8000, 20000) : Math.max(count * 20, 500);
   while (jogos.length < count && fallbackGuard++ < maxFallback && semProgresso < maxSemProgresso) {
     const jogo = temComparativo
-      ? gerarAleatorio(rand, lp, fixos, excluidos)
+      ? gerarAleatorio(rand, lp, fixos, excluidosCompletos)
       : colunasNorm
         ? gerarComColunas(rand, lp, fixosNorm, excluidosNorm, disponiveis, colunasNorm)
-        : aplicarConstraints(gerarAleatorio(rand, lp, fixos, excluidos), rand, lp, fixos, excluidos);
+        : aplicarConstraints(gerarAleatorio(rand, lp, fixos, excluidosCompletos), rand, lp, fixos, excluidosCompletos);
     if (jogo.length === lp.numerosPorJogo && !jogos.some(ex => JSON.stringify(ex) === JSON.stringify(jogo))) {
       if (colunasNorm && !satisfazColunas(jogo, colunasNorm)) {
+        semProgresso++;
+        continue;
+      }
+      if (fixosPosicoes && !satisfazPosicoes(jogo, fixosPosicoes)) {
+        semProgresso++;
+        continue;
+      }
+      if (excluidosPosicoes && !satisfazExclusaoPosicoes(jogo, excluidosPosicoes)) {
         semProgresso++;
         continue;
       }
@@ -924,15 +1123,21 @@ export function gerarJogosDiversificados(options: GeradorDiversificadoOptions): 
   }
 
   let jogosFinais = jogos;
-  if (!colunasNorm && !filtroComparativo) {
-    jogosFinais = garantirCobertura(jogos, rand, lp, fixosNorm, excluidosNorm);
-    jogosFinais = jogosFinais.map(j => aplicarConstraints(j, rand, lp, fixos, excluidos));
+  if (jogos.length >= 3) {
+    jogosFinais = garantirCobertura(jogos, rand, lp, fixosNorm, excluidosNorm, {
+      colunas: colunasNorm,
+      fixosPosicoes,
+      excluidosPosicoes,
+      baseComparativo,
+      filtroComparativo,
+    });
+    jogosFinais = jogosFinais.map(j => aplicarConstraints(j, rand, lp, fixos, excluidosCompletos));
   }
 
   return jogosFinais.map((numeros, i) => buildJogo(numeros, nomes[i] ?? 'aleatorio', lp.primosSet));
 }
 
-function gerarTodasAsCombinacoes(rand: () => number, lp: LP, fixos?: number[], excluidos?: number[], colunasNorm?: ColunasPosicionaisConstraint, baseComparativo: number[] = [], filtroComparativo?: FiltroComparativo): JogoGerado[] {
+function gerarTodasAsCombinacoes(rand: () => number, lp: LP, fixos?: number[], excluidos?: number[], colunasNorm?: ColunasPosicionaisConstraint, baseComparativo: number[] = [], filtroComparativo?: FiltroComparativo, fixosPosicoes?: Record<number, number[]>, excluidosPosicoes?: Record<number, number[]>): JogoGerado[] {
   const { fixosNorm, excluidosNorm, disponiveis } = normalizarConstraints(fixos, excluidos, lp.totalNumeros, lp.numeroMinimo);
   const pool = disponiveis.filter(n => !fixosNorm.includes(n));
   const k = lp.numerosPorJogo - fixosNorm.length;
@@ -941,6 +1146,8 @@ function gerarTodasAsCombinacoes(rand: () => number, lp: LP, fixos?: number[], e
   for (const combo of gerarCombinacoes(pool, k)) {
     const jogo = sorted([...fixosNorm, ...combo]);
     if (colunasNorm && !satisfazColunas(jogo, colunasNorm)) continue;
+    if (!satisfazPosicoes(jogo, fixosPosicoes)) continue;
+    if (!satisfazExclusaoPosicoes(jogo, excluidosPosicoes)) continue;
     if (!satisfazComparativo(jogo, baseComparativo, filtroComparativo)) continue;
     todas.push(jogo);
   }

@@ -71,6 +71,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [error, setError] = useState<string | null>(null);
   const [colunasInputs, setColunasInputs] = useState<string[]>(['', '', '', '', '']);
   const [comparativoInputs, setComparativoInputs] = useState<string[]>(['', '', '']);
+  const [fixosPosicoes, setFixosPosicoes] = useState<Record<number, number[]>>({});
+  const [excluidosPosicoes, setExcluidosPosicoes] = useState<Record<number, number[]>>({});
 
   const colunasSets = useMemo(() => {
     if (!previsaoPosicional) return null;
@@ -92,6 +94,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setDezenas(novoCfg.numeros_por_jogo);
     setColunasInputs(['', '', '', '', '']);
     setComparativoInputs(['', '', '']);
+    setFixosPosicoes({});
+    setExcluidosPosicoes({});
   }, [loteria]);
 
   useEffect(() => {
@@ -120,6 +124,24 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
 
   const comparativoStr = comparativoInputs.map(v => v.trim()).join(',');
   const temComparativo = comparativoInputs.some(v => v.trim() !== '');
+
+  const numeroMaximo = cfg.numero_minimo + cfg.total_numeros - 1;
+  const posicoesValidas = (n: number) => {
+    const lo = Math.max(1, n - numeroMaximo + dezenas);
+    const hi = Math.min(dezenas, n - cfg.numero_minimo + 1);
+    const res: number[] = [];
+    for (let p = lo; p <= hi; p++) res.push(p);
+    return res;
+  };
+  const fixosPosicoesStr = Object.entries(fixosPosicoes)
+    .filter(([, ps]) => ps.length > 0)
+    .map(([n, ps]) => `${n}:${ps.join(',')}`)
+    .join(';');
+  const excluidosCompletos = excluidos.filter(n => !(excluidosPosicoes[n] ?? []).length);
+  const excluidosPosicoesStr = Object.entries(excluidosPosicoes)
+    .filter(([, ps]) => ps.length > 0)
+    .map(([n, ps]) => `${n}:${ps.join(',')}`)
+    .join(';');
 
   const usarPrevisaoTendencia = () => {
     if (!previsaoTendencia) {
@@ -162,10 +184,40 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       else proximo = 'normal';
       return { ...prev, [n]: proximo };
     });
+    setFixosPosicoes(prev => {
+      if (!(n in prev)) return prev;
+      const copy = { ...prev };
+      delete copy[n];
+      return copy;
+    });
+    setExcluidosPosicoes(prev => {
+      if (!(n in prev)) return prev;
+      const copy = { ...prev };
+      delete copy[n];
+      return copy;
+    });
+  }, []);
+
+  const togglePosicaoFixo = useCallback((n: number, p: number) => {
+    setFixosPosicoes(prev => {
+      const atuais = prev[n] || [];
+      const proximas = atuais.includes(p) ? atuais.filter(x => x !== p) : [...atuais, p];
+      return { ...prev, [n]: proximas };
+    });
+  }, []);
+
+  const toggleExclusaoPosicao = useCallback((n: number, p: number) => {
+    setExcluidosPosicoes(prev => {
+      const atuais = prev[n] || [];
+      const proximas = atuais.includes(p) ? atuais.filter(x => x !== p) : [...atuais, p];
+      return { ...prev, [n]: proximas };
+    });
   }, []);
 
   const limparSelecao = useCallback(() => {
     setEstados({});
+    setFixosPosicoes({});
+    setExcluidosPosicoes({});
   }, []);
 
   const gerar = useCallback(async () => {
@@ -188,8 +240,10 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       params.set('seed', String(seed));
       params.set('dezenas', String(dezenas));
       if (fixos.length > 0) params.set('fixos', fixos.join(','));
-      if (excluidos.length > 0) params.set('excluidos', excluidos.join(','));
+      if (excluidosCompletos.length > 0) params.set('excluidos', excluidosCompletos.join(','));
       if (concursoBase !== undefined) params.set('concurso', String(concursoBase));
+      if (fixos.length > 0 && fixosPosicoesStr) params.set('fixos_posicoes', fixosPosicoesStr);
+      if (excluidosPosicoesStr) params.set('excluidos_posicoes', excluidosPosicoesStr);
       if (temColunas) {
         params.set('colunas_posicionais', colunasPosicionaisStr);
         params.set('colunas_sets', colunasSetsStr);
@@ -211,7 +265,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       setProgresso(100);
       setTimeout(() => setLoading(false), 450);
     }
-  }, [loteria, quantidade, dezenas, fixos, excluidos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, validarColunas, temComparativo, comparativoStr]);
+  }, [loteria, quantidade, dezenas, fixos, excluidos, excluidosCompletos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, validarColunas, temComparativo, comparativoStr, fixosPosicoesStr, excluidosPosicoesStr]);
 
   const exportarTodas = useCallback(async () => {
     const colunasErr = validarColunas();
@@ -232,8 +286,10 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       params.set('seed', String(seed));
       params.set('dezenas', String(dezenas));
       if (fixos.length > 0) params.set('fixos', fixos.join(','));
-      if (excluidos.length > 0) params.set('excluidos', excluidos.join(','));
+      if (excluidosCompletos.length > 0) params.set('excluidos', excluidosCompletos.join(','));
       if (concursoBase !== undefined) params.set('concurso', String(concursoBase));
+      if (fixos.length > 0 && fixosPosicoesStr) params.set('fixos_posicoes', fixosPosicoesStr);
+      if (excluidosPosicoesStr) params.set('excluidos_posicoes', excluidosPosicoesStr);
       if (temColunas) {
         params.set('colunas_posicionais', colunasPosicionaisStr);
         params.set('colunas_sets', colunasSetsStr);
@@ -257,7 +313,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     } finally {
       setExporting(false);
     }
-  }, [loteria, dezenas, fixos, excluidos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, validarColunas, temComparativo, comparativoStr, comparativoInputs]);
+  }, [loteria, dezenas, fixos, excluidos, excluidosCompletos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, validarColunas, temComparativo, comparativoStr, comparativoInputs, fixosPosicoesStr, excluidosPosicoesStr]);
 
   const getNumeroClasses = (n: number) => {
     const estado = estados[n] || 'normal';
@@ -432,6 +488,12 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           <div className="flex-1 text-[11px] text-muted leading-relaxed">
             Vazio = sem restrição na categoria. O botão <strong className="text-fg">"Usar previsão"</strong> usa as faixas
             centrais (P25–P75) calculadas na Tendência Posicional.
+            {dezenas !== cfg.numeros_por_jogo && (
+              <div className="mt-1 text-amber-200/80">
+                Jogo com {dezenas} dezenas: o comparativo é aplicado às primeiras {cfg.numeros_por_jogo} posições
+                (o sorteio tem {cfg.numeros_por_jogo} dezenas).
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -472,14 +534,91 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         {(fixos.length > 0 || excluidos.length > 0) && (
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             {fixos.length > 0 && (
-              <span className="px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-200 border border-emerald-500/30">
-                Fixos: {fixos.join(', ')}
-              </span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-muted">Fixos:</span>
+                {fixos.map(n => {
+                  const validas = posicoesValidas(n);
+                  const selecionadas = fixosPosicoes[n] || [];
+                  return (
+                    <div
+                      key={n}
+                      className="flex flex-wrap items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-200 border border-emerald-500/30"
+                      title={selecionadas.length > 0
+                        ? `Restrito às posições N${selecionadas.join(', N')}`
+                        : 'Usado em qualquer posição válida'}
+                    >
+                      <span className="font-semibold">{n}</span>
+                      <div className="flex items-center gap-0.5">
+                        {validas.map(p => {
+                          const ativo = selecionadas.includes(p);
+                          return (
+                            <button
+                              key={p}
+                              onClick={() => togglePosicaoFixo(n, p)}
+                              title={`Restringir ${n} à posição N${p}`}
+                              className={`text-[10px] px-1.5 py-0.5 rounded-full border leading-none transition-colors ${
+                                ativo
+                                  ? 'bg-emerald-400 text-emerald-950 border-emerald-300 font-bold'
+                                  : 'bg-transparent text-emerald-200/60 border-emerald-500/25 hover:bg-emerald-400/15'
+                              }`}
+                            >
+                              N{p}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {selecionadas.length === 0 && (
+                        <span className="text-[10px] text-emerald-200/50">(qualquer)</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
             {excluidos.length > 0 && (
-              <span className="px-2 py-1 rounded-full bg-hot/15 text-hot/80 border border-hot/30">
-                Excluídos: {excluidos.join(', ')}
-              </span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-muted">Excluídos:</span>
+                {excluidos.map(n => {
+                  const validas = posicoesValidas(n);
+                  const proibidas = excluidosPosicoes[n] || [];
+                  const completa = proibidas.length === 0;
+                  return (
+                    <div
+                      key={n}
+                      className="flex flex-wrap items-center gap-1 px-2 py-1 rounded-full bg-hot/15 text-hot/80 border border-hot/30"
+                      title={completa
+                        ? 'Excluído completamente'
+                        : `Excluído das posições N${proibidas.join(', N')}`}
+                    >
+                      <span className="font-semibold">{n}</span>
+                      {validas.length > 0 && (
+                        <div className="flex items-center gap-0.5">
+                          {validas.map(p => {
+                            const proibido = proibidas.includes(p);
+                            return (
+                              <button
+                                key={p}
+                                onClick={() => toggleExclusaoPosicao(n, p)}
+                                title={`Excluir ${n} da posição N${p}`}
+                                className={`text-[10px] px-1.5 py-0.5 rounded-full border leading-none transition-colors ${
+                                  proibido
+                                    ? 'bg-hot/40 text-hot border-hot/60 font-bold'
+                                    : 'bg-transparent text-hot/50 border-hot/25 hover:bg-hot/20'
+                                }`}
+                              >
+                                N{p}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {completa && (
+                        <span className="text-[10px] text-hot/60">(completa)</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         )}

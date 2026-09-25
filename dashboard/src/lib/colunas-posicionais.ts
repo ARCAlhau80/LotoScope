@@ -44,6 +44,38 @@ export function parseColunasPosicionais(
   return { sets: sets.slice(0, n).map(s => [...new Set(s)]), mins, maxs };
 }
 
+export function parseFixosPosicoes(s: string | null): Record<number, number[]> | undefined {
+  if (!s) return undefined;
+  const out: Record<number, number[]> = {};
+  for (const part of s.split(';')) {
+    const [numStr, posStr] = part.split(':');
+    const n = parseInt((numStr ?? '').trim(), 10);
+    if (isNaN(n)) continue;
+    const pos = (posStr ?? '')
+      .split(',')
+      .map(x => parseInt(x.trim(), 10))
+      .filter(x => !isNaN(x) && x >= 1);
+    if (pos.length > 0) out[n] = [...new Set(pos)];
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
+export function parseExcluidosPosicoes(s: string | null): Record<number, number[]> | undefined {
+  if (!s) return undefined;
+  const out: Record<number, number[]> = {};
+  for (const part of s.split(';')) {
+    const [numStr, posStr] = part.split(':');
+    const n = parseInt((numStr ?? '').trim(), 10);
+    if (isNaN(n)) continue;
+    const pos = (posStr ?? '')
+      .split(',')
+      .map(x => parseInt(x.trim(), 10))
+      .filter(x => !isNaN(x) && x >= 1);
+    if (pos.length > 0) out[n] = [...new Set(pos)];
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
 export function parseFiltroComparativo(s: string | null): FiltroComparativo | undefined {
   if (!s) return undefined;
   const parts = s.split(',');
