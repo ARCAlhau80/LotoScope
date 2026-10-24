@@ -58,7 +58,7 @@ export default function RankingCombinacoesSection({ ranking: rankingInicial }: R
   return (
     <div className="mb-8 p-5 rounded-2xl border border-[rgba(129,140,248,0.15)] bg-[rgba(129,140,248,0.03)]">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h3 className="text-lg font-semibold text-[#e0e7ff] flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-ink flex items-center gap-2">
           Ranking de Combinações Históricas
           <span className="text-[11px] bg-[rgba(129,140,248,0.15)] text-[#a5b4fc] px-2 py-0.5 rounded font-normal">
             COMBINACOES_LOTOFACIL
@@ -68,7 +68,7 @@ export default function RankingCombinacoesSection({ ranking: rankingInicial }: R
           <select
             value={perfil}
             onChange={e => setPerfil(e.target.value as keyof typeof perfis)}
-            className="bg-[rgba(129,140,248,0.08)] border border-[rgba(129,140,248,0.2)] rounded-lg px-2 py-1 text-sm text-[#e0e7ff]"
+            className="bg-[rgba(129,140,248,0.08)] border border-[rgba(129,140,248,0.2)] rounded-lg px-2 py-1 text-sm text-ink"
           >
             {Object.entries(perfis).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
@@ -80,7 +80,7 @@ export default function RankingCombinacoesSection({ ranking: rankingInicial }: R
             max={50}
             value={top}
             onChange={e => setTop(Math.min(50, Math.max(1, Number(e.target.value))))}
-            className="w-16 bg-[rgba(129,140,248,0.08)] border border-[rgba(129,140,248,0.2)] rounded-lg px-2 py-1 text-sm text-[#e0e7ff] text-center"
+            className="w-16 bg-[rgba(129,140,248,0.08)] border border-[rgba(129,140,248,0.2)] rounded-lg px-2 py-1 text-sm text-ink text-center"
           />
           <button
             onClick={carregar}
@@ -92,7 +92,7 @@ export default function RankingCombinacoesSection({ ranking: rankingInicial }: R
           <button
             onClick={exportarTxt}
             disabled={!ranking || ranking.length === 0}
-            className="px-3 py-1 rounded-lg text-xs font-medium bg-[rgba(52,211,153,0.15)] text-[#34d399] hover:bg-[rgba(52,211,153,0.25)] transition-all disabled:opacity-50"
+            className="px-3 py-1 rounded-lg text-xs font-medium bg-[rgba(52,211,153,0.15)] text-emerald-bright hover:bg-[rgba(52,211,153,0.25)] transition-all disabled:opacity-50"
           >
             Exportar .txt
           </button>
@@ -100,7 +100,7 @@ export default function RankingCombinacoesSection({ ranking: rankingInicial }: R
       </div>
 
       {error && (
-        <div className="text-sm text-[#fca5a5] bg-[rgba(248,113,113,0.1)] rounded-xl p-3 mb-3">
+        <div className="text-sm text-hot-bright bg-[rgba(248,113,113,0.1)] rounded-xl p-3 mb-3">
           {error}
         </div>
       )}
@@ -126,15 +126,15 @@ export default function RankingCombinacoesSection({ ranking: rankingInicial }: R
                 className="border-b border-[rgba(129,140,248,0.08)] hover:bg-[rgba(129,140,248,0.05)]"
               >
                 <td className="py-2 pr-2 text-muted">{idx + 1}</td>
-                <td className="py-2 pr-2 font-medium text-[#e0e7ff] whitespace-nowrap">
+                <td className="py-2 pr-2 font-medium text-ink whitespace-nowrap">
                   {item.numeros.map(n => n.toString().padStart(2, '0')).join(' ')}
                 </td>
                 <td className="py-2 pr-2 text-center text-[#a5b4fc]">{item.acertos_11}</td>
-                <td className="py-2 pr-2 text-center text-[#818cf8]">{item.acertos_12}</td>
+                <td className="py-2 pr-2 text-center text-accent-2">{item.acertos_12}</td>
                 <td className="py-2 pr-2 text-center text-[#6366f1]">{item.acertos_13}</td>
                 <td className="py-2 pr-2 text-center text-[#4f46e5]">{item.acertos_14}</td>
                 <td className="py-2 pr-2 text-right text-muted">{item.atraso_14}</td>
-                <td className="py-2 text-right text-[#34d399] font-medium">{item.score.toFixed(2)}</td>
+                <td className="py-2 text-right text-emerald-bright font-medium">{item.score.toFixed(2)}</td>
               </tr>
             ))}
           </tbody>

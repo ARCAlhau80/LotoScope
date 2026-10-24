@@ -4,8 +4,8 @@ import { useState } from 'react';
 import type { QuarentenaPosicaoLF } from '@/types';
 
 const STATUS_CONFIG = {
-  quarentena: { label: 'Q', color: 'bg-[#ef4444]/25 text-[#fca5a5] border-[#ef4444]/35', title: 'Quarentena - saiu nos últimos 3 concursos' },
-  normal: { label: 'N', color: 'bg-white/5 text-[#94a3b8] border-white/10', title: 'Normal' },
+  quarentena: { label: 'Q', color: 'bg-[#ef4444]/25 text-hot-bright border-[#ef4444]/35', title: 'Quarentena - saiu nos últimos 3 concursos' },
+  normal: { label: 'N', color: 'bg-white/5 text-warm border-white/10', title: 'Normal' },
   atrasado: { label: 'A', color: 'bg-[#f59e0b]/20 text-[#fcd34d] border-[#f59e0b]/30', title: 'Atrasado - gap >= 1.75x o esperado' },
   muito_atrasado: { label: 'M', color: 'bg-[#3b82f6]/25 text-[#93c5fd] border-[#3b82f6]/40', title: 'Muito atrasado - gap >= 3x o esperado' },
   rara: { label: 'R', color: 'bg-[#a78bfa]/15 text-[#c4b5fd] border-[#a78bfa]/25', title: 'Rara estrutural - probabilidade muito baixa, atraso não é sinal' },
@@ -74,9 +74,9 @@ export default function QuarantineMatrixLotofacil({
         <table className="w-full border-collapse">
           <thead>
             <tr>
-              <th className="text-xs text-muted p-2 text-left w-12">Núm</th>
+              <th scope="col" className="text-xs text-muted p-2 text-left w-12">Núm</th>
               {positions.map(pos => (
-                <th key={pos} className="text-xs text-[#818cf8] font-bold p-2 text-center">{pos}</th>
+                <th scope="col" key={pos} className="text-xs text-accent-2 font-bold p-2 text-center">{pos}</th>
               ))}
             </tr>
           </thead>
@@ -95,7 +95,9 @@ export default function QuarantineMatrixLotofacil({
                   return (
                     <td key={pos} className="p-1">
                       <div
-                        className={`w-full h-8 flex items-center justify-center rounded-lg text-xs font-bold border ${inviavel
+                        tabIndex={inviavel ? undefined : 0}
+                        aria-label={inviavel ? undefined : `${pos} número ${num}: ${cfg.title}`}
+                        className={`w-full h-8 flex items-center justify-center rounded-lg text-xs font-bold border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-2 ${inviavel
                           ? 'cursor-default'
                           : `cursor-pointer transition-all ${cfg.color} ${isHovered ? 'scale-110 ring-1 ring-white/20' : ''}`} ${sorteadoNaPosicao ? 'ring-1 ring-emerald/50 shadow-[0_0_10px_rgba(52,211,153,0.35)]' : ''}`}
                         title={inviavel
@@ -103,6 +105,8 @@ export default function QuarantineMatrixLotofacil({
                           : `${cfg.title} | gap=${info.gap_atual} esperado=${info.gap_esperado ?? '—'} P90=${info.p90}`}
                         onMouseEnter={inviavel ? undefined : () => setHoveredCell({ pos, num })}
                         onMouseLeave={inviavel ? undefined : () => setHoveredCell(null)}
+                        onFocus={inviavel ? undefined : () => setHoveredCell({ pos, num })}
+                        onBlur={inviavel ? undefined : () => setHoveredCell(null)}
                       >
                         {inviavel ? '·' : <span className={sorteadoNaPosicao ? 'text-emerald' : ''}>{cfg.label}</span>}
                       </div>
@@ -118,7 +122,7 @@ export default function QuarantineMatrixLotofacil({
       {hoveredInfo && hoveredCell && (
         <div className="mt-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.06] text-xs space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-[#818cf8] font-bold">{hoveredCell.pos}</span>
+            <span className="text-accent-2 font-bold">{hoveredCell.pos}</span>
             <span className="text-muted">número</span>
             <span className="text-[#c7d2fe] font-bold">{hoveredInfo.digito}</span>
           </div>
@@ -131,7 +135,7 @@ export default function QuarantineMatrixLotofacil({
             <span>P90: <span className="text-[#c7d2fe]">{hoveredInfo.p90}</span></span>
             <span>Sigma: <span className="text-[#c7d2fe]">{hoveredInfo.sigma}</span></span>
             <span>Status: <span className={`font-bold ${
-              hoveredInfo.status === 'quarentena' ? 'text-[#fca5a5]' :
+              hoveredInfo.status === 'quarentena' ? 'text-hot-bright' :
               hoveredInfo.status === 'muito_atrasado' ? 'text-[#93c5fd]' :
               hoveredInfo.status === 'atrasado' ? 'text-[#fcd34d]' :
               hoveredInfo.status === 'rara' ? 'text-[#c4b5fd]' : 'text-muted'
@@ -142,11 +146,11 @@ export default function QuarantineMatrixLotofacil({
 
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-lg p-3 bg-[#ef4444]/5 border border-[#ef4444]/10">
-          <p className="text-xs text-[#fca5a5] font-medium mb-1">Em Quarentena</p>
+          <p className="text-xs text-hot-bright font-medium mb-1">Em Quarentena</p>
           <div className="flex flex-wrap gap-1">
             {positions.map(pos =>
               quarentena[pos]?.em_quarentena.map(num => (
-                <span key={`${pos}-${num}`} className="text-[10px] px-1.5 py-0.5 rounded bg-[#ef4444]/15 text-[#fca5a5]">
+                <span key={`${pos}-${num}`} className="text-[10px] px-1.5 py-0.5 rounded bg-[#ef4444]/15 text-hot-bright">
                   {pos}:{num}
                 </span>
               ))

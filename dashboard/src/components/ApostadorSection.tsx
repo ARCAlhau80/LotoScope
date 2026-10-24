@@ -6,11 +6,13 @@ import { getLotteryConfig, LOTERIAS, LOTTERY_IDS, calcularPrecoAposta } from '@/
 interface JogoValidado {
   id: number;
   numeros: number[];
+  trevos?: number[];
 }
 
 interface JogoInvalido {
   id: number;
   numeros: number[];
+  trevos?: number[];
   mensagem: string;
 }
 
@@ -45,6 +47,7 @@ export default function ApostadorSection({ loteria = 'lotofacil' }: ApostadorSec
   const [janelaVisivel, setJanelaVisivel] = useState(true);
   const [modoAttach, setModoAttach] = useState(false);
   const [debugPort, setDebugPort] = useState<number>(9222);
+  const [confirmando, setConfirmando] = useState(false);
 
   useEffect(() => {
     setLoteriaSelecionada(loteria);
@@ -135,7 +138,7 @@ export default function ApostadorSection({ loteria = 'lotofacil' }: ApostadorSec
       style={{ background: 'linear-gradient(135deg, rgba(129,140,248,0.06), rgba(250,204,21,0.04))' }}>
       <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
         <div>
-          <h3 className="text-lg font-semibold text-[#e0e7ff]">Apostador Automático</h3>
+          <h3 className="text-lg font-semibold text-ink">Apostador Automático</h3>
           <p className="text-xs text-muted mt-1">
             Suba um arquivo com jogos, escolha a loteria e o número de apostas. O sistema preenche os
             volantes no Portal Loterias CAIXA e <strong>para antes do pagamento</strong> — a conferência e
@@ -192,7 +195,7 @@ export default function ApostadorSection({ loteria = 'lotofacil' }: ApostadorSec
             onClick={parseArquivo}
             disabled={parseando}
             className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110 disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg,#10b981,#34d399)' }}>
+            style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}>
             {parseando ? 'Processando...' : 'Ler jogos'}
           </button>
         )}
@@ -235,15 +238,28 @@ export default function ApostadorSection({ loteria = 'lotofacil' }: ApostadorSec
               {jogosExibidos.map(jogo => (
                 <div key={jogo.id} className="rounded-lg bg-white/5 border border-white/10 p-2.5">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-xs font-semibold text-[#e0e7ff]">Jogo {jogo.id}</span>
+                    <span className="text-xs font-semibold text-ink">Jogo {jogo.id}</span>
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {jogo.numeros.map(n => (
                       <span key={n}
-                        className="w-7 h-7 flex items-center justify-center rounded-md text-xs font-bold border bg-[rgba(129,140,248,0.12)] text-accent-2 border-[rgba(129,140,248,0.25)]">
+                        className="w-9 h-9 flex items-center justify-center rounded-md text-xs font-bold border bg-[rgba(129,140,248,0.12)] text-accent-2 border-[rgba(129,140,248,0.25)]">
                         {n}
                       </span>
                     ))}
+                    {(jogo.trevos ?? []).length > 0 && (
+                      <span className="ml-1 flex items-center gap-1">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-500/40">
+                          Trevos
+                        </span>
+                        {(jogo.trevos ?? []).map(t => (
+                          <span key={t}
+                            className="w-9 h-9 flex items-center justify-center rounded-md text-xs font-bold border bg-amber-500/25 text-amber-100 border-amber-500/50">
+                            {t}
+                          </span>
+                        ))}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -294,12 +310,38 @@ export default function ApostadorSection({ loteria = 'lotofacil' }: ApostadorSec
                 </label>
               )}
               <button
-                onClick={realizarApostas}
+                onClick={() => setConfirmando(true)}
                 disabled={apostando}
                 className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110 disabled:opacity-50"
                 style={{ background: 'linear-gradient(135deg,#f59e0b,#fbbf24)' }}>
-                {apostando ? 'Iniciando automação...' : `Preencher ${quantidadeUsada} aposta(s) no navegador (R$ ${custoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} no carrinho)`}
+                {apostando ? 'Iniciando automação...' : `Revisar e confirmar — ${quantidadeUsada} aposta(s) (R$ ${custoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})`}
               </button>
+
+              {confirmando && !apostando && (
+                <div role="alertdialog" aria-modal="true" aria-labelledby="apostador-confirm-title"
+                  className="mt-3 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10">
+                  <h4 id="apostador-confirm-title" className="text-sm font-semibold text-amber-200 mb-2">Confirmar automação</h4>
+                  <ul className="text-xs text-fg space-y-1 mb-3">
+                    <li>Jogos a preencher: <strong>{quantidadeUsada}</strong></li>
+                    <li>Custo no carrinho: <strong>R$ {custoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong></li>
+                    <li>Nenhum pagamento é feito aqui — o sistema preenche os volantes e <strong>para antes do pagamento</strong>.</li>
+                  </ul>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => { setConfirmando(false); realizarApostas(); }}
+                      disabled={apostando}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110 disabled:opacity-50"
+                      style={{ background: 'linear-gradient(135deg,#f59e0b,#fbbf24)' }}>
+                      Confirmar e preencher
+                    </button>
+                    <button
+                      onClick={() => setConfirmando(false)}
+                      className="px-4 py-2 rounded-lg text-sm font-medium text-muted border border-white/10 hover:text-fg transition-colors">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -307,7 +349,7 @@ export default function ApostadorSection({ loteria = 'lotofacil' }: ApostadorSec
 
       {progresso.length > 0 && (
         <div className="mb-4 p-4 rounded-xl bg-white/5 border border-white/10">
-          <div className="text-sm font-semibold text-[#e0e7ff] mb-3">Progresso</div>
+          <div className="text-sm font-semibold text-ink mb-3">Progresso</div>
           <div className="space-y-1.5">
             {progresso.map(p => (
               <div key={p.jogo} className="flex items-center gap-2 text-xs">

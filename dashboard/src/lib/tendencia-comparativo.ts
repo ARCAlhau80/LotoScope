@@ -1,5 +1,5 @@
 import type { Resultado } from './database';
-import type { TendenciaComparativo, CategoriaComparativo, PrevisaoCategoriaComparativo, PrevisaoTendenciaComparativo } from '@/types';
+import type { TendenciaComparativo, CategoriaComparativo, PrevisaoCategoriaComparativo, PrevisaoTendenciaComparativo, StreaksTendencia } from '@/types';
 
 const BANDAS = [
   { label: '0–5', teste: (v: number) => v <= 5 },
@@ -56,6 +56,7 @@ function calcularPrevisaoTendencia(todas: TendenciaComparativo[]): PrevisaoTende
 export function calcularTendenciaComparativo(resultados: Resultado[]): {
   tendencia_comparativo: TendenciaComparativo[];
   previsao_tendencia: PrevisaoTendenciaComparativo;
+  streaks_tendencia: StreaksTendencia;
 } {
   const todas: TendenciaComparativo[] = [];
   for (let i = 1; i < resultados.length; i++) {
@@ -73,5 +74,66 @@ export function calcularTendenciaComparativo(resultados: Resultado[]): {
   return {
     tendencia_comparativo: todas.slice(-10),
     previsao_tendencia: calcularPrevisaoTendencia(todas),
+    streaks_tendencia: calcularStreaksTendencia(todas),
   };
+}
+
+export function calcularStreaksTendencia(todas: TendenciaComparativo[]): StreaksTendencia {
+  const categorias: CategoriaComparativo[] = ['maiores', 'menores', 'iguais'];
+  const result = {} as StreaksTendencia;
+
+  for (const cat of categorias) {
+    let curLen = 0, curSum = 0;
+    const streaks: { len: number; sum: number }[] = [];
+    const zeros: number[] = [];
+    let inicio: number | null = null;
+    let streakAtualInicio: number | null = null;
+
+    for (const t of todas) {
+      const v = t[cat];
+      if (v === 0) {
+        zeros.push(t.concurso);
+        if (curLen > 0) streaks.push({ len: curLen, sum: curSum });
+        curLen = 0;
+        curSum = 0;
+        inicio = null;
+      } else {
+        if (curLen === 0) inicio = t.concurso;
+        curLen++;
+        curSum += v;
+      }
+    }
+    // streak final ainda ativo
+    if (curLen > 0 && inicio !== null) {
+      streakAtualInicio = inicio;
+    }
+
+    const completos = streaks;
+    const lenVals = completos.map(s => s.len);
+    const sumVals = completos.map(s => s.sum);
+    const mediaLen = completos.length ? lenVals.reduce((a, b) => a + b, 0) / completos.length : 0;
+    const mediaSum = completos.length ? sumVals.reduce((a, b) => a + b, 0) / completos.length : 0;
+    const sortedLen = [...lenVals].sort((a, b) => a - b);
+    const medianaLen = completos.length ? sortedLen[Math.floor(sortedLen.length / 2)] : 0;
+    const maxLen = completos.length ? Math.max(...lenVals) : 0;
+    const maxSum = completos.length ? Math.max(...sumVals) : 0;
+
+    result[cat] = {
+      zeros: zeros.length,
+      pct_zeros: todas.length > 0 ? Math.round(zeros.length / todas.length * 1000) / 10 : 0,
+      total_concursos: todas.length,
+      streaks: completos.length,
+      max_streak: maxLen,
+      max_soma: maxSum,
+      media_len: Math.round(mediaLen * 100) / 100,
+      mediana_len: medianaLen,
+      media_soma: Math.round(mediaSum * 100) / 100,
+      streak_atual_len: curLen,
+      streak_atual_soma: curSum,
+      streak_atual_inicio: streakAtualInicio,
+      ultimos_zeros: zeros.slice(-12),
+    };
+  }
+
+  return result;
 }

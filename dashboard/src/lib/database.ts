@@ -25,13 +25,30 @@ export interface Resultado {
   concurso: number;
   numeros: number[];
   trevos?: number[];
+  data?: string | null;
+}
+
+function normalizarDataISO(value: unknown): string | null {
+  if (value == null) return null;
+  if (value instanceof Date) {
+    return isNaN(value.getTime()) ? null : value.toISOString().slice(0, 10);
+  }
+  const s = String(value).trim();
+  const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (br) return `${br[3]}-${br[2]}-${br[1]}`;
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
 }
 
 export async function carregarResultados(lotteryId?: string): Promise<Resultado[]> {
   const cfg = lotteryId ? getLotteryConfig(lotteryId) : getLotteryConfig('lotofacil');
   const p = await getPool();
+  const dateCol = cfg.data_col;
   const cols = [...cfg.colunas_resultado];
   if (cfg.trevos_cols) cols.push(...cfg.trevos_cols);
+  if (dateCol && !cols.includes(dateCol)) cols.unshift(dateCol);
   const sqlQuery = cols.length > 0
     ? `SELECT Concurso,${cols.join(',')} FROM ${cfg.tabela_resultados} ORDER BY Concurso`
     : `SELECT * FROM ${cfg.tabela_resultados} ORDER BY Concurso`;
@@ -40,17 +57,25 @@ export async function carregarResultados(lotteryId?: string): Promise<Resultado[
   if (result.recordset.length === 0) return [];
 
   const trevosSet = new Set(cfg.trevos_cols ?? []);
-  const keys = Object.keys(result.recordset[0]).filter(k => k !== 'Concurso' && !trevosSet.has(k));
+  const keys = Object.keys(result.recordset[0]).filter(k => k !== 'Concurso' && k !== dateCol && !trevosSet.has(k));
   const trevoKeys = cfg.trevos_cols ?? [];
-  return result.recordset.map((r: Record<string, number>) => ({
+  return result.recordset.map((r: Record<string, unknown>) => ({
     concurso: Number(r.Concurso),
     numeros: keys.map(k => Number(r[k])).filter(n => !isNaN(n)),
     ...(trevoKeys.length > 0 ? { trevos: trevoKeys.map(k => Number(r[k])).filter(n => !isNaN(n)) } : {}),
+    data: dateCol ? normalizarDataISO(r[dateCol]) : null,
   }));
 }
 
 export async function carregarResultadosPorConfig(cfg: LotteryConfig): Promise<Resultado[]> {
   return carregarResultados(cfg.id);
+}
+
+export async function carregarResultado(lotteryId?: string, concurso?: number): Promise<Resultado | null> {
+  const resultados = await carregarResultados(lotteryId);
+  if (resultados.length === 0) return null;
+  if (concurso === undefined) return resultados[resultados.length - 1];
+  return resultados.find(r => r.concurso === concurso) ?? null;
 }
 
 export interface RankingCombinacaoItem {

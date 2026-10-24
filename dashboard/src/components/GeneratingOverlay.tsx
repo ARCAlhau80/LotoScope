@@ -20,7 +20,7 @@ export default function GeneratingOverlay({ show, progress }: { show: boolean; p
             <div className="w-8 h-8 rounded-full border-2 border-[rgba(129,140,248,0.15)] border-t-[#818cf8] animate-spin" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-[#e0e7ff]">Gerando combinações</div>
+            <div className="text-sm font-semibold text-ink">Gerando combinações</div>
             <div className="text-[11px] text-muted">{etapa}</div>
           </div>
         </div>

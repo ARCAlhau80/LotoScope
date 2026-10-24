@@ -1,5 +1,6 @@
 export interface UltimoSorteio {
   concurso: number;
+  data_sorteio?: string | null;
   numeros: number[];
   trevos?: number[];
   soma: number;
@@ -107,6 +108,22 @@ export interface MediasHistoricas {
   multiplos_5: number;
 }
 
+export interface Repeticao3Item {
+  rotulo: 'anterior' | 'ante_anterior' | 'ante_ante_anterior';
+  concurso: number;
+  numeros: number[];
+  min: number;
+  max: number;
+  p25: number;
+  p75: number;
+  media: number;
+  mediana: number;
+}
+
+export interface Repeticao3Sorteios {
+  itens: Repeticao3Item[];
+}
+
 export interface DashboardData {
   loteria: string;
   nome_jogo: string;
@@ -148,8 +165,10 @@ export interface DashboardData {
   comparativo_posicional?: ComparativoPosicional;
   tendencia_comparativo?: TendenciaComparativo[];
   previsao_tendencia?: PrevisaoTendenciaComparativo;
+  streaks_tendencia?: StreaksTendencia;
   previsao_colunas?: PrevisaoColunaRange[];
   ranking_combinacoes?: RankingCombinacaoItem[];
+  repeticao_3sorteios?: Repeticao3Sorteios;
 }
 
 export type DirecaoComparativo = 'maior' | 'menor' | 'igual';
@@ -202,6 +221,24 @@ export interface PrevisaoTendenciaComparativo {
   categorias: Record<CategoriaComparativo, PrevisaoCategoriaComparativo>;
   dominante: CategoriaComparativo;
 }
+
+export interface StreakCategoria {
+  zeros: number;
+  pct_zeros: number;
+  total_concursos: number;
+  streaks: number;
+  max_streak: number;
+  max_soma: number;
+  media_len: number;
+  mediana_len: number;
+  media_soma: number;
+  streak_atual_len: number;
+  streak_atual_soma: number;
+  streak_atual_inicio: number | null;
+  ultimos_zeros: number[];
+}
+
+export type StreaksTendencia = Record<CategoriaComparativo, StreakCategoria>;
 
 export interface PrevisaoColunaRange {
   p25: number;

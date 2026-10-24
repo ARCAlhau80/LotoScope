@@ -7,6 +7,7 @@ export default function HeroSection({ u, concurso, total, medias, nomeJogo, nume
   u: UltimoSorteio; concurso: number; total: number; medias: MediasHistoricas; nomeJogo?: string; numerosPorJogo?: number; totalNumeros?: number; comparativo?: ComparativoPosicional | null;
 }) {
   const temTrevos = u.trevos && u.trevos.length > 0;
+  const dataFmt = formatarData(u.data_sorteio);
   const npj = numerosPorJogo ?? 15;
   const meio = Math.floor((1 + (totalNumeros ?? 25)) / 2);
   const maxNum = (totalNumeros ?? 25);
@@ -17,16 +18,15 @@ export default function HeroSection({ u, concurso, total, medias, nomeJogo, nume
       <div className="absolute inset-0 opacity-[0.04]"
         style={{ background: 'radial-gradient(circle at 50% 0%, rgba(129,140,248,0.4) 0%, transparent 60%)' }} />
       <div className="relative z-10">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald/15 text-emerald border border-emerald/20">
-            {nomeJogo || 'Lotofácil'} · Último Sorteio · {concurso}
-          </span>
-        </div>
-        <h2 className="text-3xl sm:text-4xl font-extrabold mb-1 bg-gradient-to-r from-[#e0e7ff] via-[#a78bfa] to-[#34d399] bg-clip-text text-transparent"
-          style={{ textShadow: '0 0 40px rgba(129,140,248,0.15)' }}>
+        <h2 className="text-3xl sm:text-4xl font-extrabold mb-1 text-ink">
           Resultado Oficial
         </h2>
-        <p className="text-muted text-sm mb-6 sm:mb-8">{concurso} sorteios analisados</p>
+        <p className="text-muted text-sm mb-3">{concurso} sorteios analisados</p>
+        <div className="flex items-center gap-3 mb-6 sm:mb-8">
+          <span className="px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-emerald/15 text-emerald border border-emerald/20">
+            {nomeJogo || 'Lotofácil'} · Último Sorteio · {concurso}{dataFmt ? ` · ${dataFmt}` : ''}
+          </span>
+        </div>
 
         <div className="flex flex-wrap gap-2.5 mb-4 sm:mb-6">
           {u.numeros.map((n, i) => {
@@ -94,20 +94,28 @@ export default function HeroSection({ u, concurso, total, medias, nomeJogo, nume
   );
 }
 
+function formatarData(iso?: string | null): string | null {
+  if (!iso) return null;
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+}
+
 function HeroCard({ value, label, sub, tip, idx = 0 }: { value: string; label: string; sub?: string; tip?: string; idx?: number }) {
   return (
     <div
-      className="bg-white/4 rounded-xl p-4 border border-white/6 text-center relative group cursor-default transition-all duration-200 hover:bg-white/[0.06] hover:-translate-y-0.5 hover:border-accent-2/20 animate-slide-up"
+      tabIndex={tip ? 0 : undefined}
+      aria-label={tip}
+      className="p-3 text-center relative group cursor-default rounded-lg transition-all duration-200 hover:bg-white/[0.05] hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-2 animate-slide-up"
       style={{ animationDelay: `${0.3 + idx * 0.04}s` }}
     >
       {tip && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg bg-[#1a1040] border border-[rgba(129,140,248,0.2)] text-[11px] text-[#e0e7ff] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-20 shadow-lg max-w-[260px] overflow-hidden text-ellipsis">
+        <div role="tooltip" className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg bg-[#1a1040] border border-[rgba(129,140,248,0.2)] text-[11px] text-left text-[#e0e7ff] whitespace-pre-line opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none z-20 shadow-lg max-w-[260px]">
           {tip}
         </div>
       )}
       <div className="text-xl sm:text-2xl font-bold text-white">{value}</div>
       <div className="text-[11px] text-muted uppercase tracking-wide mt-1">{label}</div>
-      {sub && <div className="text-[10px] text-accent-2/70 mt-0.5 font-mono truncate max-w-full" title={sub}>{sub}</div>}
+      {sub && <div className="text-[11px] text-accent-2 mt-0.5 font-mono truncate max-w-full" title={sub}>{sub}</div>}
     </div>
   );
 }

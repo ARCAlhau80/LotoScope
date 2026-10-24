@@ -1,13 +1,49 @@
 import { carregarResultados, carregarRankingCombinacoes, type Resultado, type RankingCombinacaoItem, type RankingPerfil } from './database';
 import { getLotteryConfig, type LotteryConfig } from './lottery-config';
 import { calcularTendenciaComparativo } from './tendencia-comparativo';
-import type { DashboardData, UltimoSorteio, PrevisaoItem, AtrasadoItem, TransicaoRegistro, TransicaoQMF, CicloInfo, MediasHistoricas, QuarentenaPosicaoLF, QuarentenaInfo, ComparativoPosicional, ComparativoItem, TendenciaComparativo, PrevisaoTendenciaComparativo, PrevisaoColunaRange } from '@/types';
+import type { DashboardData, UltimoSorteio, PrevisaoItem, AtrasadoItem, TransicaoRegistro, TransicaoQMF, CicloInfo, MediasHistoricas, QuarentenaPosicaoLF, QuarentenaInfo, ComparativoPosicional, ComparativoItem, TendenciaComparativo, PrevisaoTendenciaComparativo, PrevisaoColunaRange, StreaksTendencia, Repeticao3Item, Repeticao3Sorteios } from '@/types';
 import { analiseSuperSete } from './analise-supersete';
 
 const WINDOW = 50;
 const ALPHA = 0.6;
 const RANKING_BONUS_PESO = 0.25;
 const RANKING_TOP_ANALISE = 30;
+
+function percentil(valores: number[], p: number): number {
+  if (valores.length === 0) return 0;
+  const k = (valores.length - 1) * p;
+  const lo = Math.floor(k);
+  const hi = Math.min(lo + 1, valores.length - 1);
+  return valores[lo] + (valores[hi] - valores[lo]) * (k - lo);
+}
+
+function calcularRepeticao3Sorteios(resultados: Resultado[]): Repeticao3Sorteios {
+  const rotulos: Repeticao3Item['rotulo'][] = ['anterior', 'ante_anterior', 'ante_ante_anterior'];
+  const itens: Repeticao3Item[] = [];
+  for (let lag = 1; lag <= 3; lag++) {
+    if (resultados.length <= lag) break;
+    const valores: number[] = [];
+    for (let i = lag; i < resultados.length; i++) {
+      const set = new Set(resultados[i].numeros);
+      valores.push(resultados[i - lag].numeros.filter(n => set.has(n)).length);
+    }
+    if (valores.length === 0) break;
+    valores.sort((a, b) => a - b);
+    const referencia = resultados[resultados.length - lag];
+    itens.push({
+      rotulo: rotulos[lag - 1],
+      concurso: referencia.concurso,
+      numeros: [...referencia.numeros],
+      min: valores[0],
+      max: valores[valores.length - 1],
+      p25: Math.round(percentil(valores, 0.25)),
+      p75: Math.round(percentil(valores, 0.75)),
+      media: Math.round((valores.reduce((a, b) => a + b, 0) / valores.length) * 100) / 100,
+      mediana: Math.round(percentil(valores, 0.5)),
+    });
+  }
+  return { itens };
+}
 
 function buildOcorrencias(resultados: Resultado[], cfg: LotteryConfig): Record<string, Record<number, number[]>> {
   const positions = Array.from({ length: cfg.numeros_por_jogo }, (_, i) => `N${i + 1}`);
@@ -373,7 +409,7 @@ function calcularQuarentenaPorPosicao(
   return quarentena;
 }
 
-function calcularComparativoPosicional(resultados: Resultado[]): { comparativo_posicional: ComparativoPosicional; tendencia_comparativo: TendenciaComparativo[]; previsao_tendencia: PrevisaoTendenciaComparativo } | null {
+function calcularComparativoPosicional(resultados: Resultado[]): { comparativo_posicional: ComparativoPosicional; tendencia_comparativo: TendenciaComparativo[]; previsao_tendencia: PrevisaoTendenciaComparativo; streaks_tendencia: StreaksTendencia } | null {
   if (resultados.length < 2) return null;
 
   const ultimo = resultados[resultados.length - 1];
@@ -391,7 +427,7 @@ function calcularComparativoPosicional(resultados: Resultado[]): { comparativo_p
     itens.push({ posicao: i + 1, atual: a, anterior: b, direcao: dir });
   }
 
-  const { tendencia_comparativo, previsao_tendencia } = calcularTendenciaComparativo(resultados);
+  const { tendencia_comparativo, previsao_tendencia, streaks_tendencia } = calcularTendenciaComparativo(resultados);
 
   return {
     comparativo_posicional: {
@@ -404,6 +440,7 @@ function calcularComparativoPosicional(resultados: Resultado[]): { comparativo_p
     },
     tendencia_comparativo,
     previsao_tendencia,
+    streaks_tendencia,
   };
 }
 
@@ -700,6 +737,7 @@ export async function analiseCompleta(janela?: number, lotteryId?: string, concu
 
   const ultimoStats: UltimoSorteio = {
     concurso: ultimo.concurso,
+    data_sorteio: ultimo.data ?? null,
     numeros: numsUltimo,
     ...(ultimo.trevos ? { trevos: ultimo.trevos } : {}),
     soma: numsUltimo.reduce((a, b) => a + b, 0),
@@ -841,6 +879,7 @@ export async function analiseCompleta(janela?: number, lotteryId?: string, concu
     ciclos_trevos: ciclosTrevos,
     quarentena_posicoes: quarentenaPosicoes,
     ranking_combinacoes: rankingCombinacoes,
+    repeticao_3sorteios: calcularRepeticao3Sorteios(resultados),
     ...calcularComparativoPosicional(resultados),
   };
 }

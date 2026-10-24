@@ -86,7 +86,7 @@ export default function AiAnalysis({ loteria }: AiAnalysisProps) {
               placeholder="Filtro / pedido p/ IA..."
               className="flex-1 min-w-[120px] bg-[rgba(129,140,248,0.08)]
                 border border-[rgba(129,140,248,0.2)] rounded-lg px-3 py-1.5
-                text-sm text-fg placeholder:text-muted/50
+                text-sm text-fg placeholder:text-muted/90
                 focus:outline-none focus:border-[rgba(129,140,248,0.5)]"
               onKeyDown={e => { if (e.key === 'Enter') rodarAnalise(); }}
             />
@@ -116,7 +116,7 @@ export default function AiAnalysis({ loteria }: AiAnalysisProps) {
               onClick={rodarAnalise}
               disabled={loading}
               className="px-3 py-1 rounded-lg text-xs font-medium
-                bg-[rgba(52,211,153,0.15)] text-[#34d399]
+                bg-[rgba(52,211,153,0.15)] text-emerald-bright
                 hover:bg-[rgba(52,211,153,0.25)] transition-all
                 disabled:opacity-50"
             >

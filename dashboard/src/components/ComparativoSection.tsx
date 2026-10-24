@@ -22,9 +22,23 @@ export default function ComparativoSection({ data, previsao }: {
 
   const maxVal = Math.max(...data.flatMap(d => [d.maiores, d.menores, d.iguais]));
 
+  const calcularStreak = (key: CategoriaComparativo) => {
+    let soma = 0, len = 0;
+    for (let i = data.length - 1; i >= 0; i--) {
+      const v = data[i][key];
+      if (v === 0) break;
+      soma += v;
+      len++;
+    }
+    return { soma, len };
+  };
+  const streakMaiores = calcularStreak('maiores');
+  const streakMenores = calcularStreak('menores');
+  const streakIguais = calcularStreak('iguais');
+
   return (
     <div className="rounded-xl border border-white/6 bg-white/3 p-5 animate-slide-up">
-      <h3 className="text-lg font-semibold text-[#e0e7ff] mb-4">
+      <h3 className="text-lg font-semibold text-ink mb-4">
         Tendência Posicional
         <span className="text-xs text-muted font-normal ml-2">últimos {data.length} sorteios</span>
       </h3>
@@ -50,7 +64,7 @@ export default function ComparativoSection({ data, previsao }: {
                   <span className="text-hot font-semibold">{d.menores}</span>
                 </td>
                 <td className="text-center px-2 py-2">
-                  <span className="text-accent-2/70 font-semibold">{d.iguais}</span>
+                  <span className="text-accent-2/80 font-semibold">{d.iguais}</span>
                 </td>
                 <td className="pl-3 py-2">
                   <div className="flex items-center gap-0.5 h-5">
@@ -86,13 +100,34 @@ export default function ComparativoSection({ data, previsao }: {
               </tr>
             ))}
           </tbody>
+          <tfoot>
+            <tr className="border-t-2 border-white/10 bg-white/4">
+              <td className="py-2 pr-3 text-[11px] text-accent-2 font-semibold">
+                Streak atual <span className="text-muted font-normal">(soma desde zero)</span>
+              </td>
+              <td className="text-center px-2 py-2">
+                <span className="text-emerald font-bold" title={`${streakMaiores.len} concursos desde o último zero`}>{streakMaiores.soma}</span>
+              </td>
+              <td className="text-center px-2 py-2">
+                <span className="text-hot font-bold" title={`${streakMenores.len} concursos desde o último zero`}>{streakMenores.soma}</span>
+              </td>
+              <td className="text-center px-2 py-2">
+                <span className="text-accent-2/80 font-bold" title={`${streakIguais.len} concursos desde o último zero`}>{streakIguais.soma}</span>
+              </td>
+              <td className="pl-3 py-2">
+                <span className="text-[10px] text-muted">
+                  {streakMaiores.len} · {streakIguais.len} · {streakMenores.len} concursos
+                </span>
+              </td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
       {previsao && (
         <div className="mt-5 pt-4 border-t border-white/6">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <h4 className="text-sm font-semibold text-[#e0e7ff]">
+            <h4 className="text-sm font-semibold text-ink">
               Previsão para o próximo concurso
               <span className="text-accent-2 font-mono ml-1.5">#{previsao.concurso_alvo}</span>
               <span className="text-[11px] text-muted font-normal ml-2">(ainda não sorteado)</span>
@@ -153,7 +188,7 @@ export default function ComparativoSection({ data, previsao }: {
 
       <div className="flex items-center gap-4 mt-3 text-[11px] text-muted">
         <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-emerald opacity-80" /> ▲ Maior que anterior</span>
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#818cf8] opacity-40" /> = Igual</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-accent-2 opacity-40" /> = Igual</span>
         <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-hot opacity-80" /> ▼ Menor que anterior</span>
       </div>
     </div>

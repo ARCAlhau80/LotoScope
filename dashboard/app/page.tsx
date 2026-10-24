@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { getDashboardData, getAnaliseGrupos } from '@/lib/api';
 import type { DashboardData } from '@/types';
 import type { AnaliseGruposData } from '@/lib/analise-grupos';
+import type { FiltrosSnapshot } from '@/lib/analise-filtros';
 import { LOTERIAS } from '@/lib/lottery-config';
 import { DrawnNumbersProvider } from '@/lib/DrawnNumbersContext';
 import TopBar from '@/components/TopBar';
@@ -21,10 +22,12 @@ import GruposSection from '@/components/GruposSection';
 import ChatBot from '@/components/ChatBot';
 import ReentradasSection from '@/components/ReentradasSection';
 import ConcursoSelector from '@/components/ConcursoSelector';
+import { ZoneNav, Zone } from '@/components/SectionZone';
 import ConferidorSection from '@/components/ConferidorSection';
 import SuperSeteSection from '@/components/SuperSeteSection';
 import QuarantineMatrixLotofacil from '@/components/QuarantineMatrixLotofacil';
 import ComparativoSection from '@/components/ComparativoSection';
+import StreaksTendenciaSection from '@/components/StreaksTendenciaSection';
 import AiAnalysis from '@/components/AiAnalysis';
 import RankingCombinacoesSection from '@/components/RankingCombinacoesSection';
 import ApostadorSection from '@/components/ApostadorSection';
@@ -41,12 +44,12 @@ function LoadingSkeleton() {
       <div className="flex gap-1.5 mb-4">
         {[0, 1, 2].map(i => (
           <div key={i}
-            className="w-2.5 h-2.5 rounded-full bg-[#818cf8] animate-bounce"
-            style={{ animationDelay: `${i * 0.15}s`, animationDuration: '0.8s' }}
+            className="w-2.5 h-2.5 rounded-full bg-accent-2 animate-pulse"
+            style={{ animationDelay: `${i * 0.15}s` }}
           />
         ))}
       </div>
-      <p className="text-sm text-[#818cf8] font-medium tracking-wide animate-pulse">
+      <p className="text-sm text-accent-2 font-medium tracking-wide animate-pulse">
         CARREGANDO DADOS
       </p>
       <div className="mt-6 flex gap-3">
@@ -80,6 +83,7 @@ function HomePage() {
   const [loteria, setLoteria] = useState<string>('lotofacil');
   const [concurso, setConcurso] = useState<number | undefined>(undefined);
   const [concursosDisponiveis, setConcursosDisponiveis] = useState<number[]>([]);
+  const [filtrosGeracao, setFiltrosGeracao] = useState<FiltrosSnapshot | null>(null);
 
   useEffect(() => {
     const l = searchParams.get('loteria');
@@ -119,6 +123,7 @@ function HomePage() {
     setLoteria(id);
     setConcurso(undefined);
     setConcursosDisponiveis([]);
+    setFiltrosGeracao(null);
   }, []);
 
   return (
@@ -135,7 +140,7 @@ function HomePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-[#fca5a5] text-sm mb-4">Erro ao carregar dados: {error}</p>
+            <p className="text-hot-bright text-sm mb-4">Erro ao carregar dados: {error}</p>
             <button
               onClick={() => fetchData(janela, loteria, concurso, poissonJanela)}
               className="px-5 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110"
@@ -148,6 +153,7 @@ function HomePage() {
 
         {data && (
           <div className="animate-fade-in">
+            <ZoneNav />
             <div className="flex flex-wrap items-center gap-3 mb-4">
               <label className="text-sm text-muted">Concurso base:</label>
               <ConcursoSelector
@@ -176,6 +182,7 @@ function HomePage() {
               totalNumeros={data.total_numeros}
               comparativo={data.comparativo_posicional}
             />
+            <Zone id="zona-analise" label="Análise" description="Estatística histórica, ciclos, transições e padrões posicionais.">
             {data.supersete && (
               <div className="animate-slide-up stagger-1 mt-6">
                 <SuperSeteSection data={data.supersete} />
@@ -189,6 +196,11 @@ function HomePage() {
             {data.tendencia_comparativo && data.tendencia_comparativo.length > 0 && (
               <div className="mb-6">
                 <ComparativoSection data={data.tendencia_comparativo} previsao={data.previsao_tendencia} />
+              </div>
+            )}
+            {data.streaks_tendencia && (
+              <div className="mb-6">
+                <StreaksTendenciaSection data={data.streaks_tendencia} />
               </div>
             )}
             {data.tem_trevos && data.frequencia_trevos_total && (
@@ -206,12 +218,6 @@ function HomePage() {
                 />
               </div>
             )}
-            <div className="animate-slide-up stagger-2">
-              <PalpiteSection palpite={data.palpite} previsao_combinada={data.previsao_combinada} loteria={loteria} />
-            </div>
-            <div className="animate-slide-up stagger-2">
-              <JogosDiversosSection loteria={loteria} concursoBase={concurso} numerosSorteadosAtual={data.ultimo_sorteio.numeros} previsaoPosicional={data.previsao_posicional} previsaoTendencia={data.previsao_tendencia} previsaoColunas={data.previsao_colunas} />
-            </div>
             <div className="animate-slide-up stagger-2">
               <QmfSection
                 quentes={data.numeros_quentes}
@@ -232,6 +238,22 @@ function HomePage() {
             <div className="animate-slide-up stagger-4">
               <CiclosSection ciclos={data.ciclos} />
             </div>
+            {data.quarentena_posicoes && loteria !== 'supersete' && (
+              <div className="animate-slide-up stagger-6">
+                <QuarantineMatrixLotofacil quarentena={data.quarentena_posicoes} numerosSorteados={data.ultimo_sorteio.numeros} />
+              </div>
+            )}
+            {grupos && (
+              <div className="animate-slide-up stagger-7">
+                <GruposSection data={grupos} />
+              </div>
+            )}
+            <div className="animate-slide-up stagger-8">
+              <AiAnalysis loteria={loteria} />
+            </div>
+            </Zone>
+
+            <Zone id="zona-geracao" label="Previsão & Geração" description="Previsões posicionais e geração de combinações.">
             <div className="animate-slide-up stagger-5">
               <PrevisaoSection
                 previsao={data.previsao_posicional}
@@ -243,34 +265,37 @@ function HomePage() {
             <div className="animate-slide-up stagger-6">
               <AtrasadosSection atrasados={data.atrasados_posicionais} />
             </div>
-            {data.quarentena_posicoes && loteria !== 'supersete' && (
-              <div className="animate-slide-up stagger-6">
-                <QuarantineMatrixLotofacil quarentena={data.quarentena_posicoes} numerosSorteados={data.ultimo_sorteio.numeros} />
-              </div>
-            )}
-            {grupos && (
-              <div className="animate-slide-up stagger-7">
-                <GruposSection data={grupos} />
-              </div>
-            )}
+            <div className="animate-slide-up stagger-2">
+              <PalpiteSection palpite={data.palpite} previsao_combinada={data.previsao_combinada} loteria={loteria} />
+            </div>
+            <div className="animate-slide-up stagger-2">
+              <JogosDiversosSection loteria={loteria} concursoBase={concurso} concursoAtual={data.ultimo_sorteio.concurso} numerosSorteadosAtual={data.ultimo_sorteio.numeros} previsaoPosicional={data.previsao_posicional} previsaoTendencia={data.previsao_tendencia} previsaoColunas={data.previsao_colunas} quarentena={data.quarentena_posicoes ?? null} grupos={grupos} numerosQuentes={data.numeros_quentes} numerosMornos={data.numeros_mornos} numerosFrios={data.numeros_frios} ciclos={data.ciclos} transicaoQmf={data.transicao_qmf} repeticao3={data.repeticao_3sorteios} onFiltrosAplicados={setFiltrosGeracao} />
+            </div>
             {loteria === 'lotofacil' && data.ranking_combinacoes && (
               <div className="animate-slide-up stagger-8">
                 <RankingCombinacoesSection ranking={data.ranking_combinacoes} />
               </div>
             )}
-            <div className="animate-slide-up stagger-8">
-              <AiAnalysis loteria={loteria} />
-            </div>
+            </Zone>
+
+            <Zone id="zona-conferencia" label="Conferência" description="Confira seus jogos contra os resultados e calcule retorno.">
             <div className="animate-slide-up stagger-8">
               <ConferidorSection
-                sorteioAtual={data.ultimo_sorteio.numeros}
+                key={loteria}
                 numerosPorJogo={data.numeros_por_jogo}
                 loteria={loteria}
+                concursos={concursosDisponiveis}
+                totalSorteios={concursosDisponiveis.length}
+                filtrosGeracao={filtrosGeracao}
               />
             </div>
+            </Zone>
+
+            <Zone id="zona-automacao" label="Automação" description="Preenchimento automático de volantes (para antes do pagamento).">
             <div className="animate-slide-up stagger-8">
               <ApostadorSection loteria={loteria} />
             </div>
+            </Zone>
           </div>
         )}
       </main>

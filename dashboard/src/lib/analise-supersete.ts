@@ -913,6 +913,7 @@ export async function analiseSuperSete(janela?: number, concurso?: number): Prom
 
   const ultimoStats: UltimoSorteio = {
     concurso: ultimo.concurso,
+    data_sorteio: ultimo.data ?? null,
     numeros: numsUltimo,
     soma: numsUltimo.reduce((a, b) => a + (b || 0), 0),
     pares: numsUltimo.filter(n => n !== undefined && n % 2 === 0).length,
@@ -966,7 +967,7 @@ export async function analiseSuperSete(janela?: number, concurso?: number): Prom
     total_iguais: ultimo.numeros.filter((n, i) => n === penultimoResultado!.numeros[i]).length,
   } : undefined;
 
-  const { tendencia_comparativo, previsao_tendencia } = calcularTendenciaComparativo(resultados);
+  const { tendencia_comparativo, previsao_tendencia, streaks_tendencia } = calcularTendenciaComparativo(resultados);
 
   return {
     loteria: cfg.id,
@@ -1001,5 +1002,6 @@ export async function analiseSuperSete(janela?: number, concurso?: number): Prom
     comparativo_posicional: comparativoSS,
     tendencia_comparativo,
     previsao_tendencia,
+    streaks_tendencia,
   };
 }

@@ -51,9 +51,37 @@ export default function QmfSection({ quentes, mornos, frios, janela, totalSortei
   }, [totalSorteios, onJanelaChange]);
 
   const cfg = loteria && LOTERIAS[loteria] ? LOTERIAS[loteria] : null;
-  const gameSize = cfg ? (cfg.numeros_por_aposta ?? cfg.numeros_por_jogo) : numerosPorJogo;
+  const opcoesDezenas = useMemo(
+    () => cfg?.dezenas_opcoes ?? [cfg?.numeros_por_aposta ?? cfg?.numeros_por_jogo ?? numerosPorJogo],
+    [cfg, numerosPorJogo]
+  );
+  const dezenasPadrao = cfg ? (cfg.numeros_por_aposta ?? cfg.numeros_por_jogo) : numerosPorJogo;
+  const [dezenas, setDezenas] = useState<number | null>(null);
+  const gameSize = dezenas !== null && opcoesDezenas.includes(dezenas) ? dezenas : dezenasPadrao;
   const totalNums = cfg ? cfg.total_numeros : totalNumeros;
   const maxFixar = gameSize - 1;
+
+  useEffect(() => {
+    setDezenas(null);
+    setCombinacoes(null);
+  }, [loteria]);
+
+  const handleDezenasChange = useCallback((novo: number) => {
+    setDezenas(novo);
+    setCombinacoes(null);
+    setErroGeracao(null);
+    setNumStates(prev => {
+      const fixed = Object.keys(prev)
+        .filter(k => prev[Number(k)] === 'fixed')
+        .map(Number)
+        .sort((a, b) => a - b);
+      if (fixed.length <= novo - 1) return prev;
+      const manter = new Set(fixed.slice(0, novo - 1));
+      const next = { ...prev };
+      fixed.forEach(n => { if (!manter.has(n)) delete next[n]; });
+      return next;
+    });
+  }, []);
 
   const handleNumClick = useCallback((n: number) => {
     setNumStates(prev => {
@@ -160,7 +188,7 @@ export default function QmfSection({ quentes, mornos, frios, janela, totalSortei
 
   return (
     <div className="mb-8">
-      <h3 className="text-lg font-semibold mb-4 text-[#e0e7ff] flex items-center gap-2">
+      <h3 className="text-lg font-semibold mb-4 text-ink flex items-center gap-2">
         Números Quentes, Mornos &amp; Frios
         <span className="text-[11px] bg-accent/15 text-accent-2 px-2 py-0.5 rounded font-normal">clique 1× fixa · 2× exclui · 3× volta · max {maxFixar} fixos</span>
       </h3>
@@ -175,10 +203,28 @@ export default function QmfSection({ quentes, mornos, frios, janela, totalSortei
           max={totalSorteios}
           value={inputValue}
           onChange={e => validarEConfirmar(e.target.value)}
-          className="w-24 px-2.5 py-1.5 rounded-lg text-sm text-[#e0e7ff] bg-white/5 border border-white/10 focus:border-accent-2/50 focus:outline-none focus:ring-1 focus:ring-accent-2/30 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="w-24 px-2.5 py-1.5 rounded-lg text-sm text-ink bg-white/5 border border-white/10 focus:border-accent-2/50 focus:outline-none focus:ring-1 focus:ring-accent-2/30 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
         <span className="text-xs text-muted">últimos sorteios</span>
         {erro && <span className="text-xs text-hot">{erro}</span>}
+        {opcoesDezenas.length > 1 && (
+          <>
+            <label htmlFor="dezenas-qmf" className="text-sm text-muted ml-4">
+              Dezenas por jogo:
+            </label>
+            <select
+              id="dezenas-qmf"
+              value={gameSize}
+              onChange={e => handleDezenasChange(parseInt(e.target.value, 10))}
+              className="px-2.5 py-1.5 rounded-lg text-sm text-ink bg-white/5 border border-white/10 focus:border-accent-2/50 focus:outline-none focus:ring-1 focus:ring-accent-2/30"
+              title="Quantidade de dezenas de cada jogo gerado"
+            >
+              {opcoesDezenas.map(d => (
+                <option key={d} value={d} className="bg-[#1a1d2e]">{d}</option>
+              ))}
+            </select>
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -233,7 +279,7 @@ export default function QmfSection({ quentes, mornos, frios, janela, totalSortei
                       return next;
                     });
                   }}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#fca5a5] bg-[#ef4444]/10 border border-[#ef4444]/20 hover:bg-[#ef4444]/20 transition-all"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-hot-bright bg-[#ef4444]/10 border border-[#ef4444]/20 hover:bg-[#ef4444]/20 transition-all"
                   title="Excluir números que saíram recentemente em qualquer posição"
                 >
                   🛡️ Excluir Recentes
@@ -282,7 +328,7 @@ export default function QmfSection({ quentes, mornos, frios, janela, totalSortei
                       return next;
                     });
                   }}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#c7d2fe] bg-[#818cf8]/10 border border-[#818cf8]/20 hover:bg-[#818cf8]/20 transition-all"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#c7d2fe] bg-accent-2/10 border border-[#818cf8]/20 hover:bg-accent-2/20 transition-all"
                   title="Combinado: excluir recentes + focar atrasados"
                 >
                   🎯 Combinado
@@ -296,7 +342,7 @@ export default function QmfSection({ quentes, mornos, frios, janela, totalSortei
               max={1000}
               value={qtdGeracao}
               onChange={e => setQtdGeracao(parseInt(e.target.value) || 0)}
-              className="w-20 px-2.5 py-1.5 rounded-lg text-sm text-[#e0e7ff] bg-white/5 border border-white/10 focus:border-accent-2/50 focus:outline-none focus:ring-1 focus:ring-accent-2/30 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="w-20 px-2.5 py-1.5 rounded-lg text-sm text-ink bg-white/5 border border-white/10 focus:border-accent-2/50 focus:outline-none focus:ring-1 focus:ring-accent-2/30 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
             <span className="text-xs text-muted">(0 = todas)</span>
             <button
@@ -320,7 +366,7 @@ export default function QmfSection({ quentes, mornos, frios, janela, totalSortei
       {combinacoes && combinacoes.length > 0 && (
         <div className="mt-4 animate-fade-in">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-semibold text-[#e0e7ff]">
+            <h4 className="text-sm font-semibold text-ink">
               Combinações Geradas ({combinacoes.length})
             </h4>
             <div className="flex gap-2">
@@ -395,7 +441,7 @@ function QmfCard({ title, nums, className, numClass, cardBg = 'bg-white/3', idx 
       className={`rounded-xl p-5 border ${cardBg} transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/[0.05] animate-slide-up ${className}`}
       style={{ animationDelay: `${idx * 0.1}s` }}
     >
-      <h4 className="text-sm font-semibold text-[#e0e7ff] mb-3">{title}</h4>
+      <h4 className="text-sm font-semibold text-ink mb-3">{title}</h4>
       <div className="flex flex-wrap gap-1.5">
         {nums.map(n => <NumBadge key={n} n={n} className={numClass} state={getState(n)} onClick={onNumClick} />)}
       </div>

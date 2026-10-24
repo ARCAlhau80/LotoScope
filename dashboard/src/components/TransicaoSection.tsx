@@ -1,21 +1,26 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import Chart from 'chart.js/auto';
+import type { Chart as ChartType } from 'chart.js';
 import type { TransicaoQMF } from '@/types';
 
 export default function TransicaoSection({ t, janela, numerosPorJogo }: { t: TransicaoQMF; janela: number; numerosPorJogo: number }) {
   const chartRef = useRef<HTMLCanvasElement>(null);
-  const chartInstance = useRef<Chart | null>(null);
+  const chartInstance = useRef<ChartType | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     if (!chartRef.current || !t?.recentes?.length) return;
-    if (chartInstance.current) chartInstance.current.destroy();
 
-    const ctx = chartRef.current.getContext('2d');
-    if (!ctx) return;
+    (async () => {
+      const { default: Chart } = await import('chart.js/auto');
+      if (cancelled || !chartRef.current) return;
+      if (chartInstance.current) chartInstance.current.destroy();
 
-    chartInstance.current = new Chart(ctx, {
+      const ctx = chartRef.current.getContext('2d');
+      if (!ctx) return;
+
+      chartInstance.current = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: t.recentes.map(r => String(r.concurso)),
@@ -37,8 +42,12 @@ export default function TransicaoSection({ t, janela, numerosPorJogo }: { t: Tra
         },
       },
     });
+    })();
 
-    return () => { if (chartInstance.current) chartInstance.current.destroy(); };
+    return () => {
+      cancelled = true;
+      if (chartInstance.current) chartInstance.current.destroy();
+    };
   }, [t]);
 
   if (!t) return null;
@@ -47,7 +56,7 @@ export default function TransicaoSection({ t, janela, numerosPorJogo }: { t: Tra
 
   return (
     <div className="mb-8">
-      <h3 className="text-lg font-semibold mb-4 text-[#e0e7ff] flex items-center gap-2">
+      <h3 className="text-lg font-semibold mb-4 text-ink flex items-center gap-2">
         De Onde Vêm os Acertos?
         <span className="text-[11px] bg-accent/15 text-accent-2 px-2 py-0.5 rounded font-normal">janela: {janela} sorteios</span>
       </h3>
@@ -57,7 +66,7 @@ export default function TransicaoSection({ t, janela, numerosPorJogo }: { t: Tra
         <MetricCard title="🧊 Frios" value={m.frios} pct={m.pct_f} tendencia={te.frios} color="#93c5fd" />
       </div>
       <div className="rounded-xl p-5 border border-white/6 bg-white/3">
-        <h4 className="text-sm font-semibold text-[#e0e7ff] mb-3">Composição Q/M/F nos últimos {t.recentes.length} sorteios (janela: {janela})</h4>
+        <h4 className="text-sm font-semibold text-ink mb-3">Composição Q/M/F nos últimos {t.recentes.length} sorteios (janela: {janela})</h4>
         <div style={{ height: 200 }}><canvas ref={chartRef} /></div>
       </div>
     </div>
@@ -69,7 +78,7 @@ function MetricCard({ title, value, pct, tendencia, color }: {
 }) {
   return (
     <div className="rounded-xl p-5 border border-white/6 bg-white/3 transition-all duration-200 hover:bg-white/[0.05] hover:-translate-y-0.5">
-      <h4 className="text-sm font-semibold text-[#e0e7ff] mb-2">{title}</h4>
+      <h4 className="text-sm font-semibold text-ink mb-2">{title}</h4>
       <div className="text-3xl font-bold" style={{ color }}>{value}</div>
       <div className="text-xs text-muted mt-1">média por sorteio ({pct}%)</div>
       <div className="flex items-center gap-1 mt-2 text-xs" style={{ color: tendencia > 0 ? '#6ee7b7' : '#fca5a5' }}>

@@ -92,7 +92,7 @@ export default function ConcursoSelector({
       <button
         onClick={navAnterior}
         disabled={value === undefined && concursos.length <= 1}
-        className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 text-muted hover:text-fg hover:bg-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm"
+        className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 text-muted hover:text-fg hover:bg-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm"
         title="Concurso anterior"
       >
         −
@@ -108,7 +108,7 @@ export default function ConcursoSelector({
           onChange={e => { setQuery(e.target.value); setOpen(true); }}
           onKeyDown={handleKeyDown}
           placeholder="Digite o concurso..."
-          className="w-44 px-3 py-1.5 rounded-lg text-sm text-[#e0e7ff] bg-white/5 border border-white/10 focus:border-accent-2/50 focus:outline-none focus:ring-1 focus:ring-accent-2/30"
+          className="w-44 px-3 py-1.5 rounded-lg text-sm text-ink bg-white/5 border border-white/10 focus:border-accent-2/50 focus:outline-none focus:ring-1 focus:ring-accent-2/30"
         />
         {open && (
           <div
@@ -144,7 +144,7 @@ export default function ConcursoSelector({
       <button
         onClick={navProximo}
         disabled={value === undefined}
-        className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 text-muted hover:text-fg hover:bg-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm"
+        className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 text-muted hover:text-fg hover:bg-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm"
         title="Próximo concurso"
       >
         +

@@ -8,7 +8,7 @@ export default function AtrasadosSection({ atrasados }: { atrasados: Record<stri
 
   return (
     <div className="mb-8">
-      <h3 className="text-lg font-semibold mb-4 text-[#e0e7ff] flex items-center gap-2">
+      <h3 className="text-lg font-semibold mb-4 text-ink flex items-center gap-2">
         Números Atrasados por Posição
         <span className="text-[11px] bg-accent/15 text-accent-2 px-2 py-0.5 rounded font-normal">P(gap) &lt; 5%</span>
       </h3>
@@ -24,13 +24,13 @@ export default function AtrasadosSection({ atrasados }: { atrasados: Record<stri
               {atrasados[pos].map((x, i) => {
                 const severity = x.p_gap < 0.01 ? 'intense' : x.p_gap < 0.03 ? 'medium' : 'mild';
                 const colors = {
-                  intense: 'bg-[rgba(239,68,68,0.25)] text-[#fca5a5] border-[rgba(239,68,68,0.35)]',
-                  medium: 'bg-[rgba(239,68,68,0.15)] text-[#fca5a5] border-[rgba(239,68,68,0.2)]',
+                  intense: 'bg-[rgba(239,68,68,0.25)] text-hot-bright border-[rgba(239,68,68,0.35)]',
+                  medium: 'bg-[rgba(239,68,68,0.15)] text-hot-bright border-[rgba(239,68,68,0.2)]',
                   mild: 'bg-[rgba(251,146,60,0.15)] text-[#fdba74] border-[rgba(251,146,60,0.2)]',
                 };
                 return (
                   <span key={i}
-                    className={`w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-semibold transition-all duration-200 hover:scale-110 ${colors[severity]}`}
+                    className={`w-9 h-9 flex items-center justify-center rounded-lg text-[11px] font-semibold transition-all duration-200 hover:scale-110 ${colors[severity]}`}
                     title={`gap=${x.gap} · P(gap)=${(x.p_gap * 100).toFixed(1)}%`}>
                     {x.numero}
                   </span>

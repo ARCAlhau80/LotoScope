@@ -23,6 +23,7 @@ export interface LotteryConfig {
   numero_maximo: number;
   colunas_resultado: string[];
   tabela_resultados: string;
+  data_col?: string;
   tabela_combinacoes: string;
   tabela_ciclos?: string;
   db_name: string;
@@ -50,6 +51,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     numero_maximo: 25,
     colunas_resultado: Array.from({ length: 15 }, (_, i) => `N${i + 1}`),
     tabela_resultados: "Resultados_INT",
+    data_col: "Data_Sorteio",
     tabela_combinacoes: "COMBINACOES_LOTOFACIL",
     tabela_ciclos: "NumerosCiclos",
     db_name: "LOTOFACIL",
@@ -73,10 +75,12 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     nome_jogo: "Mega-Sena",
     total_numeros: 60,
     numeros_por_jogo: 6,
+    dezenas_opcoes: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
     numero_minimo: 1,
     numero_maximo: 60,
     colunas_resultado: Array.from({ length: 6 }, (_, i) => `N${i + 1}`),
     tabela_resultados: "Resultados_MegaSenaFechado",
+    data_col: "data_sorteio",
     tabela_combinacoes: "COMBIN_MEGASENA",
     tabela_ciclos: "NumerosCiclosMega",
     db_name: "LOTOFACIL",
@@ -105,6 +109,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     numero_maximo: 80,
     colunas_resultado: Array.from({ length: 5 }, (_, i) => `N${i + 1}`),
     tabela_resultados: "Resultados_Quina",
+    data_col: "data_sorteio",
     tabela_combinacoes: "COMBIN_QUINA",
     db_name: "LOTOFACIL",
     faixas: {
@@ -132,6 +137,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     numero_maximo: 50,
     colunas_resultado: Array.from({ length: 6 }, (_, i) => `N${i + 1}`),
     tabela_resultados: "Resultados_DuplaSena",
+    data_col: "data_sorteio",
     tabela_combinacoes: "COMBIN_DUPLASENA",
     db_name: "LOTOFACIL",
     faixas: {
@@ -160,6 +166,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     numero_maximo: 99,
     colunas_resultado: Array.from({ length: 20 }, (_, i) => `N${i + 1}`),
     tabela_resultados: "Resultados_Lotomania",
+    data_col: "data_sorteio",
     tabela_combinacoes: "COMBIN_LOTOMANIA",
     tabela_ciclos: "NumerosCiclos_Lotomania",
     db_name: "LOTOFACIL",
@@ -187,6 +194,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     numero_maximo: 31,
     colunas_resultado: Array.from({ length: 7 }, (_, i) => `N${i + 1}`),
     tabela_resultados: "Resultados_DiaDeSorte",
+    data_col: "Data_Sorteio",
     tabela_combinacoes: "COMBIN_DIADESORTE",
     db_name: "LOTOFACIL",
     faixas: {
@@ -213,6 +221,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     numero_maximo: 80,
     colunas_resultado: Array.from({ length: 7 }, (_, i) => `N${i + 1}`),
     tabela_resultados: "Resultados_Timemania",
+    data_col: "Data_Sorteio",
     tabela_combinacoes: "COMBIN_TIMEMANIA",
     db_name: "LOTOFACIL",
     faixas: {
@@ -239,6 +248,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     numero_maximo: 9,
     colunas_resultado: Array.from({ length: 7 }, (_, i) => `N${i + 1}`),
     tabela_resultados: "Resultados_SuperSete",
+    data_col: "Data_Sorteio",
     tabela_combinacoes: "COMBIN_SUPERSETE",
     db_name: "LOTOFACIL",
     faixas: {
@@ -266,6 +276,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     numero_maximo: 50,
     colunas_resultado: Array.from({ length: 6 }, (_, i) => `N${i + 1}`),
     tabela_resultados: "Resultados_MaisMilionaria",
+    data_col: "Data_Sorteio",
     tabela_combinacoes: "COMBIN_MAISMILIONARIA",
     db_name: "LOTOFACIL",
     trevos_cols: ['T1', 'T2'],

@@ -8,7 +8,7 @@ export default function GruposSection({ data }: { data: AnaliseGruposData }) {
 
   return (
     <div className="mb-8">
-      <h3 className="text-lg font-semibold mb-2 text-[#e0e7ff] flex items-center gap-2">
+      <h3 className="text-lg font-semibold mb-2 text-ink flex items-center gap-2">
         Análise por Grupos
         <span className="text-[11px] bg-accent/15 text-accent-2 px-2 py-0.5 rounded font-normal">Coringa {data.coringa}</span>
       </h3>
@@ -25,7 +25,7 @@ export default function GruposSection({ data }: { data: AnaliseGruposData }) {
               className="rounded-xl p-5 border border-[rgba(129,140,248,0.12)] bg-white/3 transition-all duration-200 hover:bg-white/[0.05] hover:-translate-y-0.5 animate-slide-up"
               style={{ animationDelay: `${idx * 0.08}s` }}
             >
-              <h4 className="text-sm font-bold text-[#e0e7ff] mb-2">{g === 'A' ? '🟦' : g === 'B' ? '🟩' : '🟪'} Grupo {g}</h4>
+              <h4 className="text-sm font-bold text-ink mb-2">{g === 'A' ? '🟦' : g === 'B' ? '🟩' : '🟪'} Grupo {g}</h4>
               <div className="flex flex-wrap gap-1 mb-3">
                 {data.grupos[g].map(n => <NumBadge key={n} n={n} />)}
               </div>
@@ -51,7 +51,7 @@ export default function GruposSection({ data }: { data: AnaliseGruposData }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="rounded-xl p-5 border border-[rgba(129,140,248,0.12)] bg-white/3 transition-all duration-200 hover:bg-white/[0.05]">
-          <h4 className="text-sm font-semibold text-[#e0e7ff] mb-3">Composições Mais Comuns (A, B, C)</h4>
+          <h4 className="text-sm font-semibold text-ink mb-3">Composições Mais Comuns (A, B, C)</h4>
           <div className="space-y-1.5">
             {data.composicoes_comuns.slice(0, 10).map((c, i) => {
               const totalNumeros = c.a + c.b + c.c;
@@ -76,7 +76,7 @@ export default function GruposSection({ data }: { data: AnaliseGruposData }) {
         </div>
 
         <div className="rounded-xl p-5 border border-[rgba(129,140,248,0.12)] bg-white/3 transition-all duration-200 hover:bg-white/[0.05]">
-          <h4 className="text-sm font-semibold text-[#e0e7ff] mb-3">Últimos 30 Concursos</h4>
+          <h4 className="text-sm font-semibold text-ink mb-3">Últimos 30 Concursos</h4>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>

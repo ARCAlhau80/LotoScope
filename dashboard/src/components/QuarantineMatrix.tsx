@@ -7,8 +7,8 @@ const DIGITS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 const COL_NAMES = ['N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7'];
 
 const STATUS_CONFIG = {
-  quarentena: { label: 'Q', color: 'bg-[#ef4444]/25 text-[#fca5a5] border-[#ef4444]/35', title: 'Quarentena - saiu recentemente' },
-  normal: { label: 'N', color: 'bg-white/5 text-[#94a3b8] border-white/10', title: 'Normal' },
+  quarentena: { label: 'Q', color: 'bg-[#ef4444]/25 text-hot-bright border-[#ef4444]/35', title: 'Quarentena - saiu recentemente' },
+  normal: { label: 'N', color: 'bg-white/5 text-warm border-white/10', title: 'Normal' },
   atrasado: { label: 'A', color: 'bg-[#f59e0b]/20 text-[#fcd34d] border-[#f59e0b]/30', title: 'Atrasado - deve voltar em breve' },
   muito_atrasado: { label: 'M', color: 'bg-[#3b82f6]/25 text-[#93c5fd] border-[#3b82f6]/40', title: 'Muito atrasado - acima do P90' },
   rara: { label: 'R', color: 'bg-[#a78bfa]/15 text-[#c4b5fd] border-[#a78bfa]/25', title: 'Rara estrutural - probabilidade muito baixa, atraso não é sinal' },
@@ -58,7 +58,7 @@ export default function QuarantineMatrix({ quarentena }: { quarentena: Record<st
             <tr>
               <th className="text-xs text-muted p-2 text-left w-12">Dig</th>
               {COL_NAMES.map(col => (
-                <th key={col} className="text-xs text-[#818cf8] font-bold p-2 text-center">{col}</th>
+                <th key={col} className="text-xs text-accent-2 font-bold p-2 text-center">{col}</th>
               ))}
             </tr>
           </thead>
@@ -93,7 +93,7 @@ export default function QuarantineMatrix({ quarentena }: { quarentena: Record<st
       {hoveredInfo && hoveredCell && (
         <div className="mt-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.06] text-xs space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-[#818cf8] font-bold">{hoveredCell.col}</span>
+            <span className="text-accent-2 font-bold">{hoveredCell.col}</span>
             <span className="text-muted">dígito</span>
             <span className="text-[#c7d2fe] font-bold">{hoveredInfo.digito}</span>
           </div>
@@ -104,7 +104,7 @@ export default function QuarantineMatrix({ quarentena }: { quarentena: Record<st
             <span>P90: <span className="text-[#c7d2fe]">{hoveredInfo.p90}</span></span>
             <span>Sigma: <span className="text-[#c7d2fe]">{hoveredInfo.sigma}</span></span>
             <span>Status: <span className={`font-bold ${
-              hoveredInfo.status === 'quarentena' ? 'text-[#fca5a5]' :
+              hoveredInfo.status === 'quarentena' ? 'text-hot-bright' :
               hoveredInfo.status === 'muito_atrasado' ? 'text-[#93c5fd]' :
               hoveredInfo.status === 'atrasado' ? 'text-[#fcd34d]' : 'text-muted'
             }`}>{STATUS_CONFIG[hoveredInfo.status].title}</span></span>
@@ -114,11 +114,11 @@ export default function QuarantineMatrix({ quarentena }: { quarentena: Record<st
 
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-lg p-3 bg-[#ef4444]/5 border border-[#ef4444]/10">
-          <p className="text-xs text-[#fca5a5] font-medium mb-1">Em Quarentena</p>
+          <p className="text-xs text-hot-bright font-medium mb-1">Em Quarentena</p>
           <div className="flex flex-wrap gap-1">
             {COL_NAMES.map(col =>
               quarentena[col]?.em_quarentena.map(d => (
-                <span key={`${col}-${d}`} className="text-[10px] px-1.5 py-0.5 rounded bg-[#ef4444]/15 text-[#fca5a5]">
+                <span key={`${col}-${d}`} className="text-[10px] px-1.5 py-0.5 rounded bg-[#ef4444]/15 text-hot-bright">
                   {col}:{d}
                 </span>
               ))

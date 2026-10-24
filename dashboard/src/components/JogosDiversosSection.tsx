@@ -2,16 +2,22 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { getLotteryConfig, dezenasValidas, calcularPrecoAposta } from '@/lib/lottery-config';
-import type { PrevisaoItem, PrevisaoTendenciaComparativo, PrevisaoColunaRange } from '@/types';
+import type { PrevisaoItem, PrevisaoTendenciaComparativo, PrevisaoColunaRange, QuarentenaPosicaoLF, CicloInfo, TransicaoQMF, Repeticao3Sorteios } from '@/types';
+import type { AnaliseGruposData } from '@/lib/analise-grupos';
+import { parseColunasPosicionais, parseExcluidosPosicoes, parseFiltroComparativo, parseFixosPosicoes } from '@/lib/colunas-posicionais';
+import type { FiltrosSnapshot } from '@/lib/analise-filtros';
 import GeneratingOverlay from '@/components/GeneratingOverlay';
+import QuarantineMatrixMini from '@/components/QuarantineMatrixMini';
 
 interface JogoGerado {
   numeros: number[];
+  trevos?: number[];
   estrategia: string;
   soma: number;
   pares: number;
   impares: number;
   primos: number;
+  score?: number;
 }
 
 interface Estatisticas {
@@ -36,10 +42,27 @@ interface CicloAtual {
 interface JogosDiversosSectionProps {
   loteria?: string;
   concursoBase?: number;
+  concursoAtual?: number;
   numerosSorteadosAtual?: number[];
   previsaoPosicional?: Record<string, PrevisaoItem[]> | null;
   previsaoTendencia?: PrevisaoTendenciaComparativo;
   previsaoColunas?: PrevisaoColunaRange[];
+  quarentena?: Record<string, QuarentenaPosicaoLF> | null;
+  grupos?: AnaliseGruposData | null;
+  numerosQuentes?: [number, number][];
+  numerosMornos?: [number, number][];
+  numerosFrios?: [number, number][];
+  ciclos?: Record<string, CicloInfo>;
+  transicaoQmf?: TransicaoQMF;
+  repeticao3?: Repeticao3Sorteios;
+  onFiltrosAplicados?: (filtros: FiltrosSnapshot) => void;
+}
+
+interface CategoriaDef {
+  id: string;
+  label: string;
+  cor: string;
+  set: number[];
 }
 
 const ESTRATEGIA_LABEL: Record<string, string> = {
@@ -54,7 +77,28 @@ const ESTRATEGIA_LABEL: Record<string, string> = {
 
 type NumeroEstado = 'normal' | 'fixo' | 'excluido';
 
-export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBase, numerosSorteadosAtual = [], previsaoPosicional, previsaoTendencia, previsaoColunas }: JogosDiversosSectionProps) {
+const ORDENACAO_LABEL: Record<string, string> = {
+  aleatorio: 'Aleatório',
+  melhores: 'Melhores (score)',
+  balanceado: 'Balanceado',
+  piores: 'Piores (score)',
+};
+
+const REPETIDOS_LABELS = ['Anterior', 'Ante-anterior', 'Ante-ante-anterior'];
+const REPETIDOS_CORES = ['#93c5fd', '#c4b5fd', '#fca5a5'];
+
+const jogoLinha = (jogo: JogoGerado): string => {
+  const dezenas = jogo.numeros.join(',');
+  if (jogo.trevos && jogo.trevos.length > 0) return `${dezenas}|${jogo.trevos.join(',')}`;
+  return dezenas;
+};
+
+function parseFaixa(valor: string): { min: number; max: number } {
+  const [a, b] = valor.split('-').map(x => parseInt(x, 10));
+  return { min: a, max: b ?? a };
+}
+
+export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBase, concursoAtual, numerosSorteadosAtual = [], previsaoPosicional, previsaoTendencia, previsaoColunas, quarentena, grupos, numerosQuentes, numerosMornos, numerosFrios, ciclos, transicaoQmf, repeticao3, onFiltrosAplicados }: JogosDiversosSectionProps) {
   const cfg = getLotteryConfig(loteria);
   const opcoesDezenas = dezenasValidas(cfg);
   const [quantidade, setQuantidade] = useState<number>(5);
@@ -70,9 +114,37 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [colunasInputs, setColunasInputs] = useState<string[]>(['', '', '', '', '']);
+  const [linhasFiltro, setLinhasFiltro] = useState<Record<string, number[]>>({});
   const [comparativoInputs, setComparativoInputs] = useState<string[]>(['', '', '']);
   const [fixosPosicoes, setFixosPosicoes] = useState<Record<number, number[]>>({});
   const [excluidosPosicoes, setExcluidosPosicoes] = useState<Record<number, number[]>>({});
+  const [estrategiasFiltro, setEstrategiasFiltro] = useState<string[]>([]);
+  const [categoriasInputs, setCategoriasInputs] = useState<Record<string, string>>({});
+  const [repetidosInputs, setRepetidosInputs] = useState<string[]>(['', '', '']);
+  const [ordenacao, setOrdenacao] = useState<string>('aleatorio');
+
+  const repetidosItens = useMemo(() => repeticao3?.itens ?? [], [repeticao3]);
+
+  const categoriasDefs = useMemo<CategoriaDef[]>(() => {
+    const defs: CategoriaDef[] = [];
+    if (grupos) {
+      defs.push(
+        { id: 'grupoA', label: 'Grupo A', cor: '#a78bfa', set: [...grupos.grupos.A] },
+        { id: 'grupoB', label: 'Grupo B', cor: '#6ee7b7', set: [...grupos.grupos.B] },
+        { id: 'grupoC', label: 'Grupo C', cor: '#c084fc', set: [...grupos.grupos.C] },
+      );
+    }
+    if (ciclos) {
+      const aquecendo = Object.entries(ciclos).filter(([, c]) => c.estado === 'aquecendo').map(([n]) => Number(n));
+      const esfriando = Object.entries(ciclos).filter(([, c]) => c.estado === 'esfriando').map(([n]) => Number(n));
+      if (aquecendo.length > 0) defs.push({ id: 'aquecendo', label: 'Aquecendo', cor: '#6ee7b7', set: aquecendo });
+      if (esfriando.length > 0) defs.push({ id: 'esfriando', label: 'Esfriando', cor: '#fdba74', set: esfriando });
+    }
+    if (numerosQuentes && numerosQuentes.length > 0) defs.push({ id: 'quentes', label: 'Quentes', cor: '#fb923c', set: numerosQuentes.map(n => n[0]) });
+    if (numerosMornos && numerosMornos.length > 0) defs.push({ id: 'mornos', label: 'Mornos', cor: '#a3b3cc', set: numerosMornos.map(n => n[0]) });
+    if (numerosFrios && numerosFrios.length > 0) defs.push({ id: 'frios', label: 'Frios', cor: '#67e8f9', set: numerosFrios.map(n => n[0]) });
+    return defs;
+  }, [grupos, ciclos, numerosQuentes, numerosMornos, numerosFrios]);
 
   const colunasSets = useMemo(() => {
     if (!previsaoPosicional) return null;
@@ -84,6 +156,68 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     return sets.map(s => [...new Set(s)]);
   }, [previsaoPosicional]);
 
+  const posicoesLinhas = useMemo(() => {
+    if (!previsaoPosicional) return [] as string[];
+    return Object.keys(previsaoPosicional).sort((a, b) => {
+      const na = parseInt(a.replace(/\D/g, ''), 10) || 0;
+      const nb = parseInt(b.replace(/\D/g, ''), 10) || 0;
+      return na - nb;
+    });
+  }, [previsaoPosicional]);
+
+  const toggleLinha = (pos: string, numero: number) => {
+    setLinhasFiltro(prev => {
+      const atual = prev[pos] ?? [];
+      const proximo = atual.includes(numero)
+        ? atual.filter(n => n !== numero)
+        : [...atual, numero];
+      return { ...prev, [pos]: proximo };
+    });
+  };
+
+  const linhasMaisConcentradas = (limite: number) =>
+    [...posicoesLinhas]
+      .sort((a, b) => {
+        const pa = previsaoPosicional?.[a]?.[0]?.prob ?? 0;
+        const pb = previsaoPosicional?.[b]?.[0]?.prob ?? 0;
+        return pb - pa;
+      })
+      .slice(0, Math.max(1, limite));
+
+  const aplicarTopLinhas = (top: number) => {
+    if (!previsaoPosicional) return;
+    const next: Record<string, number[]> = {};
+    for (const pos of linhasMaisConcentradas(top)) {
+      next[pos] = (previsaoPosicional[pos] ?? []).slice(0, top).map(x => x.numero);
+    }
+    setLinhasFiltro(next);
+  };
+
+  const aplicarCoberturaLinhas = (alvo: number) => {
+    if (!previsaoPosicional) return;
+    const next: Record<string, number[]> = {};
+    for (const pos of posicoesLinhas) {
+      const preds = previsaoPosicional[pos] ?? [];
+      let acumulado = 0;
+      const escolhidos: number[] = [];
+      for (const item of preds) {
+        escolhidos.push(item.numero);
+        acumulado += item.prob;
+        if (acumulado >= alvo) break;
+      }
+      next[pos] = escolhidos;
+    }
+    setLinhasFiltro(next);
+  };
+
+  const coberturaLinha = (pos: string) => {
+    const preds = previsaoPosicional?.[pos] ?? [];
+    const selecionados = linhasFiltro[pos] ?? [];
+    return preds
+      .filter(x => selecionados.includes(x.numero))
+      .reduce((acc, x) => acc + x.prob, 0);
+  };
+
   useEffect(() => {
     const novoCfg = getLotteryConfig(loteria);
     setEstados({});
@@ -93,9 +227,14 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setEstimativaTotal(null);
     setDezenas(novoCfg.numeros_por_jogo);
     setColunasInputs(['', '', '', '', '']);
+    setLinhasFiltro({});
     setComparativoInputs(['', '', '']);
     setFixosPosicoes({});
     setExcluidosPosicoes({});
+    setEstrategiasFiltro([]);
+    setCategoriasInputs({});
+    setRepetidosInputs(['', '', '']);
+    setOrdenacao('aleatorio');
   }, [loteria]);
 
   useEffect(() => {
@@ -103,7 +242,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setEstatisticas(null);
     setEstimativaTotal(null);
     setError(null);
-  }, [colunasInputs, comparativoInputs]);
+  }, [colunasInputs, linhasFiltro, comparativoInputs, categoriasInputs, repetidosInputs, ordenacao]);
 
   useEffect(() => {
     if (!loading) return;
@@ -122,8 +261,21 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const colunasSetsStr = colunasSets ? colunasSets.map(s => s.join(',')).join(';') : '';
   const temColunas = colunasInputs.some(v => v.trim() !== '') && colunasSets !== null;
 
+  const linhasSetsArray = posicoesLinhas.map(pos => linhasFiltro[pos] ?? []);
+  const linhasSetsStr = linhasSetsArray.map(s => s.join(',')).join(';');
+  const temLinhas = linhasSetsArray.some(s => s.length > 0);
+
   const comparativoStr = comparativoInputs.map(v => v.trim()).join(',');
   const temComparativo = comparativoInputs.some(v => v.trim() !== '');
+
+  const categoriasRangesStr = categoriasDefs.map(c => (categoriasInputs[c.id] ?? '').trim()).join(',');
+  const categoriasSetsStr = categoriasDefs.map(c => c.set.join(',')).join(';');
+  const temCategorias = categoriasDefs.some(c => (categoriasInputs[c.id] ?? '').trim() !== '');
+  const scoreSetsStr = categoriasDefs.map(c => `${c.id}:${c.set.join(',')}`).join(';');
+
+  const repetidosRangesStr = repetidosItens.map((_, i) => (repetidosInputs[i] ?? '').trim()).join(',');
+  const repetidosSetsStr = repetidosItens.map(item => item.numeros.join(',')).join(';');
+  const temRepetidos = repetidosItens.some((_, i) => (repetidosInputs[i] ?? '').trim() !== '');
 
   const numeroMaximo = cfg.numero_minimo + cfg.total_numeros - 1;
   const posicoesValidas = (n: number) => {
@@ -162,6 +314,60 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       return;
     }
     setColunasInputs(previsaoColunas.map(r => `${r.p25}-${r.p75}`));
+  };
+
+  const usarAnaliseCategorias = () => {
+    if (categoriasDefs.length === 0) {
+      setError('Análise de categorias indisponível para esta loteria. Recarregue o dashboard.');
+      return;
+    }
+    const totalN = cfg.total_numeros;
+    const proximo: Record<string, string> = {};
+    for (const c of categoriasDefs) {
+      if (grupos && (c.id === 'grupoA' || c.id === 'grupoB' || c.id === 'grupoC')) {
+        const g = c.id === 'grupoA' ? 'A' : c.id === 'grupoB' ? 'B' : 'C';
+        const s = grupos.stats[g];
+        proximo[c.id] = `${s.min}-${s.max}`;
+      } else if (transicaoQmf && transicaoQmf.recentes.length >= 3 && (c.id === 'quentes' || c.id === 'mornos' || c.id === 'frios')) {
+        const key = c.id === 'quentes' ? 'quentes' : c.id === 'mornos' ? 'mornos' : 'frios';
+        const vals = transicaoQmf.recentes.map(r => r[key]);
+        proximo[c.id] = `${Math.min(...vals)}-${Math.max(...vals)}`;
+      } else {
+        const esperado = Math.round(c.set.length / totalN * dezenas);
+        const lo = Math.max(0, esperado - 2);
+        const hi = Math.min(dezenas, esperado + 2);
+        proximo[c.id] = `${lo}-${hi}`;
+      }
+    }
+    setCategoriasInputs(proximo);
+  };
+
+  const validarCategorias = (): string | null => {
+    const pattern = /^\d+(-\d+)?$/;
+    for (const c of categoriasDefs) {
+      const v = (categoriasInputs[c.id] ?? '').trim();
+      if (v === '') continue;
+      if (!pattern.test(v)) return `Formato inválido em "${c.label}". Use "min" ou "min-max", ex.: 2-5`;
+    }
+    return null;
+  };
+
+  const usarAnaliseRepetidos = () => {
+    if (repetidosItens.length === 0) {
+      setError('Análise de repetições indisponível. Recarregue o dashboard.');
+      return;
+    }
+    setRepetidosInputs(repetidosItens.map(item => `${item.p25}-${item.p75}`));
+  };
+
+  const validarRepetidos = (): string | null => {
+    const pattern = /^\d+(-\d+)?$/;
+    for (let i = 0; i < repetidosItens.length; i++) {
+      const v = (repetidosInputs[i] ?? '').trim();
+      if (v === '') continue;
+      if (!pattern.test(v)) return `Formato inválido em "${REPETIDOS_LABELS[i]}". Use "min" ou "min-max", ex.: 8-10`;
+    }
+    return null;
   };
 
   const validarColunas = (): string | null => {
@@ -220,6 +426,21 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setExcluidosPosicoes({});
   }, []);
 
+  const toggleEstrategia = useCallback((e: string) => {
+    setEstrategiasFiltro(prev => {
+      const marcada = prev.includes(e);
+      const proximo = marcada ? prev.filter(x => x !== e) : [...prev, e];
+      if (!marcada && quantidade === 0) setQuantidade(50);
+      return proximo;
+    });
+  }, [quantidade]);
+
+  const jogosFiltrados = useMemo(() => {
+    if (!jogos) return null;
+    if (estrategiasFiltro.length === 0) return jogos;
+    return jogos.filter(j => estrategiasFiltro.includes(j.estrategia));
+  }, [jogos, estrategiasFiltro]);
+
   const gerar = useCallback(async () => {
     const colunasErr = validarColunas();
     if (colunasErr) {
@@ -228,6 +449,16 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     }
     if (temComparativo && comparativoInputs.some(v => v.trim() !== '' && !/^\d+(-\d+)?$/.test(v.trim()))) {
       setError('Formato inválido no filtro comparativo. Use "min-max" ou "min", ex.: 2-5');
+      return;
+    }
+    const categoriasErr = validarCategorias();
+    if (categoriasErr) {
+      setError(categoriasErr);
+      return;
+    }
+    const repetidosErr = validarRepetidos();
+    if (repetidosErr) {
+      setError(repetidosErr);
       return;
     }
     setLoading(true);
@@ -248,7 +479,21 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         params.set('colunas_posicionais', colunasPosicionaisStr);
         params.set('colunas_sets', colunasSetsStr);
       }
+      if (temLinhas) params.set('linhas_sets', linhasSetsStr);
       if (temComparativo) params.set('comparativo', comparativoStr);
+      if (temCategorias) {
+        params.set('categorias', categoriasRangesStr);
+        params.set('categorias_sets', categoriasSetsStr);
+      }
+      if (temRepetidos) {
+        params.set('repetidos', repetidosRangesStr);
+        params.set('repetidos_sets', repetidosSetsStr);
+      }
+      if (ordenacao !== 'aleatorio') {
+        params.set('ordenacao', ordenacao);
+        if (scoreSetsStr) params.set('score_sets', scoreSetsStr);
+      }
+      if (estrategiasFiltro.length > 0) params.set('estrategias', estrategiasFiltro.join(','));
 
       const res = await fetch(`/api/jogos-diversos?${params.toString()}`);
       const data = await res.json();
@@ -259,13 +504,47 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       setEstimativaTotal(data.estimativa_total ?? null);
       setModoTodas(data.modo_todas ?? false);
       if (typeof data.dezenas === 'number') setDezenas(data.dezenas);
+      if (onFiltrosAplicados) {
+        const dezenasAplicadas = typeof data.dezenas === 'number' ? data.dezenas : dezenas;
+        const categorias = [
+          ...categoriasDefs
+            .filter(c => (categoriasInputs[c.id] ?? '').trim() !== '')
+            .map(c => {
+              const valor = (categoriasInputs[c.id] ?? '').trim();
+              return { label: c.label, numeros: c.set, ...parseFaixa(valor) };
+            }),
+          ...repetidosItens
+            .map((item, i) => ({ item, valor: (repetidosInputs[i] ?? '').trim(), label: REPETIDOS_LABELS[i] }))
+            .filter(x => x.valor !== '')
+            .map(x => ({ label: `Repetidos · ${x.label}`, numeros: x.item.numeros, ...parseFaixa(x.valor) })),
+        ];
+        onFiltrosAplicados({
+          loteria,
+          concursoBase: concursoBase ?? concursoAtual,
+          geradoEm: new Date().toISOString(),
+          jogosGerados: data.jogos.length,
+          dezenas: dezenasAplicadas,
+          numerosSorteados: cfg.colunas_resultado.length,
+          totalNumeros: cfg.total_numeros,
+          numeroMinimo: cfg.numero_minimo,
+          baseComparativo: numerosSorteadosAtual,
+          fixos,
+          excluidos: excluidosCompletos,
+          colunasPosicionais: temColunas ? parseColunasPosicionais(colunasPosicionaisStr, colunasSetsStr) : undefined,
+          dominiosPosicionais: temLinhas ? linhasSetsArray : undefined,
+          filtroComparativo: temComparativo ? parseFiltroComparativo(comparativoStr) : undefined,
+          categorias,
+          fixosPosicoes: fixos.length > 0 ? parseFixosPosicoes(fixosPosicoesStr) : undefined,
+          excluidosPosicoes: parseExcluidosPosicoes(excluidosPosicoesStr),
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao gerar jogos');
     } finally {
       setProgresso(100);
       setTimeout(() => setLoading(false), 450);
     }
-  }, [loteria, quantidade, dezenas, fixos, excluidos, excluidosCompletos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, validarColunas, temComparativo, comparativoStr, fixosPosicoesStr, excluidosPosicoesStr]);
+  }, [loteria, quantidade, dezenas, fixos, excluidos, excluidosCompletos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, temLinhas, linhasSetsStr, validarColunas, temComparativo, comparativoStr, temCategorias, categoriasRangesStr, categoriasSetsStr, categoriasDefs, categoriasInputs, temRepetidos, repetidosRangesStr, repetidosSetsStr, repetidosItens, repetidosInputs, ordenacao, scoreSetsStr, fixosPosicoesStr, excluidosPosicoesStr, estrategiasFiltro, numerosSorteadosAtual, concursoAtual, onFiltrosAplicados, cfg.colunas_resultado.length, cfg.total_numeros, cfg.numero_minimo]);
 
   const exportarTodas = useCallback(async () => {
     const colunasErr = validarColunas();
@@ -275,6 +554,16 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     }
     if (temComparativo && comparativoInputs.some(v => v.trim() !== '' && !/^\d+(-\d+)?$/.test(v.trim()))) {
       setError('Formato inválido no filtro comparativo. Use "min-max" ou "min", ex.: 2-5');
+      return;
+    }
+    const categoriasErr = validarCategorias();
+    if (categoriasErr) {
+      setError(categoriasErr);
+      return;
+    }
+    const repetidosErr = validarRepetidos();
+    if (repetidosErr) {
+      setError(repetidosErr);
       return;
     }
     setExporting(true);
@@ -294,7 +583,21 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         params.set('colunas_posicionais', colunasPosicionaisStr);
         params.set('colunas_sets', colunasSetsStr);
       }
+      if (temLinhas) params.set('linhas_sets', linhasSetsStr);
       if (temComparativo) params.set('comparativo', comparativoStr);
+      if (temCategorias) {
+        params.set('categorias', categoriasRangesStr);
+        params.set('categorias_sets', categoriasSetsStr);
+      }
+      if (temRepetidos) {
+        params.set('repetidos', repetidosRangesStr);
+        params.set('repetidos_sets', repetidosSetsStr);
+      }
+      if (ordenacao !== 'aleatorio') {
+        params.set('ordenacao', ordenacao);
+        if (scoreSetsStr) params.set('score_sets', scoreSetsStr);
+      }
+      if (estrategiasFiltro.length > 0) params.set('estrategias', estrategiasFiltro.join(','));
 
       const res = await fetch(`/api/jogos-diversos/export?${params.toString()}`);
       if (!res.ok) {
@@ -306,14 +609,16 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       const a = document.createElement('a');
       a.href = url;
       a.download = `jogos-${loteria}-${dezenas}dezenas-todas-${new Date().toISOString().slice(0, 10)}.txt`;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao exportar jogos');
     } finally {
       setExporting(false);
     }
-  }, [loteria, dezenas, fixos, excluidos, excluidosCompletos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, validarColunas, temComparativo, comparativoStr, comparativoInputs, fixosPosicoesStr, excluidosPosicoesStr]);
+  }, [loteria, dezenas, fixos, excluidos, excluidosCompletos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, temLinhas, linhasSetsStr, validarColunas, temComparativo, comparativoStr, comparativoInputs, temCategorias, categoriasRangesStr, categoriasSetsStr, temRepetidos, repetidosRangesStr, repetidosSetsStr, repetidosItens, ordenacao, scoreSetsStr, fixosPosicoesStr, excluidosPosicoesStr, estrategiasFiltro]);
 
   const getNumeroClasses = (n: number) => {
     const estado = estados[n] || 'normal';
@@ -343,7 +648,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       style={{ background: 'linear-gradient(135deg, rgba(129,140,248,0.06), rgba(52,211,153,0.03))' }}>
       <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
         <div>
-          <h3 className="text-lg font-semibold text-[#e0e7ff]">Jogos Diversificados</h3>
+          <h3 className="text-lg font-semibold text-ink">Jogos Diversificados</h3>
           <p className="text-xs text-muted mt-1">
             Múltiplas estratégias (atraso, quentes, persistência, ciclo) para distribuir risco.
             {concursoBase !== undefined && (
@@ -368,7 +673,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                 ))}
               </select>
               {dezenas > cfg.numeros_por_jogo && (
-                <span className="text-xs px-2 py-1 rounded-full bg-[#818cf8]/15 text-[#a5b4fc] border border-[#818cf8]/30">
+                <span className="text-xs px-2 py-1 rounded-full bg-accent-2/15 text-[#a5b4fc] border border-[#818cf8]/30">
                   R$ {precoUnit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/jogo
                 </span>
               )}
@@ -377,16 +682,28 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           <label className="text-sm text-muted">Quantidade:</label>
           <input
             type="number"
-            min={0}
+            min={estrategiasFiltro.length > 0 ? 1 : 0}
             value={quantidade}
-            onChange={e => setQuantidade(Math.max(0, parseInt(e.target.value, 10) || 0))}
+            onChange={e => setQuantidade(Math.max(estrategiasFiltro.length > 0 ? 1 : 0, parseInt(e.target.value, 10) || (estrategiasFiltro.length > 0 ? 1 : 0)))}
             className="w-24 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8]"
+            title={estrategiasFiltro.length > 0 ? 'Com filtro de estratégia, defina uma quantidade (modo "todas as combinações" não se aplica)' : '0 = todas as combinações'}
           />
-          {quantidade === 0 && (
+          {quantidade === 0 && estrategiasFiltro.length === 0 && (
             <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-200 border border-emerald-500/30">
               Todas as combinações
             </span>
           )}
+          <label className="text-sm text-muted">Ordenação:</label>
+          <select
+            value={ordenacao}
+            onChange={e => setOrdenacao(e.target.value)}
+            className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8]"
+            title="Aleatório (ordem de geração) · Melhores/Piores por score de análises combinadas · Balanceado (mistura faixas alta/média/baixa)"
+          >
+            {Object.entries(ORDENACAO_LABEL).map(([k, l]) => (
+              <option key={k} value={k} className="bg-[#1a1d2e]">{l}</option>
+            ))}
+          </select>
           <button
             onClick={gerar}
             disabled={loading}
@@ -397,10 +714,52 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         </div>
       </div>
 
+      <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10">
+        <div className="flex flex-wrap items-center gap-3 mb-2">
+          <span className="text-sm font-semibold text-ink">Filtrar por estratégia</span>
+          <span className="text-xs text-muted">
+            {estrategiasFiltro.length > 0
+              ? 'gerar apenas jogos da(s) estratégia(s) marcada(s)'
+              : 'opcional — sem seleção usa todas as estratégias'}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(ESTRATEGIA_LABEL).map(([key, label]) => {
+            const marcada = estrategiasFiltro.includes(key);
+            return (
+              <label
+                key={key}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs cursor-pointer border transition-colors select-none ${
+                  marcada
+                    ? 'bg-accent/20 text-accent-2 border-accent-2/40'
+                    : 'bg-white/5 text-muted border-white/10 hover:text-fg hover:bg-white/10'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={marcada}
+                  onChange={() => toggleEstrategia(key)}
+                  className="accent-[#818cf8]"
+                />
+                {label}
+              </label>
+            );
+          })}
+          {estrategiasFiltro.length > 0 && (
+            <button
+              onClick={() => setEstrategiasFiltro([])}
+              className="px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-muted hover:text-fg hover:bg-white/10 transition-colors"
+            >
+              Limpar filtro
+            </button>
+          )}
+        </div>
+      </div>
+
       {previsaoPosicional && (
         <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <div className="text-sm font-semibold text-[#e0e7ff]">Colunas Posicionais (Previsão Posicional)</div>
+            <div className="text-sm font-semibold text-ink">Colunas Posicionais (Previsão Posicional)</div>
             <div className="text-xs text-muted">
               min-max de números de cada coluna <strong className="text-fg">#1..#5</strong> por jogo. Ex.: <strong className="text-fg">7-8</strong> (min 7, máx 8) ou <strong className="text-fg">3</strong> (mínimo 3, sem limite). Vazio = sem restrição.
             </div>
@@ -418,7 +777,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                   value={v}
                   onChange={e => setColunasInputs(prev => prev.map((x, j) => (j === i ? e.target.value : x)))}
                   placeholder="min-max"
-                  className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8] text-center placeholder:text-muted/50"
+                  className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8] text-center placeholder:text-muted/90"
                 />
               </label>
             ))}
@@ -426,7 +785,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               onClick={usarPrevisaoColunas}
               disabled={!previsaoColunas || previsaoColunas.length < 5}
               className="px-3 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: 'linear-gradient(135deg,#10b981,#34d399)' }}
+              style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
               title={previsaoColunas && previsaoColunas.length >= 5
                 ? 'Preenche com as faixas P25–P75 de acerto histórico de cada coluna'
                 : 'Faixas indisponíveis para esta loteria'}
@@ -449,9 +808,93 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         </div>
       )}
 
+      {previsaoPosicional && posicoesLinhas.length > 0 && (
+        <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div className="text-sm font-semibold text-ink">Linhas Posicionais (Domínio por Posição)</div>
+            <div className="text-xs text-muted">
+              <strong className="text-fg">N1</strong> = menor número do jogo, <strong className="text-fg">{posicoesLinhas[posicoesLinhas.length - 1]}</strong> = maior.
+              Clique nos números para definir quem pode ocupar cada posição.
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            {[3, 4, 5].map(top => (
+              <button
+                key={top}
+                onClick={() => aplicarTopLinhas(top)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110"
+                style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
+              >
+                Top {top}
+              </button>
+            ))}
+            {[0.9, 0.95].map(alvo => (
+              <button
+                key={alvo}
+                onClick={() => aplicarCoberturaLinhas(alvo)}
+                className="px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-muted hover:text-fg hover:bg-white/10 transition-colors"
+              >
+                Cobertura {Math.round(alvo * 100)}%
+              </button>
+            ))}
+            <button
+              onClick={() => setLinhasFiltro({})}
+              className="px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-muted hover:text-fg hover:bg-white/10 transition-colors"
+            >
+              Limpar linhas
+            </button>
+            <span className={`text-[11px] ${temLinhas ? 'text-accent-2' : 'text-muted'}`}>
+              {temLinhas ? `${linhasSetsArray.reduce((a, s) => a + s.length, 0)} números fixados em ${linhasSetsArray.filter(s => s.length > 0).length} linhas` : 'Nenhuma linha restrita'}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+            {posicoesLinhas.map(pos => {
+              const preds = previsaoPosicional[pos] ?? [];
+              const selecionados = linhasFiltro[pos] ?? [];
+              const cobertura = coberturaLinha(pos);
+              return (
+                <div key={pos} className="p-2 rounded-lg bg-white/[0.03] border border-white/10">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] font-semibold text-fg">{pos}</span>
+                    <span className={`text-[10px] ${selecionados.length > 0 ? 'text-accent-2' : 'text-muted'}`}>
+                      {selecionados.length > 0 ? `cobertura ${(cobertura * 100).toFixed(1)}%` : 'livre'}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {preds.slice(0, 5).map(item => {
+                      const ativo = selecionados.includes(item.numero);
+                      return (
+                        <button
+                          key={item.numero}
+                          onClick={() => toggleLinha(pos, item.numero)}
+                          title={`${(item.prob * 100).toFixed(1)}% de chance histórica nesta posição`}
+                          className={`px-1.5 py-1 rounded text-[10px] border transition-colors ${
+                            ativo
+                              ? 'bg-indigo-500/30 border-indigo-400/60 text-indigo-100'
+                              : 'bg-white/5 border-white/10 text-muted hover:text-fg hover:bg-white/10'
+                          }`}
+                        >
+                          <span className="font-semibold">{item.numero}</span>
+                          <span className="ml-1 opacity-70">{(item.prob * 100).toFixed(0)}%</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-2 text-[11px] text-muted leading-relaxed">
+            Cada linha é uma posição ordenada. Restringir muitas linhas reduz drasticamente as combinações;
+            <strong className="text-fg"> Top 3/4/5</strong> aplica o preset às N linhas mais concentradas.
+            Linha sem seleção = sem restrição.
+          </div>
+        </div>
+      )}
+
       <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <div className="text-sm font-semibold text-[#e0e7ff]">Filtro Comparativo (Tendência Posicional)</div>
+          <div className="text-sm font-semibold text-ink">Filtro Comparativo (Tendência Posicional)</div>
           <div className="text-xs text-muted">
             Cada jogo é comparado posição a posição com o último sorteio: quantas posições ficam ▲ maiores / ▼ menores / = iguais.
             Ex.: <strong className="text-fg">2-5</strong> = a quantidade de iguais no jogo deve ficar entre 2 e 5.
@@ -467,14 +910,14 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                 value={v}
                 onChange={e => setComparativoInputs(prev => prev.map((x, j) => (j === i ? e.target.value : x)))}
                 placeholder="min-max"
-                className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8] text-center placeholder:text-muted/50"
+                className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8] text-center placeholder:text-muted/90"
               />
             </label>
           ))}
           <button
             onClick={usarPrevisaoTendencia}
             className="px-3 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110"
-            style={{ background: 'linear-gradient(135deg,#10b981,#34d399)' }}
+            style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
             title="Preenche com as faixas P25–P75 da previsão da Tendência Posicional"
           >
             Usar previsão da Tendência
@@ -498,15 +941,115 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         </div>
       </div>
 
+      {categoriasDefs.length > 0 && (
+        <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div className="text-sm font-semibold text-ink">Filtro por Categorias (Grupos &amp; Frequência)</div>
+            <div className="text-xs text-muted">
+              Min/max de quantas dezenas de cada categoria o jogo deve conter.
+              Ex.: <strong className="text-fg">2-5</strong> = entre 2 e 5 dezenas da categoria. Vazio = sem restrição.
+            </div>
+          </div>
+          <div className="flex flex-wrap items-end gap-3">
+            {categoriasDefs.map(c => (
+              <label key={c.id} className="flex flex-col items-center gap-1">
+                <span className="text-[11px]" style={{ color: c.cor }}>
+                  {c.label}
+                  <span className="ml-1 opacity-70">({c.set.length})</span>
+                </span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={categoriasInputs[c.id] ?? ''}
+                  onChange={e => setCategoriasInputs(prev => ({ ...prev, [c.id]: e.target.value }))}
+                  placeholder="min-max"
+                  className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8] text-center placeholder:text-muted/90"
+                />
+              </label>
+            ))}
+            <button
+              onClick={usarAnaliseCategorias}
+              className="px-3 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110"
+              style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
+              title="Preenche os min/max com base na análise (Grupos: min-máx histórico; Frequência: bandas recentes)"
+            >
+              Usar análise
+            </button>
+            <button
+              onClick={() => setCategoriasInputs({})}
+              className="px-3 py-2 rounded-lg text-xs bg-white/5 border border-white/10 text-muted hover:text-fg hover:bg-white/10 transition-colors"
+            >
+              Limpar
+            </button>
+            <div className="flex-1 text-[11px] text-muted leading-relaxed">
+              Considera as dezenas <strong className="text-fg">presentes no jogo</strong>. Categorias podem se sobrepor
+              (uma dezena pode ser, ao mesmo tempo, Grupo A e Quente). Números fixos contam para as categorias.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {repetidosItens.length > 0 && (
+        <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div className="text-sm font-semibold text-ink">Filtro de Repetidos (3 Últimos Sorteios)</div>
+            <div className="text-xs text-muted">
+              Min/max de quantas dezenas do jogo devem repetir de cada um dos 3 últimos sorteios.
+              Ex.: <strong className="text-fg">8-10</strong> = entre 8 e 10 dezenas repetidas. Vazio = sem restrição.
+            </div>
+          </div>
+          <div className="flex flex-wrap items-end gap-3">
+            {repetidosItens.map((item, i) => (
+              <label key={item.rotulo} className="flex flex-col items-center gap-1">
+                <span className="text-[11px]" style={{ color: REPETIDOS_CORES[i] }}>
+                  {REPETIDOS_LABELS[i]}
+                  <span className="ml-1 opacity-70">(C{item.concurso} · {item.numeros.length})</span>
+                </span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={repetidosInputs[i] ?? ''}
+                  onChange={e => setRepetidosInputs(prev => prev.map((x, j) => (j === i ? e.target.value : x)))}
+                  placeholder="min-max"
+                  title={`Histórico: ${item.min}-${item.max} · P25–P75: ${item.p25}-${item.p75} · média ${item.media}`}
+                  className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8] text-center placeholder:text-muted/90"
+                />
+              </label>
+            ))}
+            <button
+              onClick={usarAnaliseRepetidos}
+              className="px-3 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110"
+              style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
+              title="Preenche com a faixa central (P25–P75) da distribuição histórica de repetições de cada sorteio"
+            >
+              Usar análise
+            </button>
+            <button
+              onClick={() => setRepetidosInputs(['', '', ''])}
+              className="px-3 py-2 rounded-lg text-xs bg-white/5 border border-white/10 text-muted hover:text-fg hover:bg-white/10 transition-colors"
+            >
+              Limpar
+            </button>
+            <div className="flex-1 text-[11px] text-muted leading-relaxed">
+              Conta as dezenas <strong className="text-fg">presentes no jogo</strong> que também saíram em cada sorteio.
+              A análise usa a distribuição histórica; <strong className="text-fg">"Usar análise"</strong> aplica a faixa
+              central (P25–P75). Números fixos contam para os repetidos.
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2">
-          <div className="text-sm text-[#e0e7ff]">Clique nos números para fixar 🟢 ou excluir 🔴</div>
+          <div className="text-sm text-ink">Clique nos números para fixar 🟢 ou excluir 🔴</div>
           <button
             onClick={limparSelecao}
             className="text-xs px-3 py-1 rounded-lg bg-white/5 text-muted hover:text-fg hover:bg-white/10 transition-colors">
             Limpar seleção
           </button>
         </div>
+        <div className="flex flex-wrap gap-4 items-start">
+        <div className="flex-1 min-w-[300px]">
         <div className={`grid ${gridClass} gap-2`} style={{ maxWidth: gridMaxW }}>
           {numeros.map(n => {
             const sorteado = sorteadosAtualSet.has(n);
@@ -622,6 +1165,11 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             )}
           </div>
         )}
+        </div>
+        {quarentena && (
+          <QuarantineMatrixMini quarentena={quarentena} numerosSorteados={numerosSorteadosAtual} />
+        )}
+        </div>
       </div>
 
       {error && (
@@ -656,7 +1204,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       {cicloAtual && (
         <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10">
           <div className="flex items-center justify-between mb-3">
-            <div className="text-sm font-semibold text-[#e0e7ff]">Frequência no ciclo atual</div>
+            <div className="text-sm font-semibold text-ink">Frequência no ciclo atual</div>
             <div className="text-xs text-muted">
               Média: <strong className="text-fg">{cicloAtual.media_frequencia.toFixed(2)}</strong> sorteios/número
             </div>
@@ -683,12 +1231,12 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         </div>
       )}
 
-      {jogos && (
+      {jogosFiltrados && (
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3 mb-2">
             <button
               onClick={() => {
-                const texto = jogos.map(j => j.numeros.join(',')).join('\n');
+                const texto = jogosFiltrados.map(jogoLinha).join('\n');
                 navigator.clipboard.writeText(texto);
               }}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110"
@@ -697,56 +1245,71 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             </button>
             <button
               onClick={() => {
-                const texto = jogos.map(j => j.numeros.join(',')).join('\n');
+                if (modoTodas) {
+                  void exportarTodas();
+                  return;
+                }
+                const texto = jogosFiltrados.map(jogoLinha).join('\n');
                 const blob = new Blob([texto], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = `jogos-${loteria}-${new Date().toISOString().slice(0, 10)}.txt`;
+                document.body.appendChild(a);
                 a.click();
-                URL.revokeObjectURL(url);
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
               }}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#e0e7ff] bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+              disabled={exporting}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-ink bg-white/5 border border-white/10 hover:bg-white/10 transition-colors disabled:opacity-50">
               Baixar .txt
             </button>
-            {(modoTodas || jogos.length >= 50) && (
+            {(modoTodas || jogosFiltrados.length >= 50) && (
               <button
                 onClick={exportarTodas}
                 disabled={exporting}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110 disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg,#10b981,#34d399)' }}>
+                style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}>
                 {exporting ? 'Exportando...' : 'Exportar todas'}
               </button>
             )}
-            <span className="text-xs text-muted">Formato: números separados por vírgula, um jogo por linha</span>
+            <span className="text-xs text-muted">
+              Formato: números separados por vírgula, um jogo por linha
+              {cfg.trevos_cols && cfg.trevos_cols.length > 0 ? ' (Mais Milionária: dezenas|trevos)' : ''}
+            </span>
           </div>
+          {estrategiasFiltro.length > 0 && (
+            <div className="text-xs text-[#a5b4fc] bg-accent-2/10 border border-[#818cf8]/20 rounded-lg p-2">
+              Filtrando por {estrategiasFiltro.length} estratégia(s): {estrategiasFiltro.map(e => ESTRATEGIA_LABEL[e] || e).join(', ')} — {jogosFiltrados.length} de {jogos?.length ?? 0} jogo(s).
+            </div>
+          )}
           {modoTodas && estimativaTotal !== null && (
             <div className="text-xs text-emerald-200 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2">
               Modo "todas as combinações": geradas {estimativaTotal.toLocaleString('pt-BR')} apostas.
               Apenas as 50 primeiras são exibidas; use <strong>Exportar todas</strong> para baixar o arquivo completo.
             </div>
           )}
-          {!modoTodas && jogos.length >= 50 && (
+          {!modoTodas && jogosFiltrados.length >= 50 && (
             <div className="text-xs text-amber-200 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2">
               Exibindo as 50 primeiras apostas. Use <strong>Exportar todas</strong> para baixar o arquivo completo.
             </div>
           )}
-          {jogos.length === 0 ? (
+          {jogosFiltrados.length === 0 ? (
             <div className="text-xs text-amber-200 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2">
-              Nenhum jogo atende às restrições de colunas posicionais. Ajuste os mínimos/máximos ou remova exclusões.
+              Nenhum jogo atende às estratégias selecionadas. Desmarque filtros para ver todas as apostas.
             </div>
-          ) : jogos.length < quantidade && !modoTodas ? (
+          ) : jogosFiltrados.length < quantidade && !modoTodas ? (
             <div className="text-xs text-amber-200 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2">
-              Pedidos {quantidade} jogo(s), mas apenas <strong>{jogos.length}</strong> atendem às restrições de colunas posicionais.
+              Pedidos {quantidade} jogo(s), mas apenas <strong>{jogosFiltrados.length}</strong> atendem às restrições.
               Os demais foram descartados.
             </div>
           ) : null}
-          {jogos.slice(0, 50).map((jogo, idx) => (
+          {jogosFiltrados.slice(0, 50).map((jogo, idx) => (
             <div key={idx} className="rounded-xl bg-white/5 border border-white/10 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-[#e0e7ff]">Jogo {idx + 1}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#818cf8]/15 text-[#a5b4fc]">
+                  <span className="text-sm font-semibold text-ink">Jogo {idx + 1}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent-2/15 text-[#a5b4fc]">
                     {ESTRATEGIA_LABEL[jogo.estrategia] || jogo.estrategia}
                   </span>
                 </div>
@@ -756,8 +1319,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                   <span>Ímpares: <strong className="text-fg">{jogo.impares}</strong></span>
                   <span>Primos: <strong className="text-fg">{jogo.primos}</strong></span>
                   <button
-                    onClick={() => navigator.clipboard.writeText(jogo.numeros.join(','))}
-                    className="text-[#818cf8] hover:text-[#a5b4fc] transition-colors"
+                    onClick={() => navigator.clipboard.writeText(jogoLinha(jogo))}
+                    className="text-accent-2 hover:text-[#a5b4fc] transition-colors"
                     title="Copiar jogo">
                     Copiar
                   </button>
@@ -782,6 +1345,20 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                   );
                 })}
               </div>
+              {jogo.trevos && jogo.trevos.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 mt-3">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-500/40">
+                    Trevos
+                  </span>
+                  {jogo.trevos.map(t => (
+                    <span
+                      key={t}
+                      className="w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold border bg-amber-500/25 text-amber-100 border-amber-500/50">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>

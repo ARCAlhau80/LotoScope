@@ -85,9 +85,10 @@ export default function ChatBot({ janela = 30, loteria = 'lotofacil', concurso }
     <>
       <button
         onClick={() => setOpen(!open)}
+        aria-label={open ? 'Fechar assistente LotoScope' : 'Abrir assistente LotoScope'}
+        aria-expanded={open}
         className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-[0_0_30px_rgba(129,140,248,0.3)] active:scale-95"
         style={{ background: 'linear-gradient(135deg,#818cf8,#a78bfa)' }}
-        title="Assistente LotoScope"
       >
         <svg className="w-6 h-6 text-white transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"
           style={{ transform: open ? 'rotate(90deg)' : 'rotate(0deg)' }}>
@@ -103,10 +104,10 @@ export default function ChatBot({ janela = 30, loteria = 'lotofacil', concurso }
         >
           <div className="px-4 py-3 border-b border-[rgba(129,140,248,0.1)] flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold text-[#e0e7ff]">Assistente LotoScope</h3>
+              <h3 className="text-sm font-semibold text-ink">Assistente LotoScope</h3>
               <p className="text-[10px] text-muted">Especialista em {LOTERIAS[loteria]?.nome_jogo || 'Lotofácil'}</p>
             </div>
-            <span className="w-2 h-2 rounded-full bg-emerald animate-pulse" title="Online" />
+            <span className="w-2 h-2 rounded-full bg-emerald animate-pulse" title="Serviço local ativo" />
           </div>
 
           <div ref={listRef} className="overflow-y-auto px-4 py-3 space-y-3" style={{ maxHeight: '320px' }}>
@@ -119,12 +120,12 @@ export default function ChatBot({ janela = 30, loteria = 'lotofacil', concurso }
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
                 <div className={`max-w-[85%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
                   m.role === 'user'
-                    ? 'bg-[#818cf8]/20 text-[#e0e7ff]'
+                    ? 'bg-accent-2/20 text-ink'
                     : 'bg-white/5 text-[#c4c9e8]'
                 }`}
                   dangerouslySetInnerHTML={{
                     __html: m.content
-                      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[#818cf8] underline hover:brightness-110">$1</a>')
+                      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-accent-2 underline hover:brightness-110">$1</a>')
                       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                   }}
                 />

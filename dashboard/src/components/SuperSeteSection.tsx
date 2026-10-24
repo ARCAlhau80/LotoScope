@@ -13,11 +13,11 @@ const MAX_EXCLUDED_TOTAL = 63;
 
 function DigitBadge({ digit, variant = 'neutral' }: { digit: number; variant?: 'hot' | 'cold' | 'warm' | 'neutral' | 'primary' }) {
   const colors = {
-    hot: 'bg-[#ef4444]/20 text-[#fca5a5] border-[#ef4444]/30',
+    hot: 'bg-[#ef4444]/20 text-hot-bright border-[#ef4444]/30',
     cold: 'bg-[#3b82f6]/20 text-[#93c5fd] border-[#3b82f6]/30',
     warm: 'bg-[#f59e0b]/15 text-[#fcd34d] border-[#f59e0b]/20',
     neutral: 'bg-white/5 text-[#c7d2fe] border-white/10',
-    primary: 'bg-[#818cf8]/20 text-[#c7d2fe] border-[#818cf8]/30',
+    primary: 'bg-accent-2/20 text-[#c7d2fe] border-[#818cf8]/30',
   };
   return (
     <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-bold border ${colors[variant]}`}>
@@ -48,7 +48,7 @@ function ColunaCard({ col, data, quarentenaData }: { col: string; data: AnaliseS
         className="w-full p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
       >
         <div className="flex items-center gap-3">
-          <span className="text-xs font-bold text-[#818cf8] bg-[#818cf8]/10 px-2.5 py-1 rounded-md">{col}</span>
+          <span className="text-xs font-bold text-accent-2 bg-accent-2/10 px-2.5 py-1 rounded-md">{col}</span>
           <div className="flex gap-1">
             {data.previsao.slice(0, 3).map((p, i) => (
               <DigitBadge key={i} digit={p.digito} variant={i === 0 ? 'primary' : 'neutral'} />
@@ -71,7 +71,7 @@ function ColunaCard({ col, data, quarentenaData }: { col: string; data: AnaliseS
             <p className="text-xs text-muted mb-2 font-medium">QMF por Coluna</p>
             <div className="flex gap-4 text-xs">
               <div>
-                <span className="text-[#fca5a5]">Quentes:</span>{' '}
+                <span className="text-hot-bright">Quentes:</span>{' '}
                 <span className="flex gap-1 mt-1">{data.quentes.map(d => <DigitBadge key={d} digit={d} variant="hot" />)}</span>
               </div>
               <div>
@@ -96,7 +96,7 @@ function ColunaCard({ col, data, quarentenaData }: { col: string; data: AnaliseS
                   <div key={d} className="text-center">
                     <div className="h-16 flex items-end justify-center mb-1">
                       <div
-                        className="w-full rounded-t bg-[#818cf8]/40 min-h-[2px] transition-all"
+                        className="w-full rounded-t bg-accent-2/40 min-h-[2px] transition-all"
                         style={{ height: `${pct}%` }}
                       />
                     </div>
@@ -135,7 +135,7 @@ function ColunaCard({ col, data, quarentenaData }: { col: string; data: AnaliseS
             <div className="flex flex-wrap gap-1">
               {DIGITS.map(d => {
                 const c = data.ciclo[d];
-                const color = c.estado === 'aquecendo' ? 'text-[#fca5a5]' : c.estado === 'esfriando' ? 'text-[#93c5fd]' : 'text-muted';
+                const color = c.estado === 'aquecendo' ? 'text-hot-bright' : c.estado === 'esfriando' ? 'text-[#93c5fd]' : 'text-muted';
                 const icon = c.estado === 'aquecendo' ? '↑' : c.estado === 'esfriando' ? '↓' : '→';
                 return (
                   <span key={d} className={`text-xs px-1.5 py-0.5 rounded ${color}`}>
@@ -302,7 +302,7 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
 
   const getQMFClass = (col: string, digit: number): string => {
     const colData = data.colunas[col];
-    if (colData.quentes.includes(digit)) return 'bg-[#ef4444]/30 text-[#fca5a5] border-[#ef4444]/40';
+    if (colData.quentes.includes(digit)) return 'bg-[#ef4444]/30 text-hot-bright border-[#ef4444]/40';
     if (colData.frios.includes(digit)) return 'bg-[#3b82f6]/30 text-[#93c5fd] border-[#3b82f6]/40';
     return 'bg-[#f59e0b]/20 text-[#fcd34d] border-[#f59e0b]/30';
   };
@@ -329,7 +329,7 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
     <section className="space-y-5">
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-bold text-white">Análise Super Sete</h2>
-        <span className="text-[10px] font-bold text-[#818cf8] bg-[#818cf8]/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+        <span className="text-[10px] font-bold text-accent-2 bg-accent-2/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
           Posicional
         </span>
       </div>
@@ -341,7 +341,7 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
             onClick={() => setTab(t.id)}
             className={`px-4 py-2 rounded-md text-xs font-medium transition-all ${
               tab === t.id
-                ? 'bg-[#818cf8]/20 text-[#c7d2fe]'
+                ? 'bg-accent-2/20 text-[#c7d2fe]'
                 : 'text-muted hover:text-[#c7d2fe] hover:bg-white/[0.03]'
             }`}
           >
@@ -379,7 +379,7 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
                 <th className="text-xs text-muted font-medium py-2 px-1 text-left">Digito</th>
                 {COL_NAMES.map(col => (
                   <th key={col} className="text-xs font-bold py-2 px-1">
-                    <span className="text-[#818cf8]">{col}</span>
+                    <span className="text-accent-2">{col}</span>
                     <span className="block text-[10px] text-emerald-400">F:{fixedPerCol[col]}</span>
                     <span className="block text-[10px] text-red-400">E:{excludedPerCol[col]}</span>
                   </th>
@@ -478,7 +478,7 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
               setSel(next);
               setCombos(null);
             }}
-            className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#fca5a5] bg-[#ef4444]/10 border border-[#ef4444]/20 hover:bg-[#ef4444]/20 transition-all"
+            className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-hot-bright bg-[#ef4444]/10 border border-[#ef4444]/20 hover:bg-[#ef4444]/20 transition-all"
             title="Excluir digitos em quarentena (sairam recentemente)"
           >
             Excluir Recentes
@@ -527,7 +527,7 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
               setSel(next);
               setCombos(null);
             }}
-            className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#c7d2fe] bg-[#818cf8]/10 border border-[#818cf8]/20 hover:bg-[#818cf8]/20 transition-all"
+            className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#c7d2fe] bg-accent-2/10 border border-[#818cf8]/20 hover:bg-accent-2/20 transition-all"
             title="Combinado: excluir recentes + focar atrasados"
           >
             Combinado
@@ -566,7 +566,7 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
 
         {comboError && (
           <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-            <p className="text-xs text-[#fca5a5]">{comboError}</p>
+            <p className="text-xs text-hot-bright">{comboError}</p>
           </div>
         )}
 
@@ -608,9 +608,9 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
               {data.correlacoes.slice(0, 10).map((c, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-[#818cf8]">{c.col_a}</span>
+                    <span className="text-xs font-bold text-accent-2">{c.col_a}</span>
                     <span className="text-muted text-xs">×</span>
-                    <span className="text-xs font-bold text-[#818cf8]">{c.col_b}</span>
+                    <span className="text-xs font-bold text-accent-2">{c.col_b}</span>
                   </div>
                   <div className="flex-1">
                     <div className="flex gap-1.5 flex-wrap">
@@ -658,7 +658,7 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
                     <span className="text-xs text-muted w-12">{f.faixa}</span>
                     <div className="flex-1 h-4 bg-white/[0.03] rounded overflow-hidden">
                       <div
-                        className="h-full bg-[#818cf8]/40 rounded transition-all"
+                        className="h-full bg-accent-2/40 rounded transition-all"
                         style={{ width: `${f.pct}%` }}
                       />
                     </div>
@@ -701,10 +701,10 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
                 const p = data.paridade.por_coluna[col];
                 return (
                   <div key={col} className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-[#818cf8] w-8">{col}</span>
+                    <span className="text-xs font-bold text-accent-2 w-8">{col}</span>
                     <div className="flex-1 flex items-center gap-1">
                       <div className="flex-1 h-3 bg-white/[0.03] rounded overflow-hidden flex">
-                        <div className="h-full bg-[#818cf8]/40" style={{ width: `${p.pct_par}%` }} />
+                        <div className="h-full bg-accent-2/40" style={{ width: `${p.pct_par}%` }} />
                         <div className="h-full bg-[#f59e0b]/30" style={{ width: `${100 - p.pct_par}%` }} />
                       </div>
                     </div>
@@ -735,7 +735,7 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
                 const c = data.aposta_multipla.colunas[col];
                 return (
                   <div key={col} className="text-center">
-                    <p className="text-xs font-bold text-[#818cf8] mb-2">{col}</p>
+                    <p className="text-xs font-bold text-accent-2 mb-2">{col}</p>
                     <div className="space-y-1.5">
                       {c.digitos.map((d, i) => (
                         <div key={i} className="flex items-center justify-center gap-1">
@@ -779,7 +779,7 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
                 return (
                   <div key={col} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold text-[#818cf8] bg-[#818cf8]/10 px-2.5 py-1 rounded-md">{col}</span>
+                      <span className="text-xs font-bold text-accent-2 bg-accent-2/10 px-2.5 py-1 rounded-md">{col}</span>
                       <span className="text-[10px] text-muted">{p.estrategia}</span>
                     </div>
                     <div className="space-y-1">
@@ -832,7 +832,7 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
 
       {tab === 'comparativo' && data.comparativo_posicional && (
         <div className="space-y-6">
-          <h4 className="text-sm font-semibold text-[#e0e7ff] mb-3">Transição Dígito-a-Dígito por Coluna</h4>
+          <h4 className="text-sm font-semibold text-ink mb-3">Transição Dígito-a-Dígito por Coluna</h4>
           <p className="text-xs text-muted mb-4">
             Último: {data.comparativo_posicional.ultimo_sorteio.join(' · ')}<br />
             Penúltimo: {data.comparativo_posicional.penultimo_sorteio.join(' · ')}
@@ -842,10 +842,10 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
             if (!pc) return null;
             return (
               <div key={col} className="rounded-xl border border-white/6 bg-white/3 p-4">
-                <h5 className="text-sm font-semibold text-[#e0e7ff] mb-2">{col}</h5>
+                <h5 className="text-sm font-semibold text-ink mb-2">{col}</h5>
                 <div className="flex flex-wrap gap-2 mb-3 text-xs text-muted">
                   <span className="text-emerald">▲ Maior: {pc.maior} ({pc.total > 0 ? Math.round(pc.maior / pc.total * 1000) / 10 : 0}%)</span>
-                  <span className="text-accent-2/70">= Mesmo: {pc.mesmo} ({pc.total > 0 ? Math.round(pc.mesmo / pc.total * 1000) / 10 : 0}%)</span>
+                  <span className="text-accent-2/80">= Mesmo: {pc.mesmo} ({pc.total > 0 ? Math.round(pc.mesmo / pc.total * 1000) / 10 : 0}%)</span>
                   <span className="text-hot">▼ Menor: {pc.menor} ({pc.total > 0 ? Math.round(pc.menor / pc.total * 1000) / 10 : 0}%)</span>
                 </div>
                 <div className="overflow-x-auto">
@@ -855,23 +855,23 @@ export default function SuperSeteSection({ data }: { data: AnaliseSuperSete }) {
                         <th className="py-1 px-2">Atual ↓</th>
                         <th className="py-1 px-2">Total</th>
                         <th className="py-1 px-2 text-emerald">▲ Maior</th>
-                        <th className="py-1 px-2 text-accent-2/70">= Mesmo</th>
+                        <th className="py-1 px-2 text-accent-2/80">= Mesmo</th>
                         <th className="py-1 px-2 text-hot">▼ Menor</th>
                         <th className="py-1 px-2 text-emerald">%▲</th>
-                        <th className="py-1 px-2 text-accent-2/70">%=</th>
+                        <th className="py-1 px-2 text-accent-2/80">%=</th>
                         <th className="py-1 px-2 text-hot">%▼</th>
                       </tr>
                     </thead>
                     <tbody>
                       {pc.transicoes.map(t => (
                         <tr key={t.digito} className="border-b border-white/4 hover:bg-white/4 transition-colors">
-                          <td className="py-1 px-2 font-semibold text-[#e0e7ff]">{t.digito}</td>
+                          <td className="py-1 px-2 font-semibold text-ink">{t.digito}</td>
                           <td className="py-1 px-2 text-muted">{t.total}</td>
                           <td className="py-1 px-2 text-emerald">{t.maior}</td>
-                          <td className="py-1 px-2 text-accent-2/70">{t.mesmo}</td>
+                          <td className="py-1 px-2 text-accent-2/80">{t.mesmo}</td>
                           <td className="py-1 px-2 text-hot">{t.menor}</td>
                           <td className="py-1 px-2 text-emerald">{t.pct_maior}%</td>
-                          <td className="py-1 px-2 text-accent-2/70">{t.pct_mesmo}%</td>
+                          <td className="py-1 px-2 text-accent-2/80">{t.pct_mesmo}%</td>
                           <td className="py-1 px-2 text-hot">{t.pct_menor}%</td>
                         </tr>
                       ))}
