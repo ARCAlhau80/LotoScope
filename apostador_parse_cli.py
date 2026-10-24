@@ -26,7 +26,7 @@ def main() -> int:
         return _erro(f"Loteria desconhecida: {args.loteria}")
 
     try:
-        jogos = parse_arquivo_jogos(args.caminho)
+        jogos = parse_arquivo_jogos(args.caminho, tem_trevos=cfg.tem_trevos)
     except (FormatoNaoSuportadoError, JogoInvalidoError) as e:
         return _erro(str(e))
     except FileNotFoundError:
@@ -59,7 +59,10 @@ def _print_humano(saida: dict) -> None:
     print(f"Total de jogos: {saida['total_jogos']}")
     print(f"Válidos: {len(saida['validos'])} | Inválidos: {len(saida['invalids'])}")
     for jogo in saida["validos"]:
-        print(f"  Jogo {jogo['id']}: {jogo['numeros']}")
+        linha = f"  Jogo {jogo['id']}: {jogo['numeros']}"
+        if jogo.get("trevos"):
+            linha += f" | trevos {jogo['trevos']}"
+        print(linha)
 
 
 if __name__ == "__main__":

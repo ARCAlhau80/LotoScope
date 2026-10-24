@@ -26,7 +26,7 @@ Sistema científico completo e integrado para análise estatística, geração i
 
 ### 🗄️ BASE DE DADOS
 ```
-Servidor: DESKTOP-K6JPBDS
+Servidor: VADER
 Database: LOTOFACIL
 Tabela Principal: RESULTADOS_INT
 Registros: 3.539 sorteios históricos (Concurso 1 a 3540)

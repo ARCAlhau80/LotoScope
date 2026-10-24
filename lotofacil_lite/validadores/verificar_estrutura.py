@@ -16,7 +16,7 @@ except ImportError:
 
 def verificar_estrutura_banco():
     """Verifica a estrutura da tabela RESULTADOS_INT"""
-    servidor = "DESKTOP-K6JPBDS"
+    servidor = "VADER"
     database = "LOTOFACIL"
     
     # Strings de conexao para tentar

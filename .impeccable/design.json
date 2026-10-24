@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-15T00:00:00.000Z",
+  "title": "Design System: LotoScope",
+  "extensions": {
+    "colorMeta": {
+      "deep-space": { "role": "neutral", "displayName": "Deep Space", "canonical": "#070b1a", "tonalRamp": ["#03040a", "#070b1a", "#0c1226", "#141b36", "#1e2747", "#2c3860", "#4a5680", "#8b93ad"] },
+      "deep-space-2": { "role": "neutral", "displayName": "Deep Space 2", "canonical": "#0a0f24", "tonalRamp": ["#04060f", "#0a0f24", "#111834", "#1a2348", "#26315e", "#3a4778", "#5e6a9a", "#9aa1bd"] },
+      "panel": { "role": "neutral", "displayName": "Instrument Panel", "canonical": "#111630", "tonalRamp": ["#060913", "#0d1228", "#111630", "#1a2043", "#273058", "#3b4777", "#6470a0", "#a6abc6"] },
+      "starlight": { "role": "neutral", "displayName": "Starlight", "canonical": "#f0f4ff", "tonalRamp": ["#1b2540", "#2f3b5e", "#4a5680", "#6874a0", "#8b95bd", "#b3bad7", "#d8dcec", "#f0f4ff"] },
+      "ink-bright": { "role": "neutral", "displayName": "Ink Bright", "canonical": "#e0e7ff", "tonalRamp": ["#1b2246", "#2d3563", "#454e86", "#6470a6", "#8b95c4", "#b6bde4", "#d3d9f4", "#e0e7ff"] },
+      "slate-haze": { "role": "neutral", "displayName": "Slate Haze", "canonical": "#8892b0", "tonalRamp": ["#141a2b", "#232b44", "#3a4463", "#576186", "#737ea6", "#8892b0", "#a9b1c9", "#ccd1e0"] },
+      "signal-indigo": { "role": "primary", "displayName": "Signal Indigo", "canonical": "#6366f1", "tonalRamp": ["#14124a", "#231f7a", "#332da8", "#4a44d6", "#6366f1", "#8b8df6", "#b0b1fa", "#d6d7fd"] },
+      "ion-violet": { "role": "primary", "displayName": "Ion Violet", "canonical": "#818cf8", "tonalRamp": ["#171c4b", "#272d7c", "#3a41ab", "#5a61da", "#818cf8", "#a3acfa", "#c3c8fc", "#e2e5fe"] },
+      "nebula-violet": { "role": "primary", "displayName": "Nebula Violet", "canonical": "#a78bfa", "tonalRamp": ["#1e1442", "#33216f", "#4c339c", "#6f4fd0", "#a78bfa", "#bda5fb", "#d5c4fc", "#ece3fe"] },
+      "positive-emerald": { "role": "secondary", "displayName": "Positive Emerald", "canonical": "#10b981", "tonalRamp": ["#043027", "#065043", "#087a63", "#0a9e73", "#10b981", "#3ecda0", "#7fdeb9", "#b8efd6"] },
+      "emerald-bright": { "role": "secondary", "displayName": "Emerald Bright", "canonical": "#34d399", "tonalRamp": ["#05362a", "#0a5744", "#0f7f63", "#1aa87f", "#34d399", "#5fe0b0", "#93eac9", "#c7f4e0"] },
+      "warning-gold": { "role": "secondary", "displayName": "Warning Gold", "canonical": "#f59e0b", "tonalRamp": ["#3d2304", "#643a06", "#95570a", "#c87b0e", "#f59e0b", "#f8b647", "#fbcb7e", "#fce0b5"] },
+      "hot-red": { "role": "tertiary", "displayName": "Hot Signal Red", "canonical": "#ef4444", "tonalRamp": ["#3b0d0d", "#611414", "#8f1f1f", "#c92e2e", "#ef4444", "#f37171", "#f7a3a3", "#fbd3d3"] },
+      "hot-red-bright": { "role": "tertiary", "displayName": "Hot Red Bright", "canonical": "#fca5a5", "tonalRamp": ["#3f1414", "#6b2222", "#9b3434", "#cf4c4c", "#fca5a5", "#fcc0c0", "#fdd7d7", "#feeaea"] },
+      "cold-blue": { "role": "tertiary", "displayName": "Cold Signal Blue", "canonical": "#3b82f6", "tonalRamp": ["#08203f", "#0d3a6b", "#1557a8", "#2074e0", "#3b82f6", "#6da2f9", "#a2c4fb", "#d3e3fd"] },
+      "warm-grey": { "role": "tertiary", "displayName": "Warm Grey", "canonical": "#94a3b8", "tonalRamp": ["#181d24", "#2a323e", "#435060", "#5f6f83", "#788aa0", "#94a3b8", "#b3bfcf", "#d6dde6"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero heading only (\"Resultado Oficial\")." },
+      "headline": { "displayName": "Headline", "purpose": "Large section headings." },
+      "title": { "displayName": "Title", "purpose": "Section headers." },
+      "body": { "displayName": "Body", "purpose": "Running text, tables, descriptions." },
+      "label": { "displayName": "Label", "purpose": "Uppercase tracked data micro-labels, badges, categories." },
+      "mono": { "displayName": "Mono", "purpose": "Compact numeric/meta details." }
+    },
+    "shadows": [
+      { "name": "accent-glow", "value": "0 0 20px rgba(129,140,248,0.1)", "purpose": "Resting breathing glow on accent surfaces (hero, active elements)." },
+      { "name": "accent-glow-pulse", "value": "0 0 30px rgba(129,140,248,0.2)", "purpose": "Peak of the 3s pulse-glow animation." },
+      { "name": "selection-lift", "value": "0 10px 15px -3px rgba(129,140,248,0.15)", "purpose": "Active tab / selected card." },
+      { "name": "floating-tooltip", "value": "0 10px 15px -3px rgba(0,0,0,0.1)", "purpose": "Tooltips and popovers over panels." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default easing for transitions (duration 200ms)." },
+      { "name": "fade-in", "value": "fadeIn 0.6s ease forwards", "purpose": "Section / page entrance (opacity + translateY 12px)." },
+      { "name": "slide-up", "value": "slideUp 0.5s ease forwards", "purpose": "Metric and staggered list entrance (opacity + translateY 20px)." },
+      { "name": "scale-in", "value": "scaleIn 0.4s ease forwards", "purpose": "Hero panel entrance (opacity + scale 0.92)." },
+      { "name": "shimmer", "value": "shimmer 1.5s ease-in-out infinite", "purpose": "Loading skeleton placeholders." },
+      { "name": "pulse-glow", "value": "pulse-glow 3s ease-in-out infinite", "purpose": "Ambient breathing glow on accent surfaces." },
+      { "name": "typing-dot", "value": "typing-dot 1.4s ease-in-out infinite", "purpose": "Chat/typing indicator." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action on a screen (e.g. \"Tentar novamente\"); indigo gradient fill.",
+      "html": "<button class=\"ds-btn-primary\">Tentar novamente</button>",
+      "css": ".ds-btn-primary { background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff; border: none; border-radius: 8px; padding: 8px 20px; font-family: var(--font-sans, Inter, system-ui, sans-serif); font-size: 14px; font-weight: 600; line-height: 1.2; cursor: pointer; transition: filter 200ms ease; } .ds-btn-primary:hover { filter: brightness(1.1); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-accent-2, #818cf8); outline-offset: 2px; }"
+    },
+    {
+      "name": "Lottery Tab",
+      "kind": "nav",
+      "refersTo": "pill",
+      "description": "Top-bar lottery selector; active tab carries the indigo gradient, border and 3px underline.",
+      "html": "<div class=\"ds-tabs\"><button class=\"ds-tab\"><span class=\"ds-tab-title\">Mega-Sena</span><span class=\"ds-tab-sub\">60 números · 6/jogo</span></button><button class=\"ds-tab ds-tab-active\"><span class=\"ds-tab-title\">Lotofácil</span><span class=\"ds-tab-sub\">25 números · 15/jogo</span><span class=\"ds-tab-underline\"></span></button></div>",
+      "css": ".ds-tabs { display: flex; gap: 6px; padding: 10px; background: linear-gradient(135deg, rgba(15,20,41,0.9), rgba(26,16,64,0.9)); border-radius: 12px; } .ds-tab { position: relative; display: flex; flex-direction: column; align-items: center; padding: 6px 20px; border-radius: 12px; border: 1px solid transparent; background: transparent; cursor: pointer; transition: all 200ms ease; } .ds-tab-title { font: 600 13px/1.1 var(--font-sans, Inter, system-ui, sans-serif); color: var(--color-muted, #8892b0); letter-spacing: -0.01em; } .ds-tab-sub { font: 500 9px/1.2 ui-monospace, monospace; color: var(--color-muted, #8892b0); opacity: 0.5; margin-top: 2px; } .ds-tab:hover { background: rgba(255,255,255,0.04); } .ds-tab:hover .ds-tab-title { color: #c4c9e8; } .ds-tab-active { background: linear-gradient(135deg, rgba(129,140,248,0.18), rgba(167,139,250,0.1)); border: 1px solid rgba(129,140,248,0.2); box-shadow: 0 10px 15px -3px rgba(129,140,248,0.15); } .ds-tab-active .ds-tab-title { color: #fff; } .ds-tab-underline { position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%); width: 24px; height: 3px; border-radius: 9999px; background: #818cf8; }"
+    },
+    {
+      "name": "Number Badge",
+      "kind": "custom",
+      "refersTo": "num-badge",
+      "description": "The product's atomic lit marker: default, fixed (selected) and excluded states. 40px square.",
+      "html": "<div class=\"ds-badges\"><span class=\"ds-badge\">07</span><span class=\"ds-badge ds-badge-fixed\">12</span><span class=\"ds-badge ds-badge-excluded\">23</span></div>",
+      "css": ".ds-badges { display: flex; gap: 10px; } .ds-badge { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(99,102,241,0.10); color: var(--color-accent-2, #818cf8); font: 600 14px/1 var(--font-sans, Inter, system-ui, sans-serif); user-select: none; transition: transform 200ms ease, filter 200ms ease; } .ds-badge:hover { transform: scale(1.1); filter: brightness(1.25); } .ds-badge-fixed { background: rgba(16,185,129,0.30); color: var(--color-emerald, #10b981); box-shadow: 0 0 0 1px rgba(16,185,129,0.4); transform: scale(1.1); } .ds-badge-excluded { background: rgba(239,68,68,0.25); color: var(--color-hot, #ef4444); box-shadow: 0 0 0 1px rgba(239,68,68,0.3); text-decoration: line-through; text-decoration-thickness: 2px; }"
+    },
+    {
+      "name": "Metric Card",
+      "kind": "card",
+      "refersTo": "metric-card",
+      "description": "Compact stat tile used across the hero grid; lifts on hover.",
+      "html": "<div class=\"ds-metric\"><div class=\"ds-metric-value\">11</div><div class=\"ds-metric-label\">Soma Total</div><div class=\"ds-metric-sub\">Média: 192</div></div>",
+      "css": ".ds-metric { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 16px; text-align: center; transition: background 200ms ease, transform 200ms ease, border-color 200ms ease; } .ds-metric:hover { background: rgba(255,255,255,0.06); transform: translateY(-2px); border-color: rgba(129,140,248,0.2); } .ds-metric-value { font: 700 22px/1.1 var(--font-sans, Inter, system-ui, sans-serif); color: #fff; } .ds-metric-label { font: 600 11px/1.2 var(--font-sans, Inter, system-ui, sans-serif); letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-muted, #8892b0); margin-top: 4px; } .ds-metric-sub { font: 500 10px/1.2 ui-monospace, monospace; color: rgba(129,140,248,0.7); margin-top: 2px; }"
+    },
+    {
+      "name": "Section Panel",
+      "kind": "card",
+      "refersTo": "section-panel",
+      "description": "Tonal container that wraps an analysis module (chart, table, matrix).",
+      "html": "<section class=\"ds-panel\"><h4 class=\"ds-panel-title\">Probabilidade por Posição</h4><p class=\"ds-panel-body\">Conteúdo do painel de análise.</p></section>",
+      "css": ".ds-panel { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; } .ds-panel-title { font: 600 18px/1.3 var(--font-sans, Inter, system-ui, sans-serif); color: var(--color-fg, #f0f4ff); margin: 0 0 12px; } .ds-panel-body { font: 400 14px/1.5 var(--font-sans, Inter, system-ui, sans-serif); color: var(--color-muted, #8892b0); margin: 0; }"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "refersTo": "pill",
+      "description": "Informative pill for sorteo status and category tags; emerald by default.",
+      "html": "<span class=\"ds-pill\">Lotofácil · Último Sorteio</span>",
+      "css": ".ds-pill { display: inline-block; background: rgba(16,185,129,0.15); color: var(--color-emerald, #10b981); border: 1px solid rgba(16,185,129,0.2); border-radius: 9999px; padding: 4px 12px; font: 600 11px/1 var(--font-sans, Inter, system-ui, sans-serif); letter-spacing: 0.05em; text-transform: uppercase; }"
+    },
+    {
+      "name": "Compact Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Small numeric filter field (e.g. Poisson window) with datalist suggestions.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Todas\" value=\"30\" />",
+      "css": ".ds-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 2px 6px; width: 80px; color: var(--color-fg, #f0f4ff); font: 400 12px/1.2 var(--font-sans, Inter, system-ui, sans-serif); outline: none; transition: border-color 200ms ease; } .ds-input::placeholder { color: rgba(136,146,176,0.5); } .ds-input:focus { border-color: var(--color-accent-2, #818cf8); }"
+    },
+    {
+      "name": "Tooltip",
+      "kind": "custom",
+      "refersTo": "section-panel",
+      "description": "Floating hover tip used on hero metrics; dark violet surface with indigo border.",
+      "html": "<div class=\"ds-tooltip-wrap\"><span class=\"ds-tooltip-anchor\">▲</span><div class=\"ds-tooltip\">Esperado: 12</div></div>",
+      "css": ".ds-tooltip-wrap { position: relative; display: inline-flex; } .ds-tooltip-anchor { color: var(--color-emerald, #10b981); font-weight: 700; } .ds-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 8px; background: #1a1040; border: 1px solid rgba(129,140,248,0.2); border-radius: 8px; padding: 6px 12px; font: 400 11px/1.3 var(--font-sans, Inter, system-ui, sans-serif); color: #e0e7ff; white-space: nowrap; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Observatory",
+    "overview": "O LotoScope vive à noite. O fundo é um céu profundo (#070b1a) e cada número, métrica ou série aparece como um marcador luminoso observado num instrumento de precisão. A interface não compete com os dados: ela os instrumenta. Densidade alta, mas nunca ruidosa — o analista lê padrões, não decoração. A paleta carrega significado, não estilo. Índigo é a estrutura (navegação, acento, seleção); esmeralda, âmbar e vermelho são sinais térmicos que só aparecem quando descrevem um estado do dado. A atmosfera é científica e noturna: sóbria no repouso, tátil no toque. Superfícies ficam planas paradas e ganham leve elevação, brilho e micro-movimento apenas em resposta a estado. Os componentes tendem ao tátil e confiante: cantos suaves e consistentes, bordas de 1px translúcidas em vez de sombras pesadas, gradientes contidos reservados a momentos de hierarquia.",
+    "keyCharacteristics": [
+      "Céu profundo + painéis translúcidos; profundidade tonal, não sombras duras.",
+      "Cor como sinal térmico (quente/frio/positivo/excluído), nunca como enfeite.",
+      "Índigo estrutural e raro; acentos semânticos é que saltam.",
+      "Micro-rótulos uppercase (9–11px) sobre dados em sentence case e números em destaque.",
+      "Movimento por estado: fade/slide/scale de entrada, glow e lift no hover."
+    ],
+    "rules": [
+      { "name": "The Thermal Signal Rule", "body": "Quente/frio/esmeralda/vermelho codificam ESTADO DO DADO. Nunca use uma cor térmica como decoração.", "section": "colors" },
+      { "name": "The One Accent Rule", "body": "Índigo é o único acento estrutural e ocupa ≤10% de qualquer tela. A raridade é o ponto.", "section": "colors" },
+      { "name": "The Uppercase Micro-Label Rule", "body": "Rótulos de dado são uppercase 9–11px com tracking; conteúdo legível fica em sentence case.", "section": "typography" },
+      { "name": "The Glow-on-State Rule", "body": "Superfícies são planas no repouso. Brilho e elevação aparecem apenas como resposta a estado.", "section": "elevation" },
+      { "name": "The Single Radius Family Rule", "body": "Todo canto pertence à mesma família de raio (4/6/8/12/16/full).", "section": "shapes" }
+    ],
+    "dos": [
+      "Do derivar profundidade de camadas tonais (rgba(255,255,255,0.03–0.06)) e bordas de 1px antes de sombra.",
+      "Do usar índigo como acento estrutural raro e reservar esmeralda/âmbar/vermelho/azul para estado do dado.",
+      "Do escrever rótulos de dado em uppercase 9–11px com tracking e manter o conteúdo em sentence case.",
+      "Do manter todo canto na família de raio (4/6/8/12/16/full) e todo texto em pt-BR com acentuação correta.",
+      "Do manter o aviso de jogo responsável e o enquadramento educacional visíveis.",
+      "Do animar por entrada/estado (fadeIn 0.6s, slideUp 0.5s, scaleIn 0.4s) — não em loop decorativo."
+    ],
+    "donts": [
+      "Don't usar cor térmica como decoração ou introduzir uma nova família de acento.",
+      "Don't empilhar sombras pesadas/escuras como profundidade padrão — profundidade é tonal aqui.",
+      "Don't adicionar uma segunda família tipográfica; a hierarquia é por peso (Inter é a fonte vigente; só troque num redesign explícito).",
+      "Don't fabricar números, rótulos ou estados que não venham dos dados reais do banco.",
+      "Don't acumular em-dashes no copy nem perder acentuação pt-BR.",
+      "Don't reintroduzir background-clip: text (gradient-text) nem glow cromático zero-offset; removidos nesta passada."
+    ]
+  }
+}

@@ -24,7 +24,7 @@ from typing import Optional, Dict, List, Any, Tuple
 class DatabaseConfig:
     """Configuração centralizada do banco de dados"""
     
-    def __init__(self, server: str = "DESKTOP-K6JPBDS", 
+    def __init__(self, server: str = "VADER", 
                  database: str = "LOTOFACIL", 
                  driver: str = "ODBC Driver 17 for SQL Server"):
         """

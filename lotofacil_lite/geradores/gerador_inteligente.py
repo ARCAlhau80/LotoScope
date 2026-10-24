@@ -26,7 +26,7 @@ class GeradorInteligente:
     Gerador de combinações baseado em análises científicas
     """
     
-    def __init__(self, servidor="DESKTOP-K6JPBDS", database="LOTOFACIL"):
+    def __init__(self, servidor="VADER", database="LOTOFACIL"):
         self.servidor = servidor
         self.database = database
         self.dados_historicos = None

@@ -37,7 +37,7 @@ class AnalisadorAcademico:
     Implementa 6 metodologias estatisticas avancadas
     """
     
-    def __init__(self, servidor="DESKTOP-K6JPBDS", database="LOTOFACIL"):
+    def __init__(self, servidor="VADER", database="LOTOFACIL"):
         """
         Inicializa o analisador com conexao ao banco
         

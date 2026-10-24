@@ -41,7 +41,7 @@ class AnalisadorPadroesAcademico:
     def conectar_banco(self):
         """Conecta ao banco SQL Server"""
         try:
-            server = 'DESKTOP-K6JPBDS'
+            server = 'VADER'
             database = 'LOTOFACIL'
             trusted_connection = 'yes'
             connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};Trusted_Connection={trusted_connection};'

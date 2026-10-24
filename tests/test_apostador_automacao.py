@@ -20,6 +20,10 @@ class FakeDriver:
         self.current_url = url
 
     def find_element(self, by, value):
+        if by == "tag name" and value == "body":
+            el = FakeElement("body", self)
+            el._text = getattr(self, "body_text", "")
+            return el
         return self.by.get((by, value))
 
     def execute_script(self, script, arg=None):
@@ -140,18 +144,74 @@ class TestAutomacaoCaixa:
         from shared.apostador.automacao import AutomacaoCaixa
         assert AutomacaoCaixa._id_carrinho("lotofacil") == "colocarnocarrinho"
 
+    def test_selector_trevo_loteria(self):
+        from shared.apostador.automacao import AutomacaoCaixa
+        assert AutomacaoCaixa._id_trevo("maismilionaria", 1) == "t1"
+        assert AutomacaoCaixa._id_trevo("maismilionaria", 6) == "t6"
+
+    def test_preencher_volante_seleciona_dezenas_e_trevos(self):
+        from shared.apostador.automacao import AutomacaoCaixa
+        driver = FakeDriver()
+        for i in range(1, 7):
+            driver.by[("id", f"n{i:02d}")] = FakeElement(f"n{i:02d}", driver)
+        for t in range(1, 7):
+            driver.by[("id", f"t{t}")] = FakeElement(f"t{t}", driver)
+        auto = AutomacaoCaixa(driver)
+        auto.preencher_volante("maismilionaria", [1, 2, 3, 4, 5, 6], trevos=[3, 5])
+        assert "n01" in driver.clicked and "n06" in driver.clicked
+        assert "t3" in driver.clicked and "t5" in driver.clicked
+
+    def test_realizar_apostas_com_trevos(self):
+        from shared.apostador.automacao import AutomacaoCaixa
+        driver = FakeDriver()
+        for i in range(1, 7):
+            driver.by[("id", f"n{i:02d}")] = FakeElement(f"n{i:02d}", driver)
+        for t in range(1, 7):
+            driver.by[("id", f"t{t}")] = FakeElement(f"t{t}", driver)
+        driver.by[("id", "limparvolante")] = FakeElement("limparvolante", driver)
+        driver.by[("id", "colocarnocarrinho")] = FakeElement("colocarnocarrinho", driver)
+        auto = AutomacaoCaixa(driver)
+        auto.realizar_apostas("maismilionaria", [{"numeros": [1, 2, 3, 4, 5, 6], "trevos": [3, 5]}])
+        assert "t3" in driver.clicked and "t5" in driver.clicked
+        assert "colocarnocarrinho" in driver.clicked
+
     def test_url_loteria_desconhecida_lanca_erro(self):
         from shared.apostador.automacao import AutomacaoCaixa, LoteriaNaoSuportadaError
         auto = AutomacaoCaixa(FakeDriver())
         with pytest.raises(LoteriaNaoSuportadaError):
             auto.navegar_para_loteria("loteria_fantasma")
 
-    def test_rota_lotofacil_usa_especial(self):
+    def test_rota_lotofacil_usa_rota_padrao(self):
         from shared.apostador.automacao import AutomacaoCaixa, PORTAL_URL
         driver = FakeDriver()
         auto = AutomacaoCaixa(driver)
         auto.navegar_para_loteria("lotofacil")
-        assert driver.visited[-1] == PORTAL_URL.split("#/")[0] + "#/lotofacil/especial"
+        assert driver.visited[-1] == PORTAL_URL.split("#/")[0] + "#/lotofacil"
+
+    def test_fallback_rota_especial_quando_modalidade_indisponivel(self):
+        from shared.apostador.automacao import AutomacaoCaixa, PORTAL_BASE
+        driver = FakeDriver()
+        driver.body_text = "Modalidade indisponível no momento"
+        auto = AutomacaoCaixa(driver)
+        auto.navegar_para_loteria("lotofacil")
+        assert PORTAL_BASE + "#/lotofacil" in driver.visited
+        assert driver.visited[-1] == PORTAL_BASE + "#/lotofacil/especial"
+
+    def test_sem_fallback_quando_modalidade_disponivel(self):
+        from shared.apostador.automacao import AutomacaoCaixa, PORTAL_BASE
+        driver = FakeDriver()
+        driver.body_text = "Escolha seus números"
+        auto = AutomacaoCaixa(driver)
+        auto.navegar_para_loteria("lotofacil")
+        assert driver.visited[-1] == PORTAL_BASE + "#/lotofacil"
+
+    def test_sem_fallback_para_loteria_sem_concurso_especial(self):
+        from shared.apostador.automacao import AutomacaoCaixa, PORTAL_BASE
+        driver = FakeDriver()
+        driver.body_text = "Modalidade indisponível no momento"
+        auto = AutomacaoCaixa(driver)
+        auto.navegar_para_loteria("megasena")
+        assert driver.visited[-1] == PORTAL_BASE + "#/mega-sena"
 
     def test_resolver_age_gate_clica_sim(self):
         from shared.apostador.automacao import AutomacaoCaixa
@@ -174,7 +234,7 @@ class TestAutomacaoCaixa:
         driver.by[("id", "botaosim")] = FakeElement("botaosim", driver)
         auto = AutomacaoCaixa(driver)
         auto.navegar_para_loteria("lotofacil")
-        assert driver.visited.count(PORTAL_BASE + "#/lotofacil/especial") == 2
+        assert driver.visited.count(PORTAL_BASE + "#/lotofacil") == 2
 
     def test_preencher_volante_espera_por_elemento(self):
         from shared.apostador.automacao import AutomacaoCaixa
@@ -296,6 +356,35 @@ class TestAjustarQtdDezenas:
         auto.preencher_volante("lotofacil", list(range(1, 17)))
         assert driver.clicked.count("aumentarnumero") == 1
         assert "n01" in driver.clicked and "n16" in driver.clicked
+
+    def test_megasena_ajusta_de_6_para_20(self):
+        from shared.apostador.automacao import AutomacaoCaixa
+        driver = FakeDriver()
+        mais, menos = self._setup_volante(6, driver)
+        def fake_click():
+            driver.clicked.append(mais.id_)
+            valor = driver.by[("css selector", ".input-mais-menos > span")]
+            valor._text = str(int(valor._text) + 1)
+        mais.click = fake_click
+        auto = AutomacaoCaixa(driver)
+        auto.ajustar_qtd_dezenas("megasena", 20)
+        assert driver.clicked == ["aumentarnumero"] * 14
+
+    def test_preencher_volante_megasena_20_dezenas(self):
+        from shared.apostador.automacao import AutomacaoCaixa
+        driver = FakeDriver()
+        mais, menos = self._setup_volante(6, driver)
+        def fake_click():
+            driver.clicked.append(mais.id_)
+            valor = driver.by[("css selector", ".input-mais-menos > span")]
+            valor._text = str(int(valor._text) + 1)
+        mais.click = fake_click
+        for i in range(1, 21):
+            driver.by[("id", f"n{i:02d}")] = FakeElement(f"n{i:02d}", driver)
+        auto = AutomacaoCaixa(driver)
+        auto.preencher_volante("megasena", list(range(1, 21)))
+        assert driver.clicked.count("aumentarnumero") == 14
+        assert "n01" in driver.clicked and "n20" in driver.clicked
 
 
 class TestModoAttach:

@@ -48,7 +48,7 @@ class AnalisadorPadroesRefinado:
             else:
                 connection_string = (
                     "DRIVER={ODBC Driver 17 for SQL Server};"
-                    "SERVER=DESKTOP-71QV65D\\SQLEXPRESS;"
+                    "SERVER=VADER\\SQLEXPRESS;"
                     "DATABASE=LotofacilDB;"
                     "Trusted_Connection=yes;"
                     "MARS_Connection=Yes;"

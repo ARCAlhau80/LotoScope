@@ -51,7 +51,7 @@ try:
 except ImportError:
     _db_optimizer = None
 
-        conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=DESKTOP-K6JPBDS;DATABASE=LOTOFACIL;Trusted_Connection=yes'
+        conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=VADER;DATABASE=LOTOFACIL;Trusted_Connection=yes'
         # Conexão otimizada para performance
         if _db_optimizer:
             conn = _db_optimizer.create_optimized_connection()

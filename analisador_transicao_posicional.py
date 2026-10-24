@@ -35,7 +35,7 @@ class AnalisadorTransicaoPosicional:
         self.estatisticas_resumo = {}
         
         # Configuração de conexão do banco
-        self.server = 'DESKTOP-K6JPBDS'
+        self.server = 'VADER'
         self.database = 'LOTOFACIL' 
         self.tabela = 'RESULTADOS_INT'
         

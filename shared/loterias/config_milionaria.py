@@ -14,6 +14,10 @@ CONFIG_MILIONARIA = LotteryConfig(
         "media": FaixaConfig("Média (18-34)", 18, 34),
         "alta": FaixaConfig("Alta (35-50)", 35, 50),
     },
+    trevos_cols=["T1", "T2"],
+    trevos_total=6,
+    trevos_min=1,
+    trevos_por_jogo=2,
     estrategias={
         "equilibrada": EstrategiaConfig("Equilibrada", "Distribuicao uniforme"),
         "baixos": EstrategiaConfig("Baixos", "Foco em baixos"),

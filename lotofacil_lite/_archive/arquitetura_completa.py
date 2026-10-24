@@ -16,13 +16,13 @@ Status: ✅ VALIDADO E FUNCIONAL
 
 # Configuração principal do sistema (database_config.py)
 CONEXAO_SQL_SERVER = {
-    'servidor': 'DESKTOP-K6JPBDS',
+    'servidor': 'VADER',
     'banco': 'LOTOFACIL',
     'driver': 'ODBC Driver 17 for SQL Server',
     'autenticacao': 'Trusted_Connection=yes',
     'string_conexao': """
         DRIVER={ODBC Driver 17 for SQL Server};
-        SERVER=DESKTOP-K6JPBDS;
+        SERVER=VADER;
         DATABASE=LOTOFACIL;
         Trusted_Connection=yes;
     """,
@@ -183,7 +183,7 @@ PROBLEMAS_COMUNS = {
             '1. SQL Server está rodando?',
             '2. Banco LOTOFACIL existe?',
             '3. Usuário tem permissões?',
-            '4. Servidor DESKTOP-K6JPBDS está acessível?'
+            '4. Servidor VADER está acessível?'
         ],
         'teste_rapido': 'python -c "from database_config import testar_conexao_sistema; testar_conexao_sistema()"',
         'status': '✅ DOCUMENTADO'

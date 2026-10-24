@@ -42,6 +42,11 @@ class LotteryConfig:
     is_positional: bool = False
     dezenas_max: Optional[int] = None
 
+    trevos_cols: List[str] = field(default_factory=list)
+    trevos_total: int = 0
+    trevos_min: int = 0
+    trevos_por_jogo: int = 0
+
     def __post_init__(self):
         if not self.colunas_resultado:
             self.colunas_resultado = [f"N{i}" for i in range(1, self.numeros_por_jogo + 1)]
@@ -65,6 +70,17 @@ class LotteryConfig:
 
     def validar_numero(self, numero: int) -> bool:
         return self.numero_minimo <= numero <= self.numero_maximo
+
+    @property
+    def tem_trevos(self) -> bool:
+        return self.trevos_total > 0 and self.trevos_por_jogo > 0
+
+    @property
+    def trevo_maximo(self) -> int:
+        return self.trevos_min + self.trevos_total - 1
+
+    def validar_trevo(self, trevo: int) -> bool:
+        return self.trevos_min <= trevo <= self.trevo_maximo
 
     def validar_combinacao(self, combinacao):
         if len(combinacao) != self.numeros_por_jogo:

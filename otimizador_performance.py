@@ -82,7 +82,7 @@ try:
 except ImportError:
     _db_optimizer = None
 
-            server = 'DESKTOP-K6JPBDS'
+            server = 'VADER'
             database = 'LOTOFACIL'
             connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};Trusted_Connection=yes;'
             

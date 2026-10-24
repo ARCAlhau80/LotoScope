@@ -237,7 +237,7 @@ class SistemaCompletoLotofacil:
         print(f"\n🗄️ STATUS DO BANCO:")
         try:
             import pyodbc
-            conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=DESKTOP-K6JPBDS;DATABASE=LOTOFACIL;Trusted_Connection=yes'
+            conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=VADER;DATABASE=LOTOFACIL;Trusted_Connection=yes'
             conn = pyodbc.connect(conn_str)
             cursor = conn.cursor()
         # SUGESTÃO: Use _db_optimizer.cached_query() para melhor performance

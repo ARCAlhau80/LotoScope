@@ -264,7 +264,7 @@ class ConnectionCache:
         
         # Cria nova conexão
         try:
-            server = 'DESKTOP-K6JPBDS'
+            server = 'VADER'
             database = 'LOTOFACIL'
             connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};Trusted_Connection=yes;'
             # Conexão otimizada para performance

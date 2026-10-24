@@ -127,6 +127,95 @@ class TestValidarJogos:
         assert len(resultado["invalids"]) == 1
         assert "15-20" in resultado["invalids"][0]["mensagem"]
 
+    def test_megasena_aceita_6_a_20_dezenas(self):
+        from shared.apostador.parser import validar_jogos
+        from shared.lottery_loader import get_loteria
+        cfg = get_loteria("megasena")
+        for qtd in range(6, 21):
+            resultado = validar_jogos(cfg, [list(range(1, qtd + 1))])
+            assert len(resultado["validos"]) == 1, f"{qtd} dezenas deveria ser válido"
+            assert resultado["invalids"] == []
+
+    def test_megasena_rejeita_21_dezenas(self):
+        from shared.apostador.parser import validar_jogos
+        from shared.lottery_loader import get_loteria
+        cfg = get_loteria("megasena")
+        resultado = validar_jogos(cfg, [list(range(1, 22))])
+        assert len(resultado["validos"]) == 0
+        assert len(resultado["invalids"]) == 1
+        assert "6-20" in resultado["invalids"][0]["mensagem"]
+
+    def test_megasena_rejeita_5_dezenas(self):
+        from shared.apostador.parser import validar_jogos
+        from shared.lottery_loader import get_loteria
+        cfg = get_loteria("megasena")
+        resultado = validar_jogos(cfg, [list(range(1, 6))])
+        assert len(resultado["validos"]) == 0
+        assert "6-20" in resultado["invalids"][0]["mensagem"]
+
+
+class TestParseJogosComTrevos:
+    def test_parse_linha_com_trevos(self):
+        from shared.apostador.parser import parse_jogos_texto
+        jogos = parse_jogos_texto("1,2,3,4,5,6|3,5", tem_trevos=True)
+        assert len(jogos) == 1
+        assert jogos[0].numeros == [1, 2, 3, 4, 5, 6]
+        assert jogos[0].trevos == [3, 5]
+
+    def test_parse_linha_sem_trevos_fica_vazio(self):
+        from shared.apostador.parser import parse_jogos_texto
+        jogos = parse_jogos_texto("1,2,3,4,5,6", tem_trevos=True)
+        assert jogos[0].numeros == [1, 2, 3, 4, 5, 6]
+        assert jogos[0].trevos == []
+
+    def test_parse_sem_flag_mantem_lista_plana(self):
+        from shared.apostador.parser import parse_jogos_texto
+        jogos = parse_jogos_texto("1,2,3,4,5,6")
+        assert jogos == [[1, 2, 3, 4, 5, 6]]
+
+
+class TestValidarJogosMaisMilionaria:
+    def _cfg(self):
+        from shared.lottery_loader import get_loteria
+        return get_loteria("maismilionaria")
+
+    def test_jogo_valido_com_trevos(self):
+        from shared.apostador.parser import validar_jogos, JogoApostador
+        cfg = self._cfg()
+        resultado = validar_jogos(cfg, [JogoApostador(numeros=[1, 2, 3, 4, 5, 6], trevos=[3, 5])])
+        assert len(resultado["validos"]) == 1
+        assert resultado["validos"][0]["numeros"] == [1, 2, 3, 4, 5, 6]
+        assert resultado["validos"][0]["trevos"] == [3, 5]
+
+    def test_jogo_plano_dezenas_trevos_concatenados(self):
+        from shared.apostador.parser import validar_jogos
+        cfg = self._cfg()
+        resultado = validar_jogos(cfg, [[1, 2, 3, 4, 5, 6, 3, 5]])
+        assert len(resultado["validos"]) == 1
+        assert resultado["validos"][0]["numeros"] == [1, 2, 3, 4, 5, 6]
+        assert resultado["validos"][0]["trevos"] == [3, 5]
+
+    def test_falta_trevo_invalido(self):
+        from shared.apostador.parser import validar_jogos, JogoApostador
+        cfg = self._cfg()
+        resultado = validar_jogos(cfg, [JogoApostador(numeros=[1, 2, 3, 4, 5, 6], trevos=[3])])
+        assert len(resultado["invalids"]) == 1
+        assert "trevo" in resultado["invalids"][0]["mensagem"]
+
+    def test_trevo_fora_da_faixa_invalido(self):
+        from shared.apostador.parser import validar_jogos, JogoApostador
+        cfg = self._cfg()
+        resultado = validar_jogos(cfg, [JogoApostador(numeros=[1, 2, 3, 4, 5, 6], trevos=[3, 7])])
+        assert len(resultado["invalids"]) == 1
+        assert "7" in resultado["invalids"][0]["mensagem"]
+
+    def test_trevo_duplicado_invalido(self):
+        from shared.apostador.parser import validar_jogos, JogoApostador
+        cfg = self._cfg()
+        resultado = validar_jogos(cfg, [JogoApostador(numeros=[1, 2, 3, 4, 5, 6], trevos=[3, 3])])
+        assert len(resultado["invalids"]) == 1
+        assert "duplicado" in resultado["invalids"][0]["mensagem"]
+
 
 class TestParseXlsx:
     def test_parse_xlsx_com_openpyxl(self, tmp_path):

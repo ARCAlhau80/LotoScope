@@ -5,7 +5,7 @@ from statistics import mean, median, stdev
 
 CONN_STR = (
     "DRIVER={ODBC Driver 17 for SQL Server};"
-    "SERVER=DESKTOP-K6JPBDS;"
+    "SERVER=VADER;"
     "DATABASE=LOTOFACIL;"
     "Trusted_Connection=yes;"
 )

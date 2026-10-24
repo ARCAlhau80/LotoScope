@@ -37,7 +37,7 @@ class DatabaseOptimizer:
         🚀 CONEXÃO OTIMIZADA com configurações de performance
         """
         try:
-            server = 'DESKTOP-K6JPBDS'
+            server = 'VADER'
             database = 'LOTOFACIL'
             
             # String de conexão otimizada para performance
@@ -289,7 +289,7 @@ class DatabaseOptimizer:
     def create_optimized_connection(self) -> Optional[pyodbc.Connection]:
         """Cria conexão otimizada com configurações de performance"""
         try:
-            server = 'DESKTOP-K6JPBDS'
+            server = 'VADER'
             database = 'LOTOFACIL'
             
             connection_string = (

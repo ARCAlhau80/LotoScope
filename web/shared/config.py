@@ -8,7 +8,7 @@ from typing import List, Dict, Any
 @dataclass
 class DatabaseConfig:
     """Configurações do banco de dados"""
-    server: str = "DESKTOP-K6JPBDS"
+    server: str = "VADER"
     database: str = "LOTOFACIL"
     trusted_connection: bool = True
     

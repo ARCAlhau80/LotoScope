@@ -4,7 +4,7 @@ from collections import Counter
 
 CONN_STR = (
     "DRIVER={ODBC Driver 17 for SQL Server};"
-    "SERVER=DESKTOP-K6JPBDS;DATABASE=LOTOFACIL;"
+    "SERVER=VADER;DATABASE=LOTOFACIL;"
     "Trusted_Connection=yes;Connection Timeout=15;"
     "Query Timeout=30;MARS_Connection=yes;APP=LotoScope;"
 )

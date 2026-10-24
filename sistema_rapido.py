@@ -11,7 +11,7 @@ Características principais:
 - Geração de combinações no formato TXT
 - Redução de ~3.268.760 para < 200 combinações
 
-Conexão: SQL Server (DESKTOP-K6JPBDS / LOTOFACIL)
+Conexão: SQL Server (VADER / LOTOFACIL)
 Tabela: Resultados_INT (concursos reais)
 
 Versão: 4.0 - Sistema de Produção com Aprendizado Automático
@@ -92,7 +92,7 @@ class SistemaRapido:
             import pyodbc
             
             # String de conexão para SQL Server
-            server = 'DESKTOP-K6JPBDS'
+            server = 'VADER'
             database = 'LOTOFACIL'
             trusted_connection = 'yes'
             

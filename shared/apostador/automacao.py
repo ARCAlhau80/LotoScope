@@ -18,10 +18,10 @@ PORTAL_URL = "https://www.loteriasonline.caixa.gov.br/silce-web/#/home"
 PORTAL_BASE = PORTAL_URL.split("#/")[0]
 
 # Mapeamento id da loteria -> rota do volante no SPA do portal.
-# Observado no site real (2026-09): Lotofácil usa /especial (concurso da Independência);
-# as demais usam a rota direta da modalidade.
+# Lotofácil usa a rota padrão da modalidade; se o portal retornar
+# "modalidade indisponível", tenta a rota especial (concurso da Independência).
 LOTERIAS_ROTA: Dict[str, str] = {
-    "lotofacil": "lotofacil/especial",
+    "lotofacil": "lotofacil",
     "megasena": "mega-sena",
     "quina": "quina",
     "duplasena": "dupla-sena",
@@ -30,6 +30,12 @@ LOTERIAS_ROTA: Dict[str, str] = {
     "diadesorte": "dia-de-sorte",
     "supersete": "super-sete",
     "maismilionaria": "mais-milionaria",
+}
+
+# Rotas do concurso especial (ex.: Lotofácil da Independência), usadas como
+# fallback quando a rota padrão da modalidade retorna "indisponível".
+LOTERIAS_ROTA_ESPECIAL: Dict[str, str] = {
+    "lotofacil": "lotofacil/especial",
 }
 
 DEFAULT_TIMEOUT = 30.0
@@ -107,7 +113,23 @@ class AutomacaoCaixa:
             # O portal redireciona para a home após confirmar a idade;
             # é preciso navegar novamente para a loteria.
             self.driver.get(url)
+        if self._modalidade_indisponivel() and loteria in LOTERIAS_ROTA_ESPECIAL:
+            # Modalidade indisponível na rota padrão: tenta o concurso
+            # especial (ex.: Lotofácil da Independência).
+            url_especial = PORTAL_BASE + f"#/{LOTERIAS_ROTA_ESPECIAL[loteria]}"
+            self.driver.get(url_especial)
+            if self.resolver_age_gate():
+                self.driver.get(url_especial)
         self.resolver_cookies()
+
+    def _modalidade_indisponivel(self) -> bool:
+        """Detecta se o portal retornou 'modalidade indisponível' na página."""
+        try:
+            body = self.driver.find_element("tag name", "body")
+            texto = (body.text or "").lower()
+            return "indispon" in texto
+        except Exception:
+            return False
 
     def resolver_age_gate(self) -> bool:
         """Clica em 'Sim' na tela de maior de 18 anos, se presente.
@@ -202,6 +224,10 @@ class AutomacaoCaixa:
         return f"n{numero:02d}"
 
     @staticmethod
+    def _id_trevo(loteria: str, trevo: int) -> str:
+        return f"t{trevo}"
+
+    @staticmethod
     def _id_carrinho(loteria: str) -> str:
         return "colocarnocarrinho"
 
@@ -250,13 +276,19 @@ class AutomacaoCaixa:
                     break
                 atual = novo
 
-    def preencher_volante(self, loteria: str, numeros: List[int]) -> None:
+    def preencher_volante(self, loteria: str, numeros: List[int], trevos: Optional[List[int]] = None) -> None:
         from selenium.webdriver.common.by import By
 
         self.fechar_alertas()
         self.ajustar_qtd_dezenas(loteria, len(numeros))
         for num in numeros:
             el = self._esperar_elemento(By.ID, self._id_numero(loteria, num))
+            self._rolar_ate_elemento(el)
+            el.click()
+        # Loterias com trevos (ex.: Mais Milionária) marcam os trevos no volante
+        # após as dezenas (ids t1..t6).
+        for trevo in trevos or []:
+            el = self._esperar_elemento(By.ID, self._id_trevo(loteria, trevo))
             self._rolar_ate_elemento(el)
             el.click()
 
@@ -296,7 +328,13 @@ class AutomacaoCaixa:
                     self.limpar_volante(loteria)
                 except Exception:
                     pass
-            self.preencher_volante(loteria, jogo)
+            if isinstance(jogo, dict):
+                numeros = jogo.get("numeros", [])
+                trevos = jogo.get("trevos") or []
+            else:
+                numeros = jogo
+                trevos = None
+            self.preencher_volante(loteria, numeros, trevos)
             self.adicionar_ao_carrinho(loteria)
             if progresso_callback:
                 progresso_callback({"jogo": idx, "total": len(jogos), "status": "preenchido"})

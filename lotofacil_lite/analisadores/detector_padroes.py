@@ -59,7 +59,7 @@ class DetectorPadroes:
             else:
                 connection_string = (
                     "DRIVER={ODBC Driver 17 for SQL Server};"
-                    "SERVER=DESKTOP-K6JPBDS\\SQLEXPRESS;"  # Usa servidor correto
+                    "SERVER=VADER\\SQLEXPRESS;"  # Usa servidor correto
                     "DATABASE=LotofacilDB;"
                     "Trusted_Connection=yes;"
                     "MARS_Connection=Yes;"

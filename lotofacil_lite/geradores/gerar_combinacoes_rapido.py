@@ -40,7 +40,7 @@ def get_connection():
     """Conecta ao banco de dados."""
     return pyodbc.connect(
         'DRIVER={SQL Server};'
-        'SERVER=DESKTOP-K6JPBDS;'
+        'SERVER=VADER;'
         'DATABASE=LOTOFACIL;'
         'Trusted_Connection=yes;'
     )

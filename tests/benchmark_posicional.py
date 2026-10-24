@@ -28,7 +28,7 @@ class BenchmarkPosicional:
     def __init__(self):
         self.conn_str = (
             "DRIVER={ODBC Driver 17 for SQL Server};"
-            "SERVER=DESKTOP-K6JPBDS;"
+            "SERVER=VADER;"
             "DATABASE=LOTOFACIL;"
             "Trusted_Connection=yes;"
         )
