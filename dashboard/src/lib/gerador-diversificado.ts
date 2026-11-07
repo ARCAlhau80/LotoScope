@@ -1556,7 +1556,36 @@ function gerarTodasAsCombinacoes(options: GeradorDiversificadoOptions): JogoGera
     const j = Math.floor(rand() * (i + 1));
     [todas[i], todas[j]] = [todas[j], todas[i]];
   }
-  return todas;
+  const modo = options.ordenacao ?? 'aleatorio';
+  if (modo === 'aleatorio' || todas.length === 0) return todas;
+
+  const lp = buildLP(options);
+  const ctx = construirScoreContext(options.resultados, lp, options.scoreSets);
+  const pontuados = todas.map(jogo => ({ jogo, score: scoreJogo(jogo.numeros, ctx) }));
+  if (modo === 'melhores') {
+    pontuados.sort((a, b) => b.score - a.score);
+  } else if (modo === 'piores') {
+    pontuados.sort((a, b) => a.score - b.score);
+  } else {
+    // balanceado: intercala as 3 faixas (alto / médio / baixo) em vez de
+    // devolver tudo agrupado por faixa, preservando a mistura no arquivo final.
+    pontuados.sort((a, b) => b.score - a.score);
+    const tam = pontuados.length;
+    const faixas = [
+      pontuados.slice(0, Math.floor(tam / 3)),
+      pontuados.slice(Math.floor(tam / 3), Math.floor((2 * tam) / 3)),
+      pontuados.slice(Math.floor((2 * tam) / 3)),
+    ];
+    const intercalado: typeof pontuados = [];
+    const maxFaixa = Math.max(...faixas.map(f => f.length));
+    for (let i = 0; i < maxFaixa; i++) {
+      for (const faixa of faixas) {
+        if (i < faixa.length) intercalado.push(faixa[i]);
+      }
+    }
+    return intercalado.map(({ jogo, score }) => ({ ...jogo, score }));
+  }
+  return pontuados.map(({ jogo, score }) => ({ ...jogo, score }));
 }
 
 function gerarTrevos(rand: () => number, lp: LP): number[] {

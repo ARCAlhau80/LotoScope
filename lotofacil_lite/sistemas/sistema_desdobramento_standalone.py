@@ -11,8 +11,8 @@ Versão independente do sistema de desdobramento sem dependências externas:
 - Sistema de pontuação inteligente para seleção ótima
 
 MATEMÁTICA COMPROVADA:
-- C(5,3) = 10 combinações dos números restantes
-- Uma das 10 obrigatoriamente acerta 3 números
+- C(5,3) = 10 combinações dos 5 números restantes
+- A garantia de acertar 3 só vale se as 10 combinações C(5,3) forem jogadas
 - Complementação garante cobertura completa
 
 Autor: AR CALHAU  
@@ -135,9 +135,18 @@ class SistemaDesdobramentoStandalone:
         return score
     
     def selecionar_melhores_trios(self, combinacoes_c53: List[Tuple[int, int, int]], 
-                                  qtd_selecionar: int = 5) -> List[Tuple[int, int, int]]:
-        """Seleciona os melhores trios"""
-        
+                                  qtd_selecionar: Optional[int] = None) -> List[Tuple[int, int, int]]:
+        """Seleciona os melhores trios.
+
+        Se qtd_selecionar for None, retorna TODOS os C(5,3) trios, preservando
+        a garantia matemática: com os 5 números restantes, uma das 10 combinações
+        de 3 obrigatoriamente acerta as 3 dezenas sorteadas que caírem nesses 5.
+        """
+        if qtd_selecionar is None or qtd_selecionar >= len(combinacoes_c53):
+            return list(combinacoes_c53)
+
+        limite = max(1, min(qtd_selecionar, len(combinacoes_c53)))
+
         if self.modo_selecao == 1:  # Melhor pontuação
             trios_pontuados = []
             for trio in combinacoes_c53:
@@ -145,42 +154,38 @@ class SistemaDesdobramentoStandalone:
                 trios_pontuados.append((trio, score))
             
             trios_pontuados.sort(key=lambda x: x[1], reverse=True)
-            melhores_trios = [trio for trio, score in trios_pontuados[:qtd_selecionar]]
+            melhores_trios = [trio for trio, score in trios_pontuados[:limite]]
             
         elif self.modo_selecao == 2:  # Diversificação
-            # Seleciona trios com máxima diversidade
             melhores_trios = []
             numeros_usados = set()
             
             for trio in combinacoes_c53:
-                if len(melhores_trios) >= qtd_selecionar:
+                if len(melhores_trios) >= limite:
                     break
                 
-                # Prioriza trios com números ainda não usados
                 novos_nums = set(trio) - numeros_usados
-                if len(novos_nums) >= 2:  # Pelo menos 2 números novos
+                if len(novos_nums) >= 2:
                     melhores_trios.append(trio)
                     numeros_usados.update(trio)
             
-            # Completa se necessário
-            while len(melhores_trios) < qtd_selecionar and len(melhores_trios) < len(combinacoes_c53):
+            while len(melhores_trios) < limite and len(melhores_trios) < len(combinacoes_c53):
                 for trio in combinacoes_c53:
                     if trio not in melhores_trios:
                         melhores_trios.append(trio)
                         break
                         
         else:  # Aleatório otimizado
-            # Seleciona aleatoriamente dos 70% melhores
             trios_pontuados = []
             for trio in combinacoes_c53:
                 score = self.pontuar_combinacao_restante(trio)
                 trios_pontuados.append((trio, score))
             
             trios_pontuados.sort(key=lambda x: x[1], reverse=True)
-            corte = int(len(trios_pontuados) * 0.7)
-            candidatos = [trio for trio, score in trios_pontuados[:max(corte, qtd_selecionar)]]
+            corte = max(1, int(len(trios_pontuados) * 0.7))
+            candidatos = [trio for trio, score in trios_pontuados[:max(corte, limite)]]
             
-            melhores_trios = random.sample(candidatos, min(qtd_selecionar, len(candidatos)))
+            melhores_trios = random.sample(candidatos, min(limite, len(candidatos)))
         
         print(f"🏆 Selecionados {len(melhores_trios)} trios de {len(combinacoes_c53)} possíveis")
         return melhores_trios
@@ -216,7 +221,7 @@ class SistemaDesdobramentoStandalone:
     
     def gerar_combinacoes_desdobramento(self, qtd_numeros_jogo: int, 
                                       qtd_combinacoes_base: int = 3,
-                                      qtd_trios_por_base: int = 5) -> List[List[int]]:
+                                      qtd_trios_por_base: Optional[int] = None) -> List[List[int]]:
         """Gera combinações usando desdobramento complementar"""
         
         print(f"\n🎯 GERAÇÃO COM DESDOBRAMENTO COMPLEMENTAR")
@@ -302,6 +307,30 @@ class SistemaDesdobramentoStandalone:
             'sobreposicao_media': sobreposicao_media,
             'numeros_cobertos': len(total_numeros),
             'diversidade': 'Alta' if sobreposicao_media < 8 else 'Média' if sobreposicao_media < 12 else 'Baixa'
+        }
+
+    def verificar_garantia_c53(self, numeros_restantes: List[int], apostas: List[List[int]]) -> Dict[str, object]:
+        """Verifica se TODOS os C(5,3) trios dos números restantes aparecem em ≥1 aposta.
+
+        A garantia "uma das 10 acerta 3" só vale se as 10 combinações C(5,3)
+        forem jogadas. Retorna percentual de trios cobertos.
+        """
+        trios = list(combinations(numeros_restantes, 3))
+        total = len(trios)
+        cobertos = 0
+        detalhe: Dict[str, bool] = {}
+        for trio in trios:
+            tset = set(trio)
+            encontrada = any(tset <= set(a) for a in apostas)
+            detalhe[",".join(map(str, trio))] = encontrada
+            if encontrada:
+                cobertos += 1
+        return {
+            "garantia_c53": cobertos == total,
+            "trios_total": total,
+            "trios_cobertos": cobertos,
+            "percentual": round(cobertos / total * 100, 2) if total else 100.0,
+            "detalhe": detalhe,
         }
     
     def salvar_desdobramento_completo(self, combinacoes: List[List[int]], 

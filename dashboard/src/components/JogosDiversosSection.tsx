@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { getLotteryConfig, dezenasValidas, calcularPrecoAposta } from '@/lib/lottery-config';
 import type { PrevisaoItem, PrevisaoTendenciaComparativo, PrevisaoColunaRange, QuarentenaPosicaoLF, CicloInfo, TransicaoQMF, Repeticao3Sorteios } from '@/types';
 import type { AnaliseGruposData } from '@/lib/analise-grupos';
 import { parseColunasPosicionais, parseExcluidosPosicoes, parseFiltroComparativo, parseFixosPosicoes } from '@/lib/colunas-posicionais';
+import type { VerificarCoberturaResult, RelatorioCustoResult, BacktestFechamentoResult } from '@/lib/fechamento-combinatorio';
+import type { CpSatFechamentoResult } from '@/lib/cp-sat';
+import { getFechamentoConfig, textoPremios } from '@/lib/fechamento/config';
 import type { FiltrosSnapshot } from '@/lib/analise-filtros';
 import GeneratingOverlay from '@/components/GeneratingOverlay';
 import QuarantineMatrixMini from '@/components/QuarantineMatrixMini';
@@ -100,6 +103,7 @@ function parseFaixa(valor: string): { min: number; max: number } {
 
 export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBase, concursoAtual, numerosSorteadosAtual = [], previsaoPosicional, previsaoTendencia, previsaoColunas, quarentena, grupos, numerosQuentes, numerosMornos, numerosFrios, ciclos, transicaoQmf, repeticao3, onFiltrosAplicados }: JogosDiversosSectionProps) {
   const cfg = getLotteryConfig(loteria);
+  const fechamentoCfg = useMemo(() => getFechamentoConfig(loteria), [loteria]);
   const opcoesDezenas = dezenasValidas(cfg);
   const [quantidade, setQuantidade] = useState<number>(5);
   const [dezenas, setDezenas] = useState<number>(cfg.numeros_por_jogo);
@@ -122,6 +126,39 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [categoriasInputs, setCategoriasInputs] = useState<Record<string, string>>({});
   const [repetidosInputs, setRepetidosInputs] = useState<string[]>(['', '', '']);
   const [ordenacao, setOrdenacao] = useState<string>('aleatorio');
+
+  // --- Fechamento Combinatório ---
+  const [modoFechamento, setModoFechamento] = useState<boolean>(false);
+  const [fechamentoK, setFechamentoK] = useState<number>(fechamentoCfg.kPadrao);
+  const [fechamentoT, setFechamentoT] = useState<number>(fechamentoCfg.tPadrao);
+  const [fechamentoMax, setFechamentoMax] = useState<number>(200);
+  const [fechamentoSeed, setFechamentoSeed] = useState<number>(7);
+  const [fechamentoOtimizado, setFechamentoOtimizado] = useState<boolean>(true);
+  const [aplicarFiltrosCategorias, setAplicarFiltrosCategorias] = useState<boolean>(false);
+  const [apostasFechamento, setApostasFechamento] = useState<number[][]>([]);
+  const [coberturaFechamento, setCoberturaFechamento] = useState<VerificarCoberturaResult | null>(null);
+  const [custoFechamento, setCustoFechamento] = useState<RelatorioCustoResult | null>(null);
+  const [gerandoFechamento, setGerandoFechamento] = useState<boolean>(false);
+  const [fechamentoSeeds, setFechamentoSeeds] = useState<number>(1);
+  const [fechamentoAmostra, setFechamentoAmostra] = useState<number>(0);
+  const [fechamentoUsarCpSat, setFechamentoUsarCpSat] = useState<boolean>(true);
+  const [fechamentoSolver, setFechamentoSolver] = useState<'cp_sat' | 'SCIP' | 'CBC'>('cp_sat');
+  const [fechamentoCpSatTime, setFechamentoCpSatTime] = useState<number>(10);
+  const [cpSatInfo, setCpSatInfo] = useState<(CpSatFechamentoResult & { usado: boolean }) | null>(null);
+  const [coverConhecidoInfo, setCoverConhecidoInfo] = useState<{ v: number; k: number; t: number; blocos: number; fonte: string; limiteInferior?: number } | null>(null);
+  const [fechamentoPriorizarPremios, setFechamentoPriorizarPremios] = useState<boolean>(false);
+  const [fechamentoRemoverRedundantes, setFechamentoRemoverRedundantes] = useState<boolean>(true);
+  const [fechamentoFiltroRepetidasAtivo, setFechamentoFiltroRepetidasAtivo] = useState<boolean>(false);
+  const [fechamentoRepetidasFaixa, setFechamentoRepetidasFaixa] = useState<string>(fechamentoCfg.repetidasPadrao);
+  const [fechamentoSeedUsado, setFechamentoSeedUsado] = useState<number | null>(null);
+  const [fechamentoSeedsTestadas, setFechamentoSeedsTestadas] = useState<number | null>(null);
+  const [fechamentoLimiteInferior, setFechamentoLimiteInferior] = useState<number | null>(null);
+  const [fechamentoCoberturaRestante, setFechamentoCoberturaRestante] = useState<VerificarCoberturaResult | null>(null);
+  const [fechamentoAviso, setFechamentoAviso] = useState<string | null>(null);
+  const [fechamentoFiltroInfo, setFechamentoFiltroInfo] = useState<{ min: number; max: number; removidas: number } | null>(null);
+  const [backtestFechamento, setBacktestFechamento] = useState<BacktestFechamentoResult | null>(null);
+  const [rodandoBacktest, setRodandoBacktest] = useState<boolean>(false);
+  const abortFechamentoRef = useRef<AbortController | null>(null);
 
   const repetidosItens = useMemo(() => repeticao3?.itens ?? [], [repeticao3]);
 
@@ -235,7 +272,16 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setCategoriasInputs({});
     setRepetidosInputs(['', '', '']);
     setOrdenacao('aleatorio');
-  }, [loteria]);
+    setFechamentoK(fechamentoCfg.kPadrao);
+    setFechamentoT(fechamentoCfg.tPadrao);
+    setFechamentoRepetidasFaixa(fechamentoCfg.repetidasPadrao);
+    setApostasFechamento([]);
+    setCoberturaFechamento(null);
+    setCustoFechamento(null);
+    setBacktestFechamento(null);
+    setCpSatInfo(null);
+    setCoverConhecidoInfo(null);
+  }, [loteria, fechamentoCfg]);
 
   useEffect(() => {
     setJogos(null);
@@ -620,6 +666,131 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     }
   }, [loteria, dezenas, fixos, excluidos, excluidosCompletos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, temLinhas, linhasSetsStr, validarColunas, temComparativo, comparativoStr, comparativoInputs, temCategorias, categoriasRangesStr, categoriasSetsStr, temRepetidos, repetidosRangesStr, repetidosSetsStr, repetidosItens, ordenacao, scoreSetsStr, fixosPosicoesStr, excluidosPosicoesStr, estrategiasFiltro]);
 
+  const gerarFechamento = useCallback(async () => {
+    abortFechamentoRef.current?.abort();
+    const controller = new AbortController();
+    abortFechamentoRef.current = controller;
+
+    setGerandoFechamento(true);
+    setError(null);
+    setApostasFechamento([]);
+    setCoberturaFechamento(null);
+    setCustoFechamento(null);
+    setBacktestFechamento(null);
+    setFechamentoSeedUsado(null);
+    setFechamentoSeedsTestadas(null);
+    setFechamentoLimiteInferior(null);
+    setFechamentoCoberturaRestante(null);
+    setFechamentoAviso(null);
+    setFechamentoFiltroInfo(null);
+    setCpSatInfo(null);
+    setCoverConhecidoInfo(null);
+    try {
+      const fixosSelecionados = Object.entries(estados)
+        .filter(([, e]) => e === 'fixo')
+        .map(([n]) => Number(n));
+      const excluidosSelecionados = Object.entries(estados)
+        .filter(([, e]) => e === 'excluido')
+        .map(([n]) => Number(n));
+
+      const filtrosCategorias = aplicarFiltrosCategorias
+        ? categoriasDefs
+            .filter(c => (categoriasInputs[c.id] ?? '').trim() !== '')
+            .map(c => {
+              const faixa = parseFaixa(categoriasInputs[c.id] ?? '');
+              return { numeros: c.set, min: faixa.min, max: faixa.max };
+            })
+        : [];
+
+      const faixaRepetidas = parseFaixa(fechamentoRepetidasFaixa || '0-15');
+      const repetidas = fechamentoFiltroRepetidasAtivo && numerosSorteadosAtual.length > 0
+        ? { numeros: numerosSorteadosAtual, min: faixaRepetidas.min, max: faixaRepetidas.max }
+        : undefined;
+
+      const res = await fetch('/api/fechamento', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          fixos: fixosSelecionados,
+          excluidos: excluidosSelecionados,
+          filtrosCategorias,
+          k: fechamentoK,
+          t: fechamentoT,
+          maxApostas: fechamentoMax,
+          seed: fechamentoSeed,
+          otimizado: fechamentoOtimizado,
+          ...(fechamentoAmostra > 0 ? { amostraPorPasso: fechamentoAmostra } : {}),
+          buscarMelhorSeed: fechamentoSeeds,
+          priorizarPremios: fechamentoPriorizarPremios,
+          removerRedundantes: fechamentoRemoverRedundantes,
+          usarCpSat: fechamentoUsarCpSat,
+          solver: fechamentoSolver,
+          cpSatTimeLimit: fechamentoCpSatTime,
+          repetidas,
+          loteria,
+          limiteTempoMs: 120000,
+        }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Erro ${res.status} ao gerar fechamento`);
+      }
+      const data = await res.json();
+      if (!data.sucesso) throw new Error(data.error || 'Erro ao gerar fechamento');
+
+      setApostasFechamento(data.apostas ?? []);
+      setCoberturaFechamento(data.cobertura ?? null);
+      setCustoFechamento(data.custo ?? null);
+      setFechamentoSeedUsado(data.seedUsado ?? null);
+      setFechamentoSeedsTestadas(data.seedsTestadas ?? null);
+      setFechamentoLimiteInferior(data.limiteInferior ?? null);
+      setFechamentoCoberturaRestante(data.coberturaRestante ?? null);
+      setFechamentoAviso(data.aviso ?? null);
+      setFechamentoFiltroInfo(data.filtroRepetidas ?? null);
+      setBacktestFechamento(data.backtest ?? null);
+      setCpSatInfo(data.cpSat ?? null);
+      setCoverConhecidoInfo(data.coverConhecido ?? null);
+    } catch (err) {
+      if ((err as any)?.name === 'AbortError') {
+        setError('Geração cancelada.');
+      } else {
+        setError(err instanceof Error ? err.message : 'Erro ao gerar fechamento');
+      }
+    } finally {
+      if (abortFechamentoRef.current === controller) abortFechamentoRef.current = null;
+      setGerandoFechamento(false);
+    }
+  }, [estados, categoriasDefs, categoriasInputs, aplicarFiltrosCategorias, fechamentoK, fechamentoT, fechamentoMax, fechamentoSeed, fechamentoOtimizado, fechamentoSeeds, fechamentoAmostra, fechamentoUsarCpSat, fechamentoSolver, fechamentoCpSatTime, fechamentoPriorizarPremios, fechamentoRemoverRedundantes, fechamentoFiltroRepetidasAtivo, fechamentoRepetidasFaixa, numerosSorteadosAtual, loteria]);
+
+  const cancelarFechamento = useCallback(() => {
+    abortFechamentoRef.current?.abort();
+  }, []);
+
+  const rodarBacktest = useCallback(async () => {
+    if (!apostasFechamento.length) return;
+    setRodandoBacktest(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/fechamento/backtest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apostas: apostasFechamento,
+          k: fechamentoK,
+          loteria,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.sucesso) throw new Error(data.error || 'Erro ao rodar backtest');
+      setBacktestFechamento(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao rodar backtest');
+    } finally {
+      setRodandoBacktest(false);
+    }
+  }, [apostasFechamento, fechamentoK, loteria]);
+
   const getNumeroClasses = (n: number) => {
     const estado = estados[n] || 'normal';
     if (estado === 'fixo') {
@@ -710,6 +881,12 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110 disabled:opacity-50"
             style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}>
             {loading ? 'Gerando...' : 'Gerar'}
+          </button>
+          <button
+            onClick={() => setModoFechamento(true)}
+            disabled={loading || gerandoFechamento}
+            className="px-3 py-2 rounded-lg text-sm font-semibold text-[#a5b4fc] border border-[#818cf8]/40 hover:bg-[#818cf8]/10 transition-all disabled:opacity-50">
+            Fechamento
           </button>
         </div>
       </div>
@@ -1215,9 +1392,13 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               if (qtd === 0) classes = 'bg-amber-500/25 text-amber-100 border-amber-500/40';
               else if (qtd === 1) classes = 'bg-amber-500/10 text-amber-200/80 border-amber-500/20';
               else if (qtd >= 4) classes = 'bg-emerald-500/15 text-emerald-200 border-emerald-500/30';
+              const sorteado = sorteadosAtualSet.has(numero);
               return (
                 <div key={numero} className={`flex flex-col items-center justify-center rounded-lg border p-1 ${classes}`}>
-                  <span className="text-sm font-bold">{numero}</span>
+                  <span
+                    className={`text-sm font-bold ${sorteado ? 'text-emerald-400' : ''}`}
+                    title={sorteado ? 'Sorteado no concurso atual' : undefined}
+                  >{numero}</span>
                   <span className="text-[10px] opacity-80">{qtd}x</span>
                 </div>
               );
@@ -1227,6 +1408,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-500/25 border border-amber-500/40" /> 0 sorteios (faltante)</span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-500/10 border border-amber-500/20" /> 1 sorteio</span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500/15 border border-emerald-500/30" /> 4+ sorteios</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-transparent border border-emerald-500/30 flex items-center justify-center text-[9px] font-bold text-emerald-400">n</span> sorteado no concurso atual</span>
           </div>
         </div>
       )}
@@ -1364,7 +1546,463 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         </div>
       )}
 
-      {!jogos && !loading && (
+      {modoFechamento && (
+        <div className="mb-5 p-5 rounded-xl bg-white/5 border border-white/10">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-ink">Fechamento Combinatório</h3>
+              <p className="text-xs text-muted">
+                C(v, k, t) — garante t acertos se as t dezenas sorteadas estiverem entre as v escolhidas.
+              </p>
+            </div>
+            <button
+              onClick={() => setModoFechamento(false)}
+              className="text-xs px-3 py-1 rounded-lg bg-white/5 text-muted hover:text-fg hover:bg-white/10 transition-colors">
+              Voltar para gerador
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted">k (dezenas por aposta)</label>
+              <input
+                type="number"
+                min={fechamentoCfg.kMin}
+                max={fechamentoCfg.kMax}
+                value={fechamentoK}
+                onChange={e => setFechamentoK(Math.max(fechamentoCfg.kMin, Math.min(fechamentoCfg.kMax, parseInt(e.target.value, 10) || fechamentoCfg.kPadrao)))}
+                className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8]"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted">t (garantia de acertos)</label>
+              <input
+                type="number"
+                min={1}
+                max={Math.min(fechamentoK, fechamentoCfg.tMax)}
+                value={fechamentoT}
+                onChange={e => setFechamentoT(Math.max(1, Math.min(fechamentoK, fechamentoCfg.tMax, parseInt(e.target.value, 10) || fechamentoCfg.tPadrao)))}
+                className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8]"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted">Máx. apostas (0 = todas)</label>
+              <input
+                type="number"
+                min={0}
+                max={fechamentoCfg.maxApostasMax}
+                value={fechamentoMax}
+                onChange={e => {
+                  const valor = parseInt(e.target.value, 10);
+                  setFechamentoMax(Number.isNaN(valor) ? 0 : Math.max(0, Math.min(fechamentoCfg.maxApostasMax, valor)));
+                }}
+                title="Use 0 para sem limite: gera até cobrir todos os t-subconjuntos ou esgotar as candidatas"
+                className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8]"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted">Seed</label>
+              <input
+                type="number"
+                value={fechamentoSeed}
+                onChange={e => setFechamentoSeed(parseInt(e.target.value, 10) || 7)}
+                className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8]"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted">Seeds a testar</label>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={fechamentoSeeds}
+                onChange={e => setFechamentoSeeds(Math.max(1, Math.min(10, parseInt(e.target.value, 10) || 1)))}
+                title="1 = usa a seed atual; acima disso testa várias seeds e fica com a mais eficiente (ou com melhor prêmio histórico, se marcado)"
+                className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8]"
+              />
+              <span className="text-[10px] text-muted">1 = seed atual</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted">Repetidas do último concurso</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={fechamentoFiltroRepetidasAtivo}
+                  onChange={() => setFechamentoFiltroRepetidasAtivo(!fechamentoFiltroRepetidasAtivo)}
+                  disabled={numerosSorteadosAtual.length === 0}
+                  className="accent-[#818cf8]"
+                  title={numerosSorteadosAtual.length === 0 ? 'Sem sorteio atual carregado' : 'Filtrar apostas pela quantidade de dezenas repetidas do último sorteio'}
+                />
+                <input
+                  type="text"
+                  value={fechamentoRepetidasFaixa}
+                  onChange={e => setFechamentoRepetidasFaixa(e.target.value)}
+                  disabled={!fechamentoFiltroRepetidasAtivo || numerosSorteadosAtual.length === 0}
+                  placeholder="ex.: 7-10"
+                  className="w-24 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8] disabled:opacity-50"
+                />
+              </div>
+              <span className="text-[10px] text-muted">min-max; vazio/desligado = sem filtro</span>
+            </div>
+            <label className="flex items-center gap-2 text-xs cursor-pointer select-none self-end pb-2">
+              <input
+                type="checkbox"
+                checked={fechamentoRemoverRedundantes}
+                onChange={() => setFechamentoRemoverRedundantes(!fechamentoRemoverRedundantes)}
+                className="accent-[#818cf8]"
+              />
+              Remover apostas redundantes
+            </label>
+            <label className="flex items-center gap-2 text-xs cursor-pointer select-none self-end pb-2" title="Compara várias seeds e escolhe a de melhor retorno histórico. Ao ativar, usa pelo menos 5 seeds.">
+              <input
+                type="checkbox"
+                checked={fechamentoPriorizarPremios}
+                onChange={() => {
+                  const novo = !fechamentoPriorizarPremios;
+                  setFechamentoPriorizarPremios(novo);
+                  if (novo && fechamentoSeeds < 2) setFechamentoSeeds(5);
+                }}
+                className="accent-[#818cf8]"
+              />
+              Priorizar prêmios no histórico
+            </label>
+          </div>
+
+          <div className="flex items-center gap-3 mb-4">
+              <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={fechamentoOtimizado}
+                  onChange={() => setFechamentoOtimizado(!fechamentoOtimizado)}
+                  className="accent-[#818cf8]"
+                />
+                Otimizado (guloso + busca local)
+              </label>
+              <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={aplicarFiltrosCategorias}
+                  onChange={() => setAplicarFiltrosCategorias(!aplicarFiltrosCategorias)}
+                  className="accent-[#818cf8]"
+                />
+                Aplicar filtros de categoria (min/max)
+              </label>
+              <label className="flex items-center gap-2 text-xs cursor-pointer select-none" title="Tenta reduzir o número de apostas com CP-SAT ou MIP (SCIP/CBC). Coberturas ótimas conhecidas são usadas automaticamente antes do solver.">
+                <input
+                  type="checkbox"
+                  checked={fechamentoUsarCpSat}
+                  onChange={() => setFechamentoUsarCpSat(!fechamentoUsarCpSat)}
+                  className="accent-[#818cf8]"
+                />
+                Solver
+                <select
+                  value={fechamentoSolver}
+                  onChange={e => setFechamentoSolver(e.target.value as 'cp_sat' | 'SCIP' | 'CBC')}
+                  disabled={!fechamentoUsarCpSat}
+                  className="px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-fg focus:outline-none focus:border-[#818cf8] disabled:opacity-50"
+                >
+                  <option value="cp_sat">CP-SAT</option>
+                  <option value="SCIP">SCIP</option>
+                  <option value="CBC">CBC</option>
+                </select>
+                <input
+                  type="number"
+                  min={5}
+                  max={60}
+                  value={fechamentoCpSatTime}
+                  onChange={e => {
+                    const valor = parseInt(e.target.value, 10);
+                    setFechamentoCpSatTime(Number.isNaN(valor) ? 10 : Math.max(5, Math.min(60, valor)));
+                  }}
+                  disabled={!fechamentoUsarCpSat}
+                  className="w-14 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-fg focus:outline-none focus:border-[#818cf8] disabled:opacity-50"
+                  title="Tempo máximo do solver em segundos"
+                />
+                s
+              </label>
+              <label className="flex items-center gap-2 text-xs" title="0 = automático (recomendado). 25 = busca rápida (reproduz o conjunto antigo). 2000 = busca intensa para t=3.">
+                Amostra
+                <input
+                  type="number"
+                  min={0}
+                  max={5000}
+                  value={fechamentoAmostra}
+                  onChange={e => {
+                    const valor = parseInt(e.target.value, 10);
+                    setFechamentoAmostra(Number.isNaN(valor) ? 0 : Math.max(0, Math.min(5000, valor)));
+                  }}
+                  className="w-20 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-fg focus:outline-none focus:border-[#818cf8]"
+                />
+              </label>
+            <div className="relative group">
+              <button
+                onClick={gerarFechamento}
+                disabled={gerandoFechamento}
+                title={fechamentoCfg.tooltipReceita}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}>
+                {gerandoFechamento ? 'Gerando fechamento...' : 'Gerar fechamento'}
+              </button>
+              <div className="pointer-events-none absolute bottom-full left-0 mb-2 w-80 rounded-xl bg-[#0b1220] border border-white/15 p-3 text-xs text-fg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+                <div className="font-semibold text-accent-2 mb-2">Receita recomendada — {fechamentoCfg.nome}</div>
+                <p className="text-muted mb-2">{fechamentoCfg.tooltipReceita}</p>
+                <ul className="space-y-1 text-muted list-disc pl-4">
+                  <li><strong className="text-fg">k={fechamentoCfg.kPadrao}, t={fechamentoCfg.tPadrao}</strong> (limites: k {fechamentoCfg.kMin}–{fechamentoCfg.kMax}, t ≤ {fechamentoCfg.tMax}).</li>
+                  <li><strong className="text-fg">Máx. apostas = 0</strong>; filtros de categoria e repetidas desligados para 100% de cobertura.</li>
+                  <li>O solver (CP-SAT/SCIP/CBC) só entra quando não existe cover conhecido.</li>
+                  <li>Use <strong className="text-fg">Backtest histórico</strong> para comparar as faixas de prêmio.</li>
+                </ul>
+              </div>
+            </div>
+            {gerandoFechamento && (
+              <button
+                onClick={cancelarFechamento}
+                className="px-3 py-2 rounded-lg text-sm font-semibold text-rose-200 border border-rose-400/40 hover:bg-rose-500/10 transition-all">
+                Cancelar
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs text-muted">
+              {fixos.length > 0 || excluidos.length > 0 || aplicarFiltrosCategorias
+                ? `Aplicados: ${fixos.length} fixo(s) ${fixos.length > 0 ? `(${fixos.join(', ')})` : ''} ${excluidos.length > 0 ? `| ${excluidos.length} excluído(s) (${excluidos.join(', ')})` : ''} ${aplicarFiltrosCategorias ? `| ${categoriasDefs.filter(c => (categoriasInputs[c.id] ?? '').trim() !== '').length} filtro(s) de categoria` : ''}`
+                : 'Sem fixos/excluídos aplicados'}
+            </span>
+          </div>
+
+          {error && (
+            <div className="mb-3 p-3 rounded-lg bg-hot/10 border border-hot/20 text-hot text-sm">
+              {error}
+            </div>
+          )}
+
+          {apostasFechamento.length > 0 && (
+            <>
+              <div className="mb-3 grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div className="rounded-xl bg-white/5 p-3 text-center">
+                  <div className="text-xs text-muted">Total de apostas</div>
+                  <div className="text-lg font-bold text-fg">{apostasFechamento.length}</div>
+                </div>
+                <div className="rounded-xl bg-white/5 p-3 text-center">
+                  <div className="text-xs text-muted">Garantia</div>
+                  <div className="text-lg font-bold text-fg">{coberturaFechamento?.garantiaPercentual?.toFixed(2)}%</div>
+                </div>
+                <div className="rounded-xl bg-white/5 p-3 text-center">
+                  <div className="text-xs text-muted">Cobertura t-subconjuntos</div>
+                  <div className="text-lg font-bold text-fg">
+                    {coberturaFechamento?.tSubsetsCobertos?.toLocaleString()}/{coberturaFechamento?.tSubsetsTotal?.toLocaleString()}
+                  </div>
+                </div>
+                <div className="rounded-xl bg-white/5 p-3 text-center">
+                  <div className="text-xs text-muted">Custo estimado</div>
+                  <div className="text-lg font-bold text-fg">R$ {custoFechamento?.custoTotal?.toFixed(2)}</div>
+                  <div className="text-[10px] text-muted">R$ {custoFechamento?.precoPorJogo?.toFixed(2)} / aposta</div>
+                </div>
+                <div className="rounded-xl bg-white/5 p-3 text-center">
+                  <div className="text-xs text-muted">Limite inferior</div>
+                  <div className="text-lg font-bold text-fg">{fechamentoLimiteInferior ?? '—'}</div>
+                  <div className="text-[10px] text-muted">
+                    {fechamentoLimiteInferior && fechamentoLimiteInferior > 0
+                      ? `${(apostasFechamento.length / fechamentoLimiteInferior).toFixed(2)}x o mínimo`
+                      : '—'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-2 text-xs text-muted">
+                {coberturaFechamento?.coberta
+                  ? '✅ Fechamento cobre 100% dos t-subconjuntos (garantia total)'
+                  : `⚠️ Cobertura parcial: ${coberturaFechamento?.garantiaPercentual?.toFixed(2)}% dos t-subconjuntos`}
+              </div>
+
+              {fechamentoCoberturaRestante && (fixos.length > 0 || excluidos.length > 0) && (
+                <div className="mb-2 text-xs text-muted">
+                  Cobertura do universo restante (garantia real):{' '}
+                  <strong className="text-fg">
+                    {fechamentoCoberturaRestante.tSubsetsCobertos.toLocaleString()}/{fechamentoCoberturaRestante.tSubsetsTotal.toLocaleString()}
+                  </strong>{' '}
+                  ({fechamentoCoberturaRestante.garantiaPercentual.toFixed(2)}%)
+                </div>
+              )}
+
+              {!coverConhecidoInfo && (fechamentoSeedUsado !== null || fechamentoSeedsTestadas !== null) && (
+                <div className="mb-2 text-xs text-muted">
+                  Seed usada: <strong className="text-fg">{fechamentoSeedUsado ?? '—'}</strong>
+                  {fechamentoSeedsTestadas && fechamentoSeedsTestadas > 1
+                    ? ` (de ${fechamentoSeedsTestadas} testada(s): ${fechamentoSeed}–${fechamentoSeed + fechamentoSeedsTestadas - 1})`
+                    : ''}
+                </div>
+              )}
+
+              {coverConhecidoInfo && (
+                <div className="mb-2 text-xs text-muted">
+                  Cover determinístico: a seed não altera este conjunto.
+                </div>
+              )}
+
+              {fechamentoFiltroInfo && (
+                <div className="mb-2 text-xs text-muted">
+                  Filtro de repetidas: <strong className="text-fg">{fechamentoFiltroInfo.min}–{fechamentoFiltroInfo.max}</strong>
+                  {' · '}{fechamentoFiltroInfo.removidas} aposta(s) removida(s)
+                </div>
+              )}
+
+              {coverConhecidoInfo && (
+                <div className="mb-2 text-xs text-emerald-200 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2">
+                  {coverConhecidoInfo.limiteInferior === coverConhecidoInfo.blocos ? 'Cobertura ótima (provada)' : 'Melhor cobertura conhecida'}: <strong>{coverConhecidoInfo.blocos} bloco(s)</strong> para C({coverConhecidoInfo.v},{coverConhecidoInfo.k},{coverConhecidoInfo.t}) · {coverConhecidoInfo.fonte}
+                </div>
+              )}
+
+              {cpSatInfo && (
+                <div className="mb-2 text-xs text-muted">
+                  {cpSatInfo.solver === 'cp_sat' ? 'CP-SAT' : cpSatInfo.solver}: <strong className="text-fg">{cpSatInfo.status}</strong>
+                  {cpSatInfo.usado
+                    ? ' · solução usada'
+                    : cpSatInfo.status === 'UNKNOWN'
+                      ? ' · tempo esgotado'
+                      : ' · heurístico mantido'}
+                  {cpSatInfo.objective != null ? ` · ${cpSatInfo.objective} aposta(s)` : ''}
+                  {cpSatInfo.bestBound != null ? ` · bound ${cpSatInfo.bestBound}` : ''}
+                  {` · ${cpSatInfo.wallTime.toFixed(1)}s`}
+                </div>
+              )}
+
+              {fechamentoAviso && (
+                <div className="mb-2 text-xs text-amber-200 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2">
+                  {fechamentoAviso}
+                </div>
+              )}
+
+              <div className="mb-3">
+                <button
+                  onClick={rodarBacktest}
+                  disabled={rodandoBacktest}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-ink bg-white/5 border border-white/10 hover:bg-white/10 transition-colors disabled:opacity-50">
+                  {rodandoBacktest ? 'Rodando backtest...' : 'Backtest histórico'}
+                </button>
+              </div>
+
+              {backtestFechamento && (
+                <div className="mb-3 rounded-xl bg-white/5 border border-white/10 p-3">
+                  <div className="flex flex-wrap gap-4 text-xs">
+                    <div><span className="text-muted">Média melhor acerto:</span> <strong>{backtestFechamento.mediaMelhorAcerto.toFixed(2)}</strong></div>
+                    <div><span className="text-muted">Prêmio médio/concurso:</span> <strong>R$ {backtestFechamento.premioMedio.toFixed(2)}</strong></div>
+                    <div><span className="text-muted">Custo/concurso:</span> <strong>R$ {backtestFechamento.custoTotal.toFixed(2)}</strong></div>
+                    <div>
+                      <span className="text-muted">ROI médio:</span>{' '}
+                      <strong className={backtestFechamento.roiMedio >= 0 ? 'text-emerald-300' : 'text-rose-300'}>
+                        {(backtestFechamento.roiMedio * 100).toFixed(1)}%
+                      </strong>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                    {backtestFechamento.faixas.map(f => (
+                      <span key={f.acertos} className="px-2 py-1 rounded bg-white/5">
+                        ≥{f.acertos}: <strong>{f.percentual.toFixed(2)}%</strong> ({f.concursos})
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-2 text-[11px] text-muted">
+                    Distribuição do melhor acerto:{' '}
+                    {backtestFechamento.distribuicaoMelhorAcerto
+                      .map((c, h) => (c ? `${h}:${c}` : null))
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </div>
+                  <div className="mt-1 text-[11px] text-muted">
+                    Melhores concursos:{' '}
+                    {backtestFechamento.melhoresConcursos
+                      .map(m => `#${m.concurso} (${m.melhorAcerto} acertos, ${m.repetidas} repetidas)`)
+                      .join(' · ')}
+                  </div>
+                  <div className="mt-1 text-[11px] text-muted">
+                    Repetidas do anterior:{' '}
+                    {backtestFechamento.repetidasDistribuicao
+                      .map(r => `${r.repetidas}:${r.percentual.toFixed(1)}%`)
+                      .join(' · ')}
+                  </div>
+                  <div className="mt-2 text-[10px] text-muted">
+                    Prêmios de referência ({fechamentoCfg.nome}): {textoPremios(fechamentoCfg)}. Valores reais variam por concurso.
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2 mb-3">
+                <button
+                  onClick={() => {
+                    const texto = apostasFechamento.map(j => j.join(',')).join('\n');
+                    navigator.clipboard.writeText(texto);
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110"
+                  style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}>
+                  Copiar apostas (CSV)
+                </button>
+                <button
+                  onClick={() => {
+                    const texto = apostasFechamento.map(j => j.join(',')).join('\n');
+                    const blob = new Blob([texto], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `fechamento-${loteria}-k${fechamentoK}t${fechamentoT}-${new Date().toISOString().slice(0, 10)}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-ink bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                  Baixar .txt{apostasFechamento.length > 50 ? ` (${apostasFechamento.length})` : ''}
+                </button>
+              </div>
+
+              {apostasFechamento.length > 50 && (
+                <div className="mb-3 text-xs text-amber-200 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2">
+                  Exibindo as 50 primeiras apostas de {apostasFechamento.length}. Use <strong>Baixar .txt</strong> para o arquivo completo.
+                </div>
+              )}
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr>
+                      {apostasFechamento[0]?.map((_, i) => (
+                        <th key={i} className="pb-2 pr-2 text-muted font-normal">N{i + 1}</th>
+                      ))}
+                      <th className="pb-2 pr-2 text-muted font-normal text-right">Soma</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {apostasFechamento.slice(0, 50).map((jogo, idx) => (
+                      <tr key={idx} className="border-b border-white/10">
+                        {jogo.map(n => (
+                          <td key={n} className="py-1 pr-2 text-fg font-mono">
+                            {n}
+                          </td>
+                        ))}
+                        <td className="py-1 pr-2 text-muted text-right font-mono">
+                          {jogo.reduce((a, b) => a + b, 0)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+
+          {apostasFechamento.length === 0 && !gerandoFechamento && !error && (
+            <div className="text-center py-8 text-muted text-sm">
+              Configure k, t e clique em <strong>Gerar fechamento</strong>.
+            </div>
+          )}
+        </div>
+      )}
+
+      {!jogos && !loading && !modoFechamento && (
         <div className="text-center py-8 text-muted text-sm">
           Clique em <strong>Gerar</strong> para criar jogos diversificados.
         </div>

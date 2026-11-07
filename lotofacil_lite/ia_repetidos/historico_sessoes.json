@@ -1,8 +1,8 @@
 {
   "versao": "1.0",
   "criado_em": "2026-03-03T09:02:56.969014",
-  "ultima_atualizacao": "2026-09-18T12:35:21.332478",
-  "total_sessoes": 135,
+  "ultima_atualizacao": "2026-10-24T16:59:00.822736",
+  "total_sessoes": 137,
   "sessoes": [
     {
       "sessao_id": "e0fa344b",
@@ -1886,6 +1886,34 @@
       "sessao_id": "c082bcfc",
       "data": "2026-09-06",
       "inicio": "13:24",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "184d123a",
+      "data": "2026-09-18",
+      "inicio": "12:35",
+      "duracao_minutos": 0,
+      "total_decisoes": 0,
+      "total_backtests": 0,
+      "combinacoes_geradas": 0,
+      "resumo_decisoes": {
+        "exclusoes": [],
+        "niveis_usados": [],
+        "filtros_usados": []
+      }
+    },
+    {
+      "sessao_id": "fa9563ea",
+      "data": "2026-10-01",
+      "inicio": "10:49",
       "duracao_minutos": 0,
       "total_decisoes": 0,
       "total_backtests": 0,

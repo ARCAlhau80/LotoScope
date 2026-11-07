@@ -256,7 +256,8 @@ export async function GET(request: NextRequest) {
     const temFiltroEstrategias = estrategias && estrategias.length > 0;
 
     const LIMITE_MEMORIA = 500000;
-    if (!temFiltroEstrategias && estimativa > LIMITE_MEMORIA) {
+    const ordenacaoAtiva = ordenacao !== undefined && ordenacao !== 'aleatorio';
+    if (!temFiltroEstrategias && !ordenacaoAtiva && estimativa > LIMITE_MEMORIA) {
       return new NextResponse(criarStreamExport({
         resultados: numeros,
         cicloDados,
@@ -280,6 +281,12 @@ export async function GET(request: NextRequest) {
         excluidosPosicoes,
         estrategias,
       }), { headers: headersExport(loteria, dezenas) });
+    }
+    if (ordenacaoAtiva && estimativa > LIMITE_MEMORIA) {
+      return NextResponse.json(
+        { success: false, error: `A ordenacao (melhores/piores/balanceado) exige carregar as combinacoes em memoria. Reduza o universo para ate ${LIMITE_MEMORIA.toLocaleString('pt-BR')} combinacoes ou use a ordenacao Aleatoria.` },
+        { status: 400 }
+      );
     }
 
     const jogos = gerarExportJogos({
@@ -375,7 +382,8 @@ export async function POST(request: NextRequest) {
     const temFiltroEstrategias = estrategias && estrategias.length > 0;
 
     const LIMITE_MEMORIA = 500000;
-    if (!temFiltroEstrategias && estimativa > LIMITE_MEMORIA) {
+    const ordenacaoAtiva = ordenacao !== undefined && ordenacao !== 'aleatorio';
+    if (!temFiltroEstrategias && !ordenacaoAtiva && estimativa > LIMITE_MEMORIA) {
       return new NextResponse(criarStreamExport({
         resultados: numeros,
         cicloDados,
@@ -399,6 +407,12 @@ export async function POST(request: NextRequest) {
         excluidosPosicoes,
         estrategias,
       }), { headers: headersExport(loteria, dezenas) });
+    }
+    if (ordenacaoAtiva && estimativa > LIMITE_MEMORIA) {
+      return NextResponse.json(
+        { success: false, error: `A ordenacao (melhores/piores/balanceado) exige carregar as combinacoes em memoria. Reduza o universo para ate ${LIMITE_MEMORIA.toLocaleString('pt-BR')} combinacoes ou use a ordenacao Aleatoria.` },
+        { status: 400 }
+      );
     }
 
     const jogos = gerarExportJogos({
