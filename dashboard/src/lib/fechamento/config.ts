@@ -48,9 +48,9 @@ export const FECHAMENTOS: Record<string, FechamentoConfig> = {
     faixasPremio: [11, 12, 13, 14, 15],
     premios: PREMIOS_LOTOFACIL,
     repetidasPadrao: '7-10',
-    maxApostasMax: 5000,
+    maxApostasMax: 200000,
     tooltipReceita:
-      'Receita recomendada: 0 a 6 fixos, k=15, t=3, Máx. apostas=0, filtros de categoria e repetidas desligados para 100%. t=3 usa cover ótimo/consagrado; t=4–7 usa o melhor cover conhecido. O solver só entra quando não existe cover. Use Backtest para comparar 14/15.',
+      'Receita recomendada: k=15, t=3, Máx. apostas=0, filtros de categoria e repetidas desligados para 100%. t=3 usa cover ótimo/consagrado; t=4–8 usa o melhor cover conhecido e t=9–12 cover gerado/verificado (milhares de apostas). t≥13 só por exportação. O solver só entra quando não existe cover para o (v,k,t). Use Backtest para comparar 14/15.',
   },
   megasena: {
     id: 'megasena',

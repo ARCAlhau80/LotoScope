@@ -13,6 +13,8 @@ export interface GerarApostasCandidatasOptions {
   k: number;
   limite?: number;
   seed?: number;
+  /** Só aceita blocos que satisfazem este predicado (ex.: filtros de categoria). */
+  aceitarBloco?: (aposta: number[]) => boolean;
 }
 
 export interface ConstruirFechamentoOptions {
@@ -23,6 +25,8 @@ export interface ConstruirFechamentoOptions {
   seed?: number;
   candidatosPool?: number;
   amostraPorPasso?: number;
+  /** Só aceita blocos que satisfazem este predicado (ex.: filtros de categoria). */
+  aceitarBloco?: (aposta: number[]) => boolean;
   /** Tempo máximo em ms; 0/undefined = sem limite. */
   limiteTempoMs?: number;
 }
@@ -35,6 +39,8 @@ export interface BuscaLocalOptions {
   maxIteracoes?: number;
   seed?: number;
   candidatosPool?: number;
+  /** Só aceita blocos candidatos que satisfazem este predicado. */
+  aceitarBloco?: (aposta: number[]) => boolean;
   /** Teto de pares (aposta, candidato) avaliados; mantém a busca em segundos. */
   orcamentoAvaliacoes?: number;
 }
@@ -77,6 +83,8 @@ export interface CoverConhecido {
   fonte: string;
   /** Melhor limite inferior conhecido para C(v,k,t). */
   limiteInferior: number;
+  /** true quando a cobertura foi verificada exaustivamente offline. */
+  verificado?: boolean;
 }
 
 /**
@@ -377,15 +385,18 @@ export function indicesAlvosCobertosPorAposta(aposta: number[], universo: number
 
 /** Lista apostas candidatas de k dezenas. Com limite, amostra determinística. */
 export function gerarApostasCandidatas(opts: GerarApostasCandidatasOptions): number[][] {
-  const { universo, k, limite, seed } = opts;
+  const { universo, k, limite, seed, aceitarBloco } = opts;
   const u = [...new Set(universo)].sort((a, b) => a - b);
   const v = u.length;
   const total = nCombinacoes(v, k);
+  const aceita = (a: number[]) => !aceitarBloco || aceitarBloco(a);
+
   if (!limite || limite >= total) {
     const out: number[][] = [];
     function combinar(inicio: number, resto: number, atual: number[]): void {
       if (resto === 0) {
-        out.push([...atual]);
+        const a = [...atual];
+        if (aceita(a) && (limite === undefined || out.length < limite)) out.push(a);
         return;
       }
       for (let i = inicio; i <= u.length - resto; i++) {
@@ -399,7 +410,12 @@ export function gerarApostasCandidatas(opts: GerarApostasCandidatasOptions): num
   const rng = new LCG(seed ?? (u.join(",") + k).length);
   const visto = new Set<string>();
   const out: number[][] = [];
-  while (out.length < limite) {
+  // Com filtro, a taxa de aceitação pode ser baixa; limita as tentativas para
+  // não travar em filtros impossíveis (ex.: categoria com faixa vazia).
+  const maxTentativas = aceitarBloco ? Math.max(limite * 200, 20_000) : Number.POSITIVE_INFINITY;
+  let tentativas = 0;
+  while (out.length < limite && tentativas < maxTentativas) {
+    tentativas++;
     const copia = [...u];
     const cand: number[] = [];
     for (let i = 0; i < k; i++) {
@@ -408,6 +424,7 @@ export function gerarApostasCandidatas(opts: GerarApostasCandidatasOptions): num
       copia.splice(j, 1);
     }
     cand.sort((a, b) => a - b);
+    if (!aceita(cand)) continue;
     const chave = cand.join(",");
     if (!visto.has(chave)) {
       visto.add(chave);
@@ -427,6 +444,7 @@ export function construirFechamentoGulosoAmostrado(opts: ConstruirFechamentoOpti
     seed = 42,
     candidatosPool = 3000,
     amostraPorPasso = t <= 3 ? 2000 : t === 4 ? 500 : t <= 8 ? 60 : 25,
+    aceitarBloco,
     limiteTempoMs = 0,
   } = opts;
   const u = [...new Set(universo)].sort((a, b) => a - b);
@@ -447,8 +465,13 @@ export function construirFechamentoGulosoAmostrado(opts: ConstruirFechamentoOpti
   // Com maxApostas = 0 (sem limite), usamos um teto maior para que a cobertura
   // não pare artificialmente em 5000 apostas.
   const tetoPool = semLimite ? LIMITE_POOL_CANDIDATOS_ILIMITADO : LIMITE_POOL_CANDIDATOS;
-  const limitePool = Math.max(candidatosPool, semLimite ? tetoPool : Math.min(maxApostas, tetoPool));
-  const pool = gerarApostasCandidatas({ universo: u, k, limite: limitePool, seed });
+  // Com filtro, o pool precisa ser maior: parte dos candidatos é descartada.
+  const poolDesejado = aceitarBloco ? Math.max(candidatosPool, 1500) : candidatosPool;
+  const limitePool = aceitarBloco
+    ? Math.min(LIMITE_POOL_CANDIDATOS, Math.max(poolDesejado, 5000))
+    : Math.min(tetoPool, Math.max(poolDesejado, semLimite ? tetoPool : Math.min(maxApostas, tetoPool)));
+  const pool = gerarApostasCandidatas({ universo: u, k, limite: limitePool, seed, aceitarBloco });
+  if (pool.length === 0) return [];
   rng.next(); // consumir um pouco para embaralhar diferente
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(rng.next() * (i + 1));
@@ -554,6 +577,142 @@ export function removerApostasRedundantes(
   return apostas.filter((_, i) => ativas[i]).map(a => [...a]);
 }
 
+export interface CompletarCoberturaOptions {
+  apostas: number[][];
+  universo: number[];
+  k: number;
+  t: number;
+  /** 0/undefined = sem limite de apostas. */
+  maxApostas?: number;
+  seed?: number;
+  candidatosPool?: number;
+  amostraPorPasso?: number;
+  /** Só aceita blocos que satisfazem este predicado (ex.: filtros + repetidas). */
+  aceitarBloco?: (aposta: number[]) => boolean;
+  limiteTempoMs?: number;
+}
+
+/**
+ * Repara uma cobertura parcial: mantém as apostas existentes e adiciona
+ * blocos (respeitando `aceitarBloco`) até cobrir 100% dos t-subconjuntos ou
+ * atingir `maxApostas`. Útil depois de filtros que removem apostas.
+ */
+export function completarCobertura(opts: CompletarCoberturaOptions): number[][] {
+  const {
+    apostas,
+    universo,
+    k,
+    t,
+    maxApostas = 0,
+    seed = 7,
+    candidatosPool = 2000,
+    amostraPorPasso = t <= 3 ? 2000 : t === 4 ? 500 : t <= 8 ? 60 : 25,
+    aceitarBloco,
+    limiteTempoMs = 0,
+  } = opts;
+
+  const u = [...new Set(universo)].sort((a, b) => a - b);
+  const inicial: number[][] = [];
+  const vistos = new Set<string>();
+  for (const a of apostas) {
+    const ordenada = [...a].sort((x, y) => x - y);
+    if (ordenada.length !== k || new Set(ordenada).size !== k) continue;
+    if (!ordenada.every(n => u.includes(n))) continue;
+    const chave = ordenada.join(",");
+    if (vistos.has(chave)) continue;
+    vistos.add(chave);
+    inicial.push(ordenada);
+  }
+
+  const totalT = nCombinacoes(u.length, t);
+  if (totalT <= 0) return inicial;
+
+  const coberta = new Uint8Array(totalT);
+  let cobertos = 0;
+  for (const a of inicial) {
+    for (const idx of indicesAlvosCobertosPorAposta(a, u, t)) {
+      if (!coberta[idx]) {
+        coberta[idx] = 1;
+        cobertos++;
+      }
+    }
+  }
+  if (cobertos >= totalT) return inicial;
+
+  const limite = maxApostasIlimitado(maxApostas)
+    ? Number.POSITIVE_INFINITY
+    : Math.max(0, maxApostas - inicial.length);
+  if (limite <= 0) return inicial;
+
+  const pool = gerarApostasCandidatas({
+    universo: u,
+    k,
+    limite: Math.min(LIMITE_POOL_CANDIDATOS, Math.max(1, candidatosPool)),
+    seed,
+    aceitarBloco,
+  });
+  if (!pool.length) return inicial;
+
+  const indicesCache: (Int32Array | null)[] = new Array(pool.length).fill(null);
+  const indicesDe = (ci: number): Int32Array => {
+    const cache = indicesCache[ci];
+    if (cache !== null) return cache;
+    const idx = Int32Array.from(indicesAlvosCobertosPorAposta(pool[ci], u, t));
+    indicesCache[ci] = idx;
+    return idx;
+  };
+
+  const rng = new LCG(seed);
+  const restantes = pool
+    .map((_, i) => i)
+    .filter(ci => {
+      const chave = pool[ci].join(",");
+      return !vistos.has(chave);
+    });
+  const resultado = [...inicial];
+  const inicio = Date.now();
+  let adicionadas = 0;
+
+  while (cobertos < totalT && restantes.length > 0 && adicionadas < limite) {
+    if (limiteTempoMs > 0 && Date.now() - inicio > limiteTempoMs) break;
+    const amostraSize = Math.min(amostraPorPasso, restantes.length);
+    const amostra: number[] = [];
+    const temp = [...restantes];
+    for (let i = 0; i < amostraSize; i++) {
+      const j = Math.floor(rng.next() * temp.length);
+      amostra.push(temp[j]);
+      temp.splice(j, 1);
+    }
+
+    let melhorIdx = -1;
+    let melhorGanho = 0;
+    for (const ci of amostra) {
+      let ganho = 0;
+      for (const idx of indicesDe(ci)) {
+        if (!coberta[idx]) ganho++;
+      }
+      if (ganho > melhorGanho) {
+        melhorGanho = ganho;
+        melhorIdx = ci;
+      }
+    }
+    if (melhorIdx < 0) break;
+
+    resultado.push([...pool[melhorIdx]]);
+    vistos.add(pool[melhorIdx].join(","));
+    for (const idx of indicesDe(melhorIdx)) {
+      if (!coberta[idx]) {
+        coberta[idx] = 1;
+        cobertos++;
+      }
+    }
+    restantes.splice(restantes.indexOf(melhorIdx), 1);
+    adicionadas++;
+  }
+
+  return resultado;
+}
+
 /** Aplica filtro de repetição de um sorteio-base a cada aposta. */
 export function apostaSatisfazRepetidas(
   aposta: number[],
@@ -578,6 +737,7 @@ export function buscaLocalFechamento(opts: BuscaLocalOptions): number[][] {
     maxIteracoes = 200,
     seed = 1,
     candidatosPool = 600,
+    aceitarBloco,
     orcamentoAvaliacoes = ORCAMENTO_BUSCA_LOCAL,
   } = opts;
   const u = [...new Set(universo)].sort((a, b) => a - b);
@@ -590,7 +750,7 @@ export function buscaLocalFechamento(opts: BuscaLocalOptions): number[][] {
   // contra o pool. Sem esse teto, n apostas × pool candidatos degenera em
   // minutos/horas para volumes grandes.
   if (orcamentoAvaliacoes <= 0) return apostas;
-  const pool = gerarApostasCandidatas({ universo: u, k, limite: candidatosPool, seed });
+  const pool = gerarApostasCandidatas({ universo: u, k, limite: candidatosPool, seed, aceitarBloco });
   rng.next();
   const apostasPorIteracao = Math.max(
     1,
@@ -771,6 +931,7 @@ export function fechamentoLotofacil25Otimizado(opts: {
   buscaSeed?: number;
   candidatosPool?: number;
   amostraPorPasso?: number;
+  aceitarBloco?: (aposta: number[]) => boolean;
   limiteTempoMs?: number;
 } = {}): number[][] {
   const universo = opts.universo ?? Array.from({ length: 25 }, (_, i) => i + 1);
@@ -782,6 +943,7 @@ export function fechamentoLotofacil25Otimizado(opts: {
     seed: opts.seed ?? 7,
     candidatosPool: opts.candidatosPool,
     amostraPorPasso: opts.amostraPorPasso,
+    aceitarBloco: opts.aceitarBloco,
     limiteTempoMs: opts.limiteTempoMs,
   });
 
@@ -794,6 +956,7 @@ export function fechamentoLotofacil25Otimizado(opts: {
       maxIteracoes: opts.maxIteracoes ?? 100,
       seed: opts.buscaSeed ?? (opts.seed ?? 7) + 1,
       candidatosPool: opts.candidatosPool ?? 400,
+      aceitarBloco: opts.aceitarBloco,
     });
   }
   return apostas;
@@ -877,6 +1040,10 @@ export function gerarFechamentoComRestricoes(opts: GerarFechamentoComRestricoesO
     throw new Error(`Universo restante (${universoRestante.length}) menor que t=${t}.`);
   }
 
+  const aceitarBloco = filtrosInformados.length > 0
+    ? (a: number[]) => apostaSatisfazCategorias([...fixos, ...a], filtrosInformados)
+    : undefined;
+
   const apostasBase = otimizado
     ? fechamentoLotofacil25Otimizado({
         universo: universoRestante,
@@ -888,6 +1055,7 @@ export function gerarFechamentoComRestricoes(opts: GerarFechamentoComRestricoesO
         buscaSeed,
         candidatosPool,
         amostraPorPasso,
+        aceitarBloco,
         limiteTempoMs,
       })
     : construirFechamentoGulosoAmostrado({
@@ -898,6 +1066,7 @@ export function gerarFechamentoComRestricoes(opts: GerarFechamentoComRestricoesO
         seed,
         candidatosPool,
         amostraPorPasso,
+        aceitarBloco,
         limiteTempoMs,
       });
 
@@ -914,11 +1083,28 @@ export function gerarFechamentoComRestricoes(opts: GerarFechamentoComRestricoesO
     }
   }
 
-  // Aplica filtros de categoria, se houver. Isso pode remover apostas e
-  // consequentemente reduzir a cobertura exata (recalculada pelo caller).
+  // Aplica filtros de categoria, se houver. Como o guloso já gera blocos
+  // válidos (aceitarBloco), isto é apenas uma salvaguarda.
   let resultado = finais;
   if (filtrosInformados.length > 0) {
     resultado = resultado.filter((a) => apostaSatisfazCategorias(a, filtrosInformados));
+
+    // Reparo: se algum filtro/limite deixou buracos, completa a cobertura
+    // adicionando blocos válidos que ainda caibam no orçamento.
+    if (resultado.length > 0) {
+      const livres = resultado.map(a => a.filter(n => !fixos.includes(n)));
+      const reparado = completarCobertura({
+        apostas: livres,
+        universo: universoRestante,
+        k: kEfetivo,
+        t,
+        maxApostas: maxApostasIlimitado(maxApostas) ? 0 : Math.max(maxApostas, resultado.length),
+        seed,
+        aceitarBloco: (a) => apostaSatisfazCategorias([...fixos, ...a], filtrosInformados),
+        limiteTempoMs,
+      });
+      resultado = reparado.map(a => [...fixos, ...a].sort((x, y) => x - y));
+    }
   }
 
   // Remove apostas que não cobrem nenhum trio exclusivo, preservando a cobertura.
@@ -950,6 +1136,135 @@ export function apostaSatisfazCategorias(
   }
   return true;
 }
+
+export interface PermutarCoverParaFiltrosOptions {
+  /** Blocos do cover com rótulos 1..v (como no registry). */
+  blocos: number[][];
+  /** Números reais disponíveis (sem fixos/excluídos), na ordem que será permutada. */
+  universo: number[];
+  fixos?: number[];
+  filtros: FiltroCategoria[];
+  seed?: number;
+  /** Tempo máximo da busca; 0/undefined usa 750 ms. */
+  limiteTempoMs?: number;
+  /** Iterações por reinício (teto). */
+  maxIteracoes?: number;
+}
+
+export interface PermutarCoverParaFiltrosResult {
+  /** Mapeamento posição -> número real que satisfez os filtros. */
+  universo: number[];
+  /** Apostas finais (fixos + bloco mapeado), ordenadas. */
+  apostas: number[][];
+  /** Número de blocos que violam os filtros (0 = sucesso). */
+  violacoes: number;
+}
+
+/**
+ * Procura uma permutação dos rótulos do cover que faça TODOS os blocos
+ * satisfazerem os filtros de categoria. A cobertura é preservada por
+ * construção (permutação é bijeção), então se `violacoes === 0` o cover
+ * mantém 100% dos t-subconjuntos com o mesmo número de apostas.
+ */
+export function permutarCoverParaFiltros(
+  opts: PermutarCoverParaFiltrosOptions,
+): PermutarCoverParaFiltrosResult | null {
+  const { blocos, universo, fixos = [], filtros, seed = 7, limiteTempoMs = 750, maxIteracoes = 20_000 } = opts;
+  if (!blocos.length || !universo.length) return null;
+  if (!filtros.length) {
+    return {
+      universo,
+      apostas: blocos.map(b => [...fixos, ...b.map(x => universo[x - 1])].sort((a, b) => a - b)),
+      violacoes: 0,
+    };
+  }
+
+  const v = universo.length;
+  const blocosPos = blocos.map(b => b.map(x => x - 1));
+  const filtrosSets = filtros.map(f => ({ set: new Set(f.numeros), min: f.min, max: f.max }));
+  // Quantos fixos entram em cada categoria (constante para todos os blocos).
+  const fixosPorFiltro = filtrosSets.map(f => fixos.reduce((acc, n) => acc + (f.set.has(n) ? 1 : 0), 0));
+
+  const avaliar = (perm: number[]): number => {
+    let violacoes = 0;
+    for (const bloco of blocosPos) {
+      let ok = true;
+      for (let fi = 0; fi < filtrosSets.length; fi++) {
+        const f = filtrosSets[fi];
+        let qtd = fixosPorFiltro[fi];
+        for (const pos of bloco) {
+          if (f.set.has(perm[pos])) qtd++;
+        }
+        if (qtd < f.min || qtd > f.max) {
+          ok = false;
+          break;
+        }
+      }
+      if (!ok) violacoes++;
+    }
+    return violacoes;
+  };
+
+  const montar = (perm: number[]): number[][] =>
+    blocos.map(b => [...fixos, ...b.map(x => perm[x - 1])].sort((a, b) => a - b));
+
+  let melhorPerm = [...universo];
+  let melhorViol = avaliar(melhorPerm);
+  if (melhorViol === 0) {
+    return { universo: melhorPerm, apostas: montar(melhorPerm), violacoes: 0 };
+  }
+
+  const rng = new LCG(seed);
+  const inicio = Date.now();
+  const orcamento = limiteTempoMs > 0 ? limiteTempoMs : 750;
+  // Cada avaliação custa ~ blocos * k; limita iterações para não estourar.
+  const iteracoesEfetivas = Math.max(
+    20,
+    Math.min(maxIteracoes, Math.floor(2_000_000 / Math.max(1, blocos.length * (blocos[0]?.length ?? 1)))),
+  );
+  const reinicios = 6;
+  const porReinicio = Math.max(20, Math.floor(iteracoesEfetivas / reinicios));
+
+  for (let r = 0; r < reinicios; r++) {
+    if (Date.now() - inicio > orcamento) break;
+    const perm = [...universo];
+    for (let i = perm.length - 1; i > 0; i--) {
+      const j = Math.floor(rng.next() * (i + 1));
+      [perm[i], perm[j]] = [perm[j], perm[i]];
+    }
+    let atual = avaliar(perm);
+    if (atual < melhorViol) {
+      melhorViol = atual;
+      melhorPerm = [...perm];
+    }
+    if (atual === 0) return { universo: perm, apostas: montar(perm), violacoes: 0 };
+
+    let T = 2.0;
+    for (let it = 0; it < porReinicio; it++) {
+      if (Date.now() - inicio > orcamento) break;
+      let a = Math.floor(rng.next() * v);
+      let b = Math.floor(rng.next() * v);
+      if (a === b) b = (b + 1) % v;
+      [perm[a], perm[b]] = [perm[b], perm[a]];
+      const novo = avaliar(perm);
+      const aceita = novo <= atual || rng.next() < Math.exp(-(novo - atual) / Math.max(T, 1e-9));
+      if (aceita) {
+        atual = novo;
+        if (novo < melhorViol) {
+          melhorViol = novo;
+          melhorPerm = [...perm];
+        }
+        if (novo === 0) return { universo: perm, apostas: montar(perm), violacoes: 0 };
+      } else {
+        [perm[a], perm[b]] = [perm[b], perm[a]];
+      }
+      T *= 0.9995;
+    }
+  }
+
+  return { universo: melhorPerm, apostas: montar(melhorPerm), violacoes: melhorViol };
+}
+
 
 /**
  * Filtra apostas conforme categorias e recalcula a cobertura exata.
@@ -1073,6 +1388,8 @@ export interface SimulatedAnnealingOptions {
   taxaResfriamento?: number;
   candidatosPool?: number;
   seed?: number;
+  /** Só aceita blocos candidatos que satisfazem este predicado. */
+  aceitarBloco?: (aposta: number[]) => boolean;
 }
 
 function aceitarPiora(delta: number, temperatura: number, rng: LCG): boolean {
@@ -1092,6 +1409,7 @@ export function buscaLocalSimulatedAnnealing(opts: SimulatedAnnealingOptions): n
     taxaResfriamento = 0.995,
     candidatosPool = 600,
     seed = 1,
+    aceitarBloco,
   } = opts;
 
   const u = [...new Set(universo)].sort((a, b) => a - b);
@@ -1113,7 +1431,7 @@ export function buscaLocalSimulatedAnnealing(opts: SimulatedAnnealingOptions): n
     }
   }
 
-  const pool = gerarApostasCandidatas({ universo: u, k, limite: candidatosPool, seed });
+  const pool = gerarApostasCandidatas({ universo: u, k, limite: candidatosPool, seed, aceitarBloco });
   const indicesPool = pool.map(a => indicesAlvosCobertosPorAposta(a, u, t));
 
   let temperatura = temperaturaInicial;

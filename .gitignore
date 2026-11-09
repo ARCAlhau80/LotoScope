@@ -101,5 +101,9 @@ Desktop.ini
 .cache/
 workflow-graph/
 
+# .NET build artifacts
+tools/covergen/bin/
+tools/covergen/obj/
+
 # Testes/browser tools
 .playwright-mcp/

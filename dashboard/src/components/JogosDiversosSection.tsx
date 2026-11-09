@@ -145,9 +145,11 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [fechamentoSolver, setFechamentoSolver] = useState<'cp_sat' | 'SCIP' | 'CBC'>('cp_sat');
   const [fechamentoCpSatTime, setFechamentoCpSatTime] = useState<number>(10);
   const [cpSatInfo, setCpSatInfo] = useState<(CpSatFechamentoResult & { usado: boolean }) | null>(null);
-  const [coverConhecidoInfo, setCoverConhecidoInfo] = useState<{ v: number; k: number; t: number; blocos: number; fonte: string; limiteInferior?: number } | null>(null);
+  const [coverConhecidoInfo, setCoverConhecidoInfo] = useState<{ v: number; k: number; t: number; blocos: number; fonte: string; limiteInferior?: number; verificado?: boolean } | null>(null);
   const [fechamentoPriorizarPremios, setFechamentoPriorizarPremios] = useState<boolean>(false);
   const [fechamentoRemoverRedundantes, setFechamentoRemoverRedundantes] = useState<boolean>(true);
+  const [fechamentoGarantiaCondicional, setFechamentoGarantiaCondicional] = useState<boolean>(false);
+  const [fechamentoTInfo, setFechamentoTInfo] = useState<{ garantiaCondicional: boolean; tEfetivo: number; t: number } | null>(null);
   const [fechamentoFiltroRepetidasAtivo, setFechamentoFiltroRepetidasAtivo] = useState<boolean>(false);
   const [fechamentoRepetidasFaixa, setFechamentoRepetidasFaixa] = useState<string>(fechamentoCfg.repetidasPadrao);
   const [fechamentoSeedUsado, setFechamentoSeedUsado] = useState<number | null>(null);
@@ -274,6 +276,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setOrdenacao('aleatorio');
     setFechamentoK(fechamentoCfg.kPadrao);
     setFechamentoT(fechamentoCfg.tPadrao);
+    setFechamentoGarantiaCondicional(false);
+    setFechamentoTInfo(null);
     setFechamentoRepetidasFaixa(fechamentoCfg.repetidasPadrao);
     setApostasFechamento([]);
     setCoberturaFechamento(null);
@@ -717,6 +721,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           filtrosCategorias,
           k: fechamentoK,
           t: fechamentoT,
+          garantiaCondicional: fechamentoGarantiaCondicional && fixosSelecionados.length > 0,
           maxApostas: fechamentoMax,
           seed: fechamentoSeed,
           otimizado: fechamentoOtimizado,
@@ -751,6 +756,11 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       setBacktestFechamento(data.backtest ?? null);
       setCpSatInfo(data.cpSat ?? null);
       setCoverConhecidoInfo(data.coverConhecido ?? null);
+      setFechamentoTInfo({
+        garantiaCondicional: Boolean(data.garantiaCondicional),
+        tEfetivo: Number(data.tEfetivo ?? fechamentoT),
+        t: Number(data.t ?? fechamentoT),
+      });
     } catch (err) {
       if ((err as any)?.name === 'AbortError') {
         setError('Geração cancelada.');
@@ -761,7 +771,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       if (abortFechamentoRef.current === controller) abortFechamentoRef.current = null;
       setGerandoFechamento(false);
     }
-  }, [estados, categoriasDefs, categoriasInputs, aplicarFiltrosCategorias, fechamentoK, fechamentoT, fechamentoMax, fechamentoSeed, fechamentoOtimizado, fechamentoSeeds, fechamentoAmostra, fechamentoUsarCpSat, fechamentoSolver, fechamentoCpSatTime, fechamentoPriorizarPremios, fechamentoRemoverRedundantes, fechamentoFiltroRepetidasAtivo, fechamentoRepetidasFaixa, numerosSorteadosAtual, loteria]);
+  }, [estados, categoriasDefs, categoriasInputs, aplicarFiltrosCategorias, fechamentoK, fechamentoT, fechamentoMax, fechamentoSeed, fechamentoOtimizado, fechamentoSeeds, fechamentoAmostra, fechamentoUsarCpSat, fechamentoSolver, fechamentoCpSatTime, fechamentoPriorizarPremios, fechamentoRemoverRedundantes, fechamentoGarantiaCondicional, fechamentoFiltroRepetidasAtivo, fechamentoRepetidasFaixa, numerosSorteadosAtual, loteria]);
 
   const cancelarFechamento = useCallback(() => {
     abortFechamentoRef.current?.abort();
@@ -1656,6 +1666,27 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               />
               Remover apostas redundantes
             </label>
+            <label
+              className="flex items-start gap-2 text-xs cursor-pointer select-none self-end pb-2"
+              title="Garantia condicional: os t acertos valem apenas se TODOS os fixos forem sorteados. Reduz o alvo para t−f e gera muito menos apostas. Se algum fixo não sair, não há garantia."
+            >
+              <input
+                type="checkbox"
+                checked={fechamentoGarantiaCondicional}
+                onChange={() => setFechamentoGarantiaCondicional(!fechamentoGarantiaCondicional)}
+                className="accent-[#818cf8] mt-0.5"
+              />
+              <span className="flex flex-col leading-tight">
+                <span>Garantia condicional aos fixos</span>
+                <span className="text-[10px] text-muted">
+                  {fixos.length === 0
+                    ? 'selecione fixos para ativar'
+                    : fixos.length >= fechamentoT
+                      ? 'fixos ≥ t: garantia automática'
+                      : `reduz o alvo para t−${fixos.length} = ${Math.max(1, fechamentoT - fixos.length)}`}
+                </span>
+              </span>
+            </label>
             <label className="flex items-center gap-2 text-xs cursor-pointer select-none self-end pb-2" title="Compara várias seeds e escolhe a de melhor retorno histórico. Ao ativar, usa pelo menos 5 seeds.">
               <input
                 type="checkbox"
@@ -1788,8 +1819,15 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                   <div className="text-lg font-bold text-fg">{apostasFechamento.length}</div>
                 </div>
                 <div className="rounded-xl bg-white/5 p-3 text-center">
-                  <div className="text-xs text-muted">Garantia</div>
+                  <div className="text-xs text-muted">
+                    {fechamentoTInfo?.garantiaCondicional ? 'Garantia condicional' : 'Garantia'}
+                  </div>
                   <div className="text-lg font-bold text-fg">{coberturaFechamento?.garantiaPercentual?.toFixed(2)}%</div>
+                  {fechamentoTInfo?.garantiaCondicional && (
+                    <div className="text-[10px] text-amber-200">
+                      se os {fixos.length} fixo(s) saírem (t={fechamentoTInfo.tEfetivo})
+                    </div>
+                  )}
                 </div>
                 <div className="rounded-xl bg-white/5 p-3 text-center">
                   <div className="text-xs text-muted">Cobertura t-subconjuntos</div>
@@ -1814,9 +1852,22 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               </div>
 
               <div className="mb-2 text-xs text-muted">
-                {coberturaFechamento?.coberta
-                  ? '✅ Fechamento cobre 100% dos t-subconjuntos (garantia total)'
-                  : `⚠️ Cobertura parcial: ${coberturaFechamento?.garantiaPercentual?.toFixed(2)}% dos t-subconjuntos`}
+                {fechamentoTInfo?.garantiaCondicional ? (
+                  fixos.length >= fechamentoTInfo.t ? (
+                    <span className="text-emerald-200">
+                      ✅ Garantia automática: os {fixos.length} fixo(s) já garantem {fechamentoTInfo.t} acertos se todos forem sorteados.
+                    </span>
+                  ) : (
+                    <span className="text-amber-200">
+                      ⚠️ Garantia CONDICIONAL: {fechamentoTInfo.t} acertos valem apenas se os {fixos.length} fixo(s) forem sorteados.
+                      A verificação usa t={fechamentoTInfo.tEfetivo} no universo restante.
+                    </span>
+                  )
+                ) : coberturaFechamento?.coberta ? (
+                  '✅ Fechamento cobre 100% dos t-subconjuntos (garantia total)'
+                ) : (
+                  `⚠️ Cobertura parcial: ${coberturaFechamento?.garantiaPercentual?.toFixed(2)}% dos t-subconjuntos`
+                )}
               </div>
 
               {fechamentoCoberturaRestante && (fixos.length > 0 || excluidos.length > 0) && (
@@ -1853,7 +1904,11 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
 
               {coverConhecidoInfo && (
                 <div className="mb-2 text-xs text-emerald-200 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2">
-                  {coverConhecidoInfo.limiteInferior === coverConhecidoInfo.blocos ? 'Cobertura ótima (provada)' : 'Melhor cobertura conhecida'}: <strong>{coverConhecidoInfo.blocos} bloco(s)</strong> para C({coverConhecidoInfo.v},{coverConhecidoInfo.k},{coverConhecidoInfo.t}) · {coverConhecidoInfo.fonte}
+                  {coverConhecidoInfo.verificado
+                    ? 'Cobertura verificada'
+                    : coverConhecidoInfo.limiteInferior === coverConhecidoInfo.blocos
+                      ? 'Cobertura ótima (provada)'
+                      : 'Melhor cobertura conhecida'}: <strong>{coverConhecidoInfo.blocos} bloco(s)</strong> para C({coverConhecidoInfo.v},{coverConhecidoInfo.k},{coverConhecidoInfo.t}) · {coverConhecidoInfo.fonte}
                 </div>
               )}
 
