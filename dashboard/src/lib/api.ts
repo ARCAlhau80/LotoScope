@@ -23,6 +23,52 @@ export async function getAnaliseGrupos(signal?: AbortSignal): Promise<AnaliseGru
   return data;
 }
 
+export interface JanelaAlvoNumero {
+  numero: number;
+  ocorrencias: number;
+  percentual: number;
+}
+
+export interface JanelaAlvoConcurso {
+  concurso: number;
+  numeros: number[];
+  data: string | null;
+}
+
+export interface JanelaAlvoData {
+  sucesso: boolean;
+  loteria: string;
+  concursoAlvo: number;
+  janelaSolicitada: number;
+  janelaEfetiva: number;
+  totalSorteios: number;
+  primeiroConcursoJanela: number | null;
+  ultimoConcursoJanela: number | null;
+  numeros: JanelaAlvoNumero[];
+  concursos: JanelaAlvoConcurso[];
+  alvo: JanelaAlvoConcurso | null;
+}
+
+export async function getJanelaAlvo(
+  loteria: string,
+  concurso: number | undefined,
+  janela: number,
+  signal?: AbortSignal,
+): Promise<JanelaAlvoData> {
+  const params = new URLSearchParams();
+  params.set('loteria', loteria);
+  if (concurso !== undefined) params.set('concurso', String(concurso));
+  params.set('janela', String(janela));
+  const res = await fetch(`/api/janela-alvo?${params.toString()}`, { signal });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
 export async function getRankingCombinacoes(
   perfil: string = 'altovalor',
   top: number = 10,

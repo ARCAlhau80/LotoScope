@@ -31,6 +31,7 @@ import StreaksTendenciaSection from '@/components/StreaksTendenciaSection';
 import AiAnalysis from '@/components/AiAnalysis';
 import RankingCombinacoesSection from '@/components/RankingCombinacoesSection';
 import ApostadorSection from '@/components/ApostadorSection';
+import JanelaAlvoSection from '@/components/JanelaAlvoSection';
 
 function LoadingSkeleton() {
   return (
@@ -183,6 +184,14 @@ function HomePage() {
               comparativo={data.comparativo_posicional}
             />
             <Zone id="zona-analise" label="Análise" description="Estatística histórica, ciclos, transições e padrões posicionais.">
+            <div className="animate-slide-up stagger-1 mb-6">
+              <JanelaAlvoSection
+                loteria={loteria}
+                concursoAtual={data.ultimo_sorteio.concurso}
+                concursoBase={data.ultimo_sorteio.concurso}
+                numerosBase={data.ultimo_sorteio.numeros}
+              />
+            </div>
             {data.supersete && (
               <div className="animate-slide-up stagger-1 mt-6">
                 <SuperSeteSection data={data.supersete} />
