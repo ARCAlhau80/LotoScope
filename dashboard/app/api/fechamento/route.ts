@@ -138,6 +138,27 @@ function aplicarFiltroRepetidas(apostas: number[][], filtro: FiltroRepetidas | n
   return apostas.filter(a => apostaSatisfazRepetidas(a, filtro.numeros, filtro.min, filtro.max));
 }
 
+/** Sobreposição média entre pares de apostas (menor = mais diversificado). */
+function sobreposicaoMediaApostas(apostas: number[][]): number {
+  const n = apostas.length;
+  if (n < 2) return 0;
+  // Para volumes muito grandes, amostra para manter o custo baixo.
+  const amostra = n > 300 ? apostas.slice(0, 300) : apostas;
+  const m = amostra.length;
+  let soma = 0;
+  let pares = 0;
+  for (let i = 0; i < m; i++) {
+    const set = new Set(amostra[i]);
+    for (let j = i + 1; j < m; j++) {
+      let inter = 0;
+      for (const x of amostra[j]) if (set.has(x)) inter++;
+      soma += inter;
+      pares++;
+    }
+  }
+  return pares > 0 ? soma / pares : 0;
+}
+
 function calcularCoberturaRestante(
   apostas: number[][],
   universo: number[],
@@ -197,6 +218,25 @@ function montarRespostaFinal(args: {
   tempoGeracaoMs?: number;
   cpSat?: (CpSatFechamentoResult & { usado: boolean }) | null;
   coverConhecido?: { v: number; k: number; t: number; blocos: number; fonte: string; limiteInferior?: number; verificado?: boolean } | null;
+  otimizacao?: {
+    criterio: string;
+    seedsTestadas: number;
+    seedEscolhida: number;
+    totalApostas: number;
+    cobertura: number;
+    sobreposicaoMedia: number | null;
+    lucroTreino: number | null;
+    lucroHoldout: number | null;
+    holdoutConcursos: number;
+    candidatos: {
+      seed: number;
+      totalApostas: number;
+      cobertura: number;
+      sobreposicaoMedia: number | null;
+      lucroTreino: number | null;
+      lucroHoldout: number | null;
+    }[];
+  } | null;
 }) {
   return {
     sucesso: true,
@@ -228,6 +268,7 @@ function montarRespostaFinal(args: {
     tempoGeracaoMs: args.tempoGeracaoMs ?? null,
     cpSat: args.cpSat ?? null,
     coverConhecido: args.coverConhecido ?? null,
+    otimizacao: args.otimizacao ?? null,
   };
 }
 
@@ -360,20 +401,32 @@ export async function POST(request: NextRequest) {
     const solver: SolverFechamento = solverBody === 'scip' ? 'SCIP' : solverBody === 'cbc' ? 'CBC' : 'cp_sat';
     const cpSatTimeLimit = Math.max(1, Math.min(60, parseNumero(body.cpSatTimeLimit, 10)));
     const incluirBacktest = parseBoolean(body.incluirBacktest, false);
+    const otimizarSeeds = parseBoolean(body.otimizarSeeds, false);
+    const quantidadeSeeds = Math.max(2, Math.min(50, parseNumero(body.quantidadeSeeds, 20)));
+    const criterioRaw = String(body.criterioOtimizacao ?? 'custo').toLowerCase();
+    const criterioOtimizacao: 'custo' | 'diversidade' | 'backtest' | 'equilibrado' =
+      criterioRaw === 'diversidade' || criterioRaw === 'backtest' || criterioRaw === 'equilibrado'
+        ? criterioRaw
+        : 'custo';
     const limiteTempoMs = Math.max(0, parseNumero(body.limiteTempoMs, 120_000));
     const seedsSolicitadas = Math.max(1, Math.min(10, parseNumero(body.buscarMelhorSeed, 1)));
     // "Priorizar prêmios" só faz sentido comparando pelo menos 2 seeds.
     const seedsBase = priorizarPremios ? Math.max(2, seedsSolicitadas) : seedsSolicitadas;
-    // Com "0 = todas" a geração já é pesada; limita a busca de seeds.
-    const seeds = maxApostas === 0 ? Math.min(seedsBase, 5) : seedsBase;
-    const limitePorSeed = seeds > 1 && limiteTempoMs > 0
-      ? Math.max(15_000, Math.floor(limiteTempoMs / seeds))
-      : limiteTempoMs;
+    // Otimização explícita testa mais seeds; fora dela mantém o teto antigo.
+    const seeds = otimizarSeeds
+      ? quantidadeSeeds
+      : (maxApostas === 0 ? Math.min(seedsBase, 5) : seedsBase);
+    const limitePorSeed = otimizarSeeds
+      ? Math.max(5_000, Math.floor(limiteTempoMs / seeds))
+      : seeds > 1 && limiteTempoMs > 0
+        ? Math.max(15_000, Math.floor(limiteTempoMs / seeds))
+        : limiteTempoMs;
 
     const universoEfetivo = universo?.length ? universo : Array.from({ length: fcfg.totalNumeros }, (_, i) => i + 1);
     const universoCobertura: number[] = universoEfetivo.filter((n: number) => !excluidos.includes(n));
     const universoRestante = universoEfetivo.filter((n: number) => !fixos.includes(n) && !excluidos.includes(n));
-    const precisaHistorico = (priorizarPremios && seeds > 1) || incluirBacktest;
+    const precisaHistorico = (priorizarPremios && seeds > 1) || incluirBacktest
+      || (otimizarSeeds && (criterioOtimizacao === 'backtest' || criterioOtimizacao === 'equilibrado'));
     let resultadosHistoricos: Awaited<ReturnType<typeof carregarResultados>> | null = null;
     let avisoHistorico: string | null = null;
     if (precisaHistorico) {
@@ -387,6 +440,17 @@ export async function POST(request: NextRequest) {
         avisoHistorico = 'Não foi possível carregar o histórico para o backtest.';
       }
     }
+
+    // Holdout: treina/escolhe no começo e reporta o fim (20%) como fora da amostra.
+    const holdoutN = resultadosHistoricos
+      ? Math.max(100, Math.floor(resultadosHistoricos.length * 0.2))
+      : 0;
+    const resultadosTreino = resultadosHistoricos && holdoutN > 0 && holdoutN < resultadosHistoricos.length
+      ? resultadosHistoricos.slice(0, -holdoutN)
+      : resultadosHistoricos;
+    const resultadosHoldout = resultadosHistoricos && holdoutN > 0 && holdoutN < resultadosHistoricos.length
+      ? resultadosHistoricos.slice(-holdoutN)
+      : [];
 
     // Cache só quando não há backtest/multi-seed/filtro de repetidas/condicional.
     const podeCache = usarCache && !incluirBacktest && !priorizarPremios && seeds === 1 && !filtroRepetidas && !garantiaCondicional && !filtrosCategorias.length;
@@ -520,6 +584,15 @@ export async function POST(request: NextRequest) {
     // Cover verificado e sem filtros: a remoção de redundantes e a verificação
     // exaustiva são desnecessárias (e caras para t=11/12).
     const usaCoverVerificado = coverInfo?.verificado === true && fixos.length === 0 && excluidos.length === 0 && !filtroRepetidas;
+    type CandidatoOtimizacao = {
+      seed: number;
+      totalApostas: number;
+      cobertura: number;
+      sobreposicaoMedia: number | null;
+      lucroTreino: number | null;
+      lucroHoldout: number | null;
+    };
+    const candidatosOtimizacao: CandidatoOtimizacao[] = [];
     let melhor: {
       apostas: number[][];
       apostasBrutas: number[][];
@@ -528,7 +601,16 @@ export async function POST(request: NextRequest) {
       coberturaRestante: ReturnType<typeof verificarCobertura> | null;
       custo: ReturnType<typeof relatorioCusto>;
       backtest: BacktestFechamentoResult | null;
+      sobreposicaoMedia: number | null;
+      backtestTreino: BacktestFechamentoResult | null;
+      backtestHoldout: BacktestFechamentoResult | null;
     } | null = null;
+    const lucroDe = (bt: BacktestFechamentoResult | null): number =>
+      bt ? bt.premioMedio - bt.custoTotal : Number.NEGATIVE_INFINITY;
+    const precisaOverlap = otimizarSeeds && (criterioOtimizacao === 'diversidade' || criterioOtimizacao === 'equilibrado');
+    const precisaBacktestOtim = otimizarSeeds &&
+      (criterioOtimizacao === 'backtest' || criterioOtimizacao === 'equilibrado') &&
+      Boolean(resultadosHistoricos);
 
     for (let i = 0; i < seedsEfetivas; i++) {
       const seedAtual = seed + i;
@@ -588,6 +670,10 @@ export async function POST(request: NextRequest) {
       // Na garantia condicional, a métrica válida é a do universo restante
       // (t-f subconjuntos cobertos por apostas de k-f dezenas).
       const cobertura = (garantiaCondicional ? coberturaRestante : coberturaFull) ?? coberturaRestante ?? coberturaFull!;
+      const coberturaA = coberturaRestante?.garantiaPercentual ?? cobertura.garantiaPercentual;
+      const sobreposicaoMedia = precisaOverlap
+        ? Math.max(0, sobreposicaoMediaApostas(candidato) - fixos.length)
+        : null;
       const backtest = priorizarPremios && resultadosHistoricos
         ? backtestFechamento({
             apostas: candidato,
@@ -599,23 +685,84 @@ export async function POST(request: NextRequest) {
             precoBase: fcfg.precoBase,
           })
         : null;
+      const backtestTreino = precisaBacktestOtim && resultadosTreino
+        ? backtestFechamento({
+            apostas: candidato,
+            resultados: resultadosTreino,
+            k,
+            faixasPremio: fcfg.faixasPremio,
+            premios: fcfg.premios,
+            dezenasBase: fcfg.dezenasPorAposta,
+            precoBase: fcfg.precoBase,
+          })
+        : null;
+      const backtestHoldout = precisaBacktestOtim && resultadosHoldout.length > 0
+        ? backtestFechamento({
+            apostas: candidato,
+            resultados: resultadosHoldout,
+            k,
+            faixasPremio: fcfg.faixasPremio,
+            premios: fcfg.premios,
+            dezenasBase: fcfg.dezenasPorAposta,
+            precoBase: fcfg.precoBase,
+          })
+        : null;
 
-      const candidatoInfo = { apostas: candidato, apostasBrutas, seed: seedAtual, cobertura, coberturaRestante, custo, backtest };
+      const candidatoInfo = {
+        apostas: candidato,
+        apostasBrutas,
+        seed: seedAtual,
+        cobertura,
+        coberturaRestante,
+        custo,
+        backtest,
+        sobreposicaoMedia,
+        backtestTreino,
+        backtestHoldout,
+      };
+
+      if (otimizarSeeds) {
+        candidatosOtimizacao.push({
+          seed: seedAtual,
+          totalApostas: candidato.length,
+          cobertura: coberturaA,
+          sobreposicaoMedia,
+          lucroTreino: backtestTreino ? lucroDe(backtestTreino) : null,
+          lucroHoldout: backtestHoldout ? lucroDe(backtestHoldout) : null,
+        });
+      }
 
       if (!melhor) {
         melhor = candidatoInfo;
         continue;
       }
 
-      const coberturaA = coberturaRestante?.garantiaPercentual ?? cobertura.garantiaPercentual;
       const coberturaB = melhor.coberturaRestante?.garantiaPercentual ?? melhor.cobertura.garantiaPercentual;
       let melhorCandidato = false;
       if (coberturaA > coberturaB + 1e-9) {
         melhorCandidato = true;
       } else if (Math.abs(coberturaA - coberturaB) <= 1e-9) {
-        if (priorizarPremios && backtest && melhor.backtest) {
-          const lucroA = backtest.premioMedio - backtest.custoTotal;
-          const lucroB = melhor.backtest.premioMedio - melhor.backtest.custoTotal;
+        if (otimizarSeeds) {
+          if (candidato.length !== melhor.apostas.length) {
+            melhorCandidato = candidato.length < melhor.apostas.length;
+          } else if (criterioOtimizacao === 'diversidade' || criterioOtimizacao === 'equilibrado') {
+            const ovA = sobreposicaoMedia ?? 0;
+            const ovB = melhor.sobreposicaoMedia ?? 0;
+            if (Math.abs(ovA - ovB) > 1e-9) {
+              melhorCandidato = ovA < ovB;
+            } else if (criterioOtimizacao === 'equilibrado') {
+              const lucroA = lucroDe(backtestTreino);
+              const lucroB = lucroDe(melhor.backtestTreino);
+              if (Math.abs(lucroA - lucroB) > 1e-9) melhorCandidato = lucroA > lucroB;
+            }
+          } else if (criterioOtimizacao === 'backtest') {
+            const lucroA = lucroDe(backtestTreino);
+            const lucroB = lucroDe(melhor.backtestTreino);
+            if (Math.abs(lucroA - lucroB) > 1e-9) melhorCandidato = lucroA > lucroB;
+          }
+        } else if (priorizarPremios && backtest && melhor.backtest) {
+          const lucroA = lucroDe(backtest);
+          const lucroB = lucroDe(melhor.backtest);
           if (Math.abs(lucroA - lucroB) > 1e-9) melhorCandidato = lucroA > lucroB;
           else melhorCandidato = candidato.length < melhor.apostas.length;
         } else {
@@ -628,11 +775,42 @@ export async function POST(request: NextRequest) {
       throw new Error('Não foi possível gerar apostas com os filtros informados. Reduza as restrições.');
     }
 
+    const candidatosOrdenados = [...candidatosOtimizacao].sort((a, b) => {
+      if (a.cobertura !== b.cobertura) return b.cobertura - a.cobertura;
+      if (a.totalApostas !== b.totalApostas) return a.totalApostas - b.totalApostas;
+      if (criterioOtimizacao === 'diversidade' || criterioOtimizacao === 'equilibrado') {
+        const ovA = a.sobreposicaoMedia ?? 0;
+        const ovB = b.sobreposicaoMedia ?? 0;
+        if (Math.abs(ovA - ovB) > 1e-9) return ovA - ovB;
+      }
+      if (criterioOtimizacao === 'backtest' || criterioOtimizacao === 'equilibrado') {
+        const lA = a.lucroTreino ?? Number.NEGATIVE_INFINITY;
+        const lB = b.lucroTreino ?? Number.NEGATIVE_INFINITY;
+        if (Math.abs(lA - lB) > 1e-9) return lB - lA;
+      }
+      return a.seed - b.seed;
+    }).slice(0, 10);
+    const otimizacao = otimizarSeeds
+      ? {
+          criterio: criterioOtimizacao,
+          seedsTestadas: seedsEfetivas,
+          seedEscolhida: melhor.seed,
+          totalApostas: melhor.apostas.length,
+          cobertura: melhor.coberturaRestante?.garantiaPercentual ?? melhor.cobertura.garantiaPercentual,
+          sobreposicaoMedia: melhor.sobreposicaoMedia,
+          lucroTreino: melhor.backtestTreino ? lucroDe(melhor.backtestTreino) : null,
+          lucroHoldout: melhor.backtestHoldout ? lucroDe(melhor.backtestHoldout) : null,
+          holdoutConcursos: resultadosHoldout.length,
+          candidatos: candidatosOrdenados,
+        }
+      : null;
+
     // CP-SAT: tenta reduzir o número de apostas a partir da solução heurística.
     // Roda sobre o universo restante (sem fixos/excluídos) e só substitui se
     // devolver uma solução válida com MENOS apostas e cobertura de 100%.
     let apostasBrutasFinal = melhor.apostasBrutas;
     let cpSatInfo: (CpSatFechamentoResult & { usado: boolean }) | null = null;
+    const limiteInferiorSolver = calcularLimiteInferior(loteria, universoEfetivo, fixos, excluidos, k, tEfetivo);
     if (usarCpSat && !wheelApostas && !coverApostas && tEfetivo <= 5) {
       const fixosSet = new Set<number>(fixos);
       const excluidosSet = new Set<number>(excluidos);
@@ -642,7 +820,7 @@ export async function POST(request: NextRequest) {
       const extras = apostasBrutasFinal
         .map(a => a.filter(n => !fixosSet.has(n) && !excluidosSet.has(n)))
         .filter(a => a.length === kRestante);
-      if (totalAlvosSolver <= 200_000 && kRestante >= tEfetivo && universoRestante.length >= kRestante && extras.length > 1) {
+      if (totalAlvosSolver <= 200_000 && kRestante >= tEfetivo && universoRestante.length >= kRestante && extras.length > 1 && extras.length > limiteInferiorSolver) {
         const pool = tEfetivo <= 3 ? Math.max(500, extras.length + 200) : tEfetivo === 4 ? 400 : 300;
         const cp = await resolverFechamentoSolver({
           universo: universoRestante,
@@ -796,8 +974,21 @@ export async function POST(request: NextRequest) {
     if (coberturaRestante && !coberturaRestante.coberta) {
       avisos.push('A cobertura do universo restante não ficou em 100%. Reduza filtros ou aumente o limite de apostas.');
     }
-    if (!wheelApostas && seedsEfetivas > 1) {
+    if (!wheelApostas && seedsEfetivas > 1 && !otimizarSeeds) {
       avisos.push(`Foram testadas ${seedsEfetivas} seed(s); o tempo limite foi dividido entre elas.`);
+    }
+    if (otimizarSeeds) {
+      if (wheelApostas || coverApostas) {
+        avisos.push('Otimização de seeds não se aplica: cover/wheel determinístico.');
+      } else if (criterioOtimizacao === 'backtest' || criterioOtimizacao === 'equilibrado') {
+        if (!resultadosHistoricos) {
+          avisos.push('Sem histórico para o backtest; a otimização usou apenas nº de apostas/sobreposição.');
+        } else {
+          avisos.push(`Otimização de seeds: ${seedsEfetivas} testados · treino ${resultadosTreino?.length ?? 0} concursos · holdout ${resultadosHoldout.length} concursos.`);
+        }
+      } else {
+        avisos.push(`Otimização de seeds: ${seedsEfetivas} testados (critério ${criterioOtimizacao}).`);
+      }
     }
     if (cpSatInfo) {
       const rotuloSolver = cpSatInfo.solver === 'cp_sat' ? 'CP-SAT' : cpSatInfo.solver;
@@ -849,6 +1040,7 @@ export async function POST(request: NextRequest) {
       tempoGeracaoMs: Date.now() - inicioRequisicao,
       cpSat: cpSatInfo,
       coverConhecido: coverInfo,
+      otimizacao,
     }));
   } catch (error: any) {
     return NextResponse.json({ sucesso: false, error: error?.message || "Erro desconhecido" }, { status: 400 });

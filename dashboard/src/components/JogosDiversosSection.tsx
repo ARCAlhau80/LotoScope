@@ -12,6 +12,35 @@ import type { FiltrosSnapshot } from '@/lib/analise-filtros';
 import GeneratingOverlay from '@/components/GeneratingOverlay';
 import QuarantineMatrixMini from '@/components/QuarantineMatrixMini';
 
+interface OtimizacaoCandidato {
+  seed: number;
+  totalApostas: number;
+  cobertura: number;
+  sobreposicaoMedia: number | null;
+  lucroTreino: number | null;
+  lucroHoldout: number | null;
+}
+
+interface OtimizacaoInfo {
+  criterio: string;
+  seedsTestadas: number;
+  seedEscolhida: number;
+  totalApostas: number;
+  cobertura: number;
+  sobreposicaoMedia: number | null;
+  lucroTreino: number | null;
+  lucroHoldout: number | null;
+  holdoutConcursos: number;
+  candidatos: OtimizacaoCandidato[];
+}
+
+const CRITERIOS_OTIMIZACAO: Record<string, string> = {
+  custo: 'menos apostas',
+  diversidade: 'mais diversidade',
+  backtest: 'backtest (holdout)',
+  equilibrado: 'equilibrado',
+};
+
 interface JogoGerado {
   numeros: number[];
   trevos?: number[];
@@ -150,6 +179,9 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [fechamentoRemoverRedundantes, setFechamentoRemoverRedundantes] = useState<boolean>(true);
   const [fechamentoGarantiaCondicional, setFechamentoGarantiaCondicional] = useState<boolean>(false);
   const [fechamentoTInfo, setFechamentoTInfo] = useState<{ garantiaCondicional: boolean; tEfetivo: number; t: number } | null>(null);
+  const [fechamentoOtimizarQtd, setFechamentoOtimizarQtd] = useState<number>(20);
+  const [fechamentoCriterioOtimizacao, setFechamentoCriterioOtimizacao] = useState<'custo' | 'diversidade' | 'backtest' | 'equilibrado'>('custo');
+  const [otimizacaoInfo, setOtimizacaoInfo] = useState<OtimizacaoInfo | null>(null);
   const [fechamentoFiltroRepetidasAtivo, setFechamentoFiltroRepetidasAtivo] = useState<boolean>(false);
   const [fechamentoRepetidasFaixa, setFechamentoRepetidasFaixa] = useState<string>(fechamentoCfg.repetidasPadrao);
   const [fechamentoSeedUsado, setFechamentoSeedUsado] = useState<number | null>(null);
@@ -278,6 +310,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setFechamentoT(fechamentoCfg.tPadrao);
     setFechamentoGarantiaCondicional(false);
     setFechamentoTInfo(null);
+    setOtimizacaoInfo(null);
     setFechamentoRepetidasFaixa(fechamentoCfg.repetidasPadrao);
     setApostasFechamento([]);
     setCoberturaFechamento(null);
@@ -670,13 +703,18 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     }
   }, [loteria, dezenas, fixos, excluidos, excluidosCompletos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, temLinhas, linhasSetsStr, validarColunas, temComparativo, comparativoStr, comparativoInputs, temCategorias, categoriasRangesStr, categoriasSetsStr, temRepetidos, repetidosRangesStr, repetidosSetsStr, repetidosItens, ordenacao, scoreSetsStr, fixosPosicoesStr, excluidosPosicoesStr, estrategiasFiltro]);
 
-  const gerarFechamento = useCallback(async () => {
+  const gerarFechamento = useCallback(async (opcoes?: {
+    otimizarSeeds?: boolean;
+    quantidadeSeeds?: number;
+    criterioOtimizacao?: 'custo' | 'diversidade' | 'backtest' | 'equilibrado';
+  }) => {
     abortFechamentoRef.current?.abort();
     const controller = new AbortController();
     abortFechamentoRef.current = controller;
 
     setGerandoFechamento(true);
     setError(null);
+    setOtimizacaoInfo(null);
     setApostasFechamento([]);
     setCoberturaFechamento(null);
     setCustoFechamento(null);
@@ -735,6 +773,13 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           repetidas,
           loteria,
           limiteTempoMs: 120000,
+          ...(opcoes?.otimizarSeeds
+            ? {
+                otimizarSeeds: true,
+                quantidadeSeeds: opcoes.quantidadeSeeds ?? 20,
+                criterioOtimizacao: opcoes.criterioOtimizacao ?? 'custo',
+              }
+            : {}),
         }),
       });
       if (!res.ok) {
@@ -756,6 +801,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       setBacktestFechamento(data.backtest ?? null);
       setCpSatInfo(data.cpSat ?? null);
       setCoverConhecidoInfo(data.coverConhecido ?? null);
+      setOtimizacaoInfo(data.otimizacao ?? null);
       setFechamentoTInfo({
         garantiaCondicional: Boolean(data.garantiaCondicional),
         tEfetivo: Number(data.tEfetivo ?? fechamentoT),
@@ -1702,7 +1748,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             </label>
           </div>
 
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex flex-wrap items-center gap-3 mb-4">
               <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -1768,9 +1814,48 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                   className="w-20 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-fg focus:outline-none focus:border-[#818cf8]"
                 />
               </label>
+              <label className="flex items-center gap-2 text-xs whitespace-nowrap" title="Quantidade de seeds consecutivos testados na otimização (2 a 50).">
+                Seeds a otimizar
+                <input
+                  type="number"
+                  min={2}
+                  max={50}
+                  value={fechamentoOtimizarQtd}
+                  onChange={e => {
+                    const valor = parseInt(e.target.value, 10);
+                    setFechamentoOtimizarQtd(Number.isNaN(valor) ? 20 : Math.max(2, Math.min(50, valor)));
+                  }}
+                  className="w-16 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-fg focus:outline-none focus:border-[#818cf8]"
+                />
+              </label>
+              <label className="flex items-center gap-2 text-xs whitespace-nowrap" title="Critério de desempate da otimização de seeds.">
+                Critério
+                <select
+                  value={fechamentoCriterioOtimizacao}
+                  onChange={e => setFechamentoCriterioOtimizacao(e.target.value as 'custo' | 'diversidade' | 'backtest' | 'equilibrado')}
+                  className="px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-fg focus:outline-none focus:border-[#818cf8]"
+                >
+                  <option value="custo">Menos apostas</option>
+                  <option value="diversidade">Mais diversidade</option>
+                  <option value="backtest">Backtest (holdout)</option>
+                  <option value="equilibrado">Equilibrado</option>
+                </select>
+              </label>
+              <button
+                onClick={() => gerarFechamento({
+                  otimizarSeeds: true,
+                  quantidadeSeeds: fechamentoOtimizarQtd,
+                  criterioOtimizacao: fechamentoCriterioOtimizacao,
+                })}
+                disabled={gerandoFechamento}
+                title="Testa várias seeds consecutivas e escolhe a melhor pelo critério (menos apostas → diversidade → backtest com holdout)."
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-emerald-200 border border-emerald-400/40 hover:bg-emerald-500/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {gerandoFechamento ? 'Otimizando...' : 'Otimizar seeds'}
+              </button>
             <div className="relative group">
               <button
-                onClick={gerarFechamento}
+                onClick={() => gerarFechamento()}
                 disabled={gerandoFechamento}
                 title={fechamentoCfg.tooltipReceita}
                 className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1808,6 +1893,65 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           {error && (
             <div className="mb-3 p-3 rounded-lg bg-hot/10 border border-hot/20 text-hot text-sm">
               {error}
+            </div>
+          )}
+
+          {otimizacaoInfo && (
+            <div className="mb-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="font-semibold text-emerald-200">
+                  Otimização de seeds · {otimizacaoInfo.seedsTestadas} testados · critério {CRITERIOS_OTIMIZACAO[otimizacaoInfo.criterio] ?? otimizacaoInfo.criterio}
+                </div>
+                <div className="text-muted">
+                  escolhido: seed <strong className="text-fg">{otimizacaoInfo.seedEscolhida}</strong>
+                </div>
+              </div>
+              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-muted">
+                <span>{otimizacaoInfo.totalApostas} aposta(s)</span>
+                <span>cobertura {otimizacaoInfo.cobertura.toFixed(2)}%</span>
+                {otimizacaoInfo.sobreposicaoMedia !== null && (
+                  <span>sobreposição média (sem fixos) {otimizacaoInfo.sobreposicaoMedia.toFixed(2)}</span>
+                )}
+                {otimizacaoInfo.lucroTreino !== null && (
+                  <span>lucro treino R$ {otimizacaoInfo.lucroTreino.toFixed(2)}</span>
+                )}
+                {otimizacaoInfo.lucroHoldout !== null && (
+                  <span>holdout R$ {otimizacaoInfo.lucroHoldout.toFixed(2)} ({otimizacaoInfo.holdoutConcursos} concursos)</span>
+                )}
+              </div>
+              {otimizacaoInfo.candidatos.length > 0 && (
+                <details className="mt-2">
+                  <summary className="text-accent-2 cursor-pointer select-none">Top seeds testados</summary>
+                  <div className="mt-2 overflow-x-auto">
+                    <table className="w-full text-left text-[11px] border-collapse">
+                      <thead>
+                        <tr className="text-muted">
+                          <th className="pb-1 pr-3 font-normal">#</th>
+                          <th className="pb-1 pr-3 font-normal">Seed</th>
+                          <th className="pb-1 pr-3 font-normal">Apostas</th>
+                          <th className="pb-1 pr-3 font-normal">Cobertura</th>
+                          <th className="pb-1 pr-3 font-normal">Sobreposição</th>
+                          <th className="pb-1 pr-3 font-normal">Lucro treino</th>
+                          <th className="pb-1 font-normal">Lucro holdout</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {otimizacaoInfo.candidatos.map((c, idx) => (
+                          <tr key={c.seed} className={`border-t border-white/5 ${c.seed === otimizacaoInfo.seedEscolhida ? 'bg-emerald-500/10' : ''}`}>
+                            <td className="py-1 pr-3 text-muted">{idx + 1}</td>
+                            <td className="py-1 pr-3 text-fg font-medium">{c.seed}</td>
+                            <td className="py-1 pr-3">{c.totalApostas}</td>
+                            <td className="py-1 pr-3">{c.cobertura.toFixed(2)}%</td>
+                            <td className="py-1 pr-3">{c.sobreposicaoMedia !== null ? c.sobreposicaoMedia.toFixed(2) : '—'}</td>
+                            <td className="py-1 pr-3">{c.lucroTreino !== null ? `R$ ${c.lucroTreino.toFixed(2)}` : '—'}</td>
+                            <td className="py-1">{c.lucroHoldout !== null ? `R$ ${c.lucroHoldout.toFixed(2)}` : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
+              )}
             </div>
           )}
 
