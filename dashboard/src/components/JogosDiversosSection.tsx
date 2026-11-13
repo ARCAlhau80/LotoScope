@@ -145,6 +145,102 @@ function sortearSubconjunto<T>(itens: T[], quantidade: number): T[] {
   return copia.slice(0, limite);
 }
 
+/**
+ * Calcula um score de atratividade para cada número disponível, combinando:
+ *  - frequência (quentes/mornos/frios)
+ *  - ciclo (aquecendo/esfriando/estável) e diferença vs esperada
+ *  - previsão posicional (máxima probabilidade em qualquer posição)
+ *  - repetição recente (saiu no concurso atual)
+ *
+ * Números com score mais alto são melhores candidatos a fixar; os de menor
+ * score são candidatos a excluir. Quando não há dados de previsão, o score
+ * cai de volta para 0 (neutro) e o sorteio aleatório continua valendo.
+ */
+function calcularScoresNumeros(
+  numeros: number[],
+  {
+    numerosQuentes,
+    numerosMornos,
+    numerosFrios,
+    ciclos,
+    previsaoPosicional,
+    numerosSorteadosAtual,
+  }: {
+    numerosQuentes?: [number, number][];
+    numerosMornos?: [number, number][];
+    numerosFrios?: [number, number][];
+    ciclos?: Record<string, CicloInfo>;
+    previsaoPosicional?: Record<string, PrevisaoItem[]> | null;
+    numerosSorteadosAtual?: number[];
+  },
+): Record<number, number> {
+  const quentesMap = new Map(numerosQuentes?.map(([n, v]) => [n, v]) ?? []);
+  const mornosMap = new Map(numerosMornos?.map(([n, v]) => [n, v]) ?? []);
+  const friosMap = new Map(numerosFrios?.map(([n, v]) => [n, v]) ?? []);
+  const sorteadosSet = new Set(numerosSorteadosAtual ?? []);
+
+  const scores: Record<number, number> = {};
+  for (const n of numeros) {
+    let score = 0;
+
+    // Frequência: quentes somam, frios subtraem, mornos neutro leve.
+    const q = quentesMap.get(n) ?? 0;
+    const m = mornosMap.get(n) ?? 0;
+    const f = friosMap.get(n) ?? 0;
+    const freqMax = Math.max(q, m, f, 1);
+    score += (q / freqMax) * 30;      // quente: até +30
+    score -= (f / freqMax) * 30;      // frio: até -30
+    score += (m / freqMax) * 5;       // morno: até +5
+
+    // Ciclo: aquecendo bônus, esfriando penalidade, proporcional à diferença.
+    const ciclo = ciclos?.[String(n)];
+    if (ciclo) {
+      if (ciclo.estado === 'aquecendo') score += 20 + Math.min(10, ciclo.diferenca);
+      else if (ciclo.estado === 'esfriando') score -= 20 + Math.min(10, -ciclo.diferenca);
+    }
+
+    // Previsão posicional: melhor probabilidade em qualquer posição.
+    if (previsaoPosicional) {
+      let melhorProb = 0;
+      for (const pos of Object.keys(previsaoPosicional)) {
+        const item = previsaoPosicional[pos].find(x => x.numero === n);
+        if (item && item.prob > melhorProb) melhorProb = item.prob;
+      }
+      score += melhorProb * 40; // até +40 se tiver 100% de prob em alguma posição
+    }
+
+    // Repetição imediata: saiu no concurso atual → leve penalidade (evita
+    // apostar tudo no que já saiu; ainda assim não zera o número).
+    if (sorteadosSet.has(n)) score -= 10;
+
+    scores[n] = score;
+  }
+  return scores;
+}
+
+/**
+ * Escolhe `quantidade` números de `disponiveis` ordenados por score.
+ * Quando `otimizado` está ativo, pega os de maior score (fixar) ou menor
+ * score (excluir); caso contrário, sorteia aleatoriamente.
+ */
+function selecionarNumerosLote(
+  disponiveis: number[],
+  quantidade: number,
+  otimizado: boolean,
+  scores: Record<number, number>,
+  modo: 'fixo' | 'excluido',
+): number[] {
+  if (!otimizado || quantidade === 0) return sortearSubconjunto(disponiveis, quantidade).sort((a, b) => a - b);
+
+  const ordenados = [...disponiveis].sort((a, b) => {
+    const sa = scores[a] ?? 0;
+    const sb = scores[b] ?? 0;
+    // Fixar: maiores scores primeiro. Excluir: menores scores primeiro.
+    return modo === 'fixo' ? sb - sa : sa - sb;
+  });
+  return ordenados.slice(0, quantidade).sort((a, b) => a - b);
+}
+
 export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBase, concursoAtual, numerosSorteadosAtual = [], previsaoPosicional, previsaoTendencia, previsaoColunas, quarentena, grupos, numerosQuentes, numerosMornos, numerosFrios, ciclos, transicaoQmf, repeticao3, onFiltrosAplicados }: JogosDiversosSectionProps) {
   const cfg = getLotteryConfig(loteria);
   const fechamentoCfg = useMemo(() => getFechamentoConfig(loteria), [loteria]);
@@ -173,6 +269,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   // Aplicação em lote: a quantidade de números a sortear (fixar ou excluir).
   const [loteQuantidade, setLoteQuantidade] = useState<string>('');
   const [loteModo, setLoteModo] = useState<'fixo' | 'excluido'>('fixo');
+  const [loteOtimizado, setLoteOtimizado] = useState<boolean>(false);
   const [loteFeedback, setLoteFeedback] = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null);
 
   // --- Fechamento Combinatório ---
@@ -545,6 +642,10 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
    * disponíveis e marca todos como fixos (ou excluídos). Substitui a seleção
    * do modo escolhido; 0 ou vazio limpa. Números do outro modo não entram no
    * sorteio e restrições de posição antigas deixam de valer.
+   *
+   * Quando `loteOtimizado` está ativo, em vez de sortear aleatoriamente, escolhe
+   * os números com maior score (fixar) ou menor score (excluir) com base em
+   * frequência, ciclo, previsão posicional e repetição recente.
    */
   const aplicarLote = useCallback(() => {
     const bruto = loteQuantidade.trim();
@@ -581,37 +682,49 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       return;
     }
 
-    const sorteados = sortearSubconjunto(disponiveis, quantidade).sort((a, b) => a - b);
+    const scores = loteOtimizado
+      ? calcularScoresNumeros(todos, {
+          numerosQuentes,
+          numerosMornos,
+          numerosFrios,
+          ciclos,
+          previsaoPosicional,
+          numerosSorteadosAtual,
+        })
+      : {};
+
+    const escolhidos = selecionarNumerosLote(disponiveis, quantidade, loteOtimizado, scores, loteModo);
 
     setEstados(prev => {
       const proximo = { ...prev };
       for (const [chave, valor] of Object.entries(proximo)) {
         if (valor === loteModo) delete proximo[Number(chave)];
       }
-      for (const n of sorteados) proximo[n] = loteModo;
+      for (const n of escolhidos) proximo[n] = loteModo;
       return proximo;
     });
     setFixosPosicoes(prev => {
       if (loteModo === 'fixo') return {};
       const copia = { ...prev };
-      for (const n of sorteados) delete copia[n];
+      for (const n of escolhidos) delete copia[n];
       return copia;
     });
     setExcluidosPosicoes(prev => {
       if (loteModo === 'excluido') return {};
       const copia = { ...prev };
-      for (const n of sorteados) delete copia[n];
+      for (const n of escolhidos) delete copia[n];
       return copia;
     });
 
+    const modoTexto = loteOtimizado ? 'otimizado(s)' : 'sorteado(s)';
     setLoteFeedback({
       tipo: 'ok',
-      texto: sorteados.length === 0
+      texto: escolhidos.length === 0
         ? `Seleção de ${rotulo} limpa.`
-        : `${sorteados.length} ${rotulo} sorteado(s): ${sorteados.join(', ')}.`,
+        : `${escolhidos.length} ${rotulo} ${modoTexto}: ${escolhidos.join(', ')}.`,
     });
     setLoteQuantidade('');
-  }, [loteQuantidade, loteModo, estados, dezenas, cfg]);
+  }, [loteQuantidade, loteModo, loteOtimizado, estados, dezenas, cfg, numerosQuentes, numerosMornos, numerosFrios, ciclos, previsaoPosicional, numerosSorteadosAtual]);
 
   const toggleEstrategia = useCallback((e: string) => {
     setEstrategiasFiltro(prev => {
@@ -1505,17 +1618,30 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               🔴 Excluir
             </button>
           </div>
+          <label className="flex items-center gap-1 cursor-pointer select-none bg-white/5 px-2 py-1.5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors" title="Quando ativo, escolhe os melhores números (fixar) ou piores (excluir) com base em frequência, ciclo, previsão posicional e repetição recente. Desativado, sorteia aleatoriamente.">
+            <input
+              type="checkbox"
+              checked={loteOtimizado}
+              onChange={() => {
+                setLoteOtimizado(prev => !prev);
+                setLoteFeedback(null);
+              }}
+              className="w-3 h-3 rounded border-white/30 bg-white/5 text-accent focus:ring-accent"
+            />
+            <span className="text-[11px] text-muted">Otimizado</span>
+          </label>
           <button
             type="button"
             onClick={aplicarLote}
             className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110"
             style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
-            title="Sorteia a quantidade informada e marca os números"
+            title={loteOtimizado ? 'Escolhe os melhores/piores números por score e marca os números' : 'Sorteia a quantidade informada e marca os números'}
           >
-            🎲 Sortear
+            {loteOtimizado ? '✨ Aplicar' : '🎲 Sortear'}
           </button>
           <span className="text-[11px] text-muted">
-            até {loteModo === 'fixo' ? limiteLoteFixo : limiteLoteExcluido} · aleatório entre os disponíveis · 0 limpa
+            até {loteModo === 'fixo' ? limiteLoteFixo : limiteLoteExcluido} ·
+            {loteOtimizado ? 'por score (melhor → pior)' : 'aleatório entre os disponíveis'} · 0 limpa
           </span>
           {loteFeedback && (
             <span
