@@ -1124,9 +1124,11 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const numeros = Array.from({ length: totalNumeros }, (_, i) => i + numeroMin);
   // Limites do lote consideram o que já está marcado no outro modo: um número
   // não pode ser fixo e excluído ao mesmo tempo, e a exclusão não pode deixar
-  // o universo menor que o necessário para montar um jogo.
+  // o universo menor que o necessário para montar um jogo (total - dezenas).
+  // O teto de 14 só faz sentido para Lotofácil (25 dezenas → max 10 exclusões);
+  // para Mega-Sena (60 dezenas) a exclusão pode chegar a 54.
   const limiteLoteFixo = Math.max(0, Math.min(14, dezenas - 1, totalNumeros - excluidos.length));
-  const limiteLoteExcluido = Math.max(0, Math.min(14, totalNumeros - dezenas, totalNumeros - fixos.length));
+  const limiteLoteExcluido = Math.max(0, Math.min(totalNumeros - dezenas, totalNumeros - fixos.length));
   const precoUnit = calcularPrecoAposta(loteria, dezenas);
   const mostraSeletorDezenas = opcoesDezenas.length > 1;
 
