@@ -130,6 +130,21 @@ function parseFaixa(valor: string): { min: number; max: number } {
   return { min: a, max: b ?? a };
 }
 
+/**
+ * Sorteia `quantidade` itens de `itens` (Fisher-Yates parcial, sem repetição).
+ * Base para o modo aleatório da aplicação em lote — o modo otimizado usará a
+ * mesma assinatura, apenas trocando o critério de escolha.
+ */
+function sortearSubconjunto<T>(itens: T[], quantidade: number): T[] {
+  const copia = [...itens];
+  const limite = Math.min(quantidade, copia.length);
+  for (let i = 0; i < limite; i++) {
+    const j = i + Math.floor(Math.random() * (copia.length - i));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia.slice(0, limite);
+}
+
 export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBase, concursoAtual, numerosSorteadosAtual = [], previsaoPosicional, previsaoTendencia, previsaoColunas, quarentena, grupos, numerosQuentes, numerosMornos, numerosFrios, ciclos, transicaoQmf, repeticao3, onFiltrosAplicados }: JogosDiversosSectionProps) {
   const cfg = getLotteryConfig(loteria);
   const fechamentoCfg = useMemo(() => getFechamentoConfig(loteria), [loteria]);
@@ -155,8 +170,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [categoriasInputs, setCategoriasInputs] = useState<Record<string, string>>({});
   const [repetidosInputs, setRepetidosInputs] = useState<string[]>(['', '', '']);
   const [ordenacao, setOrdenacao] = useState<string>('aleatorio');
-  // Aplicação em lote de fixos/excluídos (evita clicar um a um).
-  const [loteNumeros, setLoteNumeros] = useState<string>('');
+  // Aplicação em lote: a quantidade de números a sortear (fixar ou excluir).
+  const [loteQuantidade, setLoteQuantidade] = useState<string>('');
   const [loteModo, setLoteModo] = useState<'fixo' | 'excluido'>('fixo');
   const [loteFeedback, setLoteFeedback] = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null);
 
@@ -526,72 +541,77 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   }, []);
 
   /**
-   * Aplica uma lista de números de uma vez, marcando todos como fixos ou
-   * excluídos. A lista substitui a seleção do modo escolhido (0 = limpa),
-   * números do outro modo são convertidos e restrições de posição antigas
-   * deixam de valer para quem mudou de estado.
+   * Aplica uma quantidade de números de uma vez: sorteia N números entre os
+   * disponíveis e marca todos como fixos (ou excluídos). Substitui a seleção
+   * do modo escolhido; 0 ou vazio limpa. Números do outro modo não entram no
+   * sorteio e restrições de posição antigas deixam de valer.
    */
   const aplicarLote = useCallback(() => {
-    const brutos = loteNumeros
-      .split(/[^0-9]+/)
-      .filter(Boolean)
-      .map(x => parseInt(x, 10));
-    const unicos = [...new Set(brutos)].sort((a, b) => a - b);
-    const min = cfg.numero_minimo;
-    const max = cfg.numero_maximo;
-    const invalidos = unicos.filter(n => n < min || n > max);
-    if (invalidos.length > 0) {
-      setLoteFeedback({
-        tipo: 'erro',
-        texto: `Fora do intervalo ${min}–${max}: ${invalidos.join(', ')}.`,
-      });
-      return;
-    }
+    const bruto = loteQuantidade.trim();
+    const total = cfg.total_numeros;
+    const todos = Array.from({ length: total }, (_, i) => i + cfg.numero_minimo);
+    const fixosAtuais = Object.entries(estados)
+      .filter(([, e]) => e === 'fixo')
+      .map(([n]) => Number(n));
+    const excluidosAtuais = Object.entries(estados)
+      .filter(([, e]) => e === 'excluido')
+      .map(([n]) => Number(n));
+    const disponiveis = loteModo === 'fixo'
+      ? todos.filter(n => !excluidosAtuais.includes(n))
+      : todos.filter(n => !fixosAtuais.includes(n));
     const limite = loteModo === 'fixo'
-      ? Math.max(0, Math.min(14, dezenas - 1))
-      : Math.min(14, cfg.total_numeros - 1);
-    if (unicos.length > limite) {
+      ? Math.max(0, Math.min(14, dezenas - 1, disponiveis.length))
+      : Math.max(0, Math.min(14, total - dezenas, disponiveis.length));
+    const rotulo = loteModo === 'fixo' ? 'fixo(s)' : 'excluído(s)';
+    const acao = loteModo === 'fixo' ? 'fixar' : 'excluir';
+
+    const quantidade = bruto === '' ? 0 : Number(bruto);
+    if (!Number.isInteger(quantidade) || quantidade < 0) {
       setLoteFeedback({
         tipo: 'erro',
-        texto: `Máximo de ${limite} número(s) para ${loteModo === 'fixo' ? 'fixar' : 'excluir'}.`,
+        texto: `Informe uma quantidade inteira de 0 a ${limite} para ${acao}.`,
       });
       return;
     }
+    if (quantidade > limite) {
+      setLoteFeedback({
+        tipo: 'erro',
+        texto: `Máximo de ${limite} número(s) para ${acao}.`,
+      });
+      return;
+    }
+
+    const sorteados = sortearSubconjunto(disponiveis, quantidade).sort((a, b) => a - b);
 
     setEstados(prev => {
       const proximo = { ...prev };
       for (const [chave, valor] of Object.entries(proximo)) {
         if (valor === loteModo) delete proximo[Number(chave)];
       }
-      for (const n of unicos) proximo[n] = loteModo;
+      for (const n of sorteados) proximo[n] = loteModo;
       return proximo;
     });
     setFixosPosicoes(prev => {
-      if (loteModo === 'fixo') {
-        const copia: Record<number, number[]> = {};
-        for (const n of unicos) if (prev[n]?.length) copia[n] = prev[n];
-        return copia;
-      }
+      if (loteModo === 'fixo') return {};
       const copia = { ...prev };
-      for (const n of unicos) delete copia[n];
+      for (const n of sorteados) delete copia[n];
       return copia;
     });
     setExcluidosPosicoes(prev => {
       if (loteModo === 'excluido') return {};
       const copia = { ...prev };
-      for (const n of unicos) delete copia[n];
+      for (const n of sorteados) delete copia[n];
       return copia;
     });
 
-    const rotulo = loteModo === 'fixo' ? 'fixo(s)' : 'excluído(s)';
     setLoteFeedback({
       tipo: 'ok',
-      texto: unicos.length === 0
+      texto: sorteados.length === 0
         ? `Seleção de ${rotulo} limpa.`
-        : `${unicos.length} ${rotulo} aplicado(s): ${unicos.join(', ')}.`,
+        : `${sorteados.length} ${rotulo} sorteado(s): ${sorteados.join(', ')}.`,
     });
-    setLoteNumeros('');
-  }, [loteNumeros, loteModo, dezenas, cfg]);
+    setLoteQuantidade('');
+  }, [loteQuantidade, loteModo, estados, dezenas, cfg]);
 
   const toggleEstrategia = useCallback((e: string) => {
     setEstrategiasFiltro(prev => {
@@ -989,8 +1009,11 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const numeroMin = cfg.numero_minimo;
   const numeroMax = cfg.numero_maximo;
   const numeros = Array.from({ length: totalNumeros }, (_, i) => i + numeroMin);
-  const limiteLoteFixo = Math.max(0, Math.min(14, dezenas - 1));
-  const limiteLoteExcluido = Math.min(14, totalNumeros - 1);
+  // Limites do lote consideram o que já está marcado no outro modo: um número
+  // não pode ser fixo e excluído ao mesmo tempo, e a exclusão não pode deixar
+  // o universo menor que o necessário para montar um jogo.
+  const limiteLoteFixo = Math.max(0, Math.min(14, dezenas - 1, totalNumeros - excluidos.length));
+  const limiteLoteExcluido = Math.max(0, Math.min(14, totalNumeros - dezenas, totalNumeros - fixos.length));
   const precoUnit = calcularPrecoAposta(loteria, dezenas);
   const mostraSeletorDezenas = opcoesDezenas.length > 1;
 
@@ -1437,19 +1460,20 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           <input
             type="text"
             inputMode="numeric"
-            value={loteNumeros}
+            value={loteQuantidade}
             onChange={e => {
-              setLoteNumeros(e.target.value);
+              setLoteQuantidade(e.target.value.replace(/[^0-9]/g, ''));
               setLoteFeedback(null);
             }}
             onKeyDown={e => {
               if (e.key === 'Enter') aplicarLote();
             }}
-            placeholder={`ex.: 1, 2, 3, 12 (0 a ${loteModo === 'fixo' ? limiteLoteFixo : limiteLoteExcluido})`}
-            aria-label="Números para aplicar em lote"
-            className="w-56 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-fg placeholder:text-muted/60 focus:outline-none focus:border-accent/60"
+            placeholder={`0 a ${loteModo === 'fixo' ? limiteLoteFixo : limiteLoteExcluido}`}
+            aria-label="Quantidade de números para sortear em lote"
+            title="Digite só a quantidade — os números são sorteados entre os disponíveis"
+            className="w-20 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-fg text-center placeholder:text-muted/60 focus:outline-none focus:border-accent/60"
           />
-          <div className="flex rounded-lg overflow-hidden border border-white/10" role="group" aria-label="Marcar números em lote como fixo ou excluído">
+          <div className="flex rounded-lg overflow-hidden border border-white/10" role="group" aria-label="Sortear números em lote para fixar ou excluir">
             <button
               type="button"
               onClick={() => {
@@ -1486,11 +1510,12 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             onClick={aplicarLote}
             className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110"
             style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
+            title="Sorteia a quantidade informada e marca os números"
           >
-            Aplicar
+            🎲 Sortear
           </button>
           <span className="text-[11px] text-muted">
-            {loteModo === 'fixo' ? `0 a ${limiteLoteFixo}` : `0 a ${limiteLoteExcluido}`} número(s) · vazio limpa a seleção
+            até {loteModo === 'fixo' ? limiteLoteFixo : limiteLoteExcluido} · aleatório entre os disponíveis · 0 limpa
           </span>
           {loteFeedback && (
             <span
