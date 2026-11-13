@@ -723,7 +723,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         ? `Seleção de ${rotulo} limpa.`
         : `${escolhidos.length} ${rotulo} ${modoTexto}: ${escolhidos.join(', ')}.`,
     });
-    setLoteQuantidade('');
+    // Mantém o valor digitado no box para que o usuário possa reaplicar ou ajustar.
   }, [loteQuantidade, loteModo, loteOtimizado, estados, dezenas, cfg, numerosQuentes, numerosMornos, numerosFrios, ciclos, previsaoPosicional, numerosSorteadosAtual]);
 
   const toggleEstrategia = useCallback((e: string) => {
