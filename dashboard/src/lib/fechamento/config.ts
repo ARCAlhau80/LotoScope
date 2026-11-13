@@ -9,6 +9,8 @@ export interface FechamentoConfig {
   tMax: number;
   /** Quantidade de dezenas da aposta simples (base para custo). */
   dezenasPorAposta: number;
+  /** Quantidade de dezenas sorteadas por concurso. */
+  dezenasSorteadas: number;
   /** Preço da aposta simples. */
   precoBase: number;
   faixasPremio: number[];
@@ -44,6 +46,7 @@ export const FECHAMENTOS: Record<string, FechamentoConfig> = {
     kMax: 25,
     tMax: 15,
     dezenasPorAposta: 15,
+    dezenasSorteadas: 15,
     precoBase: 3.5,
     faixasPremio: [11, 12, 13, 14, 15],
     premios: PREMIOS_LOTOFACIL,
@@ -62,6 +65,7 @@ export const FECHAMENTOS: Record<string, FechamentoConfig> = {
     kMax: 20,
     tMax: 6,
     dezenasPorAposta: 6,
+    dezenasSorteadas: 6,
     precoBase: 6.0,
     faixasPremio: [4, 5, 6],
     premios: PREMIOS_MEGASENA,

@@ -19,15 +19,29 @@ import {
   permutarCoverParaFiltros,
   completarCobertura,
   apostaSatisfazCategorias,
+  apostaSatisfazFiltrosExtras,
+  parseFiltrosExtras,
+  normalizarFiltrosExtras,
+  construirLottoDesign,
+  verificarLottoDesign,
+  limiteInferiorLottoDesign,
+  type FiltrosExtras,
   type BacktestFechamentoResult,
 } from '@/lib/fechamento-combinatorio';
 import { getFechamentoConfig, normalizarKt } from '@/lib/fechamento/config';
 import { buscarCover } from '@/lib/fechamento/covers';
+import { buscarLottoDesign, mapearLottoDesign } from '@/lib/fechamento/lotto';
 import { carregarResultados } from '@/lib/database';
 import { resolverFechamentoSolver, type CpSatFechamentoResult, type SolverFechamento } from '@/lib/cp-sat';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
+
+/**
+ * Teto de sorteios possíveis que o lotto design enumera no request.
+ * Acima disso a geração/verificação fica cara demais para uma chamada de API.
+ */
+const LIMITE_ALVOS_LOTTO = 800_000;
 
 // Fechamento: suporta garantia condicional aos fixos, cover conhecido
 // permutado para filtros de categoria e reparo de cobertura pós-filtros.
@@ -218,6 +232,12 @@ function montarRespostaFinal(args: {
   tempoGeracaoMs?: number;
   cpSat?: (CpSatFechamentoResult & { usado: boolean }) | null;
   coverConhecido?: { v: number; k: number; t: number; blocos: number; fonte: string; limiteInferior?: number; verificado?: boolean } | null;
+  lottoDesign?: {
+    v: number; k: number; m: number; t: number; blocos: number;
+    piso: number; pisoTotal: number; alvos: number; limiteInferior: number;
+    fonte: string; verificado: boolean; tempoMs: number;
+  } | null;
+  lottoIgnorado?: { motivo: string } | null;
   otimizacao?: {
     criterio: string;
     seedsTestadas: number;
@@ -268,6 +288,8 @@ function montarRespostaFinal(args: {
     tempoGeracaoMs: args.tempoGeracaoMs ?? null,
     cpSat: args.cpSat ?? null,
     coverConhecido: args.coverConhecido ?? null,
+    lottoDesign: args.lottoDesign ?? null,
+    lottoIgnorado: args.lottoIgnorado ?? null,
     otimizacao: args.otimizacao ?? null,
   };
 }
@@ -376,6 +398,7 @@ export async function POST(request: NextRequest) {
     const loteria = typeof body.loteria === 'string' && body.loteria ? body.loteria : 'lotofacil';
     const fcfg = getFechamentoConfig(loteria);
     const filtrosCategorias = parseFiltrosCategorias(body.filtrosCategorias);
+    const filtrosExtras = parseFiltrosExtras(body.filtrosExtras);
     const kSolicitado = parseNumero(body.k, fcfg.kPadrao);
     const tSolicitado = parseNumero(body.t, fcfg.tPadrao);
     const { k, t } = normalizarKt(fcfg, kSolicitado, tSolicitado);
@@ -387,6 +410,10 @@ export async function POST(request: NextRequest) {
     const maxApostas = parseNumero(body.maxApostas, 200);
     const seed = parseNumero(body.seed, 7);
     const otimizado = body.otimizado !== false;
+    // Lotto design: reduz apostas mantendo o piso de acertos, trocando a
+    // exigência "todo t-subconjunto dentro de um bloco" por "todo sorteio
+    // possível atinge >= t acertos em algum bloco".
+    const usarLottoDesign = parseBoolean(body.usarLottoDesign, false);
     const candidatosPool = parseNumero(body.candidatosPool, 400);
     const amostraPorPasso = parseNumero(body.amostraPorPasso, tEfetivo <= 3 ? 2000 : tEfetivo === 4 ? 500 : tEfetivo <= 8 ? 60 : 25);
     const maxIteracoes = parseNumero(body.maxIteracoes, 40);
@@ -425,6 +452,14 @@ export async function POST(request: NextRequest) {
     const universoEfetivo = universo?.length ? universo : Array.from({ length: fcfg.totalNumeros }, (_, i) => i + 1);
     const universoCobertura: number[] = universoEfetivo.filter((n: number) => !excluidos.includes(n));
     const universoRestante = universoEfetivo.filter((n: number) => !fixos.includes(n) && !excluidos.includes(n));
+    const filtrosExtrasNorm = normalizarFiltrosExtras(filtrosExtras, fixos, excluidos, universoEfetivo);
+    const temFiltrosTelaAtivos = filtrosCategorias.length > 0 || filtrosExtrasNorm !== undefined;
+    const limitePorSeedEfetivo = filtrosExtrasNorm
+      ? Math.min(limitePorSeed, 12_000)
+      : limitePorSeed;
+    const aceitarFiltrosTela = (aposta: number[]) =>
+      apostaSatisfazCategorias(aposta, filtrosCategorias)
+      && apostaSatisfazFiltrosExtras(aposta, filtrosExtrasNorm);
     const precisaHistorico = (priorizarPremios && seeds > 1) || incluirBacktest
       || (otimizarSeeds && (criterioOtimizacao === 'backtest' || criterioOtimizacao === 'equilibrado'));
     let resultadosHistoricos: Awaited<ReturnType<typeof carregarResultados>> | null = null;
@@ -453,7 +488,7 @@ export async function POST(request: NextRequest) {
       : [];
 
     // Cache só quando não há backtest/multi-seed/filtro de repetidas/condicional.
-    const podeCache = usarCache && !incluirBacktest && !priorizarPremios && seeds === 1 && !filtroRepetidas && !garantiaCondicional && !filtrosCategorias.length;
+    const podeCache = usarCache && !incluirBacktest && !priorizarPremios && seeds === 1 && !filtroRepetidas && !garantiaCondicional && !filtrosCategorias.length && !usarLottoDesign;
     const chaveCache = podeCache
       ? `${loteria}_${gerarChaveCache({ v: universoEfetivo.length, k, t: tEfetivo, maxApostas, seed, otimizado, fixos, excluidos })}_r${removerRedundantes ? 1 : 0}`
       : null;
@@ -511,7 +546,7 @@ export async function POST(request: NextRequest) {
       const cover = buscarCover(loteria, universoRestanteCover.length, kRestanteCover, tEfetivo);
       const cabeNoMax = cover ? (maxApostasIlimitado(maxApostas) || maxApostas >= cover.blocos.length) : false;
       if (cover && cabeNoMax) {
-        if (!filtrosCategorias.length) {
+        if (!filtrosCategorias.length && !filtrosExtrasNorm) {
           const blocos = mapearCoverConhecido(cover, universoRestanteCover);
           coverApostas = blocos.map(b => [...fixos, ...b].sort((a, b) => a - b));
           coverInfo = { v: cover.v, k: cover.k, t: cover.t, blocos: cover.blocos.length, fonte: cover.fonte, limiteInferior: cover.limiteInferior, verificado: cover.verificado ?? false };
@@ -521,6 +556,7 @@ export async function POST(request: NextRequest) {
             universo: universoRestanteCover,
             fixos,
             filtros: filtrosCategorias,
+            aceitarAposta: aceitarFiltrosTela,
             seed,
             limiteTempoMs: 1000,
           });
@@ -540,7 +576,7 @@ export async function POST(request: NextRequest) {
             // Nem toda permutação satisfaz o filtro. Aproveita os blocos válidos
             // do cover e completa a cobertura adicionando só blocos permitidos.
             // Só vale a pena se o reparo não inflar demais o número de apostas.
-            const validas = perm.apostas.filter(a => apostaSatisfazCategorias(a, filtrosCategorias));
+            const validas = perm.apostas.filter(a => aceitarFiltrosTela(a));
             if (validas.length > 0) {
               const livres = validas.map(a => a.filter(n => !fixos.includes(n) && !excluidos.includes(n)));
               const reparado = completarCobertura({
@@ -551,7 +587,7 @@ export async function POST(request: NextRequest) {
                 maxApostas: maxApostasIlimitado(maxApostas) ? 0 : maxApostas,
                 seed,
                 candidatosPool: 5000,
-                aceitarBloco: (a) => apostaSatisfazCategorias([...fixos, ...a], filtrosCategorias),
+                aceitarBloco: (a) => aceitarFiltrosTela([...fixos, ...a]),
                 limiteTempoMs: 3000,
               });
               const cabeSemInflar = reparado.length > 0 && reparado.length <= Math.ceil(cover.blocos.length * 1.5);
@@ -580,7 +616,108 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const seedsEfetivas = (wheelApostas || coverApostas) ? 1 : seeds;
+    // -----------------------------------------------------------------------
+    // Lotto design L(v',k',m,t'): mesmo piso de acertos com muito menos apostas.
+    // Troca a exigência "todo t-subconjunto dentro de algum bloco" (covering)
+    // por "todo sorteio possível atinge >= t acertos em algum bloco" (lotto).
+    // Só entra quando o usuário liga a opção e não há filtros de tela, porque
+    // um filtro pode invalidar blocos e derrubar a garantia.
+    // -----------------------------------------------------------------------
+    let lottoApostas: number[][] | null = null;
+    let lottoInfo: {
+      v: number; k: number; m: number; t: number; blocos: number;
+      piso: number; pisoTotal: number; alvos: number; limiteInferior: number;
+      fonte: string; verificado: boolean; tempoMs: number;
+    } | null = null;
+    let lottoIgnorado: { motivo: string } | null = null;
+    if (usarLottoDesign) {
+      const vL = universoRestante.length;
+      const kL = k - fixos.length;
+      // Pior caso: todas as dezenas excluídas podem sair, então o sorteio dentro
+      // do universo restante pode ter só (sorteadas - fixos - excluídos) dezenas.
+      // Cobrir esse caso cobre automaticamente os sorteios maiores.
+      const mL = Math.min(kL, Math.max(0, fcfg.dezenasSorteadas - fixos.length - excluidos.length));
+      const tL = tEfetivo;
+      const alvosL = vL >= mL && mL > 0 ? nCombinacoes(vL, mL) : 0;
+      if (temFiltrosTelaAtivos) {
+        lottoIgnorado = { motivo: 'há filtros de tela ativos; o design perderia a garantia' };
+      } else if (vL > 30) {
+        lottoIgnorado = { motivo: `universo restante com ${vL} dezenas (o lotto design aceita até 30)` };
+      } else if (tL < 1 || mL < tL || kL < tL) {
+        lottoIgnorado = { motivo: `alvo t'=${tL} inviável com m=${mL} e k'=${kL}` };
+      } else if (alvosL > LIMITE_ALVOS_LOTTO) {
+        lottoIgnorado = {
+          motivo: `C(${vL},${mL}) = ${alvosL.toLocaleString('pt-BR')} sorteios possíveis acima do limite ${LIMITE_ALVOS_LOTTO.toLocaleString('pt-BR')}`,
+        };
+      } else {
+        const conhecido = buscarLottoDesign(loteria, vL, kL, mL, tL);
+        if (conhecido) {
+          const blocos = mapearLottoDesign(conhecido, universoRestante);
+          lottoApostas = blocos.map(b => [...fixos, ...b].sort((x, y) => x - y));
+          lottoInfo = {
+            v: vL, k: kL, m: mL, t: tL,
+            blocos: lottoApostas.length,
+            piso: conhecido.t,
+            pisoTotal: fixos.length + conhecido.t,
+            alvos: alvosL,
+            limiteInferior: conhecido.limiteInferior,
+            fonte: conhecido.fonte,
+            verificado: conhecido.verificado ?? true,
+            tempoMs: 0,
+          };
+        } else {
+          const construido = construirLottoDesign({
+            universo: universoRestante,
+            k: kL,
+            m: mL,
+            t: tL,
+            seed,
+            // O registro cobre os casos usuais; o construtor só entra quando não
+            // há design pronto. 10 s é o teto razoável para uma chamada de API.
+            limiteTempoMs: Math.max(2000, Math.min(10_000, limitePorSeedEfetivo)),
+          });
+          if (construido.completo && construido.blocos.length > 0) {
+            lottoApostas = construido.blocos.map(b => [...fixos, ...b].sort((x, y) => x - y));
+            lottoInfo = {
+              v: vL, k: kL, m: mL, t: tL,
+              blocos: lottoApostas.length,
+              piso: construido.piso,
+              pisoTotal: fixos.length + construido.piso,
+              alvos: construido.alvos,
+              limiteInferior: limiteInferiorLottoDesign(vL, kL, mL, tL),
+              fonte: `LotoScope (guloso multi-restart, ${construido.tempoMs} ms)`,
+              verificado: construido.verificado,
+              tempoMs: construido.tempoMs,
+            };
+          } else {
+            const detalhe = construido.blocos.length === 0
+              ? `o construtor não encontrou um design válido em ${construido.tempoMs} ms`
+              : construido.verificado
+                ? `o construtor parou em ${construido.tempoMs} ms com piso ${construido.piso} (< ${tL}): ${construido.falhas.toLocaleString('pt-BR')} de ${construido.alvos.toLocaleString('pt-BR')} sorteio(s) ficaram sem garantia`
+                : `o construtor parou em ${construido.tempoMs} ms sem fechar o piso`;
+            lottoIgnorado = { motivo: `${detalhe}; usando o fechamento por cobertura` };
+          }
+        }
+      }
+      if (lottoApostas && !maxApostasIlimitado(maxApostas) && lottoApostas.length > maxApostas) {
+        lottoIgnorado = { motivo: `o design tem ${lottoApostas.length} apostas e "Máx. apostas" = ${maxApostas}` };
+        lottoApostas = null;
+        lottoInfo = null;
+      }
+      // Se o cover conhecido couber em menos apostas, ele é estritamente melhor
+      // (satisfaz uma condição mais forte com custo menor).
+      if (lottoApostas && coverApostas) {
+        if (lottoApostas.length >= coverApostas.length) {
+          lottoApostas = null;
+          lottoInfo = null;
+        } else {
+          coverApostas = null;
+          coverInfo = null;
+        }
+      }
+    }
+
+    const seedsEfetivas = (wheelApostas || coverApostas || lottoApostas) ? 1 : seeds;
     // Cover verificado e sem filtros: a remoção de redundantes e a verificação
     // exaustiva são desnecessárias (e caras para t=11/12).
     const usaCoverVerificado = coverInfo?.verificado === true && fixos.length === 0 && excluidos.length === 0 && !filtroRepetidas;
@@ -621,12 +758,15 @@ export async function POST(request: NextRequest) {
         apostasBrutas = wheelApostas.map(a => [...a]);
       } else if (coverApostas) {
         apostasBrutas = coverApostas.map(a => [...a]);
+      } else if (lottoApostas) {
+        apostasBrutas = lottoApostas.map(a => [...a]);
       } else {
         apostasBrutas = gerarFechamentoComRestricoes({
           universo: universoEfetivo,
           fixos,
           excluidos,
           filtrosCategorias,
+          filtrosExtras: filtrosExtrasNorm,
           k, t: tEfetivo, maxApostas,
           seed: seedAtual,
           otimizado,
@@ -635,12 +775,14 @@ export async function POST(request: NextRequest) {
           candidatosPool,
           amostraPorPasso,
           removerRedundantes: false,
-          limiteTempoMs: limitePorSeed,
+          limiteTempoMs: limitePorSeedEfetivo,
         });
       }
 
       let candidato = aplicarFiltroRepetidas(apostasBrutas, filtroRepetidas);
-      if (removerRedundantes && candidato.length > 1 && !usaCoverVerificado) {
+      // O lotto design é podado/verificado pela própria construção: a remoção de
+      // redundantes usa a semântica de t-subconjuntos e destruiria o piso dele.
+      if (removerRedundantes && candidato.length > 1 && !usaCoverVerificado && !lottoApostas) {
         candidato = removerApostasRedundantes(candidato, universoEfetivo, k, tEfetivo);
       }
 
@@ -811,7 +953,7 @@ export async function POST(request: NextRequest) {
     let apostasBrutasFinal = melhor.apostasBrutas;
     let cpSatInfo: (CpSatFechamentoResult & { usado: boolean }) | null = null;
     const limiteInferiorSolver = calcularLimiteInferior(loteria, universoEfetivo, fixos, excluidos, k, tEfetivo);
-    if (usarCpSat && !wheelApostas && !coverApostas && tEfetivo <= 5) {
+    if (usarCpSat && !wheelApostas && !coverApostas && tEfetivo <= 5 && !temFiltrosTelaAtivos) {
       const fixosSet = new Set<number>(fixos);
       const excluidosSet = new Set<number>(excluidos);
       const universoRestante: number[] = universoEfetivo.filter((n: number) => !fixosSet.has(n) && !excluidosSet.has(n));
@@ -845,7 +987,8 @@ export async function POST(request: NextRequest) {
               && b.every(n => universoRestante.includes(n))
             );
             const coberturaCp = verificarCobertura(apostasCp, universoCobertura, k, tEfetivo);
-            if (betsValidas && coberturaCp.coberta) {
+            const filtrosCpOk = apostasCp.every(a => aceitarFiltrosTela(a));
+            if (betsValidas && coberturaCp.coberta && filtrosCpOk) {
               apostasBrutasFinal = apostasCp;
               usado = true;
             }
@@ -869,11 +1012,12 @@ export async function POST(request: NextRequest) {
       !usaCoverVerificado
       && apostas.length
       && tEfetivo <= 10
-      && (removidasRepetidas > 0 || filtrosCategorias.length > 0)
+      && (removidasRepetidas > 0 || filtrosCategorias.length > 0 || filtrosExtrasNorm)
     ) {
       const aceitarReparo = (a: number[]) => {
         if (filtroRepetidas && !apostaSatisfazRepetidas(a, filtroRepetidas.numeros, filtroRepetidas.min, filtroRepetidas.max)) return false;
         if (filtrosCategorias.length && !apostaSatisfazCategorias(a, filtrosCategorias)) return false;
+        if (!apostaSatisfazFiltrosExtras(a, filtrosExtrasNorm)) return false;
         return true;
       };
       const livres = apostas.map(a => a.filter(n => !fixos.includes(n) && !excluidos.includes(n)));
@@ -884,8 +1028,9 @@ export async function POST(request: NextRequest) {
         t: tEfetivo,
         maxApostas: maxApostasIlimitado(maxApostas) ? 0 : Math.max(maxApostas, apostas.length),
         seed,
+        candidatosPool: 5000,
         aceitarBloco: (a) => aceitarReparo([...fixos, ...a]),
-        limiteTempoMs: Math.max(1000, Math.min(5000, limitePorSeed)),
+        limiteTempoMs: Math.max(2000, Math.min(8000, limitePorSeedEfetivo)),
       });
       if (reparado.length > apostas.length) {
         const antes = apostas.length;
@@ -894,21 +1039,30 @@ export async function POST(request: NextRequest) {
         reparoAdicionadas = apostas.length - antes;
       }
     }
+    let removidasFiltrosTela = 0;
+    if (temFiltrosTelaAtivos) {
+      const antes = apostas.length;
+      apostas = apostas.filter(a => aceitarFiltrosTela(a));
+      removidasFiltrosTela = antes - apostas.length;
+    }
     if (!apostas.length) {
       throw new Error('Nenhuma aposta sobrou após os filtros. Reduza as restrições.');
     }
 
-    let modo = coverApostas
-      ? 'cover_conhecido'
-      : wheelApostas
-        ? modoWheel
-        : (otimizado ? 'guloso_amostrado + busca_local' : 'guloso_amostrado');
-    if (removerRedundantes) modo += ' + remocao_redundantes';
+    let modo = lottoApostas
+      ? 'lotto_design'
+      : coverApostas
+        ? 'cover_conhecido'
+        : wheelApostas
+          ? modoWheel
+          : (otimizado ? 'guloso_amostrado + busca_local' : 'guloso_amostrado');
+    if (removerRedundantes && !lottoApostas) modo += ' + remocao_redundantes';
     if (!wheelApostas && seedsEfetivas > 1) modo += ' + multi_seed';
     if (filtroRepetidas) modo += ' + filtro_repetidas';
     if (cpSatInfo?.usado) modo += ' + cp_sat';
     if (modoReparo) modo += ' + reparo_cobertura';
     if (garantiaCondicional) modo += ' + garantia_condicional';
+    if (filtrosExtrasNorm) modo += ' + filtros_tela';
 
     if (usarSimulatedAnnealing && apostas.length > 1) {
       apostas = buscaLocalSimulatedAnnealing({
@@ -918,8 +1072,8 @@ export async function POST(request: NextRequest) {
         taxaResfriamento: 0.995,
         candidatosPool: 400,
         seed: buscaSeed,
-        aceitarBloco: filtrosCategorias.length
-          ? (a) => apostaSatisfazCategorias(a, filtrosCategorias)
+        aceitarBloco: filtrosCategorias.length || filtrosExtrasNorm
+          ? (a) => apostaSatisfazCategorias(a, filtrosCategorias) && apostaSatisfazFiltrosExtras(a, filtrosExtrasNorm)
           : undefined,
       });
       modo += ' + simulated_annealing';
@@ -929,7 +1083,9 @@ export async function POST(request: NextRequest) {
     const coberturaRestante = calcularCoberturaRestante(apostas, universoEfetivo, fixos, excluidos, k, tEfetivo);
     const cobertura = garantiaCondicional ? (coberturaRestante ?? coberturaFull) : coberturaFull;
     const custo = relatorioCusto(apostas, k, fcfg.dezenasPorAposta, fcfg.precoBase);
-    const limiteInferior = calcularLimiteInferior(loteria, universoEfetivo, fixos, excluidos, k, tEfetivo);
+    const limiteInferior = lottoInfo
+      ? lottoInfo.limiteInferior
+      : calcularLimiteInferior(loteria, universoEfetivo, fixos, excluidos, k, tEfetivo);
 
     let backtestFinal: BacktestFechamentoResult | null = null;
     if (resultadosHistoricos && (incluirBacktest || priorizarPremios)) {
@@ -960,10 +1116,22 @@ export async function POST(request: NextRequest) {
           : 'conhecida';
       avisos.push(`Cobertura ${tipo}${coverInfo.permutado ? ' (permutada para os filtros)' : ''}: ${coverInfo.blocos} blocos para C(${coverInfo.v},${coverInfo.k},${coverInfo.t}) · ${coverInfo.fonte}.`);
     }
+    if (lottoInfo) {
+      avisos.push(
+        `Lotto design L(${lottoInfo.v},${lottoInfo.k},${lottoInfo.m},${lottoInfo.t}): ${lottoInfo.blocos} apostas. ` +
+        `Piso garantido de ${lottoInfo.pisoTotal} acerto(s)${fixos.length ? ` (${fixos.length} fixos + ${lottoInfo.piso})` : ''} ` +
+        `para qualquer um dos ${lottoInfo.alvos.toLocaleString('pt-BR')} sorteios possíveis` +
+        `${lottoInfo.verificado ? ', verificado exaustivamente' : ''}. ` +
+        `O cover equivalente C(${lottoInfo.v},${lottoInfo.k},${lottoInfo.t}) exigiria a cobertura de todo t-subconjunto, que é uma exigência mais forte que o sorteio real.`,
+      );
+    }
+    if (usarLottoDesign && lottoIgnorado) {
+      avisos.push(`Lotto design não usado: ${lottoIgnorado.motivo}.`);
+    }
     if (coverIgnorado) {
       avisos.push(`Existe cover C(${coverIgnorado.v},${coverIgnorado.k},${coverIgnorado.t}) com ${coverIgnorado.blocos} apostas, mas "Máx. apostas"=${maxApostas}. Use 0 (sem limite) para usá-lo.`);
     }
-    if (maxApostas === 0 && !coverInfo) avisos.push('0 = sem limite: a geração pode demorar em cenários com t alto.');
+    if (maxApostas === 0 && !coverInfo && !lottoInfo) avisos.push('0 = sem limite: a geração pode demorar em cenários com t alto.');
     if (fcfg.avisoVolume && !coverInfo && maxApostas === 0 && universoEfetivo.length >= 40) avisos.push(fcfg.avisoVolume);
     if (filtroRepetidas && removidasRepetidas > 0) {
       avisos.push(`Filtro de repetidas removeu ${removidasRepetidas} aposta(s); a cobertura exibida já é a recalculada.`);
@@ -971,8 +1139,24 @@ export async function POST(request: NextRequest) {
     if (modoReparo) {
       avisos.push(`Reparo de cobertura: +${reparoAdicionadas} aposta(s) válidas para restaurar 100% dos t-subconjuntos.`);
     }
-    if (coberturaRestante && !coberturaRestante.coberta) {
+    if (filtrosExtrasNorm) {
+      const partes: string[] = [];
+      if (filtrosExtrasNorm.colunas) partes.push('colunas posicionais');
+      if (filtrosExtrasNorm.linhas) partes.push('linhas posicionais');
+      if (filtrosExtrasNorm.comparativo) partes.push('comparativo');
+      if (filtrosExtrasNorm.repetidos3) partes.push('repetidos dos 3 sorteios');
+      if (partes.length > 0) avisos.push(`Filtros da tela aplicados: ${partes.join(', ')}.`);
+    }
+    if (removidasFiltrosTela > 0) {
+      avisos.push(`Removidas ${removidasFiltrosTela} aposta(s) que não passaram nos filtros da tela.`);
+    }
+    // No lotto design a cobertura de t-subconjuntos não é 100% por construção:
+    // a garantia é sobre os sorteios possíveis, não sobre os t-subconjuntos.
+    if (coberturaRestante && !coberturaRestante.coberta && !lottoInfo) {
       avisos.push('A cobertura do universo restante não ficou em 100%. Reduza filtros ou aumente o limite de apostas.');
+      if (filtrosExtrasNorm) {
+        avisos.push('Os filtros da tela restringem a composição das apostas; alguns t-subconjuntos podem ser inalcançáveis com eles.');
+      }
     }
     if (!wheelApostas && seedsEfetivas > 1 && !otimizarSeeds) {
       avisos.push(`Foram testadas ${seedsEfetivas} seed(s); o tempo limite foi dividido entre elas.`);
@@ -1040,6 +1224,8 @@ export async function POST(request: NextRequest) {
       tempoGeracaoMs: Date.now() - inicioRequisicao,
       cpSat: cpSatInfo,
       coverConhecido: coverInfo,
+      lottoDesign: lottoInfo,
+      lottoIgnorado,
       otimizacao,
     }));
   } catch (error: any) {

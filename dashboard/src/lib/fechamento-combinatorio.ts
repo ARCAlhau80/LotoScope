@@ -31,6 +31,29 @@ export interface ConstruirFechamentoOptions {
   limiteTempoMs?: number;
 }
 
+/** Filtro de colunas posicionais: para cada conjunto, quantas dezenas do jogo devem estar nele. */
+export interface FiltroColunasPosicionais {
+  sets: number[][];
+  mins: number[];
+  maxs: number[];
+}
+
+/** Filtro comparativo posicional: quantas posições ▲ / = / ▼ em relação ao sorteio base. */
+export interface FiltroComparativoPosicional {
+  maiores?: { min: number; max: number };
+  iguais?: { min: number; max: number };
+  menores?: { min: number; max: number };
+}
+
+/** Filtros da tela (posicionais/comparativo/repetidos) aplicáveis a cada aposta. */
+export interface FiltrosExtras {
+  colunas?: FiltroColunasPosicionais;
+  linhas?: Array<number[] | null>;
+  comparativo?: FiltroComparativoPosicional;
+  baseComparativo?: number[];
+  repetidos3?: FiltroCategoria[];
+}
+
 export interface BuscaLocalOptions {
   apostas: number[][];
   universo: number[];
@@ -976,6 +999,8 @@ export interface GerarFechamentoComRestricoesOptions {
   candidatosPool?: number;
   amostraPorPasso?: number;
   filtrosCategorias?: FiltroCategoria[];
+  /** Filtros da tela: colunas, linhas, comparativo e repetidos dos 3 sorteios. */
+  filtrosExtras?: FiltrosExtras;
   /** Remove apostas redundantes ao final (preserva cobertura). */
   removerRedundantes?: boolean;
   /** Tempo máximo em ms; 0/undefined = sem limite. */
@@ -1013,6 +1038,7 @@ export function gerarFechamentoComRestricoes(opts: GerarFechamentoComRestricoesO
     candidatosPool = 400,
     amostraPorPasso = t <= 3 ? 2000 : t === 4 ? 500 : t <= 8 ? 60 : 25,
     filtrosCategorias: filtrosInformados = [],
+    filtrosExtras,
     removerRedundantes = false,
     limiteTempoMs = 0,
   } = opts;
@@ -1040,8 +1066,14 @@ export function gerarFechamentoComRestricoes(opts: GerarFechamentoComRestricoesO
     throw new Error(`Universo restante (${universoRestante.length}) menor que t=${t}.`);
   }
 
-  const aceitarBloco = filtrosInformados.length > 0
-    ? (a: number[]) => apostaSatisfazCategorias([...fixos, ...a], filtrosInformados)
+  const filtrosExtrasNorm = normalizarFiltrosExtras(filtrosExtras, fixos, excluidos, universoBaseSorted);
+  const temFiltros = filtrosInformados.length > 0 || filtrosExtrasNorm !== undefined;
+  const aceitarBloco = temFiltros
+    ? (a: number[]) => {
+        const full = [...fixos, ...a].sort((x, y) => x - y);
+        return apostaSatisfazCategorias(full, filtrosInformados)
+          && apostaSatisfazFiltrosExtras(full, filtrosExtrasNorm);
+      }
     : undefined;
 
   const apostasBase = otimizado
@@ -1083,11 +1115,13 @@ export function gerarFechamentoComRestricoes(opts: GerarFechamentoComRestricoesO
     }
   }
 
-  // Aplica filtros de categoria, se houver. Como o guloso já gera blocos
-  // válidos (aceitarBloco), isto é apenas uma salvaguarda.
+  // Aplica filtros da tela. Como o guloso já gera blocos válidos (aceitarBloco),
+  // isto é apenas uma salvaguarda.
   let resultado = finais;
-  if (filtrosInformados.length > 0) {
-    resultado = resultado.filter((a) => apostaSatisfazCategorias(a, filtrosInformados));
+  if (temFiltros) {
+    resultado = resultado.filter((a) =>
+      apostaSatisfazCategorias(a, filtrosInformados) && apostaSatisfazFiltrosExtras(a, filtrosExtrasNorm)
+    );
 
     // Reparo: se algum filtro/limite deixou buracos, completa a cobertura
     // adicionando blocos válidos que ainda caibam no orçamento.
@@ -1100,8 +1134,13 @@ export function gerarFechamentoComRestricoes(opts: GerarFechamentoComRestricoesO
         t,
         maxApostas: maxApostasIlimitado(maxApostas) ? 0 : Math.max(maxApostas, resultado.length),
         seed,
-        aceitarBloco: (a) => apostaSatisfazCategorias([...fixos, ...a], filtrosInformados),
-        limiteTempoMs,
+        candidatosPool: 5000,
+        aceitarBloco: (a) => {
+          const full = [...fixos, ...a].sort((x, y) => x - y);
+          return apostaSatisfazCategorias(full, filtrosInformados)
+            && apostaSatisfazFiltrosExtras(full, filtrosExtrasNorm);
+        },
+        limiteTempoMs: Math.min(limiteTempoMs || 8000, 8000),
       });
       resultado = reparado.map(a => [...fixos, ...a].sort((x, y) => x - y));
     }
@@ -1137,6 +1176,174 @@ export function apostaSatisfazCategorias(
   return true;
 }
 
+function apostaSatisfazColunas(aposta: number[], filtro: FiltroColunasPosicionais): boolean {
+  for (let i = 0; i < filtro.sets.length; i++) {
+    const set = new Set(filtro.sets[i] ?? []);
+    let qtd = 0;
+    for (const n of aposta) if (set.has(n)) qtd++;
+    const min = filtro.mins[i] ?? 0;
+    const max = filtro.maxs[i] ?? set.size;
+    if (qtd < min || qtd > max) return false;
+  }
+  return true;
+}
+
+function apostaSatisfazDominios(aposta: number[], dominios: Array<number[] | null>): boolean {
+  const ord = [...aposta].sort((a, b) => a - b);
+  for (let i = 0; i < ord.length; i++) {
+    const d = dominios[i];
+    if (d && d.length > 0 && !d.includes(ord[i])) return false;
+  }
+  return true;
+}
+
+function apostaSatisfazComparativo(
+  aposta: number[],
+  base: number[],
+  filtro: FiltroComparativoPosicional,
+): boolean {
+  if (!base.length) return true;
+  const ord = [...aposta].sort((a, b) => a - b);
+  const b = [...base].sort((a, b) => a - b);
+  const n = Math.min(ord.length, b.length);
+  let maiores = 0;
+  let iguais = 0;
+  let menores = 0;
+  for (let i = 0; i < n; i++) {
+    if (ord[i] > b[i]) maiores++;
+    else if (ord[i] < b[i]) menores++;
+    else iguais++;
+  }
+  const dentro = (v: number, r?: { min: number; max: number }) => !r || (v >= r.min && v <= r.max);
+  return dentro(maiores, filtro.maiores) && dentro(iguais, filtro.iguais) && dentro(menores, filtro.menores);
+}
+
+/** Aplica todos os filtros extras (colunas, linhas, comparativo e repetidos dos 3 sorteios). */
+export function apostaSatisfazFiltrosExtras(
+  aposta: number[],
+  filtros: FiltrosExtras | undefined,
+): boolean {
+  if (!filtros) return true;
+  if (filtros.colunas && !apostaSatisfazColunas(aposta, filtros.colunas)) return false;
+  if (filtros.linhas && !apostaSatisfazDominios(aposta, filtros.linhas)) return false;
+  if (filtros.comparativo && !apostaSatisfazComparativo(aposta, filtros.baseComparativo ?? [], filtros.comparativo)) return false;
+  if (filtros.repetidos3 && !apostaSatisfazCategorias(aposta, filtros.repetidos3)) return false;
+  return true;
+}
+
+function inteiroArray(v: unknown): number[] | null {
+  if (!Array.isArray(v)) return null;
+  const out = v
+    .map(x => Number(x))
+    .filter(x => Number.isInteger(x));
+  return out.length > 0 ? out : [];
+}
+
+function rangeInteiro(v: unknown): { min: number; max: number } | undefined {
+  if (!v || typeof v !== 'object') return undefined;
+  const min = Math.trunc(Number((v as any).min));
+  const max = Math.trunc(Number((v as any).max));
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return undefined;
+  return { min: Math.min(min, max), max: Math.max(min, max) };
+}
+
+/** Sanitiza o objeto `filtrosExtras` vindo do dashboard. */
+export function parseFiltrosExtras(raw: unknown): FiltrosExtras | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const r = raw as any;
+  const out: FiltrosExtras = {};
+
+  if (r.colunas && Array.isArray(r.colunas.sets)) {
+    const sets = r.colunas.sets
+      .map((s: unknown) => inteiroArray(s) ?? [])
+      .filter((s: number[]) => s.length > 0);
+    if (sets.length > 0) {
+      const mins = Array.isArray(r.colunas.mins)
+        ? r.colunas.mins.map((x: unknown) => Math.max(0, Math.trunc(Number(x)) || 0))
+        : [];
+      const maxs = Array.isArray(r.colunas.maxs)
+        ? r.colunas.maxs.map((x: unknown) => Math.max(0, Math.trunc(Number(x)) || 0))
+        : [];
+      out.colunas = { sets, mins, maxs };
+    }
+  }
+
+  if (Array.isArray(r.linhas)) {
+    const linhas = r.linhas.map((d: unknown) => (Array.isArray(d) ? (inteiroArray(d) ?? []) : null));
+    if (linhas.some((d: number[] | null) => d && d.length > 0)) out.linhas = linhas;
+  }
+
+  if (r.comparativo && typeof r.comparativo === 'object') {
+    const c: FiltroComparativoPosicional = {};
+    for (const key of ['maiores', 'iguais', 'menores'] as const) {
+      const range = rangeInteiro(r.comparativo[key]);
+      if (range) c[key] = range;
+    }
+    if (c.maiores || c.iguais || c.menores) out.comparativo = c;
+  }
+
+  if (Array.isArray(r.baseComparativo)) {
+    const base = inteiroArray(r.baseComparativo) ?? [];
+    if (base.length > 0) out.baseComparativo = base;
+  }
+
+  if (Array.isArray(r.repetidos3)) {
+    const reps: FiltroCategoria[] = [];
+    for (const item of r.repetidos3) {
+      const numeros = inteiroArray(item?.numeros) ?? [];
+      const range = rangeInteiro(item);
+      if (numeros.length > 0 && range) reps.push({ numeros, min: range.min, max: range.max });
+    }
+    if (reps.length > 0) out.repetidos3 = reps;
+  }
+
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
+/** Remove fixos/excluídos dos conjuntos de colunas e normaliza min/max. */
+export function normalizarFiltrosExtras(
+  filtros: FiltrosExtras | undefined,
+  fixos: number[],
+  excluidos: number[],
+  universo: number[],
+): FiltrosExtras | undefined {
+  if (!filtros) return undefined;
+  const fixosSet = new Set(fixos);
+  const excluidosSet = new Set(excluidos);
+  const universoSet = new Set(universo);
+  const out: FiltrosExtras = {};
+
+  if (filtros.colunas) {
+    const sets = filtros.colunas.sets.map(s => [
+      ...new Set(s.filter(n => universoSet.has(n) && !fixosSet.has(n) && !excluidosSet.has(n))),
+    ]);
+    const mins = sets.map((s, i) => Math.max(0, Math.min(filtros.colunas!.mins[i] ?? 0, s.length)));
+    const maxs = sets.map((s, i) => {
+      const min = mins[i];
+      return Math.max(min, Math.min(filtros.colunas!.maxs[i] ?? s.length, s.length));
+    });
+    out.colunas = { sets, mins, maxs };
+  }
+
+  if (filtros.linhas) {
+    out.linhas = filtros.linhas.map(d =>
+      d ? [...new Set(d.filter(n => universoSet.has(n) && !excluidosSet.has(n)))].sort((a, b) => a - b) : null,
+    );
+  }
+
+  if (filtros.comparativo) out.comparativo = filtros.comparativo;
+  if (filtros.baseComparativo) out.baseComparativo = [...filtros.baseComparativo];
+  if (filtros.repetidos3) {
+    out.repetidos3 = filtros.repetidos3.map(x => ({
+      numeros: [...x.numeros],
+      min: x.min,
+      max: x.max,
+    }));
+  }
+
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
 export interface PermutarCoverParaFiltrosOptions {
   /** Blocos do cover com rótulos 1..v (como no registry). */
   blocos: number[][];
@@ -1144,6 +1351,8 @@ export interface PermutarCoverParaFiltrosOptions {
   universo: number[];
   fixos?: number[];
   filtros: FiltroCategoria[];
+  /** Predicado final por aposta completa (já com fixos). Tem prioridade sobre `filtros`. */
+  aceitarAposta?: (aposta: number[]) => boolean;
   seed?: number;
   /** Tempo máximo da busca; 0/undefined usa 750 ms. */
   limiteTempoMs?: number;
@@ -1169,9 +1378,9 @@ export interface PermutarCoverParaFiltrosResult {
 export function permutarCoverParaFiltros(
   opts: PermutarCoverParaFiltrosOptions,
 ): PermutarCoverParaFiltrosResult | null {
-  const { blocos, universo, fixos = [], filtros, seed = 7, limiteTempoMs = 750, maxIteracoes = 20_000 } = opts;
+  const { blocos, universo, fixos = [], filtros, aceitarAposta, seed = 7, limiteTempoMs = 750, maxIteracoes = 20_000 } = opts;
   if (!blocos.length || !universo.length) return null;
-  if (!filtros.length) {
+  if (!filtros.length && !aceitarAposta) {
     return {
       universo,
       apostas: blocos.map(b => [...fixos, ...b.map(x => universo[x - 1])].sort((a, b) => a - b)),
@@ -1186,6 +1395,14 @@ export function permutarCoverParaFiltros(
   const fixosPorFiltro = filtrosSets.map(f => fixos.reduce((acc, n) => acc + (f.set.has(n) ? 1 : 0), 0));
 
   const avaliar = (perm: number[]): number => {
+    if (aceitarAposta) {
+      let violacoes = 0;
+      for (const bloco of blocosPos) {
+        const aposta = [...fixos, ...bloco.map(x => perm[x])].sort((a, b) => a - b);
+        if (!aceitarAposta(aposta)) violacoes++;
+      }
+      return violacoes;
+    }
     let violacoes = 0;
     for (const bloco of blocosPos) {
       let ok = true;
@@ -1816,6 +2033,332 @@ export function gerarChaveCache(opts: { v: number; k: number; t: number; maxApos
 // ============================================================================
 // 8. EXPORTAÇÃO CSV COM METADADOS
 // ============================================================================
+
+/* ============================================================================
+ * LOTTO DESIGN — L(v, k, m, t)
+ * ----------------------------------------------------------------------------
+ * Um covering design C(v,k,t) exige que TODO t-subconjunto do universo esteja
+ * contido em algum bloco. Isso é bem mais forte do que o problema real de uma
+ * loteria, porque no sorteio apenas m dezenas do universo saem (m > t quando
+ * existem fixos).
+ *
+ * Um lotto design L(v,k,m,t) exige apenas:
+ *   para todo m-subconjunto D do universo, existe um bloco B com |B ∩ D| >= t.
+ *
+ * Efeito prático (Lotofácil, k=15, 5 fixos, alvo 11 acertos):
+ *   cover  C(20,10,6) = 343 apostas
+ *   lotto  L(20,10,10,6) = 11 apostas
+ * com o MESMO piso de acertos, condicionado aos 5 fixos saírem.
+ * ==========================================================================*/
+
+/** Tabela de popcount para 16 bits; popcount32 = soma das duas metades. */
+const POP16: Uint8Array = (() => {
+  const t = new Uint8Array(1 << 16);
+  for (let i = 1; i < 1 << 16; i++) t[i] = t[i >> 1] + (i & 1);
+  return t;
+})();
+
+/** Popcount de um inteiro com até 30 bits úteis (máscara de dezenas). */
+export function popcount32(x: number): number {
+  return POP16[x & 0xffff] + POP16[(x >>> 16) & 0xffff];
+}
+
+/** Máscaras de todos os m-subconjuntos das posições 0..v-1, em ordem lexicográfica. */
+export function mascarasSubconjuntos(v: number, m: number): Int32Array {
+  const total = nCombinacoes(v, m);
+  const out = new Int32Array(total);
+  let p = 0;
+  const atual: number[] = [];
+  const rec = (inicio: number, resto: number): void => {
+    if (resto === 0) {
+      let mask = 0;
+      for (let i = 0; i < atual.length; i++) mask |= 1 << atual[i];
+      out[p++] = mask;
+      return;
+    }
+    for (let i = inicio; i <= v - resto; i++) {
+      atual.push(i);
+      rec(i + 1, resto - 1);
+      atual.pop();
+    }
+  };
+  rec(0, m);
+  return out;
+}
+
+export interface LottoDesignResult {
+  blocos: number[][];
+  /** Pior caso real: menor interseção máxima entre um sorteio possível e os blocos. */
+  piso: number;
+  /** Quantidade de m-subconjuntos que não atingem t (0 = garantia completa). */
+  falhas: number;
+  alvos: number;
+  completo: boolean;
+  /** true quando a verificação exaustiva de todos os m-subconjuntos rodou. */
+  verificado: boolean;
+  tempoMs: number;
+}
+
+export interface LottoDesignConhecido {
+  v: number;
+  k: number;
+  m: number;
+  t: number;
+  blocos: number[][];
+  fonte: string;
+  limiteInferior: number;
+  verificado?: boolean;
+}
+
+/**
+ * Limite inferior de contagem para L(v,k,m,t): quantos m-subconjuntos um único
+ * bloco de k dezenas cobre, no melhor caso, e quantos alvos existem.
+ * É um piso teórico (ignora sobreposição), não necessariamente alcançável.
+ */
+export function limiteInferiorLottoDesign(v: number, k: number, m: number, t: number): number {
+  if (t <= 0 || k <= 0 || v <= 0 || m <= 0 || m > v) return 0;
+  let porBloco = 0;
+  for (let i = t; i <= Math.min(k, m); i++) {
+    porBloco += nCombinacoes(k, i) * nCombinacoes(v - k, m - i);
+  }
+  if (porBloco <= 0) return 0;
+  return Math.ceil(nCombinacoes(v, m) / porBloco);
+}
+
+/**
+ * Verificação EXAUSTIVA de um lotto design: percorre todos os C(v,m) sorteios
+ * possíveis e devolve o pior caso real (piso) e quantos ficaram abaixo de t.
+ */
+export function verificarLottoDesign(
+  blocos: number[][],
+  universo: number[],
+  k: number,
+  m: number,
+  t: number,
+): { piso: number; falhas: number; alvos: number; completo: boolean } {
+  const u = [...new Set(universo)].sort((a, b) => a - b);
+  const v = u.length;
+  if (m <= 0 || m > v) throw new Error('Deve valer 1 <= m <= v');
+  const pos = new Map<number, number>();
+  u.forEach((n, i) => pos.set(n, i));
+
+  const masks: number[] = [];
+  for (const b of blocos) {
+    let mask = 0;
+    let valido = true;
+    for (const n of b) {
+      const p = pos.get(n);
+      if (p === undefined) {
+        valido = false;
+        break;
+      }
+      mask |= 1 << p;
+    }
+    if (valido && popcount32(mask) === k) masks.push(mask);
+  }
+  const alvos = mascarasSubconjuntos(v, m);
+  if (!masks.length) return { piso: 0, falhas: alvos.length, alvos: alvos.length, completo: false };
+
+  let piso = 99;
+  let falhas = 0;
+  for (let i = 0; i < alvos.length; i++) {
+    const d = alvos[i];
+    let melhor = 0;
+    for (let j = 0; j < masks.length; j++) {
+      const inter = popcount32(d & masks[j]);
+      if (inter > melhor) {
+        melhor = inter;
+        // piso só pode diminuir: se já não supera o piso corrente, para aqui.
+        if (melhor >= piso) break;
+      }
+    }
+    if (melhor < piso) piso = melhor;
+    if (melhor < t) falhas++;
+  }
+  return { piso, falhas, alvos: alvos.length, completo: falhas === 0 };
+}
+
+/** Remove blocos cuja cobertura é inteiramente redundante (contagem >= 2). */
+function podarLottoDesign(
+  blocos: number[],
+  alvos: Int32Array,
+  t: number,
+  limiteMs: number,
+  t0: number,
+): number[] {
+  const n = alvos.length;
+  const cont = new Uint16Array(n);
+  for (const b of blocos) {
+    for (let i = 0; i < n; i++) if (popcount32(alvos[i] & b) >= t) cont[i]++;
+  }
+  const removidos = new Set<number>();
+  for (let j = 0; j < blocos.length; j++) {
+    if (Date.now() - t0 > limiteMs) break;
+    const b = blocos[j];
+    let podeRemover = true;
+    for (let i = 0; i < n; i++) {
+      if (popcount32(alvos[i] & b) >= t && cont[i] <= 1) {
+        podeRemover = false;
+        break;
+      }
+    }
+    if (!podeRemover) continue;
+    removidos.add(j);
+    for (let i = 0; i < n; i++) if (popcount32(alvos[i] & b) >= t) cont[i]--;
+  }
+  return blocos.filter((_, j) => !removidos.has(j));
+}
+
+export interface ConstruirLottoDesignOptions {
+  universo: number[];
+  k: number;
+  m: number;
+  t: number;
+  maxBlocos?: number;
+  seed?: number;
+  candidatosPool?: number;
+  restarts?: number;
+  topK?: number;
+  limiteTempoMs?: number;
+  aceitarBloco?: (aposta: number[]) => boolean;
+}
+
+/**
+ * Constrói um lotto design L(v,k,m,t) por guloso multi-restart com desempate
+ * aleatório, seguido de poda de blocos redundantes e verificação exaustiva.
+ */
+export function construirLottoDesign(opts: ConstruirLottoDesignOptions): LottoDesignResult {
+  const t0 = Date.now();
+  const u = [...new Set(opts.universo)].sort((a, b) => a - b);
+  const v = u.length;
+  const { k, m, t } = opts;
+  const totalAlvos = nCombinacoes(v, m);
+  const vazio: LottoDesignResult = {
+    blocos: [],
+    piso: 0,
+    falhas: totalAlvos,
+    alvos: totalAlvos,
+    completo: false,
+    verificado: false,
+    tempoMs: 0,
+  };
+  // Máscaras de 30 bits: acima disso o custo/benefício não compensa.
+  if (v > 30 || k > 30 || v <= 0) return vazio;
+  if (t < 1 || m < t || k < t || m > v || k > v) return vazio;
+
+  const limiteMs = opts.limiteTempoMs ?? 8000;
+  const alvos = mascarasSubconjuntos(v, m);
+  const restarts = Math.max(1, opts.restarts ?? 3);
+  const topK = Math.max(1, opts.topK ?? 3);
+
+  // Pool adaptativo: o guloso custa O(pool × alvos × blocos).
+  const pool = Math.max(
+    60,
+    Math.min(opts.candidatosPool ?? 400, Math.floor(2e8 / Math.max(1, alvos.length))),
+  );
+
+  const rng = new LCG(opts.seed ?? 7);
+  const vistos = new Set<number>();
+  const cands: number[] = [];
+  for (let tentativa = 0; tentativa < pool * 40 && cands.length < pool; tentativa++) {
+    const posicoes: number[] = [];
+    const usados = new Set<number>();
+    while (posicoes.length < k) {
+      const p = Math.floor(rng.next() * v);
+      if (!usados.has(p)) {
+        usados.add(p);
+        posicoes.push(p);
+      }
+    }
+    let mask = 0;
+    for (const p of posicoes) mask |= 1 << p;
+    if (vistos.has(mask)) continue;
+    vistos.add(mask);
+    if (opts.aceitarBloco) {
+      const dezenas = posicoes.map(p => u[p]).sort((a, b) => a - b);
+      if (!opts.aceitarBloco(dezenas)) continue;
+    }
+    cands.push(mask);
+  }
+  if (!cands.length) return vazio;
+
+  let melhor: number[] = [];
+  // Guarda o melhor resultado parcial (menos alvos descobertos) para que, se
+  // nenhum restart fechar, o relatório mostre o piso real em vez de "pior caso 0".
+  let parcial: number[] = [];
+  let parcialDescobertos = Number.POSITIVE_INFINITY;
+  for (let r = 0; r < restarts; r++) {
+    if (Date.now() - t0 > limiteMs) break;
+    const descobertos = new Int32Array(alvos);
+    let n = descobertos.length;
+    const escolhidos: number[] = [];
+    while (n > 0) {
+      if (Date.now() - t0 > limiteMs) break;
+      if (opts.maxBlocos && escolhidos.length >= opts.maxBlocos) break;
+      let melhorGanho = -1;
+      const topo: number[] = [];
+      for (let ci = 0; ci < cands.length; ci++) {
+        const bm = cands[ci];
+        let ganho = 0;
+        for (let i = 0; i < n; i++) if (popcount32(descobertos[i] & bm) >= t) ganho++;
+        if (ganho > melhorGanho) {
+          melhorGanho = ganho;
+          topo.length = 0;
+          topo.push(ci);
+        } else if (ganho === melhorGanho && topo.length < topK) {
+          topo.push(ci);
+        }
+      }
+      if (melhorGanho <= 0) break;
+      const escolha = topo[Math.floor(rng.next() * topo.length)];
+      escolhidos.push(escolha);
+      const bm = cands[escolha];
+      let w = 0;
+      for (let i = 0; i < n; i++) {
+        const d = descobertos[i];
+        if (popcount32(d & bm) < t) descobertos[w++] = d;
+      }
+      n = w;
+    }
+    if (n === 0) {
+      if (melhor.length === 0 || escolhidos.length < melhor.length) melhor = escolhidos.slice();
+    } else if (escolhidos.length > 0 && n < parcialDescobertos) {
+      parcialDescobertos = n;
+      parcial = escolhidos.slice();
+    }
+  }
+  if (!melhor.length) melhor = parcial;
+  if (!melhor.length) return { ...vazio, tempoMs: Date.now() - t0 };
+
+  const podados = podarLottoDesign(
+    melhor.map(i => cands[i]),
+    alvos,
+    t,
+    limiteMs * 1.5,
+    t0,
+  );
+  const blocos = podados.map(mask => {
+    const out: number[] = [];
+    for (let p = 0; p < v; p++) if (mask & (1 << p)) out.push(u[p]);
+    return out;
+  });
+
+  // Verificação exaustiva (evita explodir em casos muito grandes).
+  const custoVerificacao = blocos.length * alvos.length;
+  const ver = custoVerificacao <= 3e8
+    ? verificarLottoDesign(blocos, u, k, m, t)
+    : { piso: 0, falhas: totalAlvos, alvos: totalAlvos, completo: false };
+
+  return {
+    blocos,
+    piso: ver.piso,
+    falhas: ver.falhas,
+    alvos: ver.alvos,
+    completo: ver.completo,
+    verificado: custoVerificacao <= 3e8,
+    tempoMs: Date.now() - t0,
+  };
+}
 
 export interface ExportacaoFechamentoCSV {
   conteudo: string;

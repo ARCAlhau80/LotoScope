@@ -163,6 +163,13 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [fechamentoMax, setFechamentoMax] = useState<number>(200);
   const [fechamentoSeed, setFechamentoSeed] = useState<number>(7);
   const [fechamentoOtimizado, setFechamentoOtimizado] = useState<boolean>(true);
+  const [fechamentoUsarLottoDesign, setFechamentoUsarLottoDesign] = useState<boolean>(false);
+  const [lottoDesignInfo, setLottoDesignInfo] = useState<{
+    v: number; k: number; m: number; t: number; blocos: number;
+    piso: number; pisoTotal: number; alvos: number; limiteInferior: number;
+    fonte: string; verificado: boolean; tempoMs: number;
+  } | null>(null);
+  const [lottoIgnoradoInfo, setLottoIgnoradoInfo] = useState<{ motivo: string } | null>(null);
   const [aplicarFiltrosCategorias, setAplicarFiltrosCategorias] = useState<boolean>(false);
   const [apostasFechamento, setApostasFechamento] = useState<number[][]>([]);
   const [coberturaFechamento, setCoberturaFechamento] = useState<VerificarCoberturaResult | null>(null);
@@ -181,6 +188,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [fechamentoTInfo, setFechamentoTInfo] = useState<{ garantiaCondicional: boolean; tEfetivo: number; t: number } | null>(null);
   const [fechamentoOtimizarQtd, setFechamentoOtimizarQtd] = useState<number>(20);
   const [fechamentoCriterioOtimizacao, setFechamentoCriterioOtimizacao] = useState<'custo' | 'diversidade' | 'backtest' | 'equilibrado'>('custo');
+  const [fechamentoAplicarFiltrosTela, setFechamentoAplicarFiltrosTela] = useState<boolean>(false);
   const [otimizacaoInfo, setOtimizacaoInfo] = useState<OtimizacaoInfo | null>(null);
   const [fechamentoFiltroRepetidasAtivo, setFechamentoFiltroRepetidasAtivo] = useState<boolean>(false);
   const [fechamentoRepetidasFaixa, setFechamentoRepetidasFaixa] = useState<string>(fechamentoCfg.repetidasPadrao);
@@ -311,6 +319,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setFechamentoGarantiaCondicional(false);
     setFechamentoTInfo(null);
     setOtimizacaoInfo(null);
+    setFechamentoAplicarFiltrosTela(false);
     setFechamentoRepetidasFaixa(fechamentoCfg.repetidasPadrao);
     setApostasFechamento([]);
     setCoberturaFechamento(null);
@@ -318,6 +327,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setBacktestFechamento(null);
     setCpSatInfo(null);
     setCoverConhecidoInfo(null);
+    setLottoDesignInfo(null);
+    setLottoIgnoradoInfo(null);
   }, [loteria, fechamentoCfg]);
 
   useEffect(() => {
@@ -727,6 +738,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setFechamentoFiltroInfo(null);
     setCpSatInfo(null);
     setCoverConhecidoInfo(null);
+    setLottoDesignInfo(null);
+    setLottoIgnoradoInfo(null);
     try {
       const fixosSelecionados = Object.entries(estados)
         .filter(([, e]) => e === 'fixo')
@@ -735,14 +748,46 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         .filter(([, e]) => e === 'excluido')
         .map(([n]) => Number(n));
 
-      const filtrosCategorias = aplicarFiltrosCategorias
-        ? categoriasDefs
-            .filter(c => (categoriasInputs[c.id] ?? '').trim() !== '')
-            .map(c => {
-              const faixa = parseFaixa(categoriasInputs[c.id] ?? '');
-              return { numeros: c.set, min: faixa.min, max: faixa.max };
-            })
+      const filtrosCategoriasTela = categoriasDefs
+        .filter(c => (categoriasInputs[c.id] ?? '').trim() !== '')
+        .map(c => {
+          const faixa = parseFaixa(categoriasInputs[c.id] ?? '');
+          return { numeros: c.set, min: faixa.min, max: faixa.max };
+        });
+      const filtrosCategorias = (aplicarFiltrosCategorias || fechamentoAplicarFiltrosTela)
+        ? filtrosCategoriasTela
         : [];
+
+      const regexFiltro = /^\d+(-\d+)?$/;
+      if (fechamentoAplicarFiltrosTela) {
+        if (temColunas) {
+          const err = validarColunas();
+          if (err) { setError(err); return; }
+        }
+        if (temComparativo && comparativoInputs.some(v => v.trim() !== '' && !regexFiltro.test(v.trim()))) {
+          setError('Formato inválido no filtro comparativo. Use "min-max" ou "min", ex.: 2-5');
+          return;
+        }
+        if (temRepetidos && repetidosInputs.some((v, i) => (repetidosItens[i] && v.trim() !== '' && !regexFiltro.test(v.trim())))) {
+          setError('Formato inválido no filtro de repetidos. Use "min-max" ou "min", ex.: 2-5');
+          return;
+        }
+      }
+
+      const filtrosExtras = fechamentoAplicarFiltrosTela
+        ? {
+            colunas: temColunas ? parseColunasPosicionais(colunasPosicionaisStr, colunasSetsStr) : undefined,
+            linhas: temLinhas ? linhasSetsArray : undefined,
+            comparativo: temComparativo ? parseFiltroComparativo(comparativoStr) : undefined,
+            baseComparativo: numerosSorteadosAtual,
+            repetidos3: temRepetidos
+              ? repetidosItens
+                  .map((item, i) => ({ numeros: item.numeros, valor: (repetidosInputs[i] ?? '').trim() }))
+                  .filter(x => x.valor !== '')
+                  .map(x => ({ numeros: x.numeros, ...parseFaixa(x.valor) }))
+              : undefined,
+          }
+        : undefined;
 
       const faixaRepetidas = parseFaixa(fechamentoRepetidasFaixa || '0-15');
       const repetidas = fechamentoFiltroRepetidasAtivo && numerosSorteadosAtual.length > 0
@@ -757,12 +802,14 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           fixos: fixosSelecionados,
           excluidos: excluidosSelecionados,
           filtrosCategorias,
+          filtrosExtras,
           k: fechamentoK,
           t: fechamentoT,
           garantiaCondicional: fechamentoGarantiaCondicional && fixosSelecionados.length > 0,
           maxApostas: fechamentoMax,
           seed: fechamentoSeed,
           otimizado: fechamentoOtimizado,
+          usarLottoDesign: fechamentoUsarLottoDesign,
           ...(fechamentoAmostra > 0 ? { amostraPorPasso: fechamentoAmostra } : {}),
           buscarMelhorSeed: fechamentoSeeds,
           priorizarPremios: fechamentoPriorizarPremios,
@@ -801,6 +848,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       setBacktestFechamento(data.backtest ?? null);
       setCpSatInfo(data.cpSat ?? null);
       setCoverConhecidoInfo(data.coverConhecido ?? null);
+      setLottoDesignInfo(data.lottoDesign ?? null);
+      setLottoIgnoradoInfo(data.lottoIgnorado ?? null);
       setOtimizacaoInfo(data.otimizacao ?? null);
       setFechamentoTInfo({
         garantiaCondicional: Boolean(data.garantiaCondicional),
@@ -817,7 +866,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       if (abortFechamentoRef.current === controller) abortFechamentoRef.current = null;
       setGerandoFechamento(false);
     }
-  }, [estados, categoriasDefs, categoriasInputs, aplicarFiltrosCategorias, fechamentoK, fechamentoT, fechamentoMax, fechamentoSeed, fechamentoOtimizado, fechamentoSeeds, fechamentoAmostra, fechamentoUsarCpSat, fechamentoSolver, fechamentoCpSatTime, fechamentoPriorizarPremios, fechamentoRemoverRedundantes, fechamentoGarantiaCondicional, fechamentoFiltroRepetidasAtivo, fechamentoRepetidasFaixa, numerosSorteadosAtual, loteria]);
+  }, [estados, categoriasDefs, categoriasInputs, aplicarFiltrosCategorias, fechamentoK, fechamentoT, fechamentoMax, fechamentoSeed, fechamentoOtimizado, fechamentoUsarLottoDesign, fechamentoSeeds, fechamentoAmostra, fechamentoUsarCpSat, fechamentoSolver, fechamentoCpSatTime, fechamentoPriorizarPremios, fechamentoRemoverRedundantes, fechamentoGarantiaCondicional, fechamentoFiltroRepetidasAtivo, fechamentoRepetidasFaixa, numerosSorteadosAtual, loteria]);
 
   const cancelarFechamento = useCallback(() => {
     abortFechamentoRef.current?.abort();
@@ -1758,6 +1807,18 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                 />
                 Otimizado (guloso + busca local)
               </label>
+              <label
+                className="flex items-center gap-2 text-xs cursor-pointer select-none"
+                title="Troca o covering design (todo t-subconjunto dentro de algum bloco) por um lotto design (todo sorteio possível atinge o piso em algum bloco). Mesmo piso de acertos com muito menos apostas: com 5 fixos e alvo 11, cai de 343 para 11. Requer garantia condicional aos fixos para valer."
+              >
+                <input
+                  type="checkbox"
+                  checked={fechamentoUsarLottoDesign}
+                  onChange={() => setFechamentoUsarLottoDesign(!fechamentoUsarLottoDesign)}
+                  className="accent-[#818cf8]"
+                />
+                Lotto design (reduz apostas, mesmo piso)
+              </label>
               <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -1766,6 +1827,18 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                   className="accent-[#818cf8]"
                 />
                 Aplicar filtros de categoria (min/max)
+              </label>
+              <label
+                className="flex items-center gap-2 text-xs cursor-pointer select-none"
+                title="Aplica ao fechamento os filtros preenchidos na tela: Colunas Posicionais, Linhas Posicionais, Comparativo, Categorias e Repetidos dos 3 últimos sorteios. Filtros muito restritivos podem reduzir a cobertura; o sistema avisa no resultado."
+              >
+                <input
+                  type="checkbox"
+                  checked={fechamentoAplicarFiltrosTela}
+                  onChange={() => setFechamentoAplicarFiltrosTela(!fechamentoAplicarFiltrosTela)}
+                  className="accent-[#818cf8]"
+                />
+                Aplicar filtros da tela ao fechamento
               </label>
               <label className="flex items-center gap-2 text-xs cursor-pointer select-none" title="Tenta reduzir o número de apostas com CP-SAT ou MIP (SCIP/CBC). Coberturas ótimas conhecidas são usadas automaticamente antes do solver.">
                 <input
@@ -1885,7 +1958,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xs text-muted">
               {fixos.length > 0 || excluidos.length > 0 || aplicarFiltrosCategorias
-                ? `Aplicados: ${fixos.length} fixo(s) ${fixos.length > 0 ? `(${fixos.join(', ')})` : ''} ${excluidos.length > 0 ? `| ${excluidos.length} excluído(s) (${excluidos.join(', ')})` : ''} ${aplicarFiltrosCategorias ? `| ${categoriasDefs.filter(c => (categoriasInputs[c.id] ?? '').trim() !== '').length} filtro(s) de categoria` : ''}`
+                ? `Aplicados: ${fixos.length} fixo(s) ${fixos.length > 0 ? `(${fixos.join(', ')})` : ''} ${excluidos.length > 0 ? `| ${excluidos.length} excluído(s) (${excluidos.join(', ')})` : ''} ${aplicarFiltrosCategorias || fechamentoAplicarFiltrosTela ? `| ${categoriasDefs.filter(c => (categoriasInputs[c.id] ?? '').trim() !== '').length} filtro(s) de categoria` : ''}${fechamentoAplicarFiltrosTela ? ' | filtros da tela (colunas/linhas/comparativo/repetidos)' : ''}`
                 : 'Sem fixos/excluídos aplicados'}
             </span>
           </div>
@@ -1964,19 +2037,35 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                 </div>
                 <div className="rounded-xl bg-white/5 p-3 text-center">
                   <div className="text-xs text-muted">
-                    {fechamentoTInfo?.garantiaCondicional ? 'Garantia condicional' : 'Garantia'}
+                    {lottoDesignInfo
+                      ? 'Piso garantido'
+                      : fechamentoTInfo?.garantiaCondicional
+                        ? 'Garantia condicional'
+                        : 'Garantia'}
                   </div>
-                  <div className="text-lg font-bold text-fg">{coberturaFechamento?.garantiaPercentual?.toFixed(2)}%</div>
-                  {fechamentoTInfo?.garantiaCondicional && (
+                  <div className="text-lg font-bold text-fg">
+                    {lottoDesignInfo
+                      ? `${lottoDesignInfo.pisoTotal} acerto(s)`
+                      : `${coberturaFechamento?.garantiaPercentual?.toFixed(2)}%`}
+                  </div>
+                  {lottoDesignInfo ? (
+                    <div className="text-[10px] text-emerald-200">
+                      em qualquer dos {lottoDesignInfo.alvos.toLocaleString('pt-BR')} sorteios
+                    </div>
+                  ) : fechamentoTInfo?.garantiaCondicional ? (
                     <div className="text-[10px] text-amber-200">
                       se os {fixos.length} fixo(s) saírem (t={fechamentoTInfo.tEfetivo})
                     </div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="rounded-xl bg-white/5 p-3 text-center">
-                  <div className="text-xs text-muted">Cobertura t-subconjuntos</div>
+                  <div className="text-xs text-muted">
+                    {lottoDesignInfo ? 'Sorteios verificados' : 'Cobertura t-subconjuntos'}
+                  </div>
                   <div className="text-lg font-bold text-fg">
-                    {coberturaFechamento?.tSubsetsCobertos?.toLocaleString()}/{coberturaFechamento?.tSubsetsTotal?.toLocaleString()}
+                    {lottoDesignInfo
+                      ? lottoDesignInfo.alvos.toLocaleString('pt-BR')
+                      : `${coberturaFechamento?.tSubsetsCobertos?.toLocaleString()}/${coberturaFechamento?.tSubsetsTotal?.toLocaleString()}`}
                   </div>
                 </div>
                 <div className="rounded-xl bg-white/5 p-3 text-center">
@@ -1996,7 +2085,15 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               </div>
 
               <div className="mb-2 text-xs text-muted">
-                {fechamentoTInfo?.garantiaCondicional ? (
+                {lottoDesignInfo ? (
+                  <span className="text-emerald-200">
+                    ✅ Lotto design L({lottoDesignInfo.v},{lottoDesignInfo.k},{lottoDesignInfo.m},{lottoDesignInfo.t}): piso de{' '}
+                    <strong>{lottoDesignInfo.pisoTotal} acerto(s)</strong>
+                    {fixos.length > 0 ? ` (${fixos.length} fixos + ${lottoDesignInfo.piso})` : ''} em{' '}
+                    {lottoDesignInfo.blocos} aposta(s)
+                    {lottoDesignInfo.verificado ? ', verificado exaustivamente' : ''}.
+                  </span>
+                ) : fechamentoTInfo?.garantiaCondicional ? (
                   fixos.length >= fechamentoTInfo.t ? (
                     <span className="text-emerald-200">
                       ✅ Garantia automática: os {fixos.length} fixo(s) já garantem {fechamentoTInfo.t} acertos se todos forem sorteados.
@@ -2014,7 +2111,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                 )}
               </div>
 
-              {fechamentoCoberturaRestante && (fixos.length > 0 || excluidos.length > 0) && (
+              {fechamentoCoberturaRestante && !lottoDesignInfo && (fixos.length > 0 || excluidos.length > 0) && (
                 <div className="mb-2 text-xs text-muted">
                   Cobertura do universo restante (garantia real):{' '}
                   <strong className="text-fg">
@@ -2024,7 +2121,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                 </div>
               )}
 
-              {!coverConhecidoInfo && (fechamentoSeedUsado !== null || fechamentoSeedsTestadas !== null) && (
+              {!coverConhecidoInfo && !lottoDesignInfo && (fechamentoSeedUsado !== null || fechamentoSeedsTestadas !== null) && (
                 <div className="mb-2 text-xs text-muted">
                   Seed usada: <strong className="text-fg">{fechamentoSeedUsado ?? '—'}</strong>
                   {fechamentoSeedsTestadas && fechamentoSeedsTestadas > 1
@@ -2053,6 +2150,21 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                     : coverConhecidoInfo.limiteInferior === coverConhecidoInfo.blocos
                       ? 'Cobertura ótima (provada)'
                       : 'Melhor cobertura conhecida'}: <strong>{coverConhecidoInfo.blocos} bloco(s)</strong> para C({coverConhecidoInfo.v},{coverConhecidoInfo.k},{coverConhecidoInfo.t}) · {coverConhecidoInfo.fonte}
+                </div>
+              )}
+
+              {lottoDesignInfo && (
+                <div className="mb-2 text-xs text-emerald-200 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2">
+                  Lotto design: <strong>{lottoDesignInfo.blocos} aposta(s)</strong> para L({lottoDesignInfo.v},{lottoDesignInfo.k},{lottoDesignInfo.m},{lottoDesignInfo.t})
+                  {' · '}piso {lottoDesignInfo.pisoTotal}
+                  {' · '}limite inferior {lottoDesignInfo.limiteInferior}
+                  {' · '}{lottoDesignInfo.fonte}
+                </div>
+              )}
+
+              {lottoIgnoradoInfo && (
+                <div className="mb-2 text-xs text-amber-200 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2">
+                  Lotto design não aplicado: {lottoIgnoradoInfo.motivo}
                 </div>
               )}
 
