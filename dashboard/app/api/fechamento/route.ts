@@ -645,6 +645,12 @@ export async function POST(request: NextRequest) {
         lottoIgnorado = { motivo: `universo restante com ${vL} dezenas (o lotto design aceita até 30)` };
       } else if (tL < 1 || mL < tL || kL < tL) {
         lottoIgnorado = { motivo: `alvo t'=${tL} inviável com m=${mL} e k'=${kL}` };
+      } else if (tL >= mL) {
+        // L(v,k,m,m) exige todo m-subconjunto dentro de um bloco: é exatamente
+        // uma cobertura C(v,k,m), então o lotto design não traz redução.
+        lottoIgnorado = {
+          motivo: `alvo t'=${tL} igual ao sorteio m=${mL}: o design equivale a uma cobertura completa, sem redução de apostas`,
+        };
       } else if (alvosL > LIMITE_ALVOS_LOTTO) {
         lottoIgnorado = {
           motivo: `C(${vL},${mL}) = ${alvosL.toLocaleString('pt-BR')} sorteios possíveis acima do limite ${LIMITE_ALVOS_LOTTO.toLocaleString('pt-BR')}`,
@@ -1079,9 +1085,13 @@ export async function POST(request: NextRequest) {
       modo += ' + simulated_annealing';
     }
 
-    const coberturaFull = verificarCobertura(apostas, universoCobertura, k, tEfetivo, fcfg.dezenasPorAposta, fcfg.precoBase);
+    // A verificação plena custa apostas × C(k,t): só calcula quando é a métrica
+    // que será exibida (sem garantia condicional, ou sem cobertura do restante).
     const coberturaRestante = calcularCoberturaRestante(apostas, universoEfetivo, fixos, excluidos, k, tEfetivo);
-    const cobertura = garantiaCondicional ? (coberturaRestante ?? coberturaFull) : coberturaFull;
+    const coberturaFull = garantiaCondicional && coberturaRestante
+      ? null
+      : verificarCobertura(apostas, universoCobertura, k, tEfetivo, fcfg.dezenasPorAposta, fcfg.precoBase);
+    const cobertura = (garantiaCondicional ? coberturaRestante : coberturaFull) ?? coberturaRestante ?? coberturaFull!;
     const custo = relatorioCusto(apostas, k, fcfg.dezenasPorAposta, fcfg.precoBase);
     const limiteInferior = lottoInfo
       ? lottoInfo.limiteInferior
