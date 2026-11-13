@@ -155,6 +155,10 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [categoriasInputs, setCategoriasInputs] = useState<Record<string, string>>({});
   const [repetidosInputs, setRepetidosInputs] = useState<string[]>(['', '', '']);
   const [ordenacao, setOrdenacao] = useState<string>('aleatorio');
+  // Aplicação em lote de fixos/excluídos (evita clicar um a um).
+  const [loteNumeros, setLoteNumeros] = useState<string>('');
+  const [loteModo, setLoteModo] = useState<'fixo' | 'excluido'>('fixo');
+  const [loteFeedback, setLoteFeedback] = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null);
 
   // --- Fechamento Combinatório ---
   const [modoFechamento, setModoFechamento] = useState<boolean>(false);
@@ -518,7 +522,76 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setEstados({});
     setFixosPosicoes({});
     setExcluidosPosicoes({});
+    setLoteFeedback(null);
   }, []);
+
+  /**
+   * Aplica uma lista de números de uma vez, marcando todos como fixos ou
+   * excluídos. A lista substitui a seleção do modo escolhido (0 = limpa),
+   * números do outro modo são convertidos e restrições de posição antigas
+   * deixam de valer para quem mudou de estado.
+   */
+  const aplicarLote = useCallback(() => {
+    const brutos = loteNumeros
+      .split(/[^0-9]+/)
+      .filter(Boolean)
+      .map(x => parseInt(x, 10));
+    const unicos = [...new Set(brutos)].sort((a, b) => a - b);
+    const min = cfg.numero_minimo;
+    const max = cfg.numero_maximo;
+    const invalidos = unicos.filter(n => n < min || n > max);
+    if (invalidos.length > 0) {
+      setLoteFeedback({
+        tipo: 'erro',
+        texto: `Fora do intervalo ${min}–${max}: ${invalidos.join(', ')}.`,
+      });
+      return;
+    }
+    const limite = loteModo === 'fixo'
+      ? Math.max(0, Math.min(14, dezenas - 1))
+      : Math.min(14, cfg.total_numeros - 1);
+    if (unicos.length > limite) {
+      setLoteFeedback({
+        tipo: 'erro',
+        texto: `Máximo de ${limite} número(s) para ${loteModo === 'fixo' ? 'fixar' : 'excluir'}.`,
+      });
+      return;
+    }
+
+    setEstados(prev => {
+      const proximo = { ...prev };
+      for (const [chave, valor] of Object.entries(proximo)) {
+        if (valor === loteModo) delete proximo[Number(chave)];
+      }
+      for (const n of unicos) proximo[n] = loteModo;
+      return proximo;
+    });
+    setFixosPosicoes(prev => {
+      if (loteModo === 'fixo') {
+        const copia: Record<number, number[]> = {};
+        for (const n of unicos) if (prev[n]?.length) copia[n] = prev[n];
+        return copia;
+      }
+      const copia = { ...prev };
+      for (const n of unicos) delete copia[n];
+      return copia;
+    });
+    setExcluidosPosicoes(prev => {
+      if (loteModo === 'excluido') return {};
+      const copia = { ...prev };
+      for (const n of unicos) delete copia[n];
+      return copia;
+    });
+
+    const rotulo = loteModo === 'fixo' ? 'fixo(s)' : 'excluído(s)';
+    setLoteFeedback({
+      tipo: 'ok',
+      texto: unicos.length === 0
+        ? `Seleção de ${rotulo} limpa.`
+        : `${unicos.length} ${rotulo} aplicado(s): ${unicos.join(', ')}.`,
+    });
+    setLoteNumeros('');
+  }, [loteNumeros, loteModo, dezenas, cfg]);
 
   const toggleEstrategia = useCallback((e: string) => {
     setEstrategiasFiltro(prev => {
@@ -916,6 +989,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const numeroMin = cfg.numero_minimo;
   const numeroMax = cfg.numero_maximo;
   const numeros = Array.from({ length: totalNumeros }, (_, i) => i + numeroMin);
+  const limiteLoteFixo = Math.max(0, Math.min(14, dezenas - 1));
+  const limiteLoteExcluido = Math.min(14, totalNumeros - 1);
   const precoUnit = calcularPrecoAposta(loteria, dezenas);
   const mostraSeletorDezenas = opcoesDezenas.length > 1;
 
@@ -1355,6 +1430,76 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500/30 border border-emerald-500/60" /> Fixo</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-hot/20 border border-hot/40" /> Excluído</span>
           <span className="flex items-center gap-1"><span className="relative w-3 h-3 rounded bg-white/5 border border-white/10"><span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-emerald-600/40" /></span> Sorteado no concurso atual</span>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-muted">Em lote:</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={loteNumeros}
+            onChange={e => {
+              setLoteNumeros(e.target.value);
+              setLoteFeedback(null);
+            }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') aplicarLote();
+            }}
+            placeholder={`ex.: 1, 2, 3, 12 (0 a ${loteModo === 'fixo' ? limiteLoteFixo : limiteLoteExcluido})`}
+            aria-label="Números para aplicar em lote"
+            className="w-56 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-fg placeholder:text-muted/60 focus:outline-none focus:border-accent/60"
+          />
+          <div className="flex rounded-lg overflow-hidden border border-white/10" role="group" aria-label="Marcar números em lote como fixo ou excluído">
+            <button
+              type="button"
+              onClick={() => {
+                setLoteModo('fixo');
+                setLoteFeedback(null);
+              }}
+              aria-pressed={loteModo === 'fixo'}
+              className={`px-2.5 py-1.5 transition-colors ${
+                loteModo === 'fixo'
+                  ? 'bg-emerald-500/25 text-emerald-200 font-semibold'
+                  : 'bg-white/5 text-muted hover:text-fg'
+              }`}
+            >
+              🟢 Fixar
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setLoteModo('excluido');
+                setLoteFeedback(null);
+              }}
+              aria-pressed={loteModo === 'excluido'}
+              className={`px-2.5 py-1.5 transition-colors ${
+                loteModo === 'excluido'
+                  ? 'bg-hot/25 text-hot font-semibold'
+                  : 'bg-white/5 text-muted hover:text-fg'
+              }`}
+            >
+              🔴 Excluir
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={aplicarLote}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110"
+            style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
+          >
+            Aplicar
+          </button>
+          <span className="text-[11px] text-muted">
+            {loteModo === 'fixo' ? `0 a ${limiteLoteFixo}` : `0 a ${limiteLoteExcluido}`} número(s) · vazio limpa a seleção
+          </span>
+          {loteFeedback && (
+            <span
+              role="status"
+              className={`text-[11px] ${loteFeedback.tipo === 'ok' ? 'text-emerald-300' : 'text-amber-300'}`}
+            >
+              {loteFeedback.texto}
+            </span>
+          )}
         </div>
         {(fixos.length > 0 || excluidos.length > 0) && (
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
