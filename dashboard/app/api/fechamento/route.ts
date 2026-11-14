@@ -651,11 +651,11 @@ export async function POST(request: NextRequest) {
         lottoIgnorado = {
           motivo: `alvo t'=${tL} igual ao sorteio m=${mL}: o design equivale a uma cobertura completa, sem redução de apostas`,
         };
-      } else if (alvosL > LIMITE_ALVOS_LOTTO) {
-        lottoIgnorado = {
-          motivo: `C(${vL},${mL}) = ${alvosL.toLocaleString('pt-BR')} sorteios possíveis acima do limite ${LIMITE_ALVOS_LOTTO.toLocaleString('pt-BR')}`,
-        };
       } else {
+        // O registro vem antes do limite de alvos: um design já verificado pode
+        // cobrir universos grandes demais para o construtor em tempo real (é o
+        // caso de 2 fixos, com C(23,13) = 1.144.066 alvos). O limite continua
+        // valendo para o construtor, que precisa enumerar os alvos.
         const conhecido = buscarLottoDesign(loteria, vL, kL, mL, tL);
         if (conhecido) {
           const blocos = mapearLottoDesign(conhecido, universoRestante);
@@ -670,6 +670,10 @@ export async function POST(request: NextRequest) {
             fonte: conhecido.fonte,
             verificado: conhecido.verificado ?? true,
             tempoMs: 0,
+          };
+        } else if (alvosL > LIMITE_ALVOS_LOTTO) {
+          lottoIgnorado = {
+            motivo: `C(${vL},${mL}) = ${alvosL.toLocaleString('pt-BR')} sorteios possíveis acima do limite ${LIMITE_ALVOS_LOTTO.toLocaleString('pt-BR')} (e não há design pronto no registro)`,
           };
         } else {
           const construido = construirLottoDesign({

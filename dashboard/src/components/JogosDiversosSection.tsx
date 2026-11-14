@@ -2107,7 +2107,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               </label>
               <label
                 className="flex items-center gap-2 text-xs cursor-pointer select-none"
-                title="Troca o covering design (todo t-subconjunto dentro de algum bloco) por um lotto design (todo sorteio possível atinge o piso em algum bloco). Mesmo piso de acertos com muito menos apostas: com 5 fixos e alvo 11, cai de 343 para 11. Requer garantia condicional aos fixos para valer."
+                title="Troca o covering design (todo t-subconjunto dentro de algum bloco) por um lotto design (todo sorteio possível atinge o piso em algum bloco). Mesmo piso de acertos com muito menos apostas, e o design acompanha a quantidade de fixos: 2 fixos e alvo 11 → 33 apostas; 5 fixos e alvo 11 → 11 apostas (contra 343 do cover). Requer garantia condicional aos fixos para valer."
               >
                 <input
                   type="checkbox"
