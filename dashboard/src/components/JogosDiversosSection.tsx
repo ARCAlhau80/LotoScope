@@ -592,11 +592,36 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   };
 
   const toggleNumero = useCallback((n: number) => {
+    const atual = estados[n] || 'normal';
+    const totalFixos = Object.values(estados).filter(e => e === 'fixo').length;
+    const totalExcluidos = Object.values(estados).filter(e => e === 'excluido').length;
+    // Uma aposta tem `dezenas` números: fixar mais que (dezenas - 1) deixaria a
+    // aposta sem nenhuma dezena livre, e excluir mais que (total - dezenas)
+    // deixaria o universo menor que a própria aposta. Vale para qualquer
+    // loteria (Lotofácil: 14 fixos / 10 exclusões; Mega-Sena: 5 / 54).
+    const maxFixos = Math.max(0, dezenas - 1);
+    const maxExcluidos = Math.max(0, cfg.total_numeros - dezenas);
+
+    if (atual === 'normal' && totalFixos >= maxFixos) {
+      setLoteFeedback({
+        tipo: 'erro',
+        texto: `Máximo de ${maxFixos} número(s) para fixar em ${cfg.nome_jogo}.`,
+      });
+      return;
+    }
+    if (atual === 'fixo' && totalExcluidos >= maxExcluidos) {
+      setLoteFeedback({
+        tipo: 'erro',
+        texto: `Máximo de ${maxExcluidos} número(s) para excluir em ${cfg.nome_jogo}.`,
+      });
+      return;
+    }
+
     setEstados(prev => {
-      const atual = prev[n] || 'normal';
+      const estadoAtual = prev[n] || 'normal';
       let proximo: NumeroEstado;
-      if (atual === 'normal') proximo = 'fixo';
-      else if (atual === 'fixo') proximo = 'excluido';
+      if (estadoAtual === 'normal') proximo = 'fixo';
+      else if (estadoAtual === 'fixo') proximo = 'excluido';
       else proximo = 'normal';
       return { ...prev, [n]: proximo };
     });
@@ -612,7 +637,27 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       delete copy[n];
       return copy;
     });
-  }, []);
+  }, [estados, dezenas, cfg]);
+
+  /**
+   * Garante o invariante de fixos/excluídos mesmo quando o guarda acima não vê o
+   * estado mais recente (cliques rápidos em sequência) ou quando `dezenas`
+   * diminui depois da seleção. Sem isso, o app aceitaria mais fixos do que a
+   * aposta comporta e a geração ficaria impossível.
+   */
+  useEffect(() => {
+    const maxFixos = Math.max(0, dezenas - 1);
+    const maxExcluidos = Math.max(0, cfg.total_numeros - dezenas);
+    setEstados(prev => {
+      const fixos = Object.keys(prev).filter(k => prev[Number(k)] === 'fixo');
+      const excluidos = Object.keys(prev).filter(k => prev[Number(k)] === 'excluido');
+      if (fixos.length <= maxFixos && excluidos.length <= maxExcluidos) return prev;
+      const proximo = { ...prev };
+      for (const k of fixos.slice(maxFixos)) delete proximo[Number(k)];
+      for (const k of excluidos.slice(maxExcluidos)) delete proximo[Number(k)];
+      return proximo;
+    });
+  }, [estados, dezenas, cfg.total_numeros]);
 
   const togglePosicaoFixo = useCallback((n: number, p: number) => {
     setFixosPosicoes(prev => {
@@ -660,9 +705,13 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     const disponiveis = loteModo === 'fixo'
       ? todos.filter(n => !excluidosAtuais.includes(n))
       : todos.filter(n => !fixosAtuais.includes(n));
+    // Mesmo limite exibido na UI: fixar até (dezenas - 1) e excluir até
+    // (total - dezenas), sempre respeitando o que já está marcado no outro modo.
+    // Sem teto fixo de 14 — ele só fazia sentido para a Lotofácil e barrava a
+    // exclusão na Mega-Sena (60 - 6 = 54).
     const limite = loteModo === 'fixo'
-      ? Math.max(0, Math.min(14, dezenas - 1, disponiveis.length))
-      : Math.max(0, Math.min(14, total - dezenas, disponiveis.length));
+      ? Math.max(0, Math.min(dezenas - 1, disponiveis.length))
+      : Math.max(0, Math.min(total - dezenas, disponiveis.length));
     const rotulo = loteModo === 'fixo' ? 'fixo(s)' : 'excluído(s)';
     const acao = loteModo === 'fixo' ? 'fixar' : 'excluir';
 
@@ -1125,9 +1174,9 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   // Limites do lote consideram o que já está marcado no outro modo: um número
   // não pode ser fixo e excluído ao mesmo tempo, e a exclusão não pode deixar
   // o universo menor que o necessário para montar um jogo (total - dezenas).
-  // O teto de 14 só faz sentido para Lotofácil (25 dezenas → max 10 exclusões);
-  // para Mega-Sena (60 dezenas) a exclusão pode chegar a 54.
-  const limiteLoteFixo = Math.max(0, Math.min(14, dezenas - 1, totalNumeros - excluidos.length));
+  // Não há teto fixo: Lotofácil permite 10 exclusões (25 - 15), Mega-Sena 54
+  // (60 - 6), Lotomania 50 (100 - 50). O mesmo cálculo vale para fixar.
+  const limiteLoteFixo = Math.max(0, Math.min(dezenas - 1, totalNumeros - excluidos.length));
   const limiteLoteExcluido = Math.max(0, Math.min(totalNumeros - dezenas, totalNumeros - fixos.length));
   const precoUnit = calcularPrecoAposta(loteria, dezenas);
   const mostraSeletorDezenas = opcoesDezenas.length > 1;
