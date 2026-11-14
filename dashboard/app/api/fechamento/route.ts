@@ -43,6 +43,12 @@ export const maxDuration = 120;
  */
 const LIMITE_ALVOS_LOTTO = 800_000;
 
+/**
+ * Teto de sorteios que o piso condicional enumera. Acima disso a UI mostra só o
+ * alvo nominal (a enumeração aloca um Int32Array de C(n,m) posições).
+ */
+const LIMITE_PISO_CONDICIONAL = 1_000_000;
+
 // Fechamento: suporta garantia condicional aos fixos, cover conhecido
 // permutado para filtros de categoria e reparo de cobertura pós-filtros.
 
@@ -188,6 +194,54 @@ function calcularCoberturaRestante(
   return verificarCobertura(apostasLivres, universoRestante, kRestante, t);
 }
 
+/**
+ * Piso condicional aos excluídos: mínimo de acertos que o fechamento garante
+ * QUANDO a condição vale — todos os excluídos ficam de fora e, se houver fixos,
+ * todos eles saem. Nesse cenário as `dezenasSorteadas - fixos` dezenas restantes
+ * vêm do universo não excluído, então o pior caso real pode ser maior que o alvo
+ * nominal t. Ex.: Lotofácil com 10 exclusões deixa 15 dezenas; a única aposta
+ * possível acerta as 15, não 11.
+ *
+ * Enumera C(n, m) sorteios de forma exaustiva. Acima de LIMITE_PISO_CONDICIONAL
+ * (ou quando n > 30, limite das máscaras de 32 bits) devolve null e a UI mostra
+ * apenas o alvo nominal.
+ */
+function calcularPisoCondicional(
+  apostas: number[][],
+  universo: number[],
+  fixos: number[],
+  excluidos: number[],
+  k: number,
+  dezenasSorteadas: number,
+): { piso: number; pisoTotal: number; alvos: number; universoEfetivo: number; m: number; completo: boolean } | null {
+  const fixosSet = new Set(fixos);
+  const excluidosSet = new Set(excluidos);
+  const universoRestante = [...new Set(universo)]
+    .filter(n => !fixosSet.has(n) && !excluidosSet.has(n))
+    .sort((a, b) => a - b);
+  const n = universoRestante.length;
+  const kRestante = k - fixos.length;
+  const m = dezenasSorteadas - fixos.length;
+
+  // A condição "todos os excluídos ausentes" só é possível se sobrarem dezenas
+  // suficientes fora dos excluídos para completar o sorteio.
+  if (m < 0 || kRestante < 0 || m > n || n > 30) return null;
+  if (m === 0) {
+    return { piso: 0, pisoTotal: fixos.length, alvos: 1, universoEfetivo: n, m, completo: true };
+  }
+
+  const totalAlvos = nCombinacoes(n, m);
+  if (totalAlvos > LIMITE_PISO_CONDICIONAL) return null;
+
+  const livres = apostas
+    .map(a => a.filter(x => !fixosSet.has(x) && !excluidosSet.has(x)))
+    .filter(a => a.length === kRestante);
+  if (!livres.length) return null;
+
+  const { piso, alvos, completo } = verificarLottoDesign(livres, universoRestante, kRestante, m, 0);
+  return { piso, pisoTotal: fixos.length + piso, alvos, universoEfetivo: n, m, completo };
+}
+
 function calcularLimiteInferior(
   loteria: string,
   universo: number[],
@@ -212,6 +266,8 @@ function montarRespostaFinal(args: {
   filtrosCategorias: any[];
   k: number;
   t: number;
+  /** Quantas dezenas saem por sorteio (15 na Lotofácil, 6 na Mega-Sena). */
+  dezenasSorteadas: number;
   /** Quando true, a garantia vale apenas se todos os fixos forem sorteados. */
   garantiaCondicional?: boolean;
   /** t reduzido usado na geração (t - fixos.length quando condicional). */
@@ -238,6 +294,10 @@ function montarRespostaFinal(args: {
     fonte: string; verificado: boolean; tempoMs: number;
   } | null;
   lottoIgnorado?: { motivo: string } | null;
+  /** Piso condicional já calculado (evita recalcular no caminho principal). */
+  pisoCondicional?: {
+    piso: number; pisoTotal: number; alvos: number; universoEfetivo: number; m: number; completo: boolean;
+  } | null;
   otimizacao?: {
     criterio: string;
     seedsTestadas: number;
@@ -258,6 +318,19 @@ function montarRespostaFinal(args: {
     }[];
   } | null;
 }) {
+  // Só faz sentido quando há exclusão: sem ela a garantia não é condicional.
+  const pisoCondicional = args.pisoCondicional !== undefined
+    ? args.pisoCondicional
+    : args.excluidos.length > 0
+      ? calcularPisoCondicional(
+          args.apostas,
+          args.universo,
+          args.fixos,
+          args.excluidos,
+          args.k,
+          args.dezenasSorteadas,
+        )
+      : null;
   return {
     sucesso: true,
     universo: args.universo,
@@ -267,8 +340,10 @@ function montarRespostaFinal(args: {
     filtrosCategorias: args.filtrosCategorias,
     k: args.k,
     t: args.t,
+    dezenasSorteadas: args.dezenasSorteadas,
     garantiaCondicional: args.garantiaCondicional ?? false,
     tEfetivo: args.tEfetivo ?? args.t,
+    pisoCondicional,
     modo: args.modo,
     wheelUsado: args.wheelUsado,
     totalApostas: args.apostas.length,
@@ -505,6 +580,7 @@ export async function POST(request: NextRequest) {
           filtrosCategorias,
           k,
           t,
+          dezenasSorteadas: fcfg.dezenasSorteadas,
           garantiaCondicional,
           tEfetivo,
           modo: 'cache',
@@ -1100,6 +1176,11 @@ export async function POST(request: NextRequest) {
     const limiteInferior = lottoInfo
       ? lottoInfo.limiteInferior
       : calcularLimiteInferior(loteria, universoEfetivo, fixos, excluidos, k, tEfetivo);
+    // Piso real quando a exclusão se confirma: o universo encolhe e o pior caso
+    // pode garantir mais acertos do que o alvo nominal t.
+    const pisoCondicional = excluidos.length > 0
+      ? calcularPisoCondicional(apostas, universoEfetivo, fixos, excluidos, k, fcfg.dezenasSorteadas)
+      : null;
 
     let backtestFinal: BacktestFechamentoResult | null = null;
     if (resultadosHistoricos && (incluirBacktest || priorizarPremios)) {
@@ -1121,6 +1202,16 @@ export async function POST(request: NextRequest) {
       if (fixos.length >= t) {
         avisos.push(`Com ${fixos.length} fixos ≥ t=${t}, os próprios fixos já garantem ${t} acertos se todos saírem; o cover reduzido cobre ${tEfetivo} acerto(s) adicional(is) por segurança.`);
       }
+    }
+    if (excluidos.length > 0) {
+      const pisoTxt = pisoCondicional
+        ? ` Piso real quando a condição vale: ${pisoCondicional.pisoTotal} acerto(s)${pisoCondicional.pisoTotal > t ? ` (maior que o alvo t=${t}, porque o universo efetivo tem só ${pisoCondicional.universoEfetivo} dezena(s))` : ''}.`
+        : '';
+      avisos.push(
+        `Garantia condicional aos excluídos: a garantia de ${t} acerto(s) pressupõe que os ${excluidos.length} excluído(s) não sejam sorteados ` +
+        `(universo efetivo de ${universoRestante.length} dezena(s)). Se algum excluído sair, a garantia pode não valer.` +
+        pisoTxt,
+      );
     }
     if (coverInfo) {
       const tipo = coverInfo.verificado
@@ -1220,6 +1311,7 @@ export async function POST(request: NextRequest) {
       filtrosCategorias,
       k,
       t,
+      dezenasSorteadas: fcfg.dezenasSorteadas,
       garantiaCondicional,
       tEfetivo,
       modo,
@@ -1240,6 +1332,7 @@ export async function POST(request: NextRequest) {
       coverConhecido: coverInfo,
       lottoDesign: lottoInfo,
       lottoIgnorado,
+      pisoCondicional,
       otimizacao,
     }));
   } catch (error: any) {

@@ -312,6 +312,9 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [fechamentoSeedsTestadas, setFechamentoSeedsTestadas] = useState<number | null>(null);
   const [fechamentoLimiteInferior, setFechamentoLimiteInferior] = useState<number | null>(null);
   const [fechamentoCoberturaRestante, setFechamentoCoberturaRestante] = useState<VerificarCoberturaResult | null>(null);
+  const [fechamentoPisoCondicional, setFechamentoPisoCondicional] = useState<{
+    piso: number; pisoTotal: number; alvos: number; universoEfetivo: number; m: number; completo: boolean;
+  } | null>(null);
   const [fechamentoAviso, setFechamentoAviso] = useState<string | null>(null);
   const [fechamentoFiltroInfo, setFechamentoFiltroInfo] = useState<{ min: number; max: number; removidas: number } | null>(null);
   const [backtestFechamento, setBacktestFechamento] = useState<BacktestFechamentoResult | null>(null);
@@ -989,6 +992,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setFechamentoSeedsTestadas(null);
     setFechamentoLimiteInferior(null);
     setFechamentoCoberturaRestante(null);
+    setFechamentoPisoCondicional(null);
     setFechamentoAviso(null);
     setFechamentoFiltroInfo(null);
     setCpSatInfo(null);
@@ -1098,6 +1102,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       setFechamentoSeedsTestadas(data.seedsTestadas ?? null);
       setFechamentoLimiteInferior(data.limiteInferior ?? null);
       setFechamentoCoberturaRestante(data.coberturaRestante ?? null);
+      setFechamentoPisoCondicional(data.pisoCondicional ?? null);
       setFechamentoAviso(data.aviso ?? null);
       setFechamentoFiltroInfo(data.filtroRepetidas ?? null);
       setBacktestFechamento(data.backtest ?? null);
@@ -2384,24 +2389,37 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                 </div>
                 <div className="rounded-xl bg-white/5 p-3 text-center">
                   <div className="text-xs text-muted">
-                    {lottoDesignInfo
-                      ? 'Piso garantido'
-                      : fechamentoTInfo?.garantiaCondicional
-                        ? 'Garantia condicional'
-                        : 'Garantia'}
+                    {fechamentoPisoCondicional
+                      ? 'Piso condicional (excluídos)'
+                      : lottoDesignInfo
+                        ? 'Piso garantido'
+                        : fechamentoTInfo?.garantiaCondicional || excluidos.length > 0
+                          ? 'Garantia condicional'
+                          : 'Garantia'}
                   </div>
                   <div className="text-lg font-bold text-fg">
-                    {lottoDesignInfo
-                      ? `${lottoDesignInfo.pisoTotal} acerto(s)`
-                      : `${coberturaFechamento?.garantiaPercentual?.toFixed(2)}%`}
+                    {fechamentoPisoCondicional
+                      ? `${fechamentoPisoCondicional.pisoTotal} acerto(s)`
+                      : lottoDesignInfo
+                        ? `${lottoDesignInfo.pisoTotal} acerto(s)`
+                        : `${coberturaFechamento?.garantiaPercentual?.toFixed(2)}%`}
                   </div>
-                  {lottoDesignInfo ? (
+                  {fechamentoPisoCondicional ? (
+                    <div className="text-[10px] text-amber-200">
+                      se os {excluidos.length} excluído(s) não saírem
+                      {fixos.length > 0 ? ` e os ${fixos.length} fixo(s) saírem` : ''}
+                    </div>
+                  ) : lottoDesignInfo ? (
                     <div className="text-[10px] text-emerald-200">
                       em qualquer dos {lottoDesignInfo.alvos.toLocaleString('pt-BR')} sorteios
                     </div>
                   ) : fechamentoTInfo?.garantiaCondicional ? (
                     <div className="text-[10px] text-amber-200">
                       se os {fixos.length} fixo(s) saírem (t={fechamentoTInfo.tEfetivo})
+                    </div>
+                  ) : excluidos.length > 0 ? (
+                    <div className="text-[10px] text-amber-200">
+                      se os {excluidos.length} excluído(s) não saírem
                     </div>
                   ) : null}
                 </div>
@@ -2465,6 +2483,29 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                     {fechamentoCoberturaRestante.tSubsetsCobertos.toLocaleString()}/{fechamentoCoberturaRestante.tSubsetsTotal.toLocaleString()}
                   </strong>{' '}
                   ({fechamentoCoberturaRestante.garantiaPercentual.toFixed(2)}%)
+                </div>
+              )}
+
+              {excluidos.length > 0 && (
+                <div className="mb-2 text-xs text-amber-200">
+                  🔒 Garantia condicional aos excluídos:{' '}
+                  {fechamentoTInfo?.t ?? fechamentoT} acerto(s) valem apenas se os {excluidos.length} excluído(s) não forem sorteados.
+                  {fechamentoPisoCondicional ? (
+                    <>
+                      {' '}Nesse cenário o piso real é{' '}
+                      <strong>{fechamentoPisoCondicional.pisoTotal} acerto(s)</strong>
+                      {fechamentoPisoCondicional.pisoTotal > (fechamentoTInfo?.t ?? fechamentoT)
+                        ? ' (maior que o alvo, porque o universo encolheu)'
+                        : ''}
+                      {' '}— verificado em {fechamentoPisoCondicional.alvos.toLocaleString('pt-BR')} sorteio(s) com{' '}
+                      {fechamentoPisoCondicional.universoEfetivo} dezena(s) efetivas.
+                    </>
+                  ) : (
+                    <>
+                      {' '}Universo efetivo de {Math.max(0, totalNumeros - excluidos.length - fixos.length)} dezena(s);
+                      piso real não calculado (universo grande demais para enumerar).
+                    </>
+                  )}
                 </div>
               )}
 
