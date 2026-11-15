@@ -34,8 +34,8 @@
 | 2 excluídas | 21 | piso 11 |
 | 2 fixos + 5 excluídas | 3 | piso 11 |
 
-Piso condicional aos excluídos (universo efetivo): 10 excluídas → 15; 5 → 13;
-4 → 13 (com 200 apostas); 2 fixos + 5 excluídas → 14.
+Piso condicional aos excluídos (universo efetivo): 10 excluídas → 15;
+2 a 6 excluídas → 11 (piso do próprio design); 2 fixos + 5 excluídas → 11.
 
 ### Mega-Sena — k=6, t=4
 
