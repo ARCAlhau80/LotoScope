@@ -23,8 +23,10 @@ import {
   parseFiltrosExtras,
   normalizarFiltrosExtras,
   construirLottoDesign,
+  construirLottoDesignComplemento,
   verificarLottoDesign,
   limiteInferiorLottoDesign,
+  LIMITE_ALVOS_LOTTO_COMPLEMENTO,
   type FiltrosExtras,
   type BacktestFechamentoResult,
 } from '@/lib/fechamento-combinatorio';
@@ -751,9 +753,46 @@ export async function POST(request: NextRequest) {
             tempoMs: 0,
           };
         } else if (alvosL > LIMITE_ALVOS_LOTTO) {
-          lottoIgnorado = {
-            motivo: `C(${vL},${mL}) = ${alvosL.toLocaleString('pt-BR')} sorteios possíveis acima do limite ${LIMITE_ALVOS_LOTTO.toLocaleString('pt-BR')} (e não há design pronto no registro)`,
-          };
+          // Quando k' > m a formulação dos complementos (bloco Aᶜ de v−k,
+          // alvo Dᶜ de v−m, limiar t − (k+m−v)) resolve por bitset casos que o
+          // construtor direto não enumera. É o caminho da Lotofácil k=16..20.
+          const alvosComplemento = kL > mL ? nCombinacoes(vL, vL - mL) : Number.POSITIVE_INFINITY;
+          if (kL > mL && alvosComplemento <= LIMITE_ALVOS_LOTTO_COMPLEMENTO) {
+            const construido = construirLottoDesignComplemento({
+              universo: universoRestante,
+              k: kL,
+              m: mL,
+              t: tL,
+              seed,
+              // Todos os designs que fecham o fazem em ~2,5 s; o teto de 5 s
+              // evita gastar 12 s em casos estruturalmente inviáveis (ex.: k=16
+              // com 2 fixos) antes de cair no fechamento por cobertura.
+              limiteTempoMs: Math.max(2000, Math.min(5_000, limitePorSeedEfetivo)),
+            });
+            if (construido.completo && construido.blocos.length > 0) {
+              lottoApostas = construido.blocos.map(b => [...fixos, ...b].sort((x, y) => x - y));
+              lottoInfo = {
+                v: vL, k: kL, m: mL, t: tL,
+                blocos: lottoApostas.length,
+                piso: construido.piso,
+                pisoTotal: fixos.length + construido.piso,
+                alvos: construido.alvos,
+                limiteInferior: limiteInferiorLottoDesign(vL, kL, mL, tL),
+                fonte: `LotoScope (complementos + guloso por bitset, ${construido.tempoMs} ms)`,
+                verificado: construido.verificado,
+                tempoMs: construido.tempoMs,
+              };
+            } else {
+              const detalhe = construido.blocos.length === 0
+                ? `o construtor por complementos não fechou em ${construido.tempoMs} ms`
+                : `o construtor por complementos parou em ${construido.tempoMs} ms com piso ${construido.piso} (< ${tL})`;
+              lottoIgnorado = { motivo: `${detalhe}; usando o fechamento por cobertura` };
+            }
+          } else {
+            lottoIgnorado = {
+              motivo: `C(${vL},${mL}) = ${alvosL.toLocaleString('pt-BR')} sorteios possíveis acima do limite ${LIMITE_ALVOS_LOTTO.toLocaleString('pt-BR')} (e não há design pronto no registro)`,
+            };
+          }
         } else {
           const construido = construirLottoDesign({
             universo: universoRestante,
