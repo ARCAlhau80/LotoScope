@@ -2161,7 +2161,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               </label>
               <label
                 className="flex items-center gap-2 text-xs cursor-pointer select-none"
-                title="Troca o covering design (todo t-subconjunto dentro de algum bloco) por um lotto design (todo sorteio possível atinge o piso em algum bloco). Mesmo piso de acertos com muito menos apostas, e o design acompanha a quantidade de fixos: 2 fixos e alvo 11 → 33 apostas; 5 fixos e alvo 11 → 11 apostas (contra 343 do cover). Requer garantia condicional aos fixos para valer."
+                title="Troca o covering design (todo t-subconjunto dentro de algum bloco) por um lotto design (todo sorteio possível atinge o piso em algum bloco). Mesmo piso de acertos com muito menos apostas, e o design acompanha fixos e excluídos: 2 fixos e alvo 11 → 33 apostas; 5 fixos e alvo 11 → 11 (contra 343 do cover); 5 excluídos e alvo 11 → 4 (contra 544 do cover). Com fixos ou excluídos a garantia é condicional: vale se os fixos saírem e os excluídos não saírem."
               >
                 <input
                   type="checkbox"
@@ -2457,6 +2457,11 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                     {fixos.length > 0 ? ` (${fixos.length} fixos + ${lottoDesignInfo.piso})` : ''} em{' '}
                     {lottoDesignInfo.blocos} aposta(s)
                     {lottoDesignInfo.verificado ? ', verificado exaustivamente' : ''}.
+                    {excluidos.length > 0 ? (
+                      <span className="text-amber-200">
+                        {' '}Cobre os sorteios do universo sem os {excluidos.length} excluído(s): se alguma excluída sair, não há garantia.
+                      </span>
+                    ) : null}
                   </span>
                 ) : fechamentoTInfo?.garantiaCondicional ? (
                   fixos.length >= fechamentoTInfo.t ? (

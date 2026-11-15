@@ -709,10 +709,13 @@ export async function POST(request: NextRequest) {
     if (usarLottoDesign) {
       const vL = universoRestante.length;
       const kL = k - fixos.length;
-      // Pior caso: todas as dezenas excluídas podem sair, então o sorteio dentro
-      // do universo restante pode ter só (sorteadas - fixos - excluídos) dezenas.
-      // Cobrir esse caso cobre automaticamente os sorteios maiores.
-      const mL = Math.min(kL, Math.max(0, fcfg.dezenasSorteadas - fixos.length - excluidos.length));
+      // O design cobre os sorteios de `sorteadas - fixos` dezenas DENTRO do
+      // universo restante. Com exclusões isso é a garantia condicional já
+      // documentada: se alguma excluída sair, o sorteio efetivo encolhe e não há
+      // garantia (é impossível garantir t quando v - excluídas dezenas saem).
+      // Antes usávamos o pior caso (todas as excluídas saindo), que é sempre
+      // inviável e fazia o design ser descartado em favor do cover.
+      const mL = Math.min(kL, Math.max(0, fcfg.dezenasSorteadas - fixos.length));
       const tL = tEfetivo;
       const alvosL = vL >= mL && mL > 0 ? nCombinacoes(vL, mL) : 0;
       if (temFiltrosTelaAtivos) {
@@ -1226,6 +1229,7 @@ export async function POST(request: NextRequest) {
         `Lotto design L(${lottoInfo.v},${lottoInfo.k},${lottoInfo.m},${lottoInfo.t}): ${lottoInfo.blocos} apostas. ` +
         `Piso garantido de ${lottoInfo.pisoTotal} acerto(s)${fixos.length ? ` (${fixos.length} fixos + ${lottoInfo.piso})` : ''} ` +
         `para qualquer um dos ${lottoInfo.alvos.toLocaleString('pt-BR')} sorteios possíveis` +
+        `${excluidos.length > 0 ? ` do universo sem os ${excluidos.length} excluído(s) — garantia condicional: se alguma excluída sair, não há garantia` : ''}` +
         `${lottoInfo.verificado ? ', verificado exaustivamente' : ''}. ` +
         `O cover equivalente C(${lottoInfo.v},${lottoInfo.k},${lottoInfo.t}) exigiria a cobertura de todo t-subconjunto, que é uma exigência mais forte que o sorteio real.`,
       );
