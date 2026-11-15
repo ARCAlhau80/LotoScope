@@ -1,5 +1,6 @@
 import type { LottoDesignConhecido } from '../fechamento-combinatorio';
 import lottoLotofacil from '@/data/lotto-lotofacil.json';
+import lottoMegasena from '@/data/lotto-megasena.json';
 
 /**
  * Registro de lotto designs L(v,k,m,t) pré-computados e verificados.
@@ -10,10 +11,14 @@ import lottoLotofacil from '@/data/lotto-lotofacil.json';
  * restante são sorteadas, isso reduz drasticamente o número de apostas.
  */
 const lottoLotofacilJson = lottoLotofacil as unknown as Record<string, LottoDesignConhecido>;
+const lottoMegasenaJson = lottoMegasena as unknown as Record<string, LottoDesignConhecido>;
 
 const REGISTRY: Record<string, Record<string, LottoDesignConhecido>> = {
   lotofacil: {
     ...lottoLotofacilJson,
+  },
+  megasena: {
+    ...lottoMegasenaJson,
   },
 };
 

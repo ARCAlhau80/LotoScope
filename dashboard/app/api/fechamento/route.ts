@@ -722,9 +722,7 @@ export async function POST(request: NextRequest) {
       const alvosL = vL >= mL && mL > 0 ? nCombinacoes(vL, mL) : 0;
       if (temFiltrosTelaAtivos) {
         lottoIgnorado = { motivo: 'há filtros de tela ativos; o design perderia a garantia' };
-      } else if (vL > 30) {
-        lottoIgnorado = { motivo: `universo restante com ${vL} dezenas (o lotto design aceita até 30)` };
-      } else if (tL < 1 || mL < tL || kL < tL) {
+      } else if (tL < 1 || mL < tL || kL < tL || kL > vL) {
         lottoIgnorado = { motivo: `alvo t'=${tL} inviável com m=${mL} e k'=${kL}` };
       } else if (tL >= mL) {
         // L(v,k,m,m) exige todo m-subconjunto dentro de um bloco: é exatamente
@@ -733,10 +731,10 @@ export async function POST(request: NextRequest) {
           motivo: `alvo t'=${tL} igual ao sorteio m=${mL}: o design equivale a uma cobertura completa, sem redução de apostas`,
         };
       } else {
-        // O registro vem antes do limite de alvos: um design já verificado pode
-        // cobrir universos grandes demais para o construtor em tempo real (é o
-        // caso de 2 fixos, com C(23,13) = 1.144.066 alvos). O limite continua
-        // valendo para o construtor, que precisa enumerar os alvos.
+        // O registro vem antes do limite de alvos e antes do limite de 30
+        // dezenas: um design já verificado pode cobrir universos grandes demais
+        // para o construtor em tempo real (é o caso da Mega-Sena com v=60 e da
+        // Lotofácil com 2 fixos, C(23,13) = 1.144.066 alvos).
         const conhecido = buscarLottoDesign(loteria, vL, kL, mL, tL);
         if (conhecido) {
           const blocos = mapearLottoDesign(conhecido, universoRestante);
@@ -751,6 +749,10 @@ export async function POST(request: NextRequest) {
             fonte: conhecido.fonte,
             verificado: conhecido.verificado ?? true,
             tempoMs: 0,
+          };
+        } else if (vL > 30) {
+          lottoIgnorado = {
+            motivo: `universo restante com ${vL} dezenas: não há design verificado no registro e o construtor em tempo real aceita até 30 (a garantia de ${tL} acertos exigiria cobrir ${alvosL.toLocaleString('pt-BR')} sorteios)`,
           };
         } else if (alvosL > LIMITE_ALVOS_LOTTO) {
           // Quando k' > m a formulação dos complementos (bloco Aᶜ de v−k,

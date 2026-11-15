@@ -7,7 +7,10 @@
 > antes de ser implementada.
 >
 > Aditivo (não mexe nos defaults): caminho `k > m` por complementos, com designs
-> `L(25,k,15,11)` registrados para k=16..20 — ver "Implementado" abaixo.
+> `L(25,k,15,11)` registrados para k=16..20 — ver "Implementado" abaixo. O
+> registro agora é consultado **antes** do limite de 30 dezenas, o que permite
+> design verificado para universos grandes (Mega-Sena); nenhum design de v=60 foi
+> registrado por inviabilidade econômica — ver "Avaliado e NÃO registrado".
 
 ## Escopo congelado
 
@@ -16,6 +19,7 @@
 | `dashboard/src/lib/fechamento-combinatorio.ts` | núcleo (cover, lotto design `L(v,k,m,t)`, verificação) |
 | `dashboard/src/lib/fechamento/lotto.ts` | registro e mapeamento dos lotto designs |
 | `dashboard/src/data/lotto-lotofacil.json` | designs verificados da Lotofácil |
+| `dashboard/src/data/lotto-megasena.json` | registro da Mega-Sena (hoje vazio, por decisão) |
 | `dashboard/app/api/fechamento/route.ts` (bloco do Lotto design) | escolha cover × lotto, limites |
 | `dashboard/src/lib/fechamento/config.ts` | k/t padrão, dezenas sorteadas, preço |
 
@@ -101,11 +105,16 @@ Limitação conhecida: k=16 com 1–2 fixos e k=17/18 com 2 fixos **não fecham*
 guloso por bitset (o limiar `t*` fica alto demais); gastam até 5 s e caem no
 fechamento por cobertura, como antes.
 
-## Pendente — Mega-Sena k=7..20 (t=4, universo 60)
+## Avaliado e NÃO registrado — Mega-Sena k=7..20 (t=4, universo 60)
 
-O Lotto design existe e é muito menor que o cover, mas a enumeração de
-`C(60,6) = 50.063.860` sorteios inviabiliza o construtor atual. Cotas
-inferiores (apostas × C(k,6) × R$ 6,00 = custo mínimo):
+A infraestrutura está pronta (`lotto-megasena.json` vazio + registro na rota,
+que agora consulta o registro **antes** do limite de 30 dezenas), mas **nenhum
+design de v=60 foi registrado**: a garantia de 4 acertos em 60 dezenas é
+economicamente inviável em qualquer `k`, inclusive no piso teórico.
+
+Cotas inferiores por contagem (`C(60,6) / E(k)`, com
+`E(k) = C(k,4)·C(60−k,2) + C(k,5)·C(60−k,1) + C(k,6)`), e o custo **mínimo
+possível** com aposta de `k` dezenas a R$ 6,00 por combinação de 6:
 
 | k | Apostas (cota inferior) | Custo mínimo |
 |---|---|---|
@@ -124,5 +133,28 @@ inferiores (apostas × C(k,6) × R$ 6,00 = custo mínimo):
 | 19 | 14 | R$ 2.279.088 |
 | 20 | 12 | R$ 2.790.720 |
 
-Observação: com universo reduzido (fixos/excluídas, `v ≤ 30`) o caminho do
-Lotto design **já funciona hoje** para Mega-Sena com `k > 6`.
+O que foi construído e medido (`tools/lotto-design/gerar-megasena.mjs`: guloso
+esparso guiado por sorteio descoberto + bitset de 50.063.860 bits, `falta === 0`
+= prova exaustiva; rank/enumeração validados por `teste-rank-megasena.mjs`):
+
+| k | Cota inferior | Obtido | Fator | Custo real |
+|---|---|---|---|---|
+| 7 | 1.015 | 7.621 | 7,5× | R$ 320.082 |
+| 8 | 523 | 4.170 | 8,0× | R$ 700.560 |
+| 10 | 186 | 1.671 | 9,0× | R$ 2.105.460 |
+| 11 | 122 | 1.117 | 9,2× | R$ 3.096.324 |
+| 12 | 84 | 796 | 9,5× | R$ 4.413.024 |
+
+Conclusão: o piso teórico já custa de R$ 42 mil (k=7) a R$ 2,79 milhões (k=20),
+então **não é problema de algoritmo** — nenhuma melhoria do guloso torna o design
+utilizável. Decisão: manter o registro vazio e a mensagem da UI explícita
+("universo restante com 60 dezenas"); a Mega-Sena segue no cover (k=6) e no
+guloso amostrado (k>6).
+
+Universo reduzido (`v ≤ 30`, via exclusões) **funciona** e é o caminho útil:
+
+| Cenário | Apostas | Piso | Cota inferior |
+|---|---|---|---|
+| 30 excluídas (v=30), k=10 | 79 | 4 | 14 |
+| 30 excluídas (v=30), k=12 | 38 | 4 | 7 |
+| 30 excluídas (v=30), k=8 | 200 (não fecha) | 3 | 35 |
