@@ -278,7 +278,7 @@ function HomePage() {
               <PalpiteSection palpite={data.palpite} previsao_combinada={data.previsao_combinada} loteria={loteria} />
             </div>
             <div className="animate-slide-up stagger-2">
-              <JogosDiversosSection loteria={loteria} concursoBase={concurso} concursoAtual={data.ultimo_sorteio.concurso} numerosSorteadosAtual={data.ultimo_sorteio.numeros} previsaoPosicional={data.previsao_posicional} previsaoTendencia={data.previsao_tendencia} previsaoColunas={data.previsao_colunas} quarentena={data.quarentena_posicoes ?? null} grupos={grupos} numerosQuentes={data.numeros_quentes} numerosMornos={data.numeros_mornos} numerosFrios={data.numeros_frios} ciclos={data.ciclos} transicaoQmf={data.transicao_qmf} repeticao3={data.repeticao_3sorteios} onFiltrosAplicados={setFiltrosGeracao} />
+              <JogosDiversosSection loteria={loteria} concursoBase={concurso} concursoAtual={data.ultimo_sorteio.concurso} numerosSorteadosAtual={data.ultimo_sorteio.numeros} previsaoPosicional={data.previsao_posicional} previsaoTendencia={data.previsao_tendencia} previsaoColunas={data.previsao_colunas} quarentena={data.quarentena_posicoes ?? null} grupos={grupos} numerosQuentes={data.numeros_quentes} numerosMornos={data.numeros_mornos} numerosFrios={data.numeros_frios} ciclos={data.ciclos} transicaoQmf={data.transicao_qmf} repeticao3={data.repeticao_3sorteios} onFiltrosAplicados={setFiltrosGeracao} concursosDisponiveis={concursosDisponiveis} onConcursoChange={setConcurso} />
             </div>
             {loteria === 'lotofacil' && data.ranking_combinacoes && (
               <div className="animate-slide-up stagger-8">

@@ -88,6 +88,148 @@ interface JogosDiversosSectionProps {
   transicaoQmf?: TransicaoQMF;
   repeticao3?: Repeticao3Sorteios;
   onFiltrosAplicados?: (filtros: FiltrosSnapshot) => void;
+  /** Concursos disponíveis para o seletor compacto da grade. */
+  concursosDisponiveis?: number[];
+  /** Troca o concurso base (mesma fonte de verdade do seletor do topo). */
+  onConcursoChange?: (concurso: number | undefined) => void;
+}
+
+/**
+ * Seletor compacto de concurso base, exibido junto à grade de dezenas.
+ *
+ * Espelha o seletor do topo — mesma fonte de verdade, sem estado paralelo — só
+ * que ao alcance do mouse enquanto se escolhem fixos e excluídos. `undefined`
+ * significa "Geral" (último concurso / todos os sorteios).
+ */
+function SeletorConcursoBase({
+  concursos,
+  value,
+  onChange,
+  carregando = false,
+}: {
+  concursos: number[];
+  value: number | undefined;
+  onChange: (concurso: number | undefined) => void;
+  carregando?: boolean;
+}) {
+  const [texto, setTexto] = useState('');
+  const [editando, setEditando] = useState(false);
+  const cancelarRef = useRef(false);
+
+  const idxAtual = value !== undefined ? concursos.indexOf(value) : concursos.length - 1;
+  const podeAnterior = concursos.length > 1 && idxAtual > 0;
+  const podeProximo = value !== undefined && concursos.length > 0;
+
+  const irPara = useCallback((delta: number) => {
+    if (concursos.length === 0) return;
+    const idx = value !== undefined ? concursos.indexOf(value) : concursos.length - 1;
+    if (idx < 0) return;
+    const alvo = idx + delta;
+    if (alvo < 0) return;
+    // Depois do último concurso só existe "Geral".
+    if (alvo >= concursos.length) {
+      onChange(undefined);
+      return;
+    }
+    onChange(concursos[alvo]);
+  }, [concursos, value, onChange]);
+
+  const aplicar = useCallback(() => {
+    const digitos = texto.replace(/\D/g, '');
+    if (digitos === '') {
+      onChange(undefined);
+    } else {
+      const n = Number(digitos);
+      if (concursos.includes(n)) onChange(n);
+    }
+    setEditando(false);
+    setTexto('');
+  }, [texto, concursos, onChange]);
+
+  const valorExibido = editando ? texto : (value !== undefined ? String(value) : '');
+
+  const btnNav = 'w-7 h-7 flex items-center justify-center rounded-md bg-white/10 text-muted hover:text-fg hover:bg-white/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm';
+
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        type="button"
+        onClick={() => irPara(-1)}
+        disabled={!podeAnterior}
+        title="Concurso anterior"
+        className={btnNav}
+      >
+        −
+      </button>
+
+      <div className="relative">
+        <input
+          type="text"
+          inputMode="numeric"
+          value={valorExibido}
+          placeholder="último"
+          onFocus={e => {
+            setEditando(true);
+            setTexto(value !== undefined ? String(value) : '');
+            e.currentTarget.select();
+          }}
+          onBlur={() => {
+            if (cancelarRef.current) {
+              cancelarRef.current = false;
+              setEditando(false);
+              setTexto('');
+              return;
+            }
+            aplicar();
+          }}
+          onChange={e => setTexto(e.target.value.replace(/\D/g, ''))}
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              e.currentTarget.blur();
+            }
+            if (e.key === 'Escape') {
+              cancelarRef.current = true;
+              setEditando(false);
+              setTexto('');
+              e.currentTarget.blur();
+            }
+          }}
+          className="w-20 px-2 py-1 rounded-md text-xs text-center text-ink bg-white/5 border border-white/10 focus:border-accent-2/50 focus:outline-none focus:ring-1 focus:ring-accent-2/30"
+          title="Digite o concurso e pressione Enter"
+        />
+        {carregando && (
+          <span
+            className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-accent-2 animate-pulse"
+            title="Carregando resultado do concurso..."
+          />
+        )}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => irPara(1)}
+        disabled={!podeProximo}
+        title="Próximo concurso"
+        className={btnNav}
+      >
+        +
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onChange(undefined)}
+        className={`text-[11px] px-2 py-1 rounded-md border transition-colors ${
+          value === undefined
+            ? 'bg-accent/20 border-accent/40 text-accent-2 font-semibold'
+            : 'bg-white/5 border-white/10 text-muted hover:text-fg hover:bg-white/10'
+        }`}
+        title="Voltar ao concurso atual (todos os sorteios)"
+      >
+        Geral
+      </button>
+    </div>
+  );
 }
 
 interface CategoriaDef {
@@ -95,9 +237,7 @@ interface CategoriaDef {
   label: string;
   cor: string;
   set: number[];
-}
-
-const ESTRATEGIA_LABEL: Record<string, string> = {
+}const ESTRATEGIA_LABEL: Record<string, string> = {
   atraso: 'Atrasados',
   'hot7-9': 'Quentes',
   persistencia: 'Persistência',
@@ -218,6 +358,48 @@ function calcularScoresNumeros(
   return scores;
 }
 
+/** Unidade do sorteio em lote: dezenas soltas, ou a casa inteira da grade. */
+type LoteUnidade = 'dezena' | 'coluna' | 'linha';
+
+/** Colunas da grade de dezenas — mesma geometria usada no render. */
+function colunasDaGrade(total: number): 5 | 8 | 10 {
+  return total <= 25 ? 5 : total <= 31 ? 8 : 10;
+}
+
+/** Classes Tailwind da grade; literais para o JIT não perder as regras. */
+const GRID_CLASS_POR_COLUNAS: Record<5 | 8 | 10, string> = {
+  5: 'grid-cols-5',
+  8: 'grid-cols-8',
+  10: 'grid-cols-10',
+};
+
+interface GrupoGrade {
+  id: number;
+  numeros: number[];
+}
+
+/**
+ * Agrupa as dezenas por coluna ou por linha, na mesma ordem da grade.
+ * Coluna = mesma posição em todas as linhas (na Mega-Sena, 6 dezenas);
+ * linha = uma faixa de `colunas` dezenas (na Mega-Sena, a década).
+ */
+function gruposDaGrade(
+  numeros: number[],
+  colunas: number,
+  unidade: 'coluna' | 'linha',
+): GrupoGrade[] {
+  const mapa = new Map<number, number[]>();
+  numeros.forEach((n, i) => {
+    const id = unidade === 'coluna' ? (i % colunas) + 1 : Math.floor(i / colunas) + 1;
+    const lista = mapa.get(id);
+    if (lista) lista.push(n);
+    else mapa.set(id, [n]);
+  });
+  return [...mapa.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([id, nums]) => ({ id, numeros: nums }));
+}
+
 /**
  * Escolhe `quantidade` números de `disponiveis` ordenados por score.
  * Quando `otimizado` está ativo, pega os de maior score (fixar) ou menor
@@ -241,7 +423,7 @@ function selecionarNumerosLote(
   return ordenados.slice(0, quantidade).sort((a, b) => a - b);
 }
 
-export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBase, concursoAtual, numerosSorteadosAtual = [], previsaoPosicional, previsaoTendencia, previsaoColunas, quarentena, grupos, numerosQuentes, numerosMornos, numerosFrios, ciclos, transicaoQmf, repeticao3, onFiltrosAplicados }: JogosDiversosSectionProps) {
+export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBase, concursoAtual, numerosSorteadosAtual = [], previsaoPosicional, previsaoTendencia, previsaoColunas, quarentena, grupos, numerosQuentes, numerosMornos, numerosFrios, ciclos, transicaoQmf, repeticao3, onFiltrosAplicados, concursosDisponiveis, onConcursoChange }: JogosDiversosSectionProps) {
   const cfg = getLotteryConfig(loteria);
   const fechamentoCfg = useMemo(() => getFechamentoConfig(loteria), [loteria]);
   const opcoesDezenas = dezenasValidas(cfg);
@@ -270,7 +452,116 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [loteQuantidade, setLoteQuantidade] = useState<string>('');
   const [loteModo, setLoteModo] = useState<'fixo' | 'excluido'>('fixo');
   const [loteOtimizado, setLoteOtimizado] = useState<boolean>(false);
+  // Unidade do lote: dezena solta, ou a casa inteira da grade (coluna/linha).
+  const [loteUnidade, setLoteUnidade] = useState<LoteUnidade>('dezena');
   const [loteFeedback, setLoteFeedback] = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null);
+
+  // Seletor compacto de concurso junto à grade: o resultado do concurso escolhido
+  // é buscado num endpoint leve e destacado na hora, enquanto a análise recarrega.
+  const [concursoPreview, setConcursoPreview] = useState<{ concurso: number; numeros: number[] } | null>(null);
+  const [carregandoConcurso, setCarregandoConcurso] = useState(false);
+  const concursoPreviewReq = useRef(0);
+  // Resultados já visitados: navegar de volta é instantâneo, sem ida ao servidor.
+  const resultadoCache = useRef(new Map<number, number[]>());
+  const resultadosEmVoo = useRef(new Map<number, Promise<number[] | null>>());
+
+  const buscarResultadoConcurso = useCallback((concurso: number): Promise<number[] | null> => {
+    const emCache = resultadoCache.current.get(concurso);
+    if (emCache) return Promise.resolve(emCache);
+    const emVoo = resultadosEmVoo.current.get(concurso);
+    if (emVoo) return emVoo;
+
+    const pedido = (async (): Promise<number[] | null> => {
+      try {
+        const resp = await fetch(
+          `/api/resultado-concurso?loteria=${encodeURIComponent(loteria)}&concurso=${concurso}`,
+        );
+        if (!resp.ok) return null;
+        const j = await resp.json();
+        const numeros = Array.isArray(j.numeros) ? j.numeros.map(Number) : [];
+        if (numeros.length === 0) return null;
+        resultadoCache.current.set(concurso, numeros);
+        return numeros;
+      } catch {
+        return null;
+      } finally {
+        resultadosEmVoo.current.delete(concurso);
+      }
+    })();
+
+    resultadosEmVoo.current.set(concurso, pedido);
+    return pedido;
+  }, [loteria]);
+
+  const aplicarConcursoBase = useCallback((novo: number | undefined) => {
+    const req = ++concursoPreviewReq.current;
+    if (novo === undefined) {
+      setConcursoPreview(null);
+      setCarregandoConcurso(false);
+      onConcursoChange?.(undefined);
+      return;
+    }
+
+    const emCache = resultadoCache.current.get(novo);
+    if (emCache) {
+      setConcursoPreview({ concurso: novo, numeros: emCache });
+      setCarregandoConcurso(false);
+      onConcursoChange?.(novo);
+      return;
+    }
+
+    // A requisição leve sai antes do reload da análise: como o cálculo roda no
+    // mesmo processo do servidor, inverter a ordem evita ficar na fila dele.
+    setCarregandoConcurso(true);
+    const pendente = buscarResultadoConcurso(novo);
+    onConcursoChange?.(novo);
+    pendente.then(numeros => {
+      // Só a última requisição pode escrever no preview (evita corrida no −/+).
+      if (concursoPreviewReq.current !== req) return;
+      setCarregandoConcurso(false);
+      if (!numeros) return;
+      setConcursoPreview({ concurso: novo, numeros });
+    });
+  }, [buscarResultadoConcurso, onConcursoChange]);
+
+  useEffect(() => {
+    // Troca de loteria invalida preview e cache (dezenas de outro universo).
+    resultadoCache.current.clear();
+    resultadosEmVoo.current.clear();
+    setConcursoPreview(null);
+    setCarregandoConcurso(false);
+  }, [loteria]);
+
+  useEffect(() => {
+    // Pré-carrega os concursos vizinhos do base: o próximo −/+ sai do cache.
+    const base = concursoBase ?? concursoAtual;
+    const lista = concursosDisponiveis ?? [];
+    if (base === undefined) return;
+    const idx = lista.indexOf(base);
+    if (idx < 0) return;
+    for (const d of [-1, 1]) {
+      const vizinho = lista[idx + d];
+      if (vizinho !== undefined && !resultadoCache.current.has(vizinho)) {
+        void buscarResultadoConcurso(vizinho);
+      }
+    }
+  }, [concursoBase, concursoAtual, concursosDisponiveis, buscarResultadoConcurso]);
+
+  useEffect(() => {
+    // Quando a análise alcança o concurso escolhido, o preview já não é necessário.
+    if (concursoPreview && concursoAtual === concursoPreview.concurso) {
+      setConcursoPreview(null);
+      setCarregandoConcurso(false);
+    }
+  }, [concursoAtual, concursoPreview]);
+
+  useEffect(() => {
+    // Se o concurso base mudou por fora (seletor do topo), o preview fica obsoleto.
+    if (concursoPreview && concursoPreview.concurso !== concursoBase) {
+      setConcursoPreview(null);
+      setCarregandoConcurso(false);
+    }
+  }, [concursoBase, concursoPreview]);
 
   // --- Fechamento Combinatório ---
   const [modoFechamento, setModoFechamento] = useState<boolean>(false);
@@ -468,7 +759,9 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
 
   const fixos = Object.entries(estados).filter(([, e]) => e === 'fixo').map(([n]) => Number(n));
   const excluidos = Object.entries(estados).filter(([, e]) => e === 'excluido').map(([n]) => Number(n));
-  const sorteadosAtualSet = new Set(numerosSorteadosAtual);
+  const sorteadosAtualSet = new Set(
+    concursoPreview && concursoPreview.numeros.length > 0 ? concursoPreview.numeros : numerosSorteadosAtual,
+  );
 
   const colunasPosicionaisStr = colunasInputs.map(v => v.trim().replace(/\s+/g, '')).join(',');
   const colunasSetsStr = colunasSets ? colunasSets.map(s => s.join(',')).join(';') : '';
@@ -705,9 +998,9 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     const excluidosAtuais = Object.entries(estados)
       .filter(([, e]) => e === 'excluido')
       .map(([n]) => Number(n));
-    const disponiveis = loteModo === 'fixo'
-      ? todos.filter(n => !excluidosAtuais.includes(n))
-      : todos.filter(n => !fixosAtuais.includes(n));
+    const opostos = loteModo === 'fixo' ? excluidosAtuais : fixosAtuais;
+    const bloqueados = new Set(opostos);
+    const disponiveis = todos.filter(n => !bloqueados.has(n));
     // Mesmo limite exibido na UI: fixar até (dezenas - 1) e excluir até
     // (total - dezenas), sempre respeitando o que já está marcado no outro modo.
     // Sem teto fixo de 14 — ele só fazia sentido para a Lotofácil e barrava a
@@ -717,19 +1010,13 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       : Math.max(0, Math.min(total - dezenas, disponiveis.length));
     const rotulo = loteModo === 'fixo' ? 'fixo(s)' : 'excluído(s)';
     const acao = loteModo === 'fixo' ? 'fixar' : 'excluir';
+    const modoTexto = loteOtimizado ? 'otimizado(s)' : 'sorteado(s)';
 
     const quantidade = bruto === '' ? 0 : Number(bruto);
     if (!Number.isInteger(quantidade) || quantidade < 0) {
       setLoteFeedback({
         tipo: 'erro',
         texto: `Informe uma quantidade inteira de 0 a ${limite} para ${acao}.`,
-      });
-      return;
-    }
-    if (quantidade > limite) {
-      setLoteFeedback({
-        tipo: 'erro',
-        texto: `Máximo de ${limite} número(s) para ${acao}.`,
       });
       return;
     }
@@ -745,38 +1032,106 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         })
       : {};
 
-    const escolhidos = selecionarNumerosLote(disponiveis, quantidade, loteOtimizado, scores, loteModo);
+    // Aplica a seleção final (dezenas já resolvidas), venha ela de dezenas
+    // soltas ou de colunas/linhas inteiras.
+    const aplicarSelecao = (escolhidos: number[]) => {
+      setEstados(prev => {
+        const proximo = { ...prev };
+        for (const [chave, valor] of Object.entries(proximo)) {
+          if (valor === loteModo) delete proximo[Number(chave)];
+        }
+        for (const n of escolhidos) proximo[n] = loteModo;
+        return proximo;
+      });
+      setFixosPosicoes(prev => {
+        if (loteModo === 'fixo') return {};
+        const copia = { ...prev };
+        for (const n of escolhidos) delete copia[n];
+        return copia;
+      });
+      setExcluidosPosicoes(prev => {
+        if (loteModo === 'excluido') return {};
+        const copia = { ...prev };
+        for (const n of escolhidos) delete copia[n];
+        return copia;
+      });
+    };
 
-    setEstados(prev => {
-      const proximo = { ...prev };
-      for (const [chave, valor] of Object.entries(proximo)) {
-        if (valor === loteModo) delete proximo[Number(chave)];
+    if (loteUnidade === 'dezena') {
+      if (quantidade > limite) {
+        setLoteFeedback({
+          tipo: 'erro',
+          texto: `Máximo de ${limite} número(s) para ${acao}.`,
+        });
+        return;
       }
-      for (const n of escolhidos) proximo[n] = loteModo;
-      return proximo;
-    });
-    setFixosPosicoes(prev => {
-      if (loteModo === 'fixo') return {};
-      const copia = { ...prev };
-      for (const n of escolhidos) delete copia[n];
-      return copia;
-    });
-    setExcluidosPosicoes(prev => {
-      if (loteModo === 'excluido') return {};
-      const copia = { ...prev };
-      for (const n of escolhidos) delete copia[n];
-      return copia;
-    });
+      const escolhidos = selecionarNumerosLote(disponiveis, quantidade, loteOtimizado, scores, loteModo);
+      aplicarSelecao(escolhidos);
+      setLoteFeedback({
+        tipo: 'ok',
+        texto: escolhidos.length === 0
+          ? `Seleção de ${rotulo} limpa.`
+          : `${escolhidos.length} ${rotulo} ${modoTexto}: ${escolhidos.join(', ')}.`,
+      });
+      return;
+    }
 
-    const modoTexto = loteOtimizado ? 'otimizado(s)' : 'sorteado(s)';
+    // --- Colunas ou linhas inteiras da grade --------------------------------
+    const nomeUnidade = loteUnidade === 'coluna' ? 'coluna' : 'linha';
+    const prefixo = loteUnidade === 'coluna' ? 'C' : 'L';
+    // Só entram casas 100% livres: uma coluna que contém dezena do outro modo
+    // não pode ser marcada inteira sem apagar a marcação existente.
+    const grupos = gruposDaGrade(todos, colunasDaGrade(total), loteUnidade)
+      .filter(g => g.numeros.every(n => !bloqueados.has(n)));
+
+    if (quantidade > grupos.length) {
+      const livres = grupos.length === 1 ? 'livre' : 'livres';
+      setLoteFeedback({
+        tipo: 'erro',
+        texto: `Só há ${grupos.length} ${nomeUnidade}${grupos.length === 1 ? '' : 's'} ${livres} para ${acao}.`,
+      });
+      return;
+    }
+
+    const mediaScore = (g: GrupoGrade) =>
+      g.numeros.length === 0
+        ? 0
+        : g.numeros.reduce((soma, n) => soma + (scores[n] ?? 0), 0) / g.numeros.length;
+
+    const escolhidosGrupos = loteOtimizado
+      ? [...grupos]
+          .sort((a, b) => (loteModo === 'fixo'
+            ? mediaScore(b) - mediaScore(a)
+            : mediaScore(a) - mediaScore(b)))
+          .slice(0, quantidade)
+      : sortearSubconjunto(grupos, quantidade);
+
+    const escolhidos = escolhidosGrupos.flatMap(g => g.numeros).sort((a, b) => a - b);
+    if (escolhidos.length > limite) {
+      const tamanho = escolhidosGrupos[0]?.numeros.length ?? 1;
+      const maxGrupos = Math.floor(limite / tamanho);
+      const pluralErro = escolhidosGrupos.length === 1 ? nomeUnidade : `${nomeUnidade}s`;
+      setLoteFeedback({
+        tipo: 'erro',
+        texto: `${escolhidos.length} dezenas em ${escolhidosGrupos.length} ${pluralErro} passam do máximo de ${limite} para ${acao} (até ${maxGrupos} ${maxGrupos === 1 ? nomeUnidade : `${nomeUnidade}s`}).`,
+      });
+      return;
+    }
+
+    aplicarSelecao(escolhidos);
+    const n = escolhidosGrupos.length;
+    const nomePlural = n === 1 ? nomeUnidade : `${nomeUnidade}s`;
+    const verbo = loteOtimizado
+      ? (n === 1 ? 'otimizada' : 'otimizadas')
+      : (n === 1 ? 'sorteada' : 'sorteadas');
     setLoteFeedback({
       tipo: 'ok',
-      texto: escolhidos.length === 0
-        ? `Seleção de ${rotulo} limpa.`
-        : `${escolhidos.length} ${rotulo} ${modoTexto}: ${escolhidos.join(', ')}.`,
+      texto: n === 0
+        ? `Seleção de ${nomeUnidade}s limpa.`
+        : `${n} ${nomePlural} ${verbo}: ${escolhidosGrupos.map(g => `${prefixo}${g.id}`).join(', ')} · ${escolhidos.length} dezenas.`,
     });
     // Mantém o valor digitado no box para que o usuário possa reaplicar ou ajustar.
-  }, [loteQuantidade, loteModo, loteOtimizado, estados, dezenas, cfg, numerosQuentes, numerosMornos, numerosFrios, ciclos, previsaoPosicional, numerosSorteadosAtual]);
+  }, [loteQuantidade, loteModo, loteOtimizado, loteUnidade, estados, dezenas, cfg, numerosQuentes, numerosMornos, numerosFrios, ciclos, previsaoPosicional, numerosSorteadosAtual]);
 
   const toggleEstrategia = useCallback((e: string) => {
     setEstrategiasFiltro(prev => {
@@ -1168,7 +1523,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   };
 
   const totalNumeros = cfg.total_numeros;
-  const gridClass = totalNumeros <= 25 ? 'grid-cols-5' : totalNumeros <= 31 ? 'grid-cols-8' : 'grid-cols-10';
+  const colunasGrade = colunasDaGrade(totalNumeros);
+  const gridClass = GRID_CLASS_POR_COLUNAS[colunasGrade];
   const gridMaxW = totalNumeros <= 25 ? 280 : totalNumeros <= 31 ? 400 : 480;
   const btnSize = totalNumeros <= 25 ? 'w-10 h-10 text-sm' : totalNumeros <= 50 ? 'w-9 h-9 text-xs' : 'w-8 h-8 text-xs';
   const cicloGridClass = gridClass;
@@ -1183,6 +1539,27 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   // (60 - 6), Lotomania 50 (100 - 50). O mesmo cálculo vale para fixar.
   const limiteLoteFixo = Math.max(0, Math.min(dezenas - 1, totalNumeros - excluidos.length));
   const limiteLoteExcluido = Math.max(0, Math.min(totalNumeros - dezenas, totalNumeros - fixos.length));
+
+  // Geometria do lote por coluna/linha: quantas dezenas cada casa carrega e
+  // quantas casas cabem dentro do limite de dezenas (o limite real é numérico).
+  const gruposLote = loteUnidade === 'dezena'
+    ? []
+    : gruposDaGrade(numeros, colunasDaGrade(totalNumeros), loteUnidade);
+  const tamanhosGrupo = [...new Set(gruposLote.map(g => g.numeros.length))].sort((a, b) => a - b);
+  const tamanhoGrupoTexto = tamanhosGrupo.length === 0
+    ? ''
+    : tamanhosGrupo.length === 1
+      ? String(tamanhosGrupo[0])
+      : `${tamanhosGrupo[0]}–${tamanhosGrupo[tamanhosGrupo.length - 1]}`;
+  const limiteNumerosLote = loteModo === 'fixo' ? limiteLoteFixo : limiteLoteExcluido;
+  const limiteLoteExibido = loteUnidade === 'dezena'
+    ? limiteNumerosLote
+    : Math.floor(limiteNumerosLote / Math.max(1, tamanhosGrupo[tamanhosGrupo.length - 1] ?? 1));
+  const labelUnidade = loteUnidade === 'dezena'
+    ? 'dezena(s)'
+    : loteUnidade === 'coluna'
+      ? 'coluna(s)'
+      : 'linha(s)';
   const precoUnit = calcularPrecoAposta(loteria, dezenas);
   const mostraSeletorDezenas = opcoesDezenas.length > 1;
 
@@ -1589,13 +1966,26 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       )}
 
       <div className="mb-5">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
           <div className="text-sm text-ink">Clique nos números para fixar 🟢 ou excluir 🔴</div>
-          <button
-            onClick={limparSelecao}
-            className="text-xs px-3 py-1 rounded-lg bg-white/5 text-muted hover:text-fg hover:bg-white/10 transition-colors">
-            Limpar seleção
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {onConcursoChange && concursosDisponiveis && concursosDisponiveis.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] text-muted">Concurso base:</span>
+                <SeletorConcursoBase
+                  concursos={concursosDisponiveis}
+                  value={concursoBase}
+                  onChange={aplicarConcursoBase}
+                  carregando={carregandoConcurso}
+                />
+              </div>
+            )}
+            <button
+              onClick={limparSelecao}
+              className="text-xs px-3 py-1 rounded-lg bg-white/5 text-muted hover:text-fg hover:bg-white/10 transition-colors">
+              Limpar seleção
+            </button>
+          </div>
         </div>
         <div className="flex flex-wrap gap-4 items-start">
         <div className="flex-1 min-w-[300px]">
@@ -1611,7 +2001,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                 {sorteado && (
                   <span
                     className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-emerald-600/40 shadow-sm"
-                    title="Sorteado no concurso atual"
+                    title="Sorteado no concurso base"
                   />
                 )}
               </button>
@@ -1621,11 +2011,40 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted">
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500/30 border border-emerald-500/60" /> Fixo</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-hot/20 border border-hot/40" /> Excluído</span>
-          <span className="flex items-center gap-1"><span className="relative w-3 h-3 rounded bg-white/5 border border-white/10"><span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-emerald-600/40" /></span> Sorteado no concurso atual</span>
+          <span className="flex items-center gap-1"><span className="relative w-3 h-3 rounded bg-white/5 border border-white/10"><span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-emerald-600/40" /></span> Sorteado no concurso base</span>
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
           <span className="text-muted">Em lote:</span>
+          <div
+            className="flex rounded-lg overflow-hidden border border-white/10"
+            role="group"
+            aria-label="Unidade do sorteio em lote"
+            title="Escolha o que o sorteio em lote move: dezenas soltas, ou a casa inteira da grade (coluna/linha)"
+          >
+            {([
+              ['dezena', 'Dezenas'],
+              ['coluna', 'Colunas'],
+              ['linha', 'Linhas'],
+            ] as const).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => {
+                  setLoteUnidade(id);
+                  setLoteFeedback(null);
+                }}
+                aria-pressed={loteUnidade === id}
+                className={`px-2 py-1.5 transition-colors ${
+                  loteUnidade === id
+                    ? 'bg-accent/25 text-accent-2 font-semibold'
+                    : 'bg-white/5 text-muted hover:text-fg'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <input
             type="text"
             inputMode="numeric"
@@ -1637,9 +2056,11 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             onKeyDown={e => {
               if (e.key === 'Enter') aplicarLote();
             }}
-            placeholder={`0 a ${loteModo === 'fixo' ? limiteLoteFixo : limiteLoteExcluido}`}
-            aria-label="Quantidade de números para sortear em lote"
-            title="Digite só a quantidade — os números são sorteados entre os disponíveis"
+            placeholder={`0 a ${limiteLoteExibido}`}
+            aria-label={`Quantidade de ${labelUnidade} para sortear em lote`}
+            title={loteUnidade === 'dezena'
+              ? 'Digite só a quantidade — as dezenas são sorteadas entre as disponíveis'
+              : `Digite quantas ${labelUnidade} inteiras — cada uma carrega ${tamanhoGrupoTexto} dezenas`}
             className="w-20 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-fg text-center placeholder:text-muted/60 focus:outline-none focus:border-accent/60"
           />
           <div className="flex rounded-lg overflow-hidden border border-white/10" role="group" aria-label="Sortear números em lote para fixar ou excluir">
@@ -1674,7 +2095,12 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               🔴 Excluir
             </button>
           </div>
-          <label className="flex items-center gap-1 cursor-pointer select-none bg-white/5 px-2 py-1.5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors" title="Quando ativo, escolhe os melhores números (fixar) ou piores (excluir) com base em frequência, ciclo, previsão posicional e repetição recente. Desativado, sorteia aleatoriamente.">
+          <label
+            className="flex items-center gap-1 cursor-pointer select-none bg-white/5 px-2 py-1.5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+            title={loteUnidade === 'dezena'
+              ? 'Quando ativo, escolhe os melhores números (fixar) ou piores (excluir) com base em frequência, ciclo, previsão posicional e repetição recente. Desativado, sorteia aleatoriamente.'
+              : `Quando ativo, ranqueia as ${labelUnidade} pelo score médio das dezenas de cada uma (melhores para fixar, piores para excluir). Desativado, sorteia ${labelUnidade} aleatórias.`}
+          >
             <input
               type="checkbox"
               checked={loteOtimizado}
@@ -1691,13 +2117,16 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             onClick={aplicarLote}
             className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110"
             style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
-            title={loteOtimizado ? 'Escolhe os melhores/piores números por score e marca os números' : 'Sorteia a quantidade informada e marca os números'}
+            title={loteOtimizado
+              ? `Escolhe as melhores/piores ${labelUnidade} por score e marca${loteUnidade === 'dezena' ? ' os números' : ' as dezenas da casa'}`
+              : `Sorteia ${loteUnidade === 'dezena' ? 'a quantidade informada' : `as ${labelUnidade} informadas`} e marca`}
           >
             {loteOtimizado ? '✨ Aplicar' : '🎲 Sortear'}
           </button>
           <span className="text-[11px] text-muted">
-            até {loteModo === 'fixo' ? limiteLoteFixo : limiteLoteExcluido} ·
-            {loteOtimizado ? 'por score (melhor → pior)' : 'aleatório entre os disponíveis'} · 0 limpa
+            até {limiteLoteExibido} {labelUnidade}
+            {loteUnidade !== 'dezena' && ` (${tamanhoGrupoTexto} dezenas cada)`} ·
+            {loteOtimizado ? ' por score (melhor → pior)' : ' aleatório entre os disponíveis'} · 0 limpa
           </span>
           {loteFeedback && (
             <span
@@ -1854,7 +2283,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                 <div key={numero} className={`flex flex-col items-center justify-center rounded-lg border p-1 ${classes}`}>
                   <span
                     className={`text-sm font-bold ${sorteado ? 'text-emerald-400' : ''}`}
-                    title={sorteado ? 'Sorteado no concurso atual' : undefined}
+                    title={sorteado ? 'Sorteado no concurso base' : undefined}
                   >{numero}</span>
                   <span className="text-[10px] opacity-80">{qtd}x</span>
                 </div>
@@ -1978,7 +2407,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                     <span
                       key={n}
                       className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold border transition-all ${classes}`}
-                      title={sorteado ? 'Sorteado no concurso atual' : undefined}>
+                      title={sorteado ? 'Sorteado no concurso base' : undefined}>
                       {n}
                     </span>
                   );
