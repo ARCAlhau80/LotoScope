@@ -298,8 +298,8 @@ export default function JanelaAlvoSection({ loteria, concursoAtual, concursoBase
                       <td className="py-1.5 pr-3 text-muted">{c.data ?? '—'}</td>
                       <td className="py-1.5">
                         <div className="flex flex-wrap gap-1">
-                          {c.numeros.map(n => (
-                            <span key={n} className="px-1.5 py-0.5 rounded bg-white/5 text-fg font-mono text-[10px]">
+                          {c.numeros.map((n, idx) => (
+                            <span key={`${c.concurso}-${idx}-${n}`} className="px-1.5 py-0.5 rounded bg-white/5 text-fg font-mono text-[10px]">
                               {fmtNumero(n)}
                             </span>
                           ))}
@@ -313,8 +313,8 @@ export default function JanelaAlvoSection({ loteria, concursoAtual, concursoBase
                       <td className="py-1.5 pr-3 text-muted">{data.alvo.data ?? '—'}</td>
                       <td className="py-1.5">
                         <div className="flex flex-wrap gap-1">
-                          {data.alvo.numeros.map(n => (
-                            <span key={n} className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-100 font-mono text-[10px]">
+                          {data.alvo.numeros.map((n, idx) => (
+                            <span key={`alvo-${idx}-${n}`} className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-100 font-mono text-[10px]">
                               {fmtNumero(n)}
                             </span>
                           ))}
