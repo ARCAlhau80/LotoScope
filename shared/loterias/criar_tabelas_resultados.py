@@ -31,6 +31,7 @@ TABELAS = {
     "Resultados_DiaDeSorte": {
         "numeros": 7,
         "descricao": "Dia de Sorte (7 números, 1-31)",
+        "extras": ["Mes_Sorte INT NULL"],
     },
     "Resultados_Timemania": {
         "numeros": 7,

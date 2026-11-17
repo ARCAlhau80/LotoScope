@@ -37,7 +37,7 @@ def main() -> int:
         return _saida(args.json, success=False, error=f"Loteria desconhecida: {args.loteria}")
 
     try:
-        jogos_brutos = parse_arquivo_jogos(args.caminho, tem_trevos=cfg.tem_trevos)
+        jogos_brutos = parse_arquivo_jogos(args.caminho, tem_trevos=cfg.tem_trevos, mes_sorte=getattr(cfg, "mes_sorte", False))
     except (FormatoNaoSuportadoError, JogoInvalidoError) as e:
         return _saida(args.json, success=False, error=str(e))
     except FileNotFoundError:
@@ -46,7 +46,7 @@ def main() -> int:
     resultado = validar_jogos(cfg, jogos_brutos)
     invalidos = resultado["invalids"]
     jogos_validos = [
-        {"numeros": jogo["numeros"], "trevos": jogo.get("trevos", [])}
+        {"numeros": jogo["numeros"], "trevos": jogo.get("trevos", []), "mes": jogo.get("mes")}
         for jogo in resultado["validos"]
     ]
 

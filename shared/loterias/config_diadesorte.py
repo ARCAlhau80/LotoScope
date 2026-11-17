@@ -9,6 +9,8 @@ CONFIG_DIADESORTE = LotteryConfig(
     numero_minimo=1,
     db_name="LOTOFACIL",
     tabela_resultados="Resultados_DiaDeSorte",
+    mes_sorte=True,
+    mes_sorte_col="Mes_Sorte",
     faixas={
         "baixa": FaixaConfig("Baixa (1-10)", 1, 10),
         "media": FaixaConfig("Média (11-20)", 11, 20),

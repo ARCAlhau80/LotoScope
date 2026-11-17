@@ -36,6 +36,10 @@ export interface LotteryConfig {
   trevos_total?: number;
   trevos_min?: number;
   trevos_max?: number;
+  /** Loteria com "Mês da Sorte" (Dia de Sorte). */
+  mes_sorte?: boolean;
+  /** Coluna que guarda o mês sorteado (1-12) na tabela de resultados. */
+  mes_sorte_col?: string;
   qmf_scale: number;
   is_positional?: boolean;
 }
@@ -190,6 +194,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     nome_jogo: "Dia de Sorte",
     total_numeros: 31,
     numeros_por_jogo: 7,
+    dezenas_opcoes: [7, 8, 9, 10, 11, 12, 13, 14, 15],
     numero_minimo: 1,
     numero_maximo: 31,
     colunas_resultado: Array.from({ length: 7 }, (_, i) => `N${i + 1}`),
@@ -197,6 +202,8 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     data_col: "Data_Sorteio",
     tabela_combinacoes: "COMBIN_DIADESORTE",
     db_name: "LOTOFACIL",
+    mes_sorte: true,
+    mes_sorte_col: "Mes_Sorte",
     faixas: {
       baixa: { nome: "Baixa (1-10)", inicio: 1, fim: 10 },
       media: { nome: "Média (11-20)", inicio: 11, fim: 20 },
@@ -308,6 +315,44 @@ export function getLotteryConfig(id: string): LotteryConfig {
 
 export const LOTTERY_IDS = Object.keys(LOTERIAS);
 
+/** Meses do "Mês da Sorte" (Dia de Sorte), índice 0 = Janeiro. */
+export const MESES_SORTE = [
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
+] as const;
+
+export const MES_SORTE_MIN = 1;
+export const MES_SORTE_MAX = MESES_SORTE.length;
+
+/** Nome do mês (1-12) ou null se inválido. */
+export function nomeMesSorte(mes?: number | null): string | null {
+  if (mes == null || !Number.isInteger(mes) || mes < MES_SORTE_MIN || mes > MES_SORTE_MAX) {
+    return null;
+  }
+  return MESES_SORTE[mes - 1];
+}
+
+/** Opções para seletores: [{ valor: 1, nome: 'Janeiro' }, ...]. */
+export function opcoesMesSorte(): Array<{ valor: number; nome: string }> {
+  return MESES_SORTE.map((nome, i) => ({ valor: i + 1, nome }));
+}
+
+/**
+ * Preço oficial da aposta (Caixa, tabela Dia de Sorte):
+ * 7=2,50 · 8=20,00 · 9=90,00 · 10=300,00 · 11=825,00 ·
+ * 12=1.980,00 · 13=4.290,00 · 14=8.580,00 · 15=16.087,50
+ * (sempre R$ 2,50 × C(dezenas, 7)).
+ */
 export const PRECO_BASE: Record<string, number> = {
   lotofacil: 3.5,
   megasena: 6.0,
@@ -320,7 +365,7 @@ export const PRECO_BASE: Record<string, number> = {
   maismilionaria: 6.0,
 };
 
-function combinacoes(n: number, k: number): number {
+export function combinacoes(n: number, k: number): number {
   if (k < 0 || k > n) return 0;
   if (k === 0 || k === n) return 1;
   let res = 1;

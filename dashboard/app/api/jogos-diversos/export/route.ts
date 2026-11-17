@@ -4,6 +4,7 @@ import { gerarJogosDiversificados, calcularEstimativaCombinacoes, iterarTodasAsC
 import { parseColunasPosicionais, parseDominiosPosicionais, parseFiltroComparativo, parseFiltroCategorias, parseFiltroRepetidos, parseFixosPosicoes, parseExcluidosPosicoes, parseOrdenacao, parseScoreSets } from '@/lib/colunas-posicionais';
 import sql from 'mssql';
 import { getLotteryConfig, validarDezenas } from '@/lib/lottery-config';
+import { resolverModoMesSorte, mesDaAposta, type ModoMesSorte } from '@/lib/mes-sorte';
 
 async function getPool() {
   return sql.connect({
@@ -156,6 +157,10 @@ function formatarJogoLinha(jogo: JogoGerado): string {
   if (jogo.trevos && jogo.trevos.length > 0) {
     return `${dezenas}|${jogo.trevos.join(',')}`;
   }
+  if (jogo.mes) {
+    // Dia de Sorte: "<dezenas>|M:<mês>" para o conferidor reconhecer o bônus.
+    return `${dezenas}|M:${jogo.mes}`;
+  }
   return dezenas;
 }
 
@@ -166,10 +171,11 @@ function headersExport(loteria: string, dezenas: number): HeadersInit {
   };
 }
 
-function criarStreamExport(options: GeradorDiversificadoOptions): ReadableStream<Uint8Array> {
+function criarStreamExport(options: GeradorDiversificadoOptions, mes: ModoMesSorte | null, seed?: number): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
   const iterator = iterarTodasAsCombinacoes(options);
   let primeiro = true;
+  let indice = 0;
 
   return new ReadableStream<Uint8Array>({
     pull(controller) {
@@ -182,7 +188,11 @@ function criarStreamExport(options: GeradorDiversificadoOptions): ReadableStream
             controller.close();
             return;
           }
-          chunk += `${primeiro ? '' : '\n'}${formatarJogoLinha(proximo.value)}`;
+          const jogo = mes === null
+            ? proximo.value
+            : { ...proximo.value, mes: mesDaAposta(mes, seed, indice) };
+          indice++;
+          chunk += `${primeiro ? '' : '\n'}${formatarJogoLinha(jogo)}`;
           primeiro = false;
         }
         controller.enqueue(encoder.encode(chunk));
@@ -217,6 +227,7 @@ function parseParams(searchParams: URLSearchParams) {
   const estrategiasParam = searchParams.get('estrategias');
   const ordenacaoParam = searchParams.get('ordenacao');
   const scoreSetsParam = searchParams.get('score_sets');
+  const mesParam = searchParams.get('mes');
 
   const seed = seedParam ? parseInt(seedParam, 10) : undefined;
   const concursoBase = concursoParam ? parseInt(concursoParam, 10) : undefined;
@@ -237,13 +248,14 @@ function parseParams(searchParams: URLSearchParams) {
     : undefined;
   const ordenacao = parseOrdenacao(ordenacaoParam);
   const scoreSets = parseScoreSets(scoreSetsParam);
+  const mes = resolverModoMesSorte(cfg, mesParam);
 
-  return { loteria, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, dominiosPosicionais, filtroComparativo, filtroCategorias: filtroCategoriasCompleto.length > 0 ? filtroCategoriasCompleto : undefined, fixosPosicoes, excluidosPosicoes, estrategias, ordenacao, scoreSets };
+  return { loteria, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, dominiosPosicionais, filtroComparativo, filtroCategorias: filtroCategoriasCompleto.length > 0 ? filtroCategoriasCompleto : undefined, fixosPosicoes, excluidosPosicoes, estrategias, ordenacao, scoreSets, mes };
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const { loteria, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, dominiosPosicionais, filtroComparativo, filtroCategorias, fixosPosicoes, excluidosPosicoes, estrategias, ordenacao, scoreSets } = parseParams(new URL(request.url).searchParams);
+    const { loteria, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, dominiosPosicionais, filtroComparativo, filtroCategorias, fixosPosicoes, excluidosPosicoes, estrategias, ordenacao, scoreSets, mes } = parseParams(new URL(request.url).searchParams);
 
     const resultados = await carregarResultados(loteria);
     const resultadosAteBase = concursoBase !== undefined
@@ -280,7 +292,7 @@ export async function GET(request: NextRequest) {
         fixosPosicoes,
         excluidosPosicoes,
         estrategias,
-      }), { headers: headersExport(loteria, dezenas) });
+      }, mes, seed), { headers: headersExport(loteria, dezenas) });
     }
     if (ordenacaoAtiva && estimativa > LIMITE_MEMORIA) {
       return NextResponse.json(
@@ -328,7 +340,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const texto = jogosFiltrados.map(formatarJogoLinha).join('\n');
+    const jogosComMes = mes === null
+      ? jogosFiltrados
+      : jogosFiltrados.map((jogo, i) => ({ ...jogo, mes: mesDaAposta(mes, seed ? parseInt(String(seed), 10) : undefined, i) }));
+    const texto = jogosComMes.map(formatarJogoLinha).join('\n');
     const blob = new Blob([texto], { type: 'text/plain; charset=utf-8' });
 
     return new NextResponse(blob, {
@@ -349,8 +364,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { loteria = 'lotofacil', seed, fixos, excluidos, concurso, dezenas: dezenasBody, colunas_posicionais: colunasParam, colunas_sets: colunasSetsParam, linhas_sets: linhasSetsParam, comparativo: comparativoParam, categorias: categoriasParam, categorias_sets: categoriasSetsParam, repetidos: repetidosParam, repetidos_sets: repetidosSetsParam, ordenacao: ordenacaoParam, score_sets: scoreSetsParam, fixos_posicoes: fixosPosicoesParam, excluidos_posicoes: excluidosPosicoesParam, estrategias: estrategiasParam } = body || {};
+    const { loteria = 'lotofacil', seed, fixos, excluidos, concurso, dezenas: dezenasBody, mes: mesBody, colunas_posicionais: colunasParam, colunas_sets: colunasSetsParam, linhas_sets: linhasSetsParam, comparativo: comparativoParam, categorias: categoriasParam, categorias_sets: categoriasSetsParam, repetidos: repetidosParam, repetidos_sets: repetidosSetsParam, ordenacao: ordenacaoParam, score_sets: scoreSetsParam, fixos_posicoes: fixosPosicoesParam, excluidos_posicoes: excluidosPosicoesParam, estrategias: estrategiasParam } = body || {};
     const cfg = getLotteryConfig(loteria);
+    const mes = resolverModoMesSorte(cfg, mesBody);
     const concursoBase = concurso !== undefined ? parseInt(String(concurso), 10) : undefined;
     const dezenas = validarDezenas(cfg, dezenasBody !== undefined ? parseInt(String(dezenasBody), 10) : undefined);
     const fixosNorm = Array.isArray(fixos) ? fixos.map(Number).filter((n: number) => n >= cfg.numero_minimo && n <= cfg.numero_maximo) : undefined;
@@ -406,7 +422,7 @@ export async function POST(request: NextRequest) {
         fixosPosicoes,
         excluidosPosicoes,
         estrategias,
-      }), { headers: headersExport(loteria, dezenas) });
+      }, mes, seed ? parseInt(String(seed), 10) : undefined), { headers: headersExport(loteria, dezenas) });
     }
     if (ordenacaoAtiva && estimativa > LIMITE_MEMORIA) {
       return NextResponse.json(
@@ -454,7 +470,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const texto = jogosFiltrados.map(formatarJogoLinha).join('\n');
+    const jogosComMes = mes === null
+      ? jogosFiltrados
+      : jogosFiltrados.map((jogo, i) => ({ ...jogo, mes: mesDaAposta(mes, seed ? parseInt(String(seed), 10) : undefined, i) }));
+    const texto = jogosComMes.map(formatarJogoLinha).join('\n');
     const blob = new Blob([texto], { type: 'text/plain; charset=utf-8' });
 
     return new NextResponse(blob, {

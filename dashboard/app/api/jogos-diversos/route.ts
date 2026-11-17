@@ -4,6 +4,7 @@ import { gerarJogosDiversificados, calcularEstatisticasJogos, calcularEstimativa
 import { parseColunasPosicionais, parseDominiosPosicionais, parseFiltroComparativo, parseFiltroCategorias, parseFiltroRepetidos, parseFixosPosicoes, parseExcluidosPosicoes, parseOrdenacao, parseScoreSets } from '@/lib/colunas-posicionais';
 import sql from 'mssql';
 import { getLotteryConfig, validarDezenas, calcularPrecoAposta } from '@/lib/lottery-config';
+import { resolverModoMesSorte, aplicarMesSorteLista } from '@/lib/mes-sorte';
 
 interface CicloRow {
   Ciclo: number;
@@ -114,6 +115,7 @@ function parseParams(searchParams: URLSearchParams) {
   const estrategiasParam = searchParams.get('estrategias');
   const ordenacaoParam = searchParams.get('ordenacao');
   const scoreSetsParam = searchParams.get('score_sets');
+  const mesParam = searchParams.get('mes');
 
   const nJogos = nJogosParam ? parseInt(nJogosParam, 10) : 5;
   const seed = seedParam ? parseInt(seedParam, 10) : undefined;
@@ -135,8 +137,9 @@ function parseParams(searchParams: URLSearchParams) {
     : undefined;
   const ordenacao = parseOrdenacao(ordenacaoParam);
   const scoreSets = parseScoreSets(scoreSetsParam);
+  const mes = resolverModoMesSorte(cfg, mesParam);
 
-  return { loteria, nJogos, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, dominiosPosicionais, filtroComparativo, filtroCategorias: filtroCategoriasCompleto.length > 0 ? filtroCategoriasCompleto : undefined, fixosPosicoes, excluidosPosicoes, estrategias, ordenacao, scoreSets };
+  return { loteria, nJogos, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, dominiosPosicionais, filtroComparativo, filtroCategorias: filtroCategoriasCompleto.length > 0 ? filtroCategoriasCompleto : undefined, fixosPosicoes, excluidosPosicoes, estrategias, ordenacao, scoreSets, mes };
 }
 
 function buildCicloResponse(cicloDados: Record<number, number> | undefined) {
@@ -155,7 +158,7 @@ function buildCicloResponse(cicloDados: Record<number, number> | undefined) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { loteria, nJogos, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, dominiosPosicionais, filtroComparativo, filtroCategorias, fixosPosicoes, excluidosPosicoes, estrategias, ordenacao, scoreSets } = parseParams(new URL(request.url).searchParams);
+    const { loteria, nJogos, seed, concursoBase, fixos, excluidos, dezenas, cfg, colunasPosicionais, dominiosPosicionais, filtroComparativo, filtroCategorias, fixosPosicoes, excluidosPosicoes, estrategias, ordenacao, scoreSets, mes } = parseParams(new URL(request.url).searchParams);
 
     const resultados = await carregarResultados(loteria);
     const resultadosAteBase = concursoBase !== undefined
@@ -169,7 +172,7 @@ export async function GET(request: NextRequest) {
     const temFiltroEstrategias = estrategias && estrategias.length > 0;
     const nParaGerar = nJogos === 0 ? (temFiltroEstrategias ? 500 : 50) : nJogos;
 
-    const jogos = gerarJogosDiversificados({
+    const jogosBase = gerarJogosDiversificados({
       resultados: numeros,
       cicloDados,
       nJogos: nParaGerar,
@@ -193,6 +196,7 @@ export async function GET(request: NextRequest) {
       excluidosPosicoes,
       estrategias,
     });
+    const jogos = aplicarMesSorteLista(jogosBase, mes, seed);
 
     const estatisticas = calcularEstatisticasJogos(jogos, cfg.total_numeros, cfg.numero_minimo);
 
@@ -206,6 +210,7 @@ export async function GET(request: NextRequest) {
       modo_todas: nJogos === 0 && !temFiltroEstrategias,
       dezenas,
       preco_unitario: calcularPrecoAposta(loteria, dezenas),
+      mes_sorte: mes,
       ciclo_atual: buildCicloResponse(cicloDados),
     });
   } catch (error) {
@@ -220,8 +225,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { loteria = 'lotofacil', n = 5, seed, fixos, excluidos, concurso, dezenas: dezenasBody, colunas_posicionais: colunasParam, colunas_sets: colunasSetsParam, linhas_sets: linhasSetsParam, comparativo: comparativoParam, categorias: categoriasParam, categorias_sets: categoriasSetsParam, repetidos: repetidosParam, repetidos_sets: repetidosSetsParam, ordenacao: ordenacaoParam, score_sets: scoreSetsParam, fixos_posicoes: fixosPosicoesParam, excluidos_posicoes: excluidosPosicoesParam, estrategias: estrategiasParam } = body || {};
+    const { loteria = 'lotofacil', n = 5, seed, fixos, excluidos, concurso, dezenas: dezenasBody, mes: mesBody, colunas_posicionais: colunasParam, colunas_sets: colunasSetsParam, linhas_sets: linhasSetsParam, comparativo: comparativoParam, categorias: categoriasParam, categorias_sets: categoriasSetsParam, repetidos: repetidosParam, repetidos_sets: repetidosSetsParam, ordenacao: ordenacaoParam, score_sets: scoreSetsParam, fixos_posicoes: fixosPosicoesParam, excluidos_posicoes: excluidosPosicoesParam, estrategias: estrategiasParam } = body || {};
     const cfg = getLotteryConfig(loteria);
+    const mes = resolverModoMesSorte(cfg, mesBody);
     const nJogos = parseInt(String(n), 10) || 5;
     const concursoBase = concurso !== undefined ? parseInt(String(concurso), 10) : undefined;
     const dezenas = validarDezenas(cfg, dezenasBody !== undefined ? parseInt(String(dezenasBody), 10) : undefined);
@@ -254,7 +260,7 @@ export async function POST(request: NextRequest) {
     const temFiltroEstrategias = estrategias && estrategias.length > 0;
     const nParaGerar = nJogos === 0 ? (temFiltroEstrategias ? 500 : 50) : nJogos;
 
-    const jogos = gerarJogosDiversificados({
+    const jogosBase = gerarJogosDiversificados({
       resultados: numeros,
       cicloDados,
       nJogos: nParaGerar,
@@ -278,6 +284,7 @@ export async function POST(request: NextRequest) {
       excluidosPosicoes,
       estrategias,
     });
+    const jogos = aplicarMesSorteLista(jogosBase, mes, seed ? parseInt(String(seed), 10) : undefined);
 
     const estatisticas = calcularEstatisticasJogos(jogos, cfg.total_numeros, cfg.numero_minimo);
 
@@ -291,6 +298,7 @@ export async function POST(request: NextRequest) {
       modo_todas: nJogos === 0 && !temFiltroEstrategias,
       dezenas,
       preco_unitario: calcularPrecoAposta(loteria, dezenas),
+      mes_sorte: mes,
       ciclo_atual: buildCicloResponse(cicloDados),
     });
   } catch (error) {

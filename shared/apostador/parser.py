@@ -19,9 +19,20 @@ class FormatoNaoSuportadoError(Exception):
 
 @dataclass
 class JogoApostador:
-    """Jogo de loteria com trevos (ex.: Mais Milionária: 6 dezenas + 2 trevos)."""
+    """Jogo de loteria com trevos (Mais Milionária) e/ou Mês da Sorte (Dia de Sorte)."""
     numeros: List[int]
     trevos: List[int] = field(default_factory=list)
+    mes: int | None = None
+
+
+def _parse_mes_explicito(texto: str) -> int | None:
+    """Reconhece o formato `M:<mês>` (1-12) usado na exportação do gerador."""
+    import re
+    m = re.match(r"^\s*m\s*:\s*(\d{1,2})\s*$", texto, re.IGNORECASE)
+    if not m:
+        return None
+    numero = int(m.group(1))
+    return numero if 1 <= numero <= 12 else None
 
 
 def _split_jogo(linha: str) -> List[int]:
@@ -39,29 +50,36 @@ def _split_jogo(linha: str) -> List[int]:
     return sorted(numeros)
 
 
-def _parse_linha_com_trevos(linha: str) -> "JogoApostador":
-    """Interpreta uma linha com dezenas e trevos.
+def _parse_linha_com_trevos(linha: str, mes_sorte: bool = False) -> "JogoApostador":
+    """Interpreta uma linha com dezenas e trevos/mês.
 
-    Formato: "<dezenas>|<trevos>" — ex.: "1,2,3,4,5,6|3,5".
-    Linhas sem '|' são tratadas como apenas dezenas (trevos vazios).
+    Formatos aceitos:
+        "<dezenas>|<trevos>"  — ex.: "1,2,3,4,5,6|3,5"
+        "<dezenas>|M:<mês>"   — ex.: "1,2,...,7|M:10" (Dia de Sorte)
+    Linhas sem '|' são tratadas como apenas dezenas.
     """
     if "|" in linha:
-        dezenas_txt, trevos_txt = linha.split("|", 1)
+        dezenas_txt, extra_txt = linha.split("|", 1)
+        if mes_sorte:
+            mes = _parse_mes_explicito(extra_txt)
+            if mes is not None:
+                return JogoApostador(numeros=_split_jogo(dezenas_txt), mes=mes)
         return JogoApostador(
             numeros=_split_jogo(dezenas_txt),
-            trevos=_split_jogo(trevos_txt),
+            trevos=_split_jogo(extra_txt),
         )
     return JogoApostador(numeros=_split_jogo(linha))
 
 
-def parse_jogos_texto(texto: str, tem_trevos: bool = False) -> List[Any]:
+def parse_jogos_texto(texto: str, tem_trevos: bool = False, mes_sorte: bool = False) -> List[Any]:
     """Interpreta o conteúdo de um arquivo de texto/CSV.
 
     Cada linha não vazia representa um jogo. Números separados por ';' ou ','.
     Uma linha que não seja numérica e não pareça jogo (ex.: header) é ignorada.
 
     tem_trevos=True (loterias com trevos): retorna List[JogoApostador] com
-    dezenas e trevos separados; caso contrário retorna List[List[int]].
+    dezenas e trevos separados. mes_sorte=True (Dia de Sorte) faz o mesmo e
+    reconhece o sufixo "|M:<mês>"; caso contrário retorna List[List[int]].
     """
     jogos: List[Any] = []
     for linha in texto.splitlines():
@@ -70,8 +88,8 @@ def parse_jogos_texto(texto: str, tem_trevos: bool = False) -> List[Any]:
             continue
         if not any(c.isdigit() for c in linha_limpa):
             continue
-        if tem_trevos:
-            jogo = _parse_linha_com_trevos(linha_limpa)
+        if tem_trevos or mes_sorte:
+            jogo = _parse_linha_com_trevos(linha_limpa, mes_sorte=mes_sorte)
             if not jogo.numeros and not jogo.trevos:
                 continue
             jogos.append(jogo)
@@ -83,7 +101,7 @@ def parse_jogos_texto(texto: str, tem_trevos: bool = False) -> List[Any]:
     return jogos
 
 
-def parse_jogos_xlsx(caminho: str, tem_trevos: bool = False) -> List[Any]:
+def parse_jogos_xlsx(caminho: str, tem_trevos: bool = False, mes_sorte: bool = False) -> List[Any]:
     """Lê jogos de uma planilha .xlsx (1ª coluna, números separados por ';')."""
     try:
         from openpyxl import load_workbook
@@ -105,8 +123,8 @@ def parse_jogos_xlsx(caminho: str, tem_trevos: bool = False) -> List[Any]:
                 continue
             if not any(c.isdigit() for c in texto):
                 continue
-            if tem_trevos:
-                jogo = _parse_linha_com_trevos(texto)
+            if tem_trevos or mes_sorte:
+                jogo = _parse_linha_com_trevos(texto, mes_sorte=mes_sorte)
                 if jogo.numeros or jogo.trevos:
                     jogos.append(jogo)
             else:
@@ -118,14 +136,14 @@ def parse_jogos_xlsx(caminho: str, tem_trevos: bool = False) -> List[Any]:
     return jogos
 
 
-def parse_arquivo_jogos(caminho: str, tem_trevos: bool = False) -> List[Any]:
+def parse_arquivo_jogos(caminho: str, tem_trevos: bool = False, mes_sorte: bool = False) -> List[Any]:
     """Interpreta um arquivo de jogos pela extensão (.txt/.csv/.xlsx)."""
     ext = Path(caminho).suffix.lower()
     if ext in (".txt", ".csv"):
         texto = Path(caminho).read_text(encoding="utf-8", errors="replace")
-        return parse_jogos_texto(texto, tem_trevos=tem_trevos)
+        return parse_jogos_texto(texto, tem_trevos=tem_trevos, mes_sorte=mes_sorte)
     if ext == ".xlsx":
-        return parse_jogos_xlsx(caminho, tem_trevos=tem_trevos)
+        return parse_jogos_xlsx(caminho, tem_trevos=tem_trevos, mes_sorte=mes_sorte)
     raise FormatoNaoSuportadoError(f"Extensão não suportada: '{ext}'")
 
 
@@ -145,29 +163,35 @@ def validar_jogos(
     """
     tem_trevos = getattr(cfg, "tem_trevos", False)
     trevos_por_jogo = getattr(cfg, "trevos_por_jogo", 0) or 0
+    mes_sorte = getattr(cfg, "mes_sorte", False)
     validos: List[Dict[str, Any]] = []
     invalidos: List[Dict[str, Any]] = []
 
     for idx, jogo in enumerate(jogos, start=1):
-        if tem_trevos:
-            if isinstance(jogo, JogoApostador):
-                numeros = sorted(jogo.numeros)
-                trevos = sorted(jogo.trevos)
+        mes: int | None = None
+        if isinstance(jogo, JogoApostador):
+            numeros = sorted(jogo.numeros)
+            trevos = sorted(jogo.trevos) if tem_trevos else []
+            mes = jogo.mes
+        elif tem_trevos:
+            lista = list(jogo)
+            if trevos_por_jogo and len(lista) > trevos_por_jogo:
+                trevos = sorted(lista[-trevos_por_jogo:])
+                numeros = sorted(lista[:-trevos_por_jogo])
             else:
-                lista = list(jogo)
-                if trevos_por_jogo and len(lista) > trevos_por_jogo:
-                    trevos = sorted(lista[-trevos_por_jogo:])
-                    numeros = sorted(lista[:-trevos_por_jogo])
-                else:
-                    numeros = sorted(lista)
-                    trevos = []
+                numeros = sorted(lista)
+                trevos = []
         else:
             numeros = sorted(jogo)
             trevos = []
         erro = _validar_jogo(cfg, numeros)
         if erro is None and tem_trevos:
             erro = _validar_trevos(cfg, trevos)
+        if erro is None and mes_sorte and mes is not None and not 1 <= mes <= 12:
+            erro = f"Mês da Sorte inválido: {mes} (esperado 1-12)"
         item: Dict[str, Any] = {"id": idx, "numeros": numeros, "trevos": trevos}
+        if mes_sorte:
+            item["mes"] = mes
         if erro:
             item["mensagem"] = erro
             invalidos.append(item)

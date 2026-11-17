@@ -56,7 +56,12 @@ export async function POST(request: NextRequest) {
 
     const validos = result.validos ?? [];
     const precoUnit = calcularPrecoAposta(loteria, validos[0]?.numeros?.length ?? cfg.numeros_por_jogo);
-    const custoTotal = validos.length * precoUnit;
+    // Apostas múltiplas (ex.: Dia de Sorte 8-15 dezenas) custam C(n,7) × base.
+    const custoTotal = validos.reduce(
+      (soma: number, jogo: { numeros?: number[] }) =>
+        soma + calcularPrecoAposta(loteria, jogo.numeros?.length ?? cfg.numeros_por_jogo),
+      0,
+    );
 
     return NextResponse.json({
       success: true,

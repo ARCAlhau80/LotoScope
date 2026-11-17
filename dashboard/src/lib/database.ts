@@ -25,6 +25,8 @@ export interface Resultado {
   concurso: number;
   numeros: number[];
   trevos?: number[];
+  /** Mês da Sorte sorteado (1-12) — Dia de Sorte. */
+  mes_sorte?: number;
   data?: string | null;
 }
 
@@ -46,23 +48,37 @@ export async function carregarResultados(lotteryId?: string): Promise<Resultado[
   const cfg = lotteryId ? getLotteryConfig(lotteryId) : getLotteryConfig('lotofacil');
   const p = await getPool();
   const dateCol = cfg.data_col;
+  const mesCol = cfg.mes_sorte_col;
   const cols = [...cfg.colunas_resultado];
   if (cfg.trevos_cols) cols.push(...cfg.trevos_cols);
   if (dateCol && !cols.includes(dateCol)) cols.unshift(dateCol);
-  const sqlQuery = cols.length > 0
-    ? `SELECT Concurso,${cols.join(',')} FROM ${cfg.tabela_resultados} ORDER BY Concurso`
-    : `SELECT * FROM ${cfg.tabela_resultados} ORDER BY Concurso`;
-  const result = await p.request().query(sqlQuery);
+  if (mesCol && !cols.includes(mesCol)) cols.push(mesCol);
 
-  if (result.recordset.length === 0) return [];
+  const montarQuery = (colunas: string[]) => colunas.length > 0
+    ? `SELECT Concurso,${colunas.join(',')} FROM ${cfg.tabela_resultados} ORDER BY Concurso`
+    : `SELECT * FROM ${cfg.tabela_resultados} ORDER BY Concurso`;
+
+  let recordset: Record<string, unknown>[];
+  try {
+    recordset = (await p.request().query(montarQuery(cols))).recordset;
+  } catch (error) {
+    // Banco ainda sem a coluna do Mês da Sorte: segue sem o bônus em vez de
+    // derrubar todo o dashboard. Rode a migração/backfill para habilitar.
+    if (!mesCol) throw error;
+    console.warn(`[database] Coluna ${mesCol} ausente em ${cfg.tabela_resultados}; recarregando sem Mês da Sorte.`);
+    recordset = (await p.request().query(montarQuery(cols.filter(c => c !== mesCol)))).recordset;
+  }
+
+  if (recordset.length === 0) return [];
 
   const trevosSet = new Set(cfg.trevos_cols ?? []);
-  const keys = Object.keys(result.recordset[0]).filter(k => k !== 'Concurso' && k !== dateCol && !trevosSet.has(k));
+  const keys = Object.keys(recordset[0]).filter(k => k !== 'Concurso' && k !== dateCol && k !== mesCol && !trevosSet.has(k));
   const trevoKeys = cfg.trevos_cols ?? [];
-  return result.recordset.map((r: Record<string, unknown>) => ({
+  return recordset.map((r: Record<string, unknown>) => ({
     concurso: Number(r.Concurso),
     numeros: keys.map(k => Number(r[k])).filter(n => !isNaN(n)),
     ...(trevoKeys.length > 0 ? { trevos: trevoKeys.map(k => Number(r[k])).filter(n => !isNaN(n)) } : {}),
+    ...(mesCol && r[mesCol] != null && !isNaN(Number(r[mesCol])) ? { mes_sorte: Number(r[mesCol]) } : {}),
     data: dateCol ? normalizarDataISO(r[dateCol]) : null,
   }));
 }

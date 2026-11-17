@@ -5,6 +5,8 @@ Ordem recomendada de execução em um banco novo:
 ```powershell
 sqlcmd -S localhost -E -i sql\01_core_tables.sql
 sqlcmd -S localhost -E -i sql\03_procedures_triggers.sql
+# Dia de Sorte — coluna do Mês da Sorte (bancos criados antes desta versão):
+sqlcmd -S localhost -E -i sql\04_mes_sorte_diadesorte.sql
 # opcional (gerador de 20 dezenas):
 sqlcmd -S localhost -E -i sql\02_opcional_combinacoes_20.sql
 ```
@@ -16,6 +18,7 @@ sqlcmd -S localhost -E -i sql\02_opcional_combinacoes_20.sql
 | `01_core_tables.sql` | Sim | Cria o banco `LOTOFACIL` e as tabelas essenciais (`Resultados_INT`, `NumerosCiclos`, `COMBINACOES_LOTOFACIL`, `COMBINACOES_LOTOFACIL20_COMPLETO`, resultados das loterias). Idempotente. |
 | `02_opcional_combinacoes_20.sql` | Não | Cria `COMBINACOES_LOTOFACIL20` sem apagar dados existentes. |
 | `03_procedures_triggers.sql` | Sim | Procedures/triggers de ciclos e acertos (`AtualizaNumerosCiclos`, `sp_AtualizarAcertos_LF15`, `trg_AtualizarAcertos_LF15_AfterInsert`, `sp_AtualizarAcertos`, `trg_AtualizarAcertos_AfterInsert`, `SP_AtualizarCamposComparacao`, `SP_AtualizarCombinacoesComparacao`). Usa `CREATE OR ALTER` (SQL Server 2016+). |
+| `04_mes_sorte_diadesorte.sql` | Sim (bancos antigos) | Adiciona a coluna `Mes_Sorte` (1-12) em `Resultados_DiaDeSorte`. Idempotente. Depois rode `python backfill_mes_sorte_diadesorte.py` para preencher o histórico. |
 
 ## Cuidados
 

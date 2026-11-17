@@ -2,13 +2,21 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import ConcursoSelector from './ConcursoSelector';
-import { tabelaPremios, obterPremio, type FaixaPremio } from '@/lib/premios';
-import { PRECO_BASE } from '@/lib/lottery-config';
+import { obterPremio, obterPremioMesSorte, premioMesSorte, quantidadePremiosDiaDeSorte, tabelaPremios, type FaixaPremio } from '@/lib/premios';
+import { calcularPrecoAposta, nomeMesSorte } from '@/lib/lottery-config';
 import { analisarFiltrosPremioMaximo, type FiltrosSnapshot } from '@/lib/analise-filtros';
 
 interface ComboConferencia {
   numeros: number[];
   trevos: number[];
+  /** Mês da Sorte (1-12) — Dia de Sorte. */
+  mes: number | null;
+}
+
+interface SorteioConferencia {
+  numeros: number[];
+  trevos: number[];
+  mesSorte: number | null;
 }
 
 export function formatarValor(v: number): string {
@@ -19,17 +27,40 @@ function rotuloFaixa(f: FaixaPremio): string {
   return f.fixo ? f.nome : `~${f.nome}`;
 }
 
-function parseCombinacoes(text: string): ComboConferencia[] {
+function parseMesSorte(valor: string): number | null {
+  const explicito = valor.trim().match(/^m\s*:\s*(\d{1,2})$/i);
+  const numero = explicito ? parseInt(explicito[1], 10) : NaN;
+  return Number.isInteger(numero) && numero >= 1 && numero <= 12 ? numero : null;
+}
+
+function parseCombinacoes(text: string, loteria?: string): ComboConferencia[] {
+  const diaDeSorte = loteria === 'diadesorte';
   const lines = text.split(/\r?\n/);
   const result: ComboConferencia[] = [];
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
-    const [dezenasTxt, trevosTxt] = trimmed.split('|');
+    const [dezenasTxt, extraTxt] = trimmed.split('|');
     const numeros = (dezenasTxt ?? '').split(/[,;\s]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n));
     if (numeros.length === 0) continue;
-    const trevos = (trevosTxt ?? '').split(/[,;\s]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n));
-    result.push({ numeros, trevos });
+
+    let trevos: number[] = [];
+    let mes: number | null = null;
+    if (extraTxt) {
+      const mesExplicito = parseMesSorte(extraTxt);
+      if (mesExplicito !== null) {
+        mes = mesExplicito;
+      } else {
+        const extras = extraTxt.split(/[,;\s]+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n));
+        if (diaDeSorte) {
+          mes = extras.find(n => n >= 1 && n <= 12) ?? null;
+        } else {
+          trevos = extras;
+        }
+      }
+    }
+
+    result.push({ numeros, trevos, mes });
   }
   return result;
 }
@@ -45,10 +76,10 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
   const [arrastando, setArrastando] = useState(false);
   const [texto, setTexto] = useState('');
   const [concursoConferidor, setConcursoConferidor] = useState<number | undefined>(undefined);
-  const [sorteio, setSorteio] = useState<{ numeros: number[]; trevos: number[] } | null>(null);
+  const [sorteio, setSorteio] = useState<SorteioConferencia | null>(null);
   const [carregandoSorteio, setCarregandoSorteio] = useState(true);
   const [erroSorteio, setErroSorteio] = useState<string | null>(null);
-  const cacheSorteios = useRef<Map<string, { numeros: number[]; trevos: number[] }>>(new Map());
+  const cacheSorteios = useRef<Map<string, SorteioConferencia>>(new Map());
   const dropRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -75,10 +106,15 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
       .then(async res => {
         const payload = await res.json();
         if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
-        return payload as { numeros?: number[]; trevos?: number[] };
+        return payload as { numeros?: number[]; trevos?: number[]; mes_sorte?: number | null };
       })
       .then(payload => {
-        const item = { numeros: payload.numeros ?? [], trevos: payload.trevos ?? [] };
+        const mes = Number(payload.mes_sorte);
+        const item: SorteioConferencia = {
+          numeros: payload.numeros ?? [],
+          trevos: payload.trevos ?? [],
+          mesSorte: Number.isInteger(mes) && mes >= 1 && mes <= 12 ? mes : null,
+        };
         cacheSorteios.current.set(chave, item);
         setSorteio(item);
       })
@@ -94,9 +130,9 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
   }, [loteria, concursoConferidor]);
 
   const processar = useCallback((text: string) => {
-    const parsed = parseCombinacoes(text);
+    const parsed = parseCombinacoes(text, loteria);
     setCombinacoes(parsed);
-  }, []);
+  }, [loteria]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -116,7 +152,9 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
   const isPositional = loteria === 'supersete';
   const sorteioAtual = useMemo(() => sorteio?.numeros ?? [], [sorteio]);
   const trevosSorteio = useMemo(() => sorteio?.trevos ?? [], [sorteio]);
+  const mesSorteio = useMemo(() => sorteio?.mesSorte ?? null, [sorteio]);
   const temTrevos = trevosSorteio.length > 0;
+  const diaDeSorte = loteria === 'diadesorte';
 
   const analiseFiltros = useMemo(() => {
     if (!filtrosGeracao || isPositional || sorteioAtual.length === 0) return null;
@@ -150,26 +188,60 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
 
     let totalFixo = 0;
     let totalEstimado = 0;
+    let totalMes = 0;
     let premiadas = 0;
+    let mesPremiadas = 0;
     const porFaixa: Record<string, { count: number; total: number; fixo: boolean; nome: string }> = {};
     for (const combo of combinacoes) {
       const ac = contarAcertos(combo);
       const at = contarAcertosTrevos(combo);
-      const r = obterPremio(loteria ?? 'lotofacil', ac, at);
-      if (!r.premiado || !r.faixa) continue;
+      const bonusMes = obterPremioMesSorte(loteria ?? 'lotofacil', combo.numeros.length, combo.mes, mesSorteio);
+      let acertouFaixa = false;
+
+      if (diaDeSorte) {
+        // Aposta múltipla: a Caixa paga C(acertos,faixa) × C(dezenas-acertos,7-faixa)
+        // prêmios por faixa (mesma tabela oficial do volante).
+        for (const f of tabelaPremios('diadesorte')) {
+          if (f.tipo === 'mes') continue;
+          const quantidade = quantidadePremiosDiaDeSorte(combo.numeros.length, ac, f.acertos);
+          if (quantidade <= 0) continue;
+          acertouFaixa = true;
+          const total = f.valor * quantidade;
+          if (f.fixo) totalFixo += total; else totalEstimado += total;
+          const e = porFaixa[f.nome] ?? (porFaixa[f.nome] = { count: 0, total: 0, fixo: f.fixo, nome: f.nome });
+          e.count += quantidade;
+          e.total += total;
+        }
+      } else {
+        const r = obterPremio(loteria ?? 'lotofacil', ac, at);
+        if (r.premiado && r.faixa) {
+          acertouFaixa = true;
+          const f = r.faixa;
+          if (f.fixo) totalFixo += f.valor; else totalEstimado += f.valor;
+          const e = porFaixa[f.nome] ?? (porFaixa[f.nome] = { count: 0, total: 0, fixo: f.fixo, nome: f.nome });
+          e.count++;
+          e.total += f.valor;
+        }
+      }
+
+      if (!acertouFaixa && (!bonusMes.premiado || !bonusMes.faixa)) continue;
       premiadas++;
-      const f = r.faixa;
-      if (f.fixo) totalFixo += f.valor; else totalEstimado += f.valor;
-      const e = porFaixa[f.nome] ?? (porFaixa[f.nome] = { count: 0, total: 0, fixo: f.fixo, nome: f.nome });
-      e.count++;
-      e.total += f.valor;
+      if (bonusMes.premiado && bonusMes.faixa) {
+        const f = bonusMes.faixa;
+        mesPremiadas++;
+        totalMes += f.valor;
+        const e = porFaixa[f.nome] ?? (porFaixa[f.nome] = { count: 0, total: 0, fixo: f.fixo, nome: f.nome });
+        e.count++;
+        e.total += f.valor;
+      }
     }
     const porFaixaList = Object.values(porFaixa).sort((a, b) => b.total - a.total);
-    const custoUnitario = PRECO_BASE[loteria ?? 'lotofacil'] ?? 2.5;
-    const custoTotal = custoUnitario * combinacoes.length;
-    const premioTotal = totalFixo + totalEstimado;
+    const loteriaId = loteria ?? 'lotofacil';
+    const custoTotal = combinacoes.reduce((soma, combo) => soma + calcularPrecoAposta(loteriaId, combo.numeros.length), 0);
+    const custoUnitario = combinacoes.length > 0 ? custoTotal / combinacoes.length : calcularPrecoAposta(loteriaId, numerosPorJogo);
+    const premioTotal = totalFixo + totalEstimado + totalMes;
     const saldo = premioTotal - custoTotal;
-    return { hits, dist, maiores, maxPossivel, custoUnitario, custoTotal, premioTotal, saldo, premiosResumo: { totalFixo, totalEstimado, premiadas, porFaixa: porFaixaList } };
+    return { hits, dist, maiores, maxPossivel, custoUnitario, custoTotal, premioTotal, saldo, premiosResumo: { totalFixo, totalEstimado, totalMes, premiadas, mesPremiadas, porFaixa: porFaixaList } };
   })() : null;
 
   return (
@@ -261,6 +333,12 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
               {temTrevos && (
                 <> · <strong className="text-amber-200">trevos {trevosSorteio.join(', ')}</strong></>
               )}
+              {diaDeSorte && mesSorteio && (
+                <> · <strong className="text-amber-200">mês {nomeMesSorte(mesSorteio)}</strong></>
+              )}
+              {diaDeSorte && !mesSorteio && (
+                <> · <span className="text-[#fb923c]">mês do sorteio indisponível (rode a migração/backfill do Mês da Sorte)</span></>
+              )}
             </span>
           </div>
 
@@ -269,9 +347,9 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-1.5">
                 <span className="text-sm text-muted">
                   custo: <strong className="text-fg">{formatarValor(stats.custoTotal)}</strong>
-                  <span className="text-[11px] text-muted/90 ml-1">({formatarValor(stats.custoUnitario)}/aposta)</span>
+                  <span className="text-[11px] text-muted/90 ml-1">(média {formatarValor(stats.custoUnitario)}/aposta)</span>
                 </span>
-                {stats.premiosResumo && (stats.premiosResumo.totalFixo > 0 || stats.premiosResumo.totalEstimado > 0) && (
+                {stats.premiosResumo && (stats.premiosResumo.totalFixo > 0 || stats.premiosResumo.totalEstimado > 0 || stats.premiosResumo.totalMes > 0) && (
                   <>
                     <span className="text-sm text-muted">
                       prêmios: <strong className="text-emerald">{formatarValor(stats.premioTotal)}</strong>
@@ -281,13 +359,13 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
                     </span>
                   </>
                 )}
-                {(!stats.premiosResumo || (stats.premiosResumo.totalFixo === 0 && stats.premiosResumo.totalEstimado === 0)) && (
+                {(!stats.premiosResumo || (stats.premiosResumo.totalFixo === 0 && stats.premiosResumo.totalEstimado === 0 && stats.premiosResumo.totalMes === 0)) && (
                   <span className="text-sm text-muted/90">
                     sem prêmios nesta leva
                   </span>
                 )}
               </div>
-              {stats.premiosResumo && (stats.premiosResumo.totalFixo > 0 || stats.premiosResumo.totalEstimado > 0) && (
+              {stats.premiosResumo && (stats.premiosResumo.totalFixo > 0 || stats.premiosResumo.totalEstimado > 0 || stats.premiosResumo.totalMes > 0) && (
                 <div className="text-[11px] text-muted/90">
                   custo - prêmios = {formatarValor(stats.saldo)} ({stats.custoTotal > 0 ? ((stats.premioTotal / stats.custoTotal - 1) * 100).toFixed(1) : '0'}% ROI)
                 </div>
@@ -308,9 +386,14 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
                     estimados: <strong>~{formatarValor(stats.premiosResumo.totalEstimado)}</strong>
                   </span>
                 )}
-                {(stats.premiosResumo.totalFixo > 0 || stats.premiosResumo.totalEstimado > 0) && (
+                {stats.premiosResumo.totalMes > 0 && (
+                  <span className="text-sm text-amber-200">
+                    mês: <strong>{formatarValor(stats.premiosResumo.totalMes)}</strong>
+                  </span>
+                )}
+                {(stats.premiosResumo.totalFixo > 0 || stats.premiosResumo.totalEstimado > 0 || stats.premiosResumo.totalMes > 0) && (
                   <span className="text-sm text-fg/90">
-                    total: <strong>{formatarValor(stats.premiosResumo.totalFixo + stats.premiosResumo.totalEstimado)}</strong>
+                    total: <strong>{formatarValor(stats.premiosResumo.totalFixo + stats.premiosResumo.totalEstimado + stats.premiosResumo.totalMes)}</strong>
                   </span>
                 )}
               </div>
@@ -445,7 +528,17 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
               const acertos = contarAcertos(combo);
               const acertosTrevos = contarAcertosTrevos(combo);
               const maxAcertos = Math.min(numerosPorJogo, sorteioAtual.length);
-              const premio = obterPremio(loteria ?? 'lotofacil', acertos, acertosTrevos);
+              const premioMes = obterPremioMesSorte(loteria ?? 'lotofacil', combo.numeros.length, combo.mes, mesSorteio);
+              const temBonusMes = premioMes.premiado && premioMes.faixa;
+              const premiosCombo = diaDeSorte
+                ? tabelaPremios('diadesorte')
+                    .filter(f => f.tipo !== 'mes')
+                    .map(f => ({ faixa: f, quantidade: quantidadePremiosDiaDeSorte(combo.numeros.length, acertos, f.acertos) }))
+                    .filter(p => p.quantidade > 0)
+                : (() => {
+                    const r = obterPremio(loteria ?? 'lotofacil', acertos, acertosTrevos);
+                    return r.premiado && r.faixa ? [{ faixa: r.faixa, quantidade: 1 }] : [];
+                  })();
               return (
                 <div key={i}
                   className={`p-2.5 rounded-lg border text-xs font-mono transition-all ${
@@ -453,7 +546,7 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
                     acertos >= 8 ? 'border-accent-2/20 bg-accent-2/5' :
                     acertos >= Math.ceil(maxAcertos * 0.5) ? 'border-[rgba(251,146,60,0.2)] bg-[rgba(251,146,60,0.05)]' :
                     'border-white/5 bg-white/[0.02]'
-                  }`}
+                  } ${temBonusMes ? 'ring-1 ring-amber-500/30' : ''}`}
                 >
                   <div className="flex justify-between mb-1">
                     <span className="text-muted">#{i + 1}</span>
@@ -501,19 +594,30 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
                       })}
                     </div>
                   )}
-                  {premio.premiado && premio.faixa && (
-                    <div
-                      className="mt-1.5 border-t border-white/5 pt-1.5 flex items-center justify-between"
-                      title={premio.faixa.observacao ?? ''}
-                    >
-                      <span className="text-[10px] uppercase tracking-wide text-muted">
-                        {rotuloFaixa(premio.faixa)}
-                      </span>
-                      <span className={`font-bold ${premio.faixa.fixo ? 'text-emerald' : 'text-amber-200'}`}>
-                        {premio.faixa.fixo ? '' : '~'}{formatarValor(premio.faixa.valor)}
-                      </span>
+                  {diaDeSorte && combo.mes && (
+                    <div className={`mt-1 border-t border-white/5 pt-1 flex items-center justify-between ${
+                      temBonusMes ? 'text-amber-300' : 'text-muted'
+                    }`}>
+                      <span className="text-[10px] uppercase tracking-wide">Mês: {nomeMesSorte(combo.mes)}</span>
+                      {temBonusMes && premioMes.faixa && (
+                        <span className="font-bold">+{formatarValor(premioMes.faixa.valor)}</span>
+                      )}
                     </div>
                   )}
+                  {premiosCombo.map(p => (
+                    <div
+                      key={p.faixa.nome}
+                      className="mt-1.5 border-t border-white/5 pt-1.5 flex items-center justify-between"
+                      title={p.faixa.observacao ?? ''}
+                    >
+                      <span className="text-[10px] uppercase tracking-wide text-muted">
+                        {rotuloFaixa(p.faixa)}{p.quantidade > 1 ? ` × ${p.quantidade}` : ''}
+                      </span>
+                      <span className={`font-bold ${p.faixa.fixo ? 'text-emerald' : 'text-amber-200'}`}>
+                        {p.faixa.fixo ? '' : '~'}{formatarValor(p.faixa.valor * p.quantidade)}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               );
             })}

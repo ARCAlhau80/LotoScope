@@ -46,6 +46,8 @@ export type OrdenacaoJogos = 'aleatorio' | 'melhores' | 'balanceado' | 'piores';
 export interface JogoGerado {
   numeros: number[];
   trevos?: number[];
+  /** Mês da Sorte (1-12) — só Dia de Sorte; atribuído após a geração. */
+  mes?: number;
   estrategia: string;
   soma: number;
   pares: number;

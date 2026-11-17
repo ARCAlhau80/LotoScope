@@ -26,7 +26,7 @@ def main() -> int:
         return _erro(f"Loteria desconhecida: {args.loteria}")
 
     try:
-        jogos = parse_arquivo_jogos(args.caminho, tem_trevos=cfg.tem_trevos)
+        jogos = parse_arquivo_jogos(args.caminho, tem_trevos=cfg.tem_trevos, mes_sorte=getattr(cfg, "mes_sorte", False))
     except (FormatoNaoSuportadoError, JogoInvalidoError) as e:
         return _erro(str(e))
     except FileNotFoundError:

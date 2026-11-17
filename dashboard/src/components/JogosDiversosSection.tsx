@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { getLotteryConfig, dezenasValidas, calcularPrecoAposta } from '@/lib/lottery-config';
+import { getLotteryConfig, dezenasValidas, calcularPrecoAposta, MESES_SORTE, nomeMesSorte } from '@/lib/lottery-config';
+import { premioMesSorte } from '@/lib/premios';
+import { getJanelaAlvo, type JanelaAlvoData, type JanelaAlvoNumero } from '@/lib/api';
 import type { PrevisaoItem, PrevisaoTendenciaComparativo, PrevisaoColunaRange, QuarentenaPosicaoLF, CicloInfo, TransicaoQMF, Repeticao3Sorteios } from '@/types';
 import type { AnaliseGruposData } from '@/lib/analise-grupos';
 import { parseColunasPosicionais, parseExcluidosPosicoes, parseFiltroComparativo, parseFixosPosicoes } from '@/lib/colunas-posicionais';
@@ -44,6 +46,8 @@ const CRITERIOS_OTIMIZACAO: Record<string, string> = {
 interface JogoGerado {
   numeros: number[];
   trevos?: number[];
+  /** Mês da Sorte (1-12) — Dia de Sorte. */
+  mes?: number;
   estrategia: string;
   soma: number;
   pares: number;
@@ -262,6 +266,7 @@ const REPETIDOS_CORES = ['#93c5fd', '#c4b5fd', '#fca5a5'];
 const jogoLinha = (jogo: JogoGerado): string => {
   const dezenas = jogo.numeros.join(',');
   if (jogo.trevos && jogo.trevos.length > 0) return `${dezenas}|${jogo.trevos.join(',')}`;
+  if (jogo.mes) return `${dezenas}|M:${jogo.mes}`;
   return dezenas;
 };
 
@@ -275,6 +280,13 @@ function parseFaixa(valor: string): { min: number; max: number } {
  * Base para o modo aleatório da aplicação em lote — o modo otimizado usará a
  * mesma assinatura, apenas trocando o critério de escolha.
  */
+function classeBadgeJanela(item: JanelaAlvoNumero): string {
+  if (item.ocorrencias === 0) return 'bg-hot/30 text-hot-bright border-hot/50';
+  if (item.percentual >= 60) return 'bg-emerald-500/40 text-emerald-50 border-emerald-400/60';
+  if (item.percentual >= 30) return 'bg-amber-500/35 text-amber-100 border-amber-400/60';
+  return 'bg-[rgba(129,140,248,0.35)] text-[#e0e7ff] border-[rgba(129,140,248,0.55)]';
+}
+
 function sortearSubconjunto<T>(itens: T[], quantidade: number): T[] {
   const copia = [...itens];
   const limite = Math.min(quantidade, copia.length);
@@ -429,6 +441,12 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const opcoesDezenas = dezenasValidas(cfg);
   const [quantidade, setQuantidade] = useState<number>(5);
   const [dezenas, setDezenas] = useState<number>(cfg.numeros_por_jogo);
+  const [mesSorte, setMesSorte] = useState<number | 'aleatorio'>('aleatorio');
+  const [mostrarJanela, setMostrarJanela] = useState<boolean>(true);
+  const [janelaTamanho, setJanelaTamanho] = useState<number>(7);
+  const [janelaDados, setJanelaDados] = useState<JanelaAlvoData | null>(null);
+  const [janelaCarregando, setJanelaCarregando] = useState<boolean>(false);
+  const [janelaErro, setJanelaErro] = useState<string | null>(null);
   const [estados, setEstados] = useState<Record<number, NumeroEstado>>({});
   const [jogos, setJogos] = useState<JogoGerado[] | null>(null);
   const [estatisticas, setEstatisticas] = useState<Estatisticas | null>(null);
@@ -531,6 +549,46 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setConcursoPreview(null);
     setCarregandoConcurso(false);
   }, [loteria]);
+
+  // Janela anterior ao concurso alvo exibida sobre a grade de fixos/excluídos.
+  const concursoAlvoJanela = concursoBase ?? concursoAtual;
+  const janelaPorNumero = useMemo(() => {
+    const mapa = new Map<number, JanelaAlvoNumero>();
+    for (const item of janelaDados?.numeros ?? []) mapa.set(item.numero, item);
+    return mapa;
+  }, [janelaDados]);
+
+  useEffect(() => {
+    if (!mostrarJanela || concursoAlvoJanela === undefined) {
+      setJanelaDados(null);
+      setJanelaErro(null);
+      setJanelaCarregando(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      setJanelaCarregando(true);
+      setJanelaErro(null);
+      getJanelaAlvo(loteria, concursoAlvoJanela, janelaTamanho, controller.signal)
+        .then(res => {
+          if (!controller.signal.aborted) setJanelaDados(res);
+        })
+        .catch(err => {
+          if (controller.signal.aborted) return;
+          setJanelaDados(null);
+          setJanelaErro(err instanceof Error ? err.message : 'Erro ao carregar a janela');
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setJanelaCarregando(false);
+        });
+    }, 250);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [mostrarJanela, loteria, concursoAlvoJanela, janelaTamanho]);
 
   useEffect(() => {
     // Pré-carrega os concursos vizinhos do base: o próximo −/+ sai do cache.
@@ -1177,6 +1235,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       params.set('n', String(quantidade));
       params.set('seed', String(seed));
       params.set('dezenas', String(dezenas));
+      if (cfg.mes_sorte) params.set('mes', String(mesSorte));
       if (fixos.length > 0) params.set('fixos', fixos.join(','));
       if (excluidosCompletos.length > 0) params.set('excluidos', excluidosCompletos.join(','));
       if (concursoBase !== undefined) params.set('concurso', String(concursoBase));
@@ -1251,7 +1310,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       setProgresso(100);
       setTimeout(() => setLoading(false), 450);
     }
-  }, [loteria, quantidade, dezenas, fixos, excluidos, excluidosCompletos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, temLinhas, linhasSetsStr, validarColunas, temComparativo, comparativoStr, temCategorias, categoriasRangesStr, categoriasSetsStr, categoriasDefs, categoriasInputs, temRepetidos, repetidosRangesStr, repetidosSetsStr, repetidosItens, repetidosInputs, ordenacao, scoreSetsStr, fixosPosicoesStr, excluidosPosicoesStr, estrategiasFiltro, numerosSorteadosAtual, concursoAtual, onFiltrosAplicados, cfg.colunas_resultado.length, cfg.total_numeros, cfg.numero_minimo]);
+  }, [loteria, quantidade, dezenas, fixos, excluidos, excluidosCompletos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, temLinhas, linhasSetsStr, validarColunas, temComparativo, comparativoStr, temCategorias, categoriasRangesStr, categoriasSetsStr, categoriasDefs, categoriasInputs, temRepetidos, repetidosRangesStr, repetidosSetsStr, repetidosItens, repetidosInputs, ordenacao, scoreSetsStr, fixosPosicoesStr, excluidosPosicoesStr, estrategiasFiltro, numerosSorteadosAtual, concursoAtual, onFiltrosAplicados, cfg.colunas_resultado.length, cfg.total_numeros, cfg.numero_minimo, cfg.mes_sorte, mesSorte]);
 
   const exportarTodas = useCallback(async () => {
     const colunasErr = validarColunas();
@@ -1281,6 +1340,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       params.set('loteria', loteria);
       params.set('seed', String(seed));
       params.set('dezenas', String(dezenas));
+      if (cfg.mes_sorte) params.set('mes', String(mesSorte));
       if (fixos.length > 0) params.set('fixos', fixos.join(','));
       if (excluidosCompletos.length > 0) params.set('excluidos', excluidosCompletos.join(','));
       if (concursoBase !== undefined) params.set('concurso', String(concursoBase));
@@ -1325,7 +1385,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     } finally {
       setExporting(false);
     }
-  }, [loteria, dezenas, fixos, excluidos, excluidosCompletos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, temLinhas, linhasSetsStr, validarColunas, temComparativo, comparativoStr, comparativoInputs, temCategorias, categoriasRangesStr, categoriasSetsStr, temRepetidos, repetidosRangesStr, repetidosSetsStr, repetidosItens, ordenacao, scoreSetsStr, fixosPosicoesStr, excluidosPosicoesStr, estrategiasFiltro]);
+  }, [loteria, dezenas, fixos, excluidos, excluidosCompletos, concursoBase, temColunas, colunasPosicionaisStr, colunasSetsStr, temLinhas, linhasSetsStr, validarColunas, temComparativo, comparativoStr, comparativoInputs, temCategorias, categoriasRangesStr, categoriasSetsStr, temRepetidos, repetidosRangesStr, repetidosSetsStr, repetidosItens, ordenacao, scoreSetsStr, fixosPosicoesStr, excluidosPosicoesStr, estrategiasFiltro, cfg.mes_sorte, mesSorte]);
 
   const gerarFechamento = useCallback(async (opcoes?: {
     otimizarSeeds?: boolean;
@@ -1597,6 +1657,22 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                   R$ {precoUnit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/jogo
                 </span>
               )}
+            </>
+          )}
+          {cfg.mes_sorte && (
+            <>
+              <label className="text-sm text-muted">Mês da Sorte:</label>
+              <select
+                value={String(mesSorte)}
+                onChange={e => setMesSorte(e.target.value === 'aleatorio' ? 'aleatorio' : parseInt(e.target.value, 10))}
+                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8]"
+                title="Mês marcado na aposta. Acertando o mês sorteado, a Caixa paga R$ 2,50 por combinação de 7 dezenas (bônus independente dos acertos)."
+              >
+                <option value="aleatorio" className="bg-[#1a1d2e]">Aleatório</option>
+                {MESES_SORTE.map((nome, i) => (
+                  <option key={nome} value={i + 1} className="bg-[#1a1d2e]">{nome}</option>
+                ))}
+              </select>
             </>
           )}
           <label className="text-sm text-muted">Quantidade:</label>
@@ -1981,6 +2057,45 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               </div>
             )}
             <button
+              onClick={() => setMostrarJanela(v => !v)}
+              type="button"
+              aria-pressed={mostrarJanela}
+              className={`text-xs px-3 py-1 rounded-lg border transition-colors ${
+                mostrarJanela
+                  ? 'bg-accent/20 text-accent-2 border-accent-2/40'
+                  : 'bg-white/5 text-muted border-white/10 hover:text-fg hover:bg-white/10'
+              }`}
+              title="Mostra na grade quantas vezes cada dezena saiu na janela anterior ao concurso alvo"
+            >
+              Janela {mostrarJanela ? '✓' : ''}
+            </button>
+            {mostrarJanela && (
+              <>
+                <input
+                  type="number"
+                  min={1}
+                  max={500}
+                  value={janelaTamanho}
+                  onChange={e => {
+                    const valor = parseInt(e.target.value, 10);
+                    setJanelaTamanho(Number.isFinite(valor) ? Math.max(1, Math.min(500, valor)) : 7);
+                  }}
+                  className="w-14 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-fg text-center focus:outline-none focus:border-[#818cf8]"
+                  title="Quantidade de concursos na janela"
+                  aria-label="Tamanho da janela em concursos"
+                />
+                <span className="text-[11px] text-muted">
+                  {janelaCarregando
+                    ? 'calculando...'
+                    : janelaErro
+                      ? 'indisponível'
+                      : janelaDados
+                        ? `${janelaDados.primeiroConcursoJanela ?? '—'}–${janelaDados.ultimoConcursoJanela ?? '—'} · alvo ${janelaDados.concursoAlvo}`
+                        : `alvo ${concursoAlvoJanela ?? '—'}`}
+                </span>
+              </>
+            )}
+            <button
               onClick={limparSelecao}
               className="text-xs px-3 py-1 rounded-lg bg-white/5 text-muted hover:text-fg hover:bg-white/10 transition-colors">
               Limpar seleção
@@ -1992,12 +2107,20 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         <div className={`grid ${gridClass} gap-2`} style={{ maxWidth: gridMaxW }}>
           {numeros.map(n => {
             const sorteado = sorteadosAtualSet.has(n);
+            const janelaItem = janelaPorNumero.get(n);
             return (
               <button
                 key={n}
                 onClick={() => toggleNumero(n)}
                 className={`relative ${btnSize} flex items-center justify-center rounded-lg font-bold border transition-all ${getNumeroClasses(n)}`}>
                 {n}
+                {mostrarJanela && janelaItem && (
+                  <span
+                    className={`absolute -bottom-1 -right-1 min-w-[15px] h-[15px] px-0.5 rounded-full border text-[8px] font-bold leading-none flex items-center justify-center ${classeBadgeJanela(janelaItem)}`}
+                    title={`Saiu ${janelaItem.ocorrencias}x em ${janelaDados?.janelaEfetiva ?? janelaTamanho} concurso(s) da janela anterior ao alvo ${janelaDados?.concursoAlvo ?? concursoAlvoJanela ?? '—'} (${janelaItem.percentual.toFixed(0)}%)`}>
+                    {janelaItem.ocorrencias}
+                  </span>
+                )}
                 {sorteado && (
                   <span
                     className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-emerald-600/40 shadow-sm"
@@ -2012,7 +2135,27 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500/30 border border-emerald-500/60" /> Fixo</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-hot/20 border border-hot/40" /> Excluído</span>
           <span className="flex items-center gap-1"><span className="relative w-3 h-3 rounded bg-white/5 border border-white/10"><span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-emerald-600/40" /></span> Sorteado no concurso base</span>
+          {mostrarJanela && (
+            <span className="flex items-center gap-1">
+              <span className="min-w-[15px] h-[15px] px-1 rounded-full border border-emerald-400/60 bg-emerald-500/40 text-emerald-50 text-[9px] font-bold flex items-center justify-center">4</span>
+              saiu na janela (nº de concursos)
+            </span>
+          )}
         </div>
+        {mostrarJanela && (
+          janelaErro ? (
+            <div className="mt-2 text-[11px] text-amber-200">
+              Janela indisponível: {janelaErro}
+            </div>
+          ) : janelaDados ? (
+            <div className="mt-2 text-[11px] text-muted">
+              Janela de <strong className="text-fg">{janelaDados.janelaEfetiva}</strong> concurso(s)
+              {janelaDados.primeiroConcursoJanela !== null && janelaDados.ultimoConcursoJanela !== null
+                ? ` (${janelaDados.primeiroConcursoJanela} a ${janelaDados.ultimoConcursoJanela})`
+                : ''} anterior(es) ao alvo <strong className="text-fg">{janelaDados.concursoAlvo}</strong>. O alvo não entra na contagem.
+            </div>
+          ) : null
+        )}
 
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
           <span className="text-muted">Em lote:</span>
@@ -2343,7 +2486,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             )}
             <span className="text-xs text-muted">
               Formato: números separados por vírgula, um jogo por linha
-              {cfg.trevos_cols && cfg.trevos_cols.length > 0 ? ' (Mais Milionária: dezenas|trevos)' : ''}
+              {cfg.trevos_cols && cfg.trevos_cols.length > 0 ? ' (Mais Milionária: dezenas|trevos)' : cfg.mes_sorte ? ' (Dia de Sorte: dezenas|M:mês)' : ''}
             </span>
           </div>
           {estrategiasFiltro.length > 0 && (
@@ -2380,6 +2523,13 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent-2/15 text-[#a5b4fc]">
                     {ESTRATEGIA_LABEL[jogo.estrategia] || jogo.estrategia}
                   </span>
+                  {jogo.mes && (
+                    <span
+                      className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-200 border border-amber-500/30"
+                      title={`Mês da Sorte — se sorteado, paga R$ ${premioMesSorte(loteria, jogo.numeros.length).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} nesta aposta`}>
+                      Mês: {nomeMesSorte(jogo.mes)}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted">
                   <span>Soma: <strong className="text-fg">{jogo.soma}</strong></span>

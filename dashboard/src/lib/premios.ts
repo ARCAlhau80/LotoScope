@@ -1,3 +1,5 @@
+import { combinacoes } from './lottery-config';
+
 export interface FaixaPremio {
   nome: string;
   acertos: number;
@@ -5,6 +7,8 @@ export interface FaixaPremio {
   trevosMax?: number;
   valor: number;
   fixo: boolean;
+  /** 'mes' = Mês da Sorte (Dia de Sorte), prêmio independente e cumulativo. */
+  tipo?: 'acertos' | 'mes';
   observacao?: string;
 }
 
@@ -51,9 +55,10 @@ const TABELA: Record<string, TabelaPremios> = {
   ],
   diadesorte: [
     { nome: "7 acertos", acertos: 7, valor: 1_500_000, fixo: false, observacao: "≈ rateio" },
-    { nome: "6 acertos", acertos: 6, valor: 1_500, fixo: false, observacao: "≈ rateio" },
+    { nome: "6 acertos", acertos: 6, valor: 2_000, fixo: false, observacao: "≈ rateio" },
     { nome: "5 acertos", acertos: 5, valor: 25, fixo: true, observacao: "valor fixo Caixa" },
     { nome: "4 acertos", acertos: 4, valor: 5, fixo: true, observacao: "valor fixo Caixa" },
+    { nome: "Mês da Sorte", acertos: -1, valor: 2.5, fixo: true, tipo: "mes", observacao: "prêmio fixo Caixa · independente e cumulativo" },
   ],
   timemania: [
     { nome: "7 acertos", acertos: 7, valor: 3_000_000, fixo: false, observacao: "≈ rateio" },
@@ -87,9 +92,68 @@ export function tabelaPremios(loteria: string): FaixaPremio[] {
   return TABELA[loteria] ?? [];
 }
 
+/** Valor fixo do Mês da Sorte por aposta simples de 7 dezenas. */
+export const PREMIO_MES_SORTE = 2.5;
+
+/**
+ * Prêmio do Mês da Sorte para uma aposta com `dezenas` dezenas.
+ *
+ * A Caixa paga R$ 2,50 por combinação de 7 dezenas da aposta quando o mês
+ * escolhido é sorteado (ex.: 8 dezenas = 8 × 2,50 = R$ 20,00).
+ */
+export function premioMesSorte(loteria: string, dezenas: number): number {
+  if (loteria !== 'diadesorte') return 0;
+  return PREMIO_MES_SORTE * combinacoes(dezenas, 7);
+}
+
+/** Confere o Mês da Sorte de uma aposta (independente dos acertos). */
+export function obterPremioMesSorte(  loteria: string,
+  dezenas: number,
+  mesAposta: number | null | undefined,
+  mesSorteado: number | null | undefined,
+): PremioResult {
+  if (
+    loteria !== 'diadesorte' ||
+    mesAposta == null ||
+    mesSorteado == null ||
+    mesAposta !== mesSorteado
+  ) {
+    return { faixa: null, premiado: false };
+  }
+  return {
+    faixa: {
+      nome: 'Mês da Sorte',
+      acertos: -1,
+      valor: premioMesSorte(loteria, dezenas),
+      fixo: true,
+      tipo: 'mes',
+      observacao: 'prêmio fixo Caixa · independente e cumulativo',
+    },
+    premiado: true,
+  };
+}
+
+/**
+ * Quantidade de prêmios de uma faixa (4-7 acertos) em uma aposta de
+ * `dezenas` dezenas com `acertos` dezenas sorteadas.
+ *
+ * Combinações de 7 dezenas da aposta com exatamente `faixa` acertos:
+ * C(acertos, faixa) × C(dezenas − acertos, 7 − faixa).
+ * Para a aposta simples (7 dezenas) resulta sempre 1 ou 0.
+ */
+export function quantidadePremiosDiaDeSorte(
+  dezenas: number,
+  acertos: number,
+  faixa: number,
+): number {
+  if (dezenas < 7 || faixa < 4 || faixa > 7) return 0;
+  return combinacoes(acertos, faixa) * combinacoes(dezenas - acertos, 7 - faixa);
+}
+
 export function obterPremio(loteria: string, acertos: number, trevosAcertos = 0): PremioResult {
   const faixas = TABELA[loteria] ?? [];
   const faixa = faixas.find(f => {
+    if (f.tipo === 'mes') return false;
     if (f.acertos !== acertos) return false;
     if (f.trevosMin !== undefined && f.trevosMax !== undefined) {
       return trevosAcertos >= f.trevosMin && trevosAcertos <= f.trevosMax;

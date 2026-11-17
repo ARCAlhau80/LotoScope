@@ -1,4 +1,4 @@
-import { obterPremio, tabelaPremios } from '../src/lib/premios';
+import { obterPremio, obterPremioMesSorte, quantidadePremiosDiaDeSorte, tabelaPremios } from '../src/lib/premios';
 import { PRECO_BASE } from '../src/lib/lottery-config';
 
 const FV = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: v >= 100 ? 0 : 2, maximumFractionDigits: v >= 100 ? 0 : 2 });
@@ -26,7 +26,7 @@ const cases: [string, number, number, number | null][] = [
   ['lotomania', 15, 0, 8],
   ['lotomania', 0, 0, 500],
   ['diadesorte', 7, 0, 1_500_000],
-  ['diadesorte', 6, 0, 1_500],
+  ['diadesorte', 6, 0, 2_000],
   ['diadesorte', 5, 0, 25],
   ['diadesorte', 4, 0, 5],
   ['timemania', 7, 0, 3_000_000],
@@ -65,6 +65,43 @@ for (const [lot, ac, tr, expected] of cases) {
   }
 }
 
+// Mês da Sorte: R$ 2,50 por combinação de 7 dezenas (independente e cumulativo).
+const casosMes: Array<[number, number | null, number | null, number | null]> = [
+  [7, 10, 10, 2.5],
+  [8, 10, 10, 20],
+  [7, 10, 11, null],
+  [7, null, 10, null],
+];
+for (const [dezenas, aposta, sorteado, expected] of casosMes) {
+  const r = obterPremioMesSorte('diadesorte', dezenas, aposta, sorteado);
+  const got = r.premiado ? r.faixa!.valor : null;
+  if (got === expected) {
+    ok++;
+  } else {
+    fails.push(`diadesorte mes ${dezenas}dez/${aposta}->${sorteado} => ${got} (expected ${expected})`);
+  }
+}
+
+// Aposta múltipla: quantidades oficiais da tabela do volante.
+const casosMultiplos: Array<[number, number, number, number]> = [
+  [7, 4, 4, 1],
+  [7, 4, 5, 0],
+  [8, 7, 6, 7],
+  [8, 7, 7, 1],
+  [8, 6, 6, 2],
+  [8, 6, 5, 6],
+  [15, 5, 4, 600],
+  [15, 5, 5, 45],
+];
+for (const [dezenas, acertos, faixa, expected] of casosMultiplos) {
+  const got = quantidadePremiosDiaDeSorte(dezenas, acertos, faixa);
+  if (got === expected) {
+    ok++;
+  } else {
+    fails.push(`diadesorte ${dezenas}dez ${acertos}ac faixa${faixa} => ${got} (expected ${expected})`);
+  }
+}
+
 const loterias = ['lotofacil', 'megasena', 'quina', 'duplasena', 'lotomania', 'diadesorte', 'timemania', 'supersete', 'maismilionaria'];
 const faixaCounts = loterias.map(l => `${l}:${tabelaPremios(l).length}`);
 
@@ -98,5 +135,5 @@ const premioEx = consol.totalFixo + consol.totalEstimado;
 const saldoEx = premioEx - custoEx;
 const roiEx = custoEx > 0 ? ((premioEx / custoEx - 1) * 100).toFixed(1) : '0';
 console.log(`custo exemplo: combos=${combosExemplo.length} custo=${custoEx} premio=${premioEx} saldo=${saldoEx} roi=${roiEx}%`);
-console.log(`resultado: ${ok}/${cases.length} ${fails.length === 0 ? 'OK' : 'FAIL'}`);
+console.log(`resultado: ${ok}/${cases.length + casosMes.length + casosMultiplos.length} ${fails.length === 0 ? 'OK' : 'FAIL'}`);
 if (fails.length) fails.forEach(f => console.log('  FAIL', f));

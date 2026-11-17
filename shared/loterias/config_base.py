@@ -42,6 +42,10 @@ class LotteryConfig:
     is_positional: bool = False
     dezenas_max: Optional[int] = None
 
+    # Dia de Sorte: bônus do "Mês da Sorte" (1-12).
+    mes_sorte: bool = False
+    mes_sorte_col: Optional[str] = None
+
     trevos_cols: List[str] = field(default_factory=list)
     trevos_total: int = 0
     trevos_min: int = 0

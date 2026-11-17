@@ -569,6 +569,7 @@ BEGIN
         [N5] INT NULL,
         [N6] INT NULL,
         [N7] INT NULL,
+        [Mes_Sorte] INT NULL,
         [S1] INT NULL DEFAULT (NULL),
         [S2] INT NULL DEFAULT (NULL),
         [S3] INT NULL DEFAULT (NULL),
