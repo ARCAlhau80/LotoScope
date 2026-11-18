@@ -214,8 +214,8 @@ def _validar_trevos(cfg: Any, trevos: List[int]) -> str | None:
 
 
 def _validar_jogo(cfg: Any, numeros: List[int]) -> str | None:
-    min_dezenas = cfg.numeros_por_jogo
-    max_dezenas = getattr(cfg, "max_dezenas", None) or cfg.numeros_por_jogo
+    min_dezenas = getattr(cfg, "numeros_por_aposta", None) or cfg.numeros_por_jogo
+    max_dezenas = getattr(cfg, "max_dezenas", None) or min_dezenas
     min_val = cfg.numero_minimo
     max_val = cfg.numero_maximo
 

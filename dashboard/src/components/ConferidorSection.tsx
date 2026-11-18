@@ -27,6 +27,15 @@ function rotuloFaixa(f: FaixaPremio): string {
   return f.fixo ? f.nome : `~${f.nome}`;
 }
 
+/** Base de dezenas por aposta simples nas loterias que aceitam apostas múltiplas. */
+const BASE_PREMIOS_MULTIPLAS: Record<string, number> = {
+  lotofacil: 15,
+  megasena: 6,
+  quina: 5,
+  duplasena: 6,
+  diadesorte: 7,
+};
+
 function parseMesSorte(valor: string): number | null {
   const explicito = valor.trim().match(/^m\s*:\s*(\d{1,2})$/i);
   const numero = explicito ? parseInt(explicito[1], 10) : NaN;
@@ -155,9 +164,8 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
   const mesSorteio = useMemo(() => sorteio?.mesSorte ?? null, [sorteio]);
   const temTrevos = trevosSorteio.length > 0;
   const diaDeSorte = loteria === 'diadesorte';
-  const quina = loteria === 'quina';
-  // Base de dezenas por aposta para conferir apostas múltiplas (Quina/Dia de Sorte).
-  const basePremios = diaDeSorte ? 7 : quina ? 5 : null;
+  // Base de dezenas por aposta simples para conferir apostas múltiplas.
+  const basePremios = BASE_PREMIOS_MULTIPLAS[loteria ?? ''] ?? null;
 
   const analiseFiltros = useMemo(() => {
     if (!filtrosGeracao || isPositional || sorteioAtual.length === 0) return null;

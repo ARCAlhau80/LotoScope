@@ -440,7 +440,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const fechamentoCfg = useMemo(() => getFechamentoConfig(loteria), [loteria]);
   const opcoesDezenas = dezenasValidas(cfg);
   const [quantidade, setQuantidade] = useState<number>(5);
-  const [dezenas, setDezenas] = useState<number>(cfg.numeros_por_jogo);
+  const [dezenas, setDezenas] = useState<number>(cfg.numeros_por_aposta ?? cfg.numeros_por_jogo);
   const [mesSorte, setMesSorte] = useState<number | 'aleatorio'>('aleatorio');
   const [mostrarJanela, setMostrarJanela] = useState<boolean>(true);
   const [janelaTamanho, setJanelaTamanho] = useState<number>(7);
@@ -778,7 +778,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setEstatisticas(null);
     setCicloAtual(null);
     setEstimativaTotal(null);
-    setDezenas(novoCfg.numeros_por_jogo);
+    setDezenas(novoCfg.numeros_por_aposta ?? novoCfg.numeros_por_jogo);
     setColunasInputs(['', '', '', '', '']);
     setLinhasFiltro({});
     setComparativoInputs(['', '', '']);
@@ -793,6 +793,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setFechamentoGarantiaCondicional(false);
     setFechamentoCoberturaCompleta(false);
     setFechamentoTInfo(null);
+    setModoFechamento(false);
     setOtimizacaoInfo(null);
     setFechamentoAplicarFiltrosTela(false);
     setFechamentoRepetidasFaixa(fechamentoCfg.repetidasPadrao);
@@ -1671,7 +1672,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                   <option key={d} value={d} className="bg-[#1a1d2e]">{d}</option>
                 ))}
               </select>
-              {dezenas > cfg.numeros_por_jogo && (
+              {dezenas > (cfg.numeros_por_aposta ?? cfg.numeros_por_jogo) && (
                 <span className="text-xs px-2 py-1 rounded-full bg-accent-2/15 text-[#a5b4fc] border border-[#818cf8]/30">
                   R$ {precoUnit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/jogo
                 </span>
@@ -1726,12 +1727,14 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}>
             {loading ? 'Gerando...' : 'Gerar'}
           </button>
-          <button
-            onClick={() => setModoFechamento(true)}
-            disabled={loading || gerandoFechamento}
-            className="px-3 py-2 rounded-lg text-sm font-semibold text-[#a5b4fc] border border-[#818cf8]/40 hover:bg-[#818cf8]/10 transition-all disabled:opacity-50">
-            Fechamento
-          </button>
+          {loteria !== 'supersete' && loteria !== 'maismilionaria' && (
+            <button
+              onClick={() => setModoFechamento(true)}
+              disabled={loading || gerandoFechamento}
+              className="px-3 py-2 rounded-lg text-sm font-semibold text-[#a5b4fc] border border-[#818cf8]/40 hover:bg-[#818cf8]/10 transition-all disabled:opacity-50">
+              Fechamento
+            </button>
+          )}
         </div>
       </div>
 

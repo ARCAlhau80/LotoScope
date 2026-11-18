@@ -138,6 +138,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     nome_jogo: "Dupla Sena",
     total_numeros: 50,
     numeros_por_jogo: 6,
+    dezenas_opcoes: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     numero_minimo: 1,
     numero_maximo: 50,
     colunas_resultado: Array.from({ length: 6 }, (_, i) => `N${i + 1}`),
@@ -167,6 +168,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     total_numeros: 100,
     numeros_por_jogo: 20,
     numeros_por_aposta: 50,
+    dezenas_opcoes: [50],
     numero_minimo: 0,
     numero_maximo: 99,
     colunas_resultado: Array.from({ length: 20 }, (_, i) => `N${i + 1}`),
@@ -225,6 +227,8 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     nome_jogo: "Timemania",
     total_numeros: 80,
     numeros_por_jogo: 7,
+    numeros_por_aposta: 10,
+    dezenas_opcoes: [10],
     numero_minimo: 1,
     numero_maximo: 80,
     colunas_resultado: Array.from({ length: 7 }, (_, i) => `N${i + 1}`),
@@ -379,17 +383,19 @@ export function combinacoes(n: number, k: number): number {
 export function calcularPrecoAposta(loteriaId: string, dezenas: number): number {
   const cfg = LOTERIAS[loteriaId];
   const base = PRECO_BASE[loteriaId] ?? 2.5;
-  if (!cfg || dezenas <= cfg.numeros_por_jogo) return base;
-  return base * combinacoes(dezenas, cfg.numeros_por_jogo);
+  const baseAposta = cfg?.numeros_por_aposta ?? cfg?.numeros_por_jogo ?? 0;
+  if (!cfg || dezenas <= baseAposta) return base;
+  return base * combinacoes(dezenas, baseAposta);
 }
 
 export function dezenasValidas(cfg: LotteryConfig): number[] {
-  return cfg.dezenas_opcoes ?? [cfg.numeros_por_jogo];
+  return cfg.dezenas_opcoes ?? [cfg.numeros_por_aposta ?? cfg.numeros_por_jogo];
 }
 
 export function validarDezenas(cfg: LotteryConfig, dezenas: number | undefined): number {
+  const padrao = cfg.numeros_por_aposta ?? cfg.numeros_por_jogo;
   if (dezenas === undefined || !dezenasValidas(cfg).includes(dezenas)) {
-    return cfg.numeros_por_jogo;
+    return padrao;
   }
   return dezenas;
 }

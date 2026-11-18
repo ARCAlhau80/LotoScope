@@ -24,6 +24,7 @@ class LotteryConfig:
     nome_jogo: str
     total_numeros: int
     numeros_por_jogo: int
+    numeros_por_aposta: Optional[int] = None
     numero_minimo: int = 1
     colunas_resultado: List[str] = field(default_factory=list)
     tabela_resultados: str = ""
@@ -52,6 +53,8 @@ class LotteryConfig:
     trevos_por_jogo: int = 0
 
     def __post_init__(self):
+        if self.numeros_por_aposta is None:
+            self.numeros_por_aposta = self.numeros_por_jogo
         if not self.colunas_resultado:
             self.colunas_resultado = [f"N{i}" for i in range(1, self.numeros_por_jogo + 1)]
         if not self.tabela_resultados:
@@ -62,7 +65,7 @@ class LotteryConfig:
     @property
     def max_dezenas(self) -> int:
         """Máximo de dezenas apostáveis (apostas múltiplas)."""
-        return self.dezenas_max if self.dezenas_max is not None else self.numeros_por_jogo
+        return self.dezenas_max if self.dezenas_max is not None else self.numeros_por_aposta
 
     @property
     def numeros(self):
@@ -87,8 +90,13 @@ class LotteryConfig:
         return self.trevos_min <= trevo <= self.trevo_maximo
 
     def validar_combinacao(self, combinacao):
-        if len(combinacao) != self.numeros_por_jogo:
-            return False, f"Deve ter exatamente {self.numeros_por_jogo} numeros"
+        qtd = len(combinacao)
+        if qtd < self.numeros_por_aposta or qtd > self.max_dezenas:
+            faixa = (
+                f"{self.numeros_por_aposta}" if self.numeros_por_aposta == self.max_dezenas
+                else f"{self.numeros_por_aposta}-{self.max_dezenas}"
+            )
+            return False, f"Deve ter {faixa} numeros"
         if len(set(combinacao)) != len(combinacao):
             return False, "Nao pode ter numeros repetidos"
         for num in combinacao:

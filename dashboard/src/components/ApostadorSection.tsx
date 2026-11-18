@@ -129,7 +129,7 @@ export default function ApostadorSection({ loteria = 'lotofacil' }: ApostadorSec
   }, [arquivo, loteriaSelecionada, modoAttach, debugPort, janelaVisivel]);
 
   const quantidadeUsada = quantidade > 0 && parseResult ? Math.min(quantidade, (parseResult.validos ?? []).length) : (parseResult?.validos ?? []).length;
-  const precoUnit = parseResult?.preco_unitario ?? calcularPrecoAposta(loteriaSelecionada, cfg.numeros_por_jogo);
+  const precoUnit = parseResult?.preco_unitario ?? calcularPrecoAposta(loteriaSelecionada, cfg.numeros_por_aposta ?? cfg.numeros_por_jogo);
   const jogosExibidos = parseResult ? (parseResult.validos ?? []).slice(0, quantidade > 0 ? quantidade : undefined) : [];
   const custoTotal = parseResult
     ? jogosExibidos.reduce((soma, jogo) => soma + calcularPrecoAposta(loteriaSelecionada, jogo.numeros.length), 0)

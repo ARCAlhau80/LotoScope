@@ -49,6 +49,31 @@ const PREMIOS_QUINA: Record<number, number> = {
   5: 10_000_000,
 };
 
+const PREMIOS_DUPLASENA: Record<number, number> = {
+  3: 3,
+  4: 120,
+  5: 5_000,
+  6: 1_500_000,
+};
+
+const PREMIOS_LOTOMANIA: Record<number, number> = {
+  0: 500,
+  15: 8,
+  16: 35,
+  17: 200,
+  18: 2_100,
+  19: 60_000,
+  20: 3_000_000,
+};
+
+const PREMIOS_TIMEMANIA: Record<number, number> = {
+  3: 3.5,
+  4: 10.5,
+  5: 1_500,
+  6: 30_000,
+  7: 3_000_000,
+};
+
 /** Teto de apostas para o modo de cobertura completa por enumeração. */
 export const LIMITE_COBERTURA_COMPLETA = 200_000;
 
@@ -133,6 +158,69 @@ export const FECHAMENTOS: Record<string, FechamentoConfig> = {  lotofacil: {
       'Receita recomendada: k=5, t=3, Máx. apostas=200, filtros desligados para 100%. Com t=4 ou 5 reduza bastante o universo usando fixos/excluídos: v=40 já exige milhares de apostas para garantir 4. O lotto design ajuda quando v ≤ 30.',
     avisoVolume:
       'Quina com v=80 e t>=4 gera milhares de apostas. Reduza o universo com fixos/excluídos ou use o lotto design.',
+  },
+  duplasena: {
+    id: 'duplasena',
+    nome: 'Dupla Sena',
+    totalNumeros: 50,
+    kPadrao: 6,
+    tPadrao: 4,
+    kMin: 6,
+    kMax: 15,
+    tMax: 6,
+    dezenasPorAposta: 6,
+    dezenasSorteadas: 6,
+    precoBase: 3.0,
+    faixasPremio: [3, 4, 5, 6],
+    premios: PREMIOS_DUPLASENA,
+    repetidasPadrao: '1-3',
+    maxApostasMax: 50000,
+    tooltipReceita:
+      'Receita recomendada: k=6, t=4, Máx. apostas=200, filtros desligados para 100%. A Dupla Sena tem dois sorteios por concurso; este fechamento considera um sorteio por vez (o dashboard confere o primeiro).',
+    avisoVolume:
+      'Dupla Sena com v=50 e t>=4 gera milhares de apostas. Reduza o universo com fixos/excluídos.',
+  },
+  lotomania: {
+    id: 'lotomania',
+    nome: 'Lotomania',
+    totalNumeros: 100,
+    kPadrao: 50,
+    tPadrao: 15,
+    kMin: 50,
+    kMax: 50,
+    tMax: 20,
+    dezenasPorAposta: 50,
+    dezenasSorteadas: 20,
+    precoBase: 3.0,
+    faixasPremio: [0, 15, 16, 17, 18, 19, 20],
+    premios: PREMIOS_LOTOMANIA,
+    repetidasPadrao: '5-15',
+    maxApostasMax: 200000,
+    tooltipReceita:
+      'Receita recomendada: k=50, t=15, Máx. apostas=200. A Lotomania tem aposta única de 50 dezenas e sorteia 20; reduzir o universo (fixos/excluídos) é essencial para viabilizar o fechamento.',
+    avisoVolume:
+      'Lotomania com v=100 e t>=15 gera milhares de apostas. Reduza o universo com fixos/excluídos.',
+  },
+  timemania: {
+    id: 'timemania',
+    nome: 'Timemania',
+    totalNumeros: 80,
+    kPadrao: 10,
+    tPadrao: 3,
+    kMin: 10,
+    kMax: 10,
+    tMax: 7,
+    dezenasPorAposta: 10,
+    dezenasSorteadas: 7,
+    precoBase: 3.5,
+    faixasPremio: [3, 4, 5, 6, 7],
+    premios: PREMIOS_TIMEMANIA,
+    repetidasPadrao: '0-3',
+    maxApostasMax: 50000,
+    tooltipReceita:
+      'Receita recomendada: k=10, t=3, Máx. apostas=200. A Timemania sorteia 7 números e 1 Time do Coração; este fechamento cobre apenas os números. O Time do Coração não entra na garantia.',
+    avisoVolume:
+      'Timemania com v=80 e t>=4 gera milhares de apostas. Reduza o universo com fixos/excluídos.',
   },
 };
 
