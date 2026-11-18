@@ -2282,6 +2282,77 @@ export function construirLottoDesign(opts: ConstruirLottoDesignOptions): LottoDe
   }
   if (!cands.length) return vazio;
 
+  /** Amostra `quantidade` posições distintas de `arr` (Fisher-Yates parcial). */
+  const amostraAleatoria = (arr: number[], quantidade: number): number[] => {
+    if (quantidade <= 0) return [];
+    if (quantidade >= arr.length) return arr.slice();
+    const copia = arr.slice();
+    for (let i = 0; i < quantidade; i++) {
+      const j = i + Math.floor(rng.next() * (copia.length - i));
+      const tmp = copia[i];
+      copia[i] = copia[j];
+      copia[j] = tmp;
+    }
+    return copia.slice(0, quantidade);
+  };
+
+  /**
+   * Bloco de k dezenas que cobre o alvo `alvoMask` (com >= t dezenas em comum).
+   * Usado no reparo quando o pool aleatório não cobre mais nenhum alvo.
+   */
+  const blocoParaAlvo = (alvoMask: number): number => {
+    const dentro: number[] = [];
+    const fora: number[] = [];
+    for (let p = 0; p < v; p++) {
+      if (alvoMask & (1 << p)) dentro.push(p);
+      else fora.push(p);
+    }
+    let mask = 0;
+    const escolhidos = amostraAleatoria(dentro, t);
+    for (const p of escolhidos) mask |= 1 << p;
+    const faltaFora = Math.min(k - escolhidos.length, fora.length);
+    for (const p of amostraAleatoria(fora, faltaFora)) mask |= 1 << p;
+    const falta = k - popcount32(mask);
+    if (falta > 0) {
+      const restantes = dentro.filter(p => !(mask & (1 << p)));
+      for (const p of amostraAleatoria(restantes, falta)) mask |= 1 << p;
+    }
+    return mask;
+  };
+
+  /**
+   * Reparo dirigido: escolhe um alvo ainda descoberto e gera blocos que
+   * garantem cobri-lo, maximizando o ganho entre os descobertos. Sem isso o
+   * guloso para quando o pool aleatório se esgota (casos difíceis como
+   * L(15,7,7,6) param com piso 5 em ~1 s).
+   */
+  const gerarBlocoReparo = (descobertos: Int32Array, n: number): number => {
+    let melhorMask = 0;
+    let melhorGanho = 0;
+    const tentativas = Math.max(8, topK * 8);
+    for (let a = 0; a < tentativas; a++) {
+      const alvo = descobertos[Math.floor(rng.next() * n)];
+      const mask = blocoParaAlvo(alvo);
+      if (!mask || vistos.has(mask)) continue;
+      if (opts.aceitarBloco) {
+        const dezenas: number[] = [];
+        for (let p = 0; p < v; p++) if (mask & (1 << p)) dezenas.push(u[p]);
+        if (!opts.aceitarBloco(dezenas.sort((x, y) => x - y))) continue;
+      }
+      let ganho = 0;
+      for (let i = 0; i < n; i++) {
+        if (popcount32(descobertos[i] & mask) >= t) ganho++;
+      }
+      if (ganho > melhorGanho) {
+        melhorGanho = ganho;
+        melhorMask = mask;
+        if (ganho === n) break;
+      }
+    }
+    if (melhorMask) vistos.add(melhorMask);
+    return melhorMask;
+  };
+
   let melhor: number[] = [];
   // Guarda o melhor resultado parcial (menos alvos descobertos) para que, se
   // nenhum restart fechar, o relatório mostre o piso real em vez de "pior caso 0".
@@ -2309,10 +2380,15 @@ export function construirLottoDesign(opts: ConstruirLottoDesignOptions): LottoDe
           topo.push(ci);
         }
       }
-      if (melhorGanho <= 0) break;
-      const escolha = topo[Math.floor(rng.next() * topo.length)];
-      escolhidos.push(escolha);
-      const bm = cands[escolha];
+      let bm: number;
+      if (melhorGanho <= 0) {
+        const reparo = gerarBlocoReparo(descobertos, n);
+        if (!reparo) break;
+        bm = reparo;
+      } else {
+        bm = cands[topo[Math.floor(rng.next() * topo.length)]];
+      }
+      escolhidos.push(bm);
       let w = 0;
       for (let i = 0; i < n; i++) {
         const d = descobertos[i];
@@ -2331,7 +2407,7 @@ export function construirLottoDesign(opts: ConstruirLottoDesignOptions): LottoDe
   if (!melhor.length) return { ...vazio, tempoMs: Date.now() - t0 };
 
   const podados = podarLottoDesign(
-    melhor.map(i => cands[i]),
+    melhor,
     alvos,
     t,
     limiteMs * 1.5,

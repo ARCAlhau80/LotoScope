@@ -35,6 +35,13 @@ const PREMIOS_MEGASENA: Record<number, number> = {
   6: 50_000_000,
 };
 
+const PREMIOS_DIADESORTE: Record<number, number> = {
+  4: 5,
+  5: 25,
+  6: 2_000,
+  7: 1_500_000,
+};
+
 export const FECHAMENTOS: Record<string, FechamentoConfig> = {
   lotofacil: {
     id: 'lotofacil',
@@ -75,6 +82,27 @@ export const FECHAMENTOS: Record<string, FechamentoConfig> = {
       'Receita recomendada: k=6, t=4 ou 5, Máx. apostas=0, filtros desligados para 100%. Para v=60 o fechamento gera milhares de apostas e custa dezenas/centenas de milhares de reais. Reduza o universo com fixos/excluídos (ex.: v=15–25) ou use k maior. Use Backtest para ver a distribuição de 4/5/6 acertos.',
     avisoVolume:
       'Mega-Sena com v=60 e t>=4 gera milhares de apostas. Reduza o universo com fixos/excluídos ou aumente k para diminuir o custo.',
+  },
+  diadesorte: {
+    id: 'diadesorte',
+    nome: 'Dia de Sorte',
+    totalNumeros: 31,
+    kPadrao: 7,
+    tPadrao: 5,
+    kMin: 7,
+    kMax: 15,
+    tMax: 7,
+    dezenasPorAposta: 7,
+    dezenasSorteadas: 7,
+    precoBase: 2.5,
+    faixasPremio: [4, 5, 6, 7],
+    premios: PREMIOS_DIADESORTE,
+    repetidasPadrao: '1-3',
+    maxApostasMax: 20000,
+    tooltipReceita:
+      'Receita recomendada: k=7, t=5, Máx. apostas=200, filtros desligados para 100%. Com v=15–20 e t=5–6 o lotto design costuma reduzir bem o número de apostas. Para v=31 o fechamento cresce muito: reduza o universo com fixos/excluídos ou use o lotto design.',
+    avisoVolume:
+      'Dia de Sorte com v=31 e t>=5 gera milhares de apostas. Reduza o universo com fixos/excluídos ou use o lotto design.',
   },
 };
 
