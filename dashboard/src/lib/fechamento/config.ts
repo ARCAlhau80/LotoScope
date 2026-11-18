@@ -42,8 +42,10 @@ const PREMIOS_DIADESORTE: Record<number, number> = {
   7: 1_500_000,
 };
 
-export const FECHAMENTOS: Record<string, FechamentoConfig> = {
-  lotofacil: {
+/** Teto de apostas para o modo de cobertura completa por enumeração. */
+export const LIMITE_COBERTURA_COMPLETA = 200_000;
+
+export const FECHAMENTOS: Record<string, FechamentoConfig> = {  lotofacil: {
     id: 'lotofacil',
     nome: 'Lotofácil',
     totalNumeros: 25,

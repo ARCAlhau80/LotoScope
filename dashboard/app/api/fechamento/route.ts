@@ -25,11 +25,13 @@ import {
   construirLottoDesign,
   verificarLottoDesign,
   limiteInferiorLottoDesign,
+  gerarApostasCandidatas,
+  custoPorAposta,
   LIMITE_POOL_CANDIDATOS_ILIMITADO,
   type FiltrosExtras,
   type BacktestFechamentoResult,
 } from '@/lib/fechamento-combinatorio';
-import { getFechamentoConfig, normalizarKt } from '@/lib/fechamento/config';
+import { getFechamentoConfig, normalizarKt, LIMITE_COBERTURA_COMPLETA } from '@/lib/fechamento/config';
 import { buscarCover } from '@/lib/fechamento/covers';
 import { buscarLottoDesign, mapearLottoDesign } from '@/lib/fechamento/lotto';
 import { carregarResultados } from '@/lib/database';
@@ -490,6 +492,7 @@ export async function POST(request: NextRequest) {
     // exigência "todo t-subconjunto dentro de um bloco" por "todo sorteio
     // possível atinge >= t acertos em algum bloco".
     const usarLottoDesign = parseBoolean(body.usarLottoDesign, false);
+    const coberturaCompleta = parseBoolean(body.coberturaCompleta, false);
     const candidatosPool = parseNumero(body.candidatosPool, 400);
     const amostraPorPasso = parseNumero(body.amostraPorPasso, tEfetivo <= 3 ? 2000 : tEfetivo === 4 ? 500 : tEfetivo <= 8 ? 60 : 25);
     const maxIteracoes = parseNumero(body.maxIteracoes, 40);
@@ -536,6 +539,117 @@ export async function POST(request: NextRequest) {
     const aceitarFiltrosTela = (aposta: number[]) =>
       apostaSatisfazCategorias(aposta, filtrosCategorias)
       && apostaSatisfazFiltrosExtras(aposta, filtrosExtrasNorm);
+
+    // Cobertura completa por enumeração: só faz sentido quando t = k restante.
+    // Nesse caso cada aposta cobre apenas a si mesma e o fechamento completo é
+    // exatamente todas as C(v,k) combinações — sem depender do pool de 20.000.
+    if (coberturaCompleta) {
+      const kRestante = k - fixos.length;
+      const vRestante = universoRestante.length;
+      if (tEfetivo !== kRestante) {
+        return NextResponse.json(
+          {
+            sucesso: false,
+            error:
+              `Cobertura completa exige t = k no universo restante (aqui t=${tEfetivo} e k=${kRestante}). ` +
+              'Para t < k use o fechamento normal, que tenta reduzir as apostas.',
+          },
+          { status: 400 },
+        );
+      }
+      const total = vRestante >= kRestante && kRestante > 0 ? nCombinacoes(vRestante, kRestante) : 0;
+      if (total <= 0) {
+        return NextResponse.json(
+          { sucesso: false, error: 'Universo restante insuficiente para a cobertura completa.' },
+          { status: 400 },
+        );
+      }
+      const precoAposta = custoPorAposta(k, fcfg.dezenasPorAposta, fcfg.precoBase);
+      if (total > LIMITE_COBERTURA_COMPLETA) {
+        return NextResponse.json(
+          {
+            sucesso: false,
+            error:
+              `Cobertura completa exige C(${vRestante},${kRestante}) = ${total.toLocaleString('pt-BR')} apostas ` +
+              `(R$ ${(total * precoAposta).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}), ` +
+              `acima do limite de ${LIMITE_COBERTURA_COMPLETA.toLocaleString('pt-BR')}. ` +
+              'Reduza o universo ou o alvo t para gerar a cobertura completa.',
+          },
+          { status: 400 },
+        );
+      }
+
+      const combinacoesLivres = gerarApostasCandidatas({
+        universo: universoRestante,
+        k: kRestante,
+        limite: total,
+        seed,
+      });
+      const apostas = combinacoesLivres.map(c => [...fixos, ...c].sort((a, b) => a - b));
+      const custo = relatorioCusto(apostas, k, fcfg.dezenasPorAposta, fcfg.precoBase);
+      const cobertura = {
+        coberta: true,
+        tSubsetsTotal: total,
+        tSubsetsCobertos: total,
+        garantiaPercentual: 100,
+        apostasValidas: apostas.length,
+        apostasInvalidas: 0,
+        totalApostas: apostas.length,
+        custoEstimado: custo.custoTotal,
+      };
+      const avisos: string[] = [
+        `Cobertura completa: C(${vRestante},${kRestante}) = ${total.toLocaleString('pt-BR')} apostas.`,
+      ];
+      if (fixos.length > 0) {
+        avisos.push(`Os ${fixos.length} fixo(s) entram em todas as apostas; a garantia total é condicional a eles.`);
+      }
+      if (excluidos.length > 0) {
+        avisos.push(`Universo restante de ${vRestante} dezena(s), após ${excluidos.length} exclusão(ões).`);
+      }
+      if (filtroRepetidas || filtrosCategorias.length > 0 || filtrosExtrasNorm) {
+        avisos.push('Filtros de repetidas/categorias/tela foram ignorados para preservar a cobertura completa.');
+      }
+
+      return NextResponse.json(montarRespostaFinal({
+        loteria,
+        universo: universoEfetivo,
+        fixos,
+        excluidos,
+        filtrosCategorias: [],
+        k,
+        t,
+        dezenasSorteadas: fcfg.dezenasSorteadas,
+        garantiaCondicional: garantiaCondicional && fixos.length > 0,
+        tEfetivo,
+        pisoCondicional: excluidos.length > 0
+          ? {
+              piso: tEfetivo,
+              pisoTotal: fixos.length + tEfetivo,
+              alvos: total,
+              universoEfetivo: vRestante,
+              m: kRestante,
+              completo: true,
+            }
+          : null,
+        modo: 'cobertura_completa',
+        wheelUsado: false,
+        apostas,
+        cobertura,
+        coberturaRestante: cobertura,
+        limiteInferior: total,
+        custo,
+        seedUsado: seed,
+        seeds: 1,
+        filtroRepetidas: null,
+        removidasRepetidas: 0,
+        aviso: avisos.join(' | '),
+        backtest: null,
+        tempoGeracaoMs: Date.now() - inicioRequisicao,
+        lottoDesign: null,
+        lottoIgnorado: null,
+      }));
+    }
+
     const precisaHistorico = (priorizarPremios && seeds > 1) || incluirBacktest
       || (otimizarSeeds && (criterioOtimizacao === 'backtest' || criterioOtimizacao === 'equilibrado'));
     let resultadosHistoricos: Awaited<ReturnType<typeof carregarResultados>> | null = null;
