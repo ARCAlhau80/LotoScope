@@ -1,4 +1,4 @@
-import { obterPremio, obterPremioMesSorte, quantidadePremiosDiaDeSorte, tabelaPremios } from '../src/lib/premios';
+import { obterPremio, obterPremioMesSorte, quantidadePremiosPorFaixa, tabelaPremios } from '../src/lib/premios';
 import { PRECO_BASE } from '../src/lib/lottery-config';
 
 const FV = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: v >= 100 ? 0 : 2, maximumFractionDigits: v >= 100 ? 0 : 2 });
@@ -14,10 +14,10 @@ const cases: [string, number, number, number | null][] = [
   ['megasena', 5, 0, 40_000],
   ['megasena', 4, 0, 1_000],
   ['megasena', 3, 0, null],
-  ['quina', 5, 0, 1_500_000],
-  ['quina', 4, 0, 8_000],
-  ['quina', 3, 0, 200],
-  ['quina', 2, 0, 4],
+  ['quina', 5, 0, 10_000_000],
+  ['quina', 4, 0, 10_000],
+  ['quina', 3, 0, 150],
+  ['quina', 2, 0, 5],
   ['duplasena', 6, 0, 1_500_000],
   ['duplasena', 5, 0, 5_000],
   ['duplasena', 4, 0, 120],
@@ -94,11 +94,33 @@ const casosMultiplos: Array<[number, number, number, number]> = [
   [15, 5, 5, 45],
 ];
 for (const [dezenas, acertos, faixa, expected] of casosMultiplos) {
-  const got = quantidadePremiosDiaDeSorte(dezenas, acertos, faixa);
+  const got = quantidadePremiosPorFaixa(dezenas, acertos, 7, faixa);
   if (got === expected) {
     ok++;
   } else {
     fails.push(`diadesorte ${dezenas}dez ${acertos}ac faixa${faixa} => ${got} (expected ${expected})`);
+  }
+}
+
+// Quina: mesmas quantidades oficiais do volante (base 5 dezenas).
+const casosQuina: Array<[number, number, number, number]> = [
+  [6, 5, 5, 1],
+  [6, 5, 4, 5],
+  [6, 4, 4, 2],
+  [6, 4, 3, 4],
+  [6, 3, 3, 3],
+  [6, 3, 2, 3],
+  [6, 2, 2, 4],
+  [15, 5, 4, 50],
+  [15, 5, 3, 450],
+  [15, 5, 2, 1200],
+];
+for (const [dezenas, acertos, faixa, expected] of casosQuina) {
+  const got = quantidadePremiosPorFaixa(dezenas, acertos, 5, faixa);
+  if (got === expected) {
+    ok++;
+  } else {
+    fails.push(`quina ${dezenas}dez ${acertos}ac faixa${faixa} => ${got} (expected ${expected})`);
   }
 }
 
@@ -135,5 +157,5 @@ const premioEx = consol.totalFixo + consol.totalEstimado;
 const saldoEx = premioEx - custoEx;
 const roiEx = custoEx > 0 ? ((premioEx / custoEx - 1) * 100).toFixed(1) : '0';
 console.log(`custo exemplo: combos=${combosExemplo.length} custo=${custoEx} premio=${premioEx} saldo=${saldoEx} roi=${roiEx}%`);
-console.log(`resultado: ${ok}/${cases.length + casosMes.length + casosMultiplos.length} ${fails.length === 0 ? 'OK' : 'FAIL'}`);
+console.log(`resultado: ${ok}/${cases.length + casosMes.length + casosMultiplos.length + casosQuina.length} ${fails.length === 0 ? 'OK' : 'FAIL'}`);
 if (fails.length) fails.forEach(f => console.log('  FAIL', f));

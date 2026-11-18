@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import ConcursoSelector from './ConcursoSelector';
-import { obterPremio, obterPremioMesSorte, premioMesSorte, quantidadePremiosDiaDeSorte, tabelaPremios, type FaixaPremio } from '@/lib/premios';
+import { obterPremio, obterPremioMesSorte, premioMesSorte, quantidadePremiosPorFaixa, tabelaPremios, type FaixaPremio } from '@/lib/premios';
 import { calcularPrecoAposta, nomeMesSorte } from '@/lib/lottery-config';
 import { analisarFiltrosPremioMaximo, type FiltrosSnapshot } from '@/lib/analise-filtros';
 
@@ -155,6 +155,9 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
   const mesSorteio = useMemo(() => sorteio?.mesSorte ?? null, [sorteio]);
   const temTrevos = trevosSorteio.length > 0;
   const diaDeSorte = loteria === 'diadesorte';
+  const quina = loteria === 'quina';
+  // Base de dezenas por aposta para conferir apostas múltiplas (Quina/Dia de Sorte).
+  const basePremios = diaDeSorte ? 7 : quina ? 5 : null;
 
   const analiseFiltros = useMemo(() => {
     if (!filtrosGeracao || isPositional || sorteioAtual.length === 0) return null;
@@ -198,12 +201,13 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
       const bonusMes = obterPremioMesSorte(loteria ?? 'lotofacil', combo.numeros.length, combo.mes, mesSorteio);
       let acertouFaixa = false;
 
-      if (diaDeSorte) {
-        // Aposta múltipla: a Caixa paga C(acertos,faixa) × C(dezenas-acertos,7-faixa)
-        // prêmios por faixa (mesma tabela oficial do volante).
-        for (const f of tabelaPremios('diadesorte')) {
+      if (basePremios !== null) {
+        // Aposta múltipla (Quina/Dia de Sorte): a Caixa paga
+        // C(acertos,faixa) × C(dezenas-acertos, base-faixa) prêmios por faixa.
+        const loteriaPremios = loteria ?? 'lotofacil';
+        for (const f of tabelaPremios(loteriaPremios)) {
           if (f.tipo === 'mes') continue;
-          const quantidade = quantidadePremiosDiaDeSorte(combo.numeros.length, ac, f.acertos);
+          const quantidade = quantidadePremiosPorFaixa(combo.numeros.length, ac, basePremios, f.acertos);
           if (quantidade <= 0) continue;
           acertouFaixa = true;
           const total = f.valor * quantidade;
@@ -326,7 +330,7 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
         <div className="mt-4 animate-fade-in">
           <div className="flex flex-wrap items-center gap-4 mb-3">
             <span className="text-sm text-muted">
-              {combinacoes.length} combinações conferidas
+              {combinacoes.length} aposta{combinacoes.length !== 1 ? 's' : ''} conferida{combinacoes.length !== 1 ? 's' : ''}
             </span>
             <span className="text-sm text-muted">
               Sorteio de referência: <strong className="text-fg">{sorteioAtual.join(', ')}</strong>
@@ -374,7 +378,7 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
             <div className="rounded-xl border border-emerald/30 bg-emerald/[0.06] p-3 animate-fade-in">
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-1.5">
                 <span className="text-sm font-semibold text-emerald">
-                  {stats.premiosResumo.premiadas} combinacion{stats.premiosResumo.premiadas !== 1 ? 'es' : ''} premiada{stats.premiosResumo.premiadas !== 1 ? 's' : ''}
+                  {stats.premiosResumo.premiadas} aposta{stats.premiosResumo.premiadas !== 1 ? 's' : ''} premiada{stats.premiosResumo.premiadas !== 1 ? 's' : ''}
                 </span>
                 {stats.premiosResumo.totalFixo > 0 && (
                   <span className="text-sm text-emerald">
@@ -530,10 +534,13 @@ export default function ConferidorSection({ numerosPorJogo, loteria, concursos =
               const maxAcertos = Math.min(numerosPorJogo, sorteioAtual.length);
               const premioMes = obterPremioMesSorte(loteria ?? 'lotofacil', combo.numeros.length, combo.mes, mesSorteio);
               const temBonusMes = premioMes.premiado && premioMes.faixa;
-              const premiosCombo = diaDeSorte
-                ? tabelaPremios('diadesorte')
+              const premiosCombo = basePremios !== null
+                ? tabelaPremios(loteria ?? 'lotofacil')
                     .filter(f => f.tipo !== 'mes')
-                    .map(f => ({ faixa: f, quantidade: quantidadePremiosDiaDeSorte(combo.numeros.length, acertos, f.acertos) }))
+                    .map(f => ({
+                      faixa: f,
+                      quantidade: quantidadePremiosPorFaixa(combo.numeros.length, acertos, basePremios, f.acertos),
+                    }))
                     .filter(p => p.quantidade > 0)
                 : (() => {
                     const r = obterPremio(loteria ?? 'lotofacil', acertos, acertosTrevos);

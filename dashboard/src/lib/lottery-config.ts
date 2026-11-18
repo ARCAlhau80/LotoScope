@@ -109,6 +109,7 @@ export const LOTERIAS: Record<string, LotteryConfig> = {
     nome_jogo: "Quina",
     total_numeros: 80,
     numeros_por_jogo: 5,
+    dezenas_opcoes: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     numero_minimo: 1,
     numero_maximo: 80,
     colunas_resultado: Array.from({ length: 5 }, (_, i) => `N${i + 1}`),

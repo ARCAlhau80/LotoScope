@@ -33,10 +33,10 @@ const TABELA: Record<string, TabelaPremios> = {
     { nome: "Quadra (4)", acertos: 4, valor: 1_000, fixo: false, observacao: "≈ rateio" },
   ],
   quina: [
-    { nome: "Quina (5)", acertos: 5, valor: 1_500_000, fixo: false, observacao: "≈ rateio" },
-    { nome: "Quadra (4)", acertos: 4, valor: 8_000, fixo: false, observacao: "≈ rateio" },
-    { nome: "Terno (3)", acertos: 3, valor: 200, fixo: false, observacao: "≈ rateio" },
-    { nome: "Duque (2)", acertos: 2, valor: 4, fixo: false, observacao: "≈ rateio" },
+    { nome: "Quina (5)", acertos: 5, valor: 10_000_000, fixo: false, observacao: "≈ rateio (varia por concurso)" },
+    { nome: "Quadra (4)", acertos: 4, valor: 10_000, fixo: false, observacao: "≈ rateio (varia por concurso)" },
+    { nome: "Terno (3)", acertos: 3, valor: 150, fixo: false, observacao: "≈ rateio (varia por concurso)" },
+    { nome: "Duque (2)", acertos: 2, valor: 5, fixo: false, observacao: "≈ rateio (varia por concurso)" },
   ],
   duplasena: [
     { nome: "Sena (6)", acertos: 6, valor: 1_500_000, fixo: false, observacao: "≈ rateio 1º sorteio" },
@@ -107,7 +107,8 @@ export function premioMesSorte(loteria: string, dezenas: number): number {
 }
 
 /** Confere o Mês da Sorte de uma aposta (independente dos acertos). */
-export function obterPremioMesSorte(  loteria: string,
+export function obterPremioMesSorte(
+  loteria: string,
   dezenas: number,
   mesAposta: number | null | undefined,
   mesSorteado: number | null | undefined,
@@ -134,20 +135,40 @@ export function obterPremioMesSorte(  loteria: string,
 }
 
 /**
- * Quantidade de prêmios de uma faixa (4-7 acertos) em uma aposta de
- * `dezenas` dezenas com `acertos` dezenas sorteadas.
+ * Quantidade de prêmios de uma faixa em uma aposta múltipla.
  *
- * Combinações de 7 dezenas da aposta com exatamente `faixa` acertos:
- * C(acertos, faixa) × C(dezenas − acertos, 7 − faixa).
- * Para a aposta simples (7 dezenas) resulta sempre 1 ou 0.
+ * Combinações de `base` dezenas da aposta com exatamente `faixa` acertos:
+ * C(acertos, faixa) × C(dezenas − acertos, base − faixa).
+ * Para a aposta simples (`dezenas = base`) resulta sempre 1 ou 0.
  */
+export function quantidadePremiosPorFaixa(
+  dezenas: number,
+  acertos: number,
+  base: number,
+  faixa: number,
+): number {
+  if (dezenas < base || faixa < 0 || faixa > base) return 0;
+  return combinacoes(acertos, faixa) * combinacoes(dezenas - acertos, base - faixa);
+}
+
+/** Quantidade de prêmios do Dia de Sorte (base 7 dezenas por aposta). */
 export function quantidadePremiosDiaDeSorte(
   dezenas: number,
   acertos: number,
   faixa: number,
 ): number {
-  if (dezenas < 7 || faixa < 4 || faixa > 7) return 0;
-  return combinacoes(acertos, faixa) * combinacoes(dezenas - acertos, 7 - faixa);
+  if (faixa < 4 || faixa > 7) return 0;
+  return quantidadePremiosPorFaixa(dezenas, acertos, 7, faixa);
+}
+
+/** Quantidade de prêmios da Quina (base 5 dezenas por aposta). */
+export function quantidadePremiosQuina(
+  dezenas: number,
+  acertos: number,
+  faixa: number,
+): number {
+  if (faixa < 2 || faixa > 5) return 0;
+  return quantidadePremiosPorFaixa(dezenas, acertos, 5, faixa);
 }
 
 export function obterPremio(loteria: string, acertos: number, trevosAcertos = 0): PremioResult {
