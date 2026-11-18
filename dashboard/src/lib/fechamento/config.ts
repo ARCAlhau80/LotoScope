@@ -42,6 +42,13 @@ const PREMIOS_DIADESORTE: Record<number, number> = {
   7: 1_500_000,
 };
 
+const PREMIOS_QUINA: Record<number, number> = {
+  2: 5,
+  3: 150,
+  4: 10_000,
+  5: 10_000_000,
+};
+
 /** Teto de apostas para o modo de cobertura completa por enumeração. */
 export const LIMITE_COBERTURA_COMPLETA = 200_000;
 
@@ -105,6 +112,27 @@ export const FECHAMENTOS: Record<string, FechamentoConfig> = {  lotofacil: {
       'Receita recomendada: k=7, t=5, Máx. apostas=200, filtros desligados para 100%. Com v=15–20 e t=5–6 o lotto design costuma reduzir bem o número de apostas. Para v=31 o fechamento cresce muito: reduza o universo com fixos/excluídos ou use o lotto design.',
     avisoVolume:
       'Dia de Sorte com v=31 e t>=5 gera milhares de apostas. Reduza o universo com fixos/excluídos ou use o lotto design.',
+  },
+  quina: {
+    id: 'quina',
+    nome: 'Quina',
+    totalNumeros: 80,
+    kPadrao: 5,
+    tPadrao: 3,
+    kMin: 5,
+    kMax: 15,
+    tMax: 5,
+    dezenasPorAposta: 5,
+    dezenasSorteadas: 5,
+    precoBase: 3.0,
+    faixasPremio: [2, 3, 4, 5],
+    premios: PREMIOS_QUINA,
+    repetidasPadrao: '0-2',
+    maxApostasMax: 200000,
+    tooltipReceita:
+      'Receita recomendada: k=5, t=3, Máx. apostas=200, filtros desligados para 100%. Com t=4 ou 5 reduza bastante o universo usando fixos/excluídos: v=40 já exige milhares de apostas para garantir 4. O lotto design ajuda quando v ≤ 30.',
+    avisoVolume:
+      'Quina com v=80 e t>=4 gera milhares de apostas. Reduza o universo com fixos/excluídos ou use o lotto design.',
   },
 };
 

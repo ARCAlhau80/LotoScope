@@ -52,6 +52,11 @@ const LIMITE_ALVOS_LOTTO = 800_000;
  */
 const LIMITE_PISO_CONDICIONAL = 1_000_000;
 
+/** Acima disso o fechamento deixa de ser interativo (e o pool não fecha 100%). */
+const LIMITE_APOSTAS_PRATICO = 50_000;
+/** Custo máximo estimado (apostas × t-subconjuntos) para verificar em tempo real. */
+const LIMITE_VERIFICACAO_PRATICA = 200_000_000;
+
 // Fechamento: suporta garantia condicional aos fixos, cover conhecido
 // permutado para filtros de categoria e reparo de cobertura pós-filtros.
 
@@ -917,6 +922,37 @@ export async function POST(request: NextRequest) {
         } else {
           coverApostas = null;
           coverInfo = null;
+        }
+      }
+    }
+
+    // Sem cover/lotto conhecido, o guloso depende do pool e da verificação
+    // exaustiva. Recusa cedo os casos inviáveis (ex.: Quina v=40, k=5, t=4/5)
+    // em vez de bloquear a API por minutos e devolver cobertura parcial.
+    if (!wheelApostas && !coverApostas && !lottoApostas) {
+      const vGuard = universoRestante.length;
+      const kGuard = k - fixos.length;
+      if (vGuard >= tEfetivo && kGuard >= tEfetivo) {
+        const minimo = limiteInferiorCobertura(vGuard, kGuard, tEfetivo);
+        const alvos = nCombinacoes(vGuard, tEfetivo);
+        const custoVerificacao = minimo * alvos;
+        if (minimo > LIMITE_APOSTAS_PRATICO || custoVerificacao > LIMITE_VERIFICACAO_PRATICA) {
+          const custoMinimo = minimo * custoPorAposta(k, fcfg.dezenasPorAposta, fcfg.precoBase);
+          return NextResponse.json(
+            {
+              sucesso: false,
+              error:
+                `Garantia de ${tEfetivo} acerto(s) com ${vGuard} dezena(s) e apostas de ${kGuard} exigiria ` +
+                `pelo menos ${minimo.toLocaleString('pt-BR')} apostas ` +
+                `(R$ ${custoMinimo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}) e uma verificação ` +
+                `de ~${custoVerificacao.toLocaleString('pt-BR')} operações, acima do limite prático. ` +
+                'Reduza o universo (mais exclusões/fixos) ou o alvo t. ' +
+                (tEfetivo === kGuard
+                  ? 'Para t=k, use "Cobertura completa" se o total couber no limite de 200.000 apostas.'
+                  : ''),
+            },
+            { status: 400 },
+          );
         }
       }
     }
