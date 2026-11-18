@@ -25,6 +25,7 @@ import {
   construirLottoDesign,
   verificarLottoDesign,
   limiteInferiorLottoDesign,
+  LIMITE_POOL_CANDIDATOS_ILIMITADO,
   type FiltrosExtras,
   type BacktestFechamentoResult,
 } from '@/lib/fechamento-combinatorio';
@@ -1240,7 +1241,12 @@ export async function POST(request: NextRequest) {
     if (coverIgnorado) {
       avisos.push(`Existe cover C(${coverIgnorado.v},${coverIgnorado.k},${coverIgnorado.t}) com ${coverIgnorado.blocos} apostas, mas "Máx. apostas"=${maxApostas}. Use 0 (sem limite) para usá-lo.`);
     }
-    if (maxApostas === 0 && !coverInfo && !lottoInfo) avisos.push('0 = sem limite: a geração pode demorar em cenários com t alto.');
+    if (maxApostas === 0 && !coverInfo && !lottoInfo) {
+      avisos.push(
+        `Máx. apostas=0: sem limite de apostas, mas o pool de candidatos é limitado a ` +
+        `${LIMITE_POOL_CANDIDATOS_ILIMITADO.toLocaleString('pt-BR')}.`,
+      );
+    }
     if (fcfg.avisoVolume && !coverInfo && maxApostas === 0 && universoEfetivo.length >= 40) avisos.push(fcfg.avisoVolume);
     if (filtroRepetidas && removidasRepetidas > 0) {
       avisos.push(`Filtro de repetidas removeu ${removidasRepetidas} aposta(s); a cobertura exibida já é a recalculada.`);
@@ -1262,7 +1268,27 @@ export async function POST(request: NextRequest) {
     // No lotto design a cobertura de t-subconjuntos não é 100% por construção:
     // a garantia é sobre os sorteios possíveis, não sobre os t-subconjuntos.
     if (coberturaRestante && !coberturaRestante.coberta && !lottoInfo) {
-      avisos.push('A cobertura do universo restante não ficou em 100%. Reduza filtros ou aumente o limite de apostas.');
+      if (maxApostasIlimitado(maxApostas)) {
+        const kRem = k - fixos.length;
+        const vRem = universoRestante.length;
+        const minimoCompleto = kRem === tEfetivo && vRem >= tEfetivo
+          ? nCombinacoes(vRem, tEfetivo)
+          : null;
+        avisos.push(
+          `Cobertura parcial: no modo 0 (sem limite) a geração encerra ao cobrir todos os t-subconjuntos ` +
+          `ou ao esgotar o pool de ${LIMITE_POOL_CANDIDATOS_ILIMITADO.toLocaleString('pt-BR')} candidatos. ` +
+          `Nesta geração: ${coberturaRestante.tSubsetsCobertos.toLocaleString('pt-BR')}/` +
+          `${coberturaRestante.tSubsetsTotal.toLocaleString('pt-BR')} ` +
+          `(${coberturaRestante.garantiaPercentual.toFixed(2)}%).` +
+          (minimoCompleto !== null
+            ? ` Com t=k=${kRem}, a cobertura completa exige C(${vRem},${tEfetivo}) = ` +
+              `${minimoCompleto.toLocaleString('pt-BR')} apostas — não há redução.`
+            : '') +
+          ' Reduza o universo (fixos/excluídos) ou o alvo t para buscar 100%.',
+        );
+      } else {
+        avisos.push('A cobertura do universo restante não ficou em 100%. Reduza filtros ou aumente o limite de apostas.');
+      }
       if (filtrosExtrasNorm) {
         avisos.push('Os filtros da tela restringem a composição das apostas; alguns t-subconjuntos podem ser inalcançáveis com eles.');
       }

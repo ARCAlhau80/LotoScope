@@ -2632,7 +2632,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                   const valor = parseInt(e.target.value, 10);
                   setFechamentoMax(Number.isNaN(valor) ? 0 : Math.max(0, Math.min(fechamentoCfg.maxApostasMax, valor)));
                 }}
-                title="Use 0 para sem limite: gera até cobrir todos os t-subconjuntos ou esgotar as candidatas"
+                title="0 = sem limite de apostas, mas o pool de candidatos é limitado a 20.000; a geração para ao cobrir todos os t-subconjuntos ou esgotar o pool"
                 className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8]"
               />
             </div>
