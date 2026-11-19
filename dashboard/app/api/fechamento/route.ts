@@ -39,7 +39,7 @@ import { carregarResultados } from '@/lib/database';
 import { resolverFechamentoSolver, type CpSatFechamentoResult, type SolverFechamento } from '@/lib/cp-sat';
 
 export const runtime = 'nodejs';
-export const maxDuration = 120;
+export const maxDuration = 180;
 
 /**
  * Teto de sorteios possíveis que o lotto design enumera no request.
@@ -885,9 +885,9 @@ export async function POST(request: NextRequest) {
             seed,
             // O registro cobre os casos usuais; o construtor só entra quando não
             // há design pronto. 10 s é o teto normal; no modo forçado damos mais
-            // tempo (até 60 s) para o guloso multi-restart tentar fechar o piso.
+            // tempo (até 120 s) para o guloso multi-restart tentar fechar o piso.
             limiteTempoMs: forcarLimitePratico
-              ? Math.max(10_000, Math.min(60_000, limitePorSeedEfetivo))
+              ? Math.max(10_000, Math.min(120_000, limitePorSeedEfetivo))
               : Math.max(2_000, Math.min(10_000, limitePorSeedEfetivo)),
           });
           if (construido.completo && construido.blocos.length > 0) {
