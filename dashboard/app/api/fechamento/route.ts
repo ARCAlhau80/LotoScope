@@ -884,8 +884,11 @@ export async function POST(request: NextRequest) {
             t: tL,
             seed,
             // O registro cobre os casos usuais; o construtor só entra quando não
-            // há design pronto. 10 s é o teto razoável para uma chamada de API.
-            limiteTempoMs: Math.max(2000, Math.min(10_000, limitePorSeedEfetivo)),
+            // há design pronto. 10 s é o teto normal; no modo forçado damos mais
+            // tempo (até 60 s) para o guloso multi-restart tentar fechar o piso.
+            limiteTempoMs: forcarLimitePratico
+              ? Math.max(10_000, Math.min(60_000, limitePorSeedEfetivo))
+              : Math.max(2_000, Math.min(10_000, limitePorSeedEfetivo)),
           });
           if (construido.completo && construido.blocos.length > 0) {
             lottoApostas = construido.blocos.map(b => [...fixos, ...b].sort((x, y) => x - y));

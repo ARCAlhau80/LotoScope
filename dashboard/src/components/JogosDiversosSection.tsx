@@ -2690,7 +2690,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               <strong className="text-fg">Forçar geração acima do limite prático</strong>
               <span className="block text-muted mt-0.5">
                 Ignora a trava de custo/verificação e amplia o pool de candidatos.
-                Pode gerar dezenas de milhares de apostas e demorar; a cobertura pode ficar parcial.
+                Dá mais tempo ao construtor de lotto design (até 60 s). Pode gerar dezenas de milhares de apostas
+                e demorar; a cobertura pode ficar parcial.
               </span>
             </span>
           </label>
