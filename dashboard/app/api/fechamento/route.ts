@@ -27,6 +27,8 @@ import {
   verificarLottoDesign,
   limiteInferiorLottoDesign,
   LIMITE_ALVOS_LOTTO_COMPLEMENTO,
+  ordenarApostas,
+  type OrdenacaoApostas,
   gerarApostasCandidatas,
   custoPorAposta,
   LIMITE_POOL_CANDIDATOS_ILIMITADO,
@@ -75,6 +77,13 @@ function parseBoolean(valor: unknown, padrao: boolean): boolean {
   if (typeof valor === "number") return valor !== 0;
   const s = String(valor).toLowerCase();
   return s === "true" || s === "1";
+}
+
+function parseOrdenacaoApostas(valor: unknown): OrdenacaoApostas {
+  const s = String(valor ?? '').toLowerCase();
+  return s === 'soma' || s === 'menor' || s === 'maior' || s === 'sobreposicao' || s === 'lexicografica'
+    ? s
+    : 'geracao';
 }
 
 function parseNumerosArray(valor: string | null): number[] {
@@ -283,6 +292,8 @@ function montarRespostaFinal(args: {
   garantiaCondicional?: boolean;
   /** t reduzido usado na geração (t - fixos.length quando condicional). */
   tEfetivo?: number;
+  /** Ordem de apresentação/exportação das apostas (não altera cobertura). */
+  ordenacaoApostas?: OrdenacaoApostas;
   modo: string;
   wheelUsado: boolean;
   apostas: number[][];
@@ -342,6 +353,7 @@ function montarRespostaFinal(args: {
           args.dezenasSorteadas,
         )
       : null;
+  const apostasOrdenadas = ordenarApostas(args.apostas, args.ordenacaoApostas ?? 'geracao');
   return {
     sucesso: true,
     universo: args.universo,
@@ -357,12 +369,12 @@ function montarRespostaFinal(args: {
     pisoCondicional,
     modo: args.modo,
     wheelUsado: args.wheelUsado,
-    totalApostas: args.apostas.length,
-    apostas: args.apostas,
+    totalApostas: apostasOrdenadas.length,
+    apostas: apostasOrdenadas,
     cobertura: args.cobertura,
     coberturaRestante: args.coberturaRestante,
     limiteInferior: args.limiteInferior,
-    eficiencia: args.limiteInferior > 0 ? args.apostas.length / args.limiteInferior : null,
+    eficiencia: args.limiteInferior > 0 ? apostasOrdenadas.length / args.limiteInferior : null,
     custo: args.custo,
     seedUsado: args.seedUsado,
     seedsTestadas: args.seeds,
@@ -502,6 +514,7 @@ export async function POST(request: NextRequest) {
     const usarLottoDesign = parseBoolean(body.usarLottoDesign, false);
     const coberturaCompleta = parseBoolean(body.coberturaCompleta, false);
     const forcarLimitePratico = parseBoolean(body.forcarLimitePratico, false);
+    const ordenacaoApostas = parseOrdenacaoApostas(body.ordenacaoApostas);
     const candidatosPool = parseNumero(body.candidatosPool, 400);
     const amostraPorPasso = parseNumero(body.amostraPorPasso, tEfetivo <= 3 ? 2000 : tEfetivo === 4 ? 500 : tEfetivo <= 8 ? 60 : 25);
     const maxIteracoes = parseNumero(body.maxIteracoes, 40);
@@ -630,6 +643,7 @@ export async function POST(request: NextRequest) {
         dezenasSorteadas: fcfg.dezenasSorteadas,
         garantiaCondicional: garantiaCondicional && fixos.length > 0,
         tEfetivo,
+        ordenacaoApostas,
         pisoCondicional: excluidos.length > 0
           ? {
               piso: tEfetivo,
@@ -707,6 +721,7 @@ export async function POST(request: NextRequest) {
           dezenasSorteadas: fcfg.dezenasSorteadas,
           garantiaCondicional,
           tEfetivo,
+          ordenacaoApostas,
           modo: 'cache',
           wheelUsado: false,
           apostas: cacheado.apostas,
@@ -1572,6 +1587,7 @@ export async function POST(request: NextRequest) {
       dezenasSorteadas: fcfg.dezenasSorteadas,
       garantiaCondicional,
       tEfetivo,
+      ordenacaoApostas,
       modo,
       wheelUsado: Boolean(wheelApostas),
       apostas,

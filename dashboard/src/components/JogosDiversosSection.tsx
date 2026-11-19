@@ -7,7 +7,7 @@ import { getJanelaAlvo, type JanelaAlvoData, type JanelaAlvoNumero } from '@/lib
 import type { PrevisaoItem, PrevisaoTendenciaComparativo, PrevisaoColunaRange, QuarentenaPosicaoLF, CicloInfo, TransicaoQMF, Repeticao3Sorteios } from '@/types';
 import type { AnaliseGruposData } from '@/lib/analise-grupos';
 import { parseColunasPosicionais, parseExcluidosPosicoes, parseFiltroComparativo, parseFixosPosicoes } from '@/lib/colunas-posicionais';
-import type { VerificarCoberturaResult, RelatorioCustoResult, BacktestFechamentoResult } from '@/lib/fechamento-combinatorio';
+import type { VerificarCoberturaResult, RelatorioCustoResult, BacktestFechamentoResult, OrdenacaoApostas } from '@/lib/fechamento-combinatorio';
 import type { CpSatFechamentoResult } from '@/lib/cp-sat';
 import { getFechamentoConfig, textoPremios, LIMITE_COBERTURA_COMPLETA } from '@/lib/fechamento/config';
 import type { FiltrosSnapshot } from '@/lib/analise-filtros';
@@ -631,6 +631,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [fechamentoUsarLottoDesign, setFechamentoUsarLottoDesign] = useState<boolean>(false);
   const [fechamentoCoberturaCompleta, setFechamentoCoberturaCompleta] = useState<boolean>(false);
   const [fechamentoForcarLimite, setFechamentoForcarLimite] = useState<boolean>(false);
+  const [fechamentoOrdenacaoApostas, setFechamentoOrdenacaoApostas] = useState<OrdenacaoApostas>('geracao');
   const [lottoDesignInfo, setLottoDesignInfo] = useState<{
     v: number; k: number; m: number; t: number; blocos: number;
     piso: number; pisoTotal: number; alvos: number; limiteInferior: number;
@@ -794,6 +795,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setFechamentoGarantiaCondicional(false);
     setFechamentoCoberturaCompleta(false);
     setFechamentoForcarLimite(false);
+    setFechamentoOrdenacaoApostas('geracao');
     setFechamentoTInfo(null);
     setModoFechamento(false);
     setOtimizacaoInfo(null);
@@ -1496,6 +1498,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           usarLottoDesign: fechamentoUsarLottoDesign,
           coberturaCompleta: fechamentoCoberturaCompleta,
           forcarLimitePratico: fechamentoForcarLimite,
+          ordenacaoApostas: fechamentoOrdenacaoApostas,
           ...(fechamentoAmostra > 0 ? { amostraPorPasso: fechamentoAmostra } : {}),
           buscarMelhorSeed: fechamentoSeeds,
           priorizarPremios: fechamentoPriorizarPremios,
@@ -1553,7 +1556,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       if (abortFechamentoRef.current === controller) abortFechamentoRef.current = null;
       setGerandoFechamento(false);
     }
-  }, [estados, categoriasDefs, categoriasInputs, aplicarFiltrosCategorias, fechamentoK, fechamentoT, fechamentoMax, fechamentoSeed, fechamentoOtimizado, fechamentoUsarLottoDesign, fechamentoCoberturaCompleta, fechamentoForcarLimite, fechamentoSeeds, fechamentoAmostra, fechamentoUsarCpSat, fechamentoSolver, fechamentoCpSatTime, fechamentoPriorizarPremios, fechamentoRemoverRedundantes, fechamentoGarantiaCondicional, fechamentoFiltroRepetidasAtivo, fechamentoRepetidasFaixa, numerosSorteadosAtual, loteria]);
+  }, [estados, categoriasDefs, categoriasInputs, aplicarFiltrosCategorias, fechamentoK, fechamentoT, fechamentoMax, fechamentoSeed, fechamentoOtimizado, fechamentoUsarLottoDesign, fechamentoCoberturaCompleta, fechamentoForcarLimite, fechamentoOrdenacaoApostas, fechamentoSeeds, fechamentoAmostra, fechamentoUsarCpSat, fechamentoSolver, fechamentoCpSatTime, fechamentoPriorizarPremios, fechamentoRemoverRedundantes, fechamentoGarantiaCondicional, fechamentoFiltroRepetidasAtivo, fechamentoRepetidasFaixa, numerosSorteadosAtual, loteria]);
 
   const cancelarFechamento = useCallback(() => {
     abortFechamentoRef.current?.abort();
@@ -2672,6 +2675,22 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                 onChange={e => setFechamentoSeed(parseInt(e.target.value, 10) || 7)}
                 className="w-20 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8]"
               />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted">Ordenar apostas</label>
+              <select
+                value={fechamentoOrdenacaoApostas}
+                onChange={e => setFechamentoOrdenacaoApostas(e.target.value as OrdenacaoApostas)}
+                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-fg focus:outline-none focus:border-[#818cf8]"
+                title="Muda apenas a ordem da lista/exportação; não altera a garantia nem o custo."
+              >
+                <option value="geracao" className="bg-[#1a1d2e]">Ordem de geração</option>
+                <option value="soma" className="bg-[#1a1d2e]">Soma (crescente)</option>
+                <option value="menor" className="bg-[#1a1d2e]">Menor dezena (crescente)</option>
+                <option value="maior" className="bg-[#1a1d2e]">Maior dezena (decrescente)</option>
+                <option value="sobreposicao" className="bg-[#1a1d2e]">Sobreposição (mais diferentes)</option>
+                <option value="lexicografica" className="bg-[#1a1d2e]">Lexicográfica</option>
+              </select>
             </div>
           </div>
 

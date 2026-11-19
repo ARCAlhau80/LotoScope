@@ -2650,6 +2650,80 @@ export function construirLottoDesignComplemento(
   };
 }
 
+/** Ordenação da lista de apostas no fechamento (não altera garantia/cobertura). */
+export type OrdenacaoApostas =
+  | 'geracao'
+  | 'soma'
+  | 'menor'
+  | 'maior'
+  | 'sobreposicao'
+  | 'lexicografica';
+
+function compararApostasLex(a: number[], b: number[]): number {
+  const n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i++) {
+    if (a[i] !== b[i]) return a[i] - b[i];
+  }
+  return a.length - b.length;
+}
+
+/**
+ * Reordena a lista de apostas para apresentação/exportação.
+ *
+ * - geracao: mantém a ordem de saída do motor;
+ * - soma: soma das dezenas crescente;
+ * - menor: menor dezena da aposta crescente;
+ * - maior: maior dezena da aposta decrescente;
+ * - sobreposicao: estimativa de diversidade (menor sobreposição média com uma
+ *   amostra de referência primeiro);
+ * - lexicografica: ordem lexicográfica.
+ *
+ * Não altera a cobertura nem o custo.
+ */
+export function ordenarApostas(
+  apostas: number[][],
+  criterio: OrdenacaoApostas = 'geracao',
+): number[][] {
+  if (criterio === 'geracao' || apostas.length <= 1) return apostas;
+  const copia = apostas.map(a => [...a].sort((x, y) => x - y));
+
+  if (criterio === 'soma') {
+    const soma = (a: number[]) => a.reduce((s, n) => s + n, 0);
+    return copia.sort((a, b) => soma(a) - soma(b) || compararApostasLex(a, b));
+  }
+  if (criterio === 'menor') {
+    return copia.sort((a, b) => (a[0] ?? 0) - (b[0] ?? 0) || compararApostasLex(a, b));
+  }
+  if (criterio === 'maior') {
+    return copia.sort(
+      (a, b) => (b[b.length - 1] ?? 0) - (a[a.length - 1] ?? 0) || compararApostasLex(a, b),
+    );
+  }
+  if (criterio === 'lexicografica') {
+    return copia.sort(compararApostasLex);
+  }
+
+  // sobreposicao: amostra de referência (até 32 apostas) e média de interseção.
+  const refSize = Math.min(32, copia.length);
+  const refIdx: number[] = [];
+  for (let i = 0; i < refSize; i++) refIdx.push(Math.floor((i * copia.length) / refSize));
+  const ref = [...new Set(refIdx)].map(i => ({ i, set: new Set(copia[i]) }));
+  const scores = copia.map((a, i) => {
+    let soma = 0;
+    let count = 0;
+    for (const r of ref) {
+      if (r.i === i) continue;
+      let inter = 0;
+      for (const n of a) if (r.set.has(n)) inter++;
+      soma += inter;
+      count++;
+    }
+    return { i, media: count > 0 ? soma / count : 0 };
+  });
+  scores.sort((x, y) => x.media - y.media || compararApostasLex(copia[x.i], copia[y.i]));
+  return scores.map(s => copia[s.i]);
+}
+
 export interface ExportacaoFechamentoCSV {
   conteudo: string;
   nomeArquivo: string;
