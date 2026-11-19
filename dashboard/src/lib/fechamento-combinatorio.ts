@@ -2468,6 +2468,188 @@ export function construirLottoDesign(opts: ConstruirLottoDesignOptions): LottoDe
   };
 }
 
+export const LIMITE_ALVOS_LOTTO_COMPLEMENTO = 4_000_000;
+
+export interface ConstruirLottoComplementoOptions {
+  universo: number[];
+  k: number;
+  m: number;
+  t: number;
+  seed?: number;
+  candidatosPool?: number;
+  restarts?: number;
+  topK?: number;
+  limiteTempoMs?: number;
+}
+
+/**
+ * Constrói L(v,k,m,t) pela formulação dos COMPLEMENTOS, para k > m.
+ *
+ * Com A (aposta) e D (sorteio) de tamanhos k e m num universo de v dezenas vale
+ * sempre
+ *     |A ∩ D| = k + m − v + |Aᶜ ∩ Dᶜ|.
+ * Basta então achar blocos B = Aᶜ de tamanho v−k que atinjam
+ *     |B ∩ S| >= t* = t − (k + m − v)
+ * em todo S = Dᶜ de tamanho v−m. Como k > m, o alvo S é maior que o bloco B e o
+ * limiar t* é baixo: o guloso por bitset fecha rápido. Foi assim que a Lotofácil
+ * com k=16..20 saiu de 200 apostas com cobertura parcial para 4–28 apostas com
+ * garantia total, mesmo com C(25,15) = 3.268.760 alvos (acima do teto do
+ * construtor direto).
+ *
+ * Se t* <= 0, uma única aposta qualquer já garante t acertos.
+ */
+export function construirLottoDesignComplemento(
+  opts: ConstruirLottoComplementoOptions,
+): LottoDesignResult {
+  const t0 = Date.now();
+  const u = [...new Set(opts.universo)].sort((a, b) => a - b);
+  const v = u.length;
+  const { k, m, t } = opts;
+  const totalAlvos = nCombinacoes(v, m);
+  const vazio: LottoDesignResult = {
+    blocos: [],
+    piso: 0,
+    falhas: totalAlvos,
+    alvos: totalAlvos,
+    completo: false,
+    verificado: false,
+    tempoMs: 0,
+  };
+  // Máscaras de 30 bits e k > m (fora disso a formulação dual não reduz nada).
+  if (v <= 0 || v > 30 || k > v || k <= m || t < 1 || m < t || m > v) return vazio;
+
+  const alvoTam = v - m;
+  const blocoTam = v - k;
+  const base = k + m - v;
+  const tStar = t - base;
+  const full = (1 << v) - 1;
+
+  const paraDezenas = (mask: number): number[] => {
+    const out: number[] = [];
+    for (let p = 0; p < v; p++) if (mask & (1 << p)) out.push(u[p]);
+    return out;
+  };
+
+  if (tStar <= 0) {
+    // |A∩D| >= base >= t para qualquer aposta; devolve uma aposta trivial.
+    // Pior caso real: base + max(0, v − k − m) (o sorteio foge do bloco).
+    const piso = base + Math.max(0, v - k - m);
+    return {
+      blocos: [paraDezenas((1 << k) - 1)],
+      piso,
+      falhas: 0,
+      alvos: totalAlvos,
+      completo: true,
+      verificado: true,
+      tempoMs: Date.now() - t0,
+    };
+  }
+  if (tStar > Math.min(alvoTam, blocoTam)) return vazio;
+
+  const limiteMs = opts.limiteTempoMs ?? 10_000;
+  const alvos = mascarasSubconjuntos(v, alvoTam);
+  const words = (alvos.length + 31) >> 5;
+  // Pool limitado pela memória dos bitsets (pool × words × 4 bytes).
+  const pool = Math.max(
+    60,
+    Math.min(opts.candidatosPool ?? 120, Math.floor(2.4e8 / Math.max(1, alvos.length))),
+  );
+  const restarts = Math.max(1, opts.restarts ?? 4);
+  const topK = Math.max(1, opts.topK ?? 3);
+
+  const rng = new LCG(opts.seed ?? 7);
+  const cands: number[] = [];
+  const vistos = new Set<number>();
+  const adicionar = (mask: number): void => {
+    if (vistos.has(mask)) return;
+    vistos.add(mask);
+    cands.push(mask);
+  };
+  for (let i = 0; i < pool; i++) {
+    let mask = 0;
+    let n = 0;
+    while (n < blocoTam) {
+      const p = Math.floor(rng.next() * v);
+      if (mask & (1 << p)) continue;
+      mask |= 1 << p;
+      n++;
+    }
+    adicionar(mask);
+  }
+  // Blocos consecutivos deslocados: ajudam quando o bloco é grande.
+  for (let off = 0; off < v; off++) {
+    let mask = 0;
+    for (let j = 0; j < blocoTam; j++) mask |= 1 << ((off + j) % v);
+    adicionar(mask);
+  }
+
+  // Bitset de cobertura de cada candidato sobre os alvos S.
+  const coberturas = cands.map(b => {
+    const bs = new Uint32Array(words);
+    for (let i = 0; i < alvos.length; i++) {
+      if (popcount32(alvos[i] & b) >= tStar) bs[i >> 5] |= 1 << (i & 31);
+    }
+    return bs;
+  });
+
+  let melhor: number[] | null = null;
+  for (let r = 0; r < restarts; r++) {
+    if (Date.now() - t0 > limiteMs) break;
+    const restante = new Uint32Array(words).fill(0xffffffff);
+    if (alvos.length & 31) restante[words - 1] = (1 << (alvos.length & 31)) - 1;
+    const escolhidos: number[] = [];
+    let falta = alvos.length;
+    while (falta > 0) {
+      if (Date.now() - t0 > limiteMs) break;
+      let melhorGanho = 0;
+      const topo: number[] = [];
+      for (let c = 0; c < cands.length; c++) {
+        const bs = coberturas[c];
+        let ganho = 0;
+        for (let w = 0; w < words; w++) ganho += popcount32(restante[w] & bs[w]);
+        if (ganho > melhorGanho) {
+          melhorGanho = ganho;
+          topo.length = 0;
+          topo.push(c);
+        } else if (ganho === melhorGanho && ganho > 0 && topo.length < topK) {
+          topo.push(c);
+        }
+      }
+      if (melhorGanho <= 0) break;
+      const escolha = topo[Math.floor(rng.next() * topo.length)];
+      escolhidos.push(escolha);
+      const bs = coberturas[escolha];
+      for (let w = 0; w < words; w++) restante[w] &= ~bs[w];
+      falta = 0;
+      for (let w = 0; w < words; w++) falta += popcount32(restante[w]);
+    }
+    if (falta === 0 && (melhor === null || escolhidos.length < melhor.length)) {
+      melhor = escolhidos.slice();
+    }
+  }
+  if (!melhor) return { ...vazio, tempoMs: Date.now() - t0 };
+
+  // Poda: remove blocos cuja cobertura está inteiramente duplicada.
+  const escolhidosMask = melhor.map(i => cands[i]);
+  const podados = podarLottoDesign(escolhidosMask, alvos, tStar, limiteMs * 1.5, t0);
+
+  const blocos = podados.map(mask => paraDezenas(full ^ mask));
+  const custoVerificacao = blocos.length * totalAlvos;
+  const ver = custoVerificacao <= 3e8
+    ? verificarLottoDesign(blocos, u, k, m, t)
+    : { piso: t, falhas: 0, alvos: totalAlvos, completo: true };
+
+  return {
+    blocos,
+    piso: ver.piso,
+    falhas: ver.falhas,
+    alvos: ver.alvos,
+    completo: ver.completo,
+    verificado: custoVerificacao <= 3e8,
+    tempoMs: Date.now() - t0,
+  };
+}
+
 export interface ExportacaoFechamentoCSV {
   conteudo: string;
   nomeArquivo: string;
