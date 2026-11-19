@@ -27,6 +27,8 @@ export interface ConstruirFechamentoOptions {
   amostraPorPasso?: number;
   /** Só aceita blocos que satisfazem este predicado (ex.: filtros de categoria). */
   aceitarBloco?: (aposta: number[]) => boolean;
+  /** Teto de candidatos quando maxApostas=0; default 20.000. */
+  limitePoolAmostrado?: number;
   /** Tempo máximo em ms; 0/undefined = sem limite. */
   limiteTempoMs?: number;
 }
@@ -73,6 +75,9 @@ export const LIMITE_POOL_CANDIDATOS = 5000;
 
 /** Teto de candidatos quando maxApostas = 0 (sem limite de apostas). */
 export const LIMITE_POOL_CANDIDATOS_ILIMITADO = 20000;
+
+/** Teto absoluto de candidatos no modo forçado (proteção de memória). */
+export const LIMITE_POOL_CANDIDATOS_MAX = 250_000;
 
 /**
  * `maxApostas` <= 0 (ou não finito) significa "sem limite": o fechamento roda
@@ -468,6 +473,7 @@ export function construirFechamentoGulosoAmostrado(opts: ConstruirFechamentoOpti
     candidatosPool = 3000,
     amostraPorPasso = t <= 3 ? 2000 : t === 4 ? 500 : t <= 8 ? 60 : 25,
     aceitarBloco,
+    limitePoolAmostrado,
     limiteTempoMs = 0,
   } = opts;
   const u = [...new Set(universo)].sort((a, b) => a - b);
@@ -487,7 +493,12 @@ export function construirFechamentoGulosoAmostrado(opts: ConstruirFechamentoOpti
   // o guloso esgotaria os candidatos e devolveria menos apostas que o pedido.
   // Com maxApostas = 0 (sem limite), usamos um teto maior para que a cobertura
   // não pare artificialmente em 5000 apostas.
-  const tetoPool = semLimite ? LIMITE_POOL_CANDIDATOS_ILIMITADO : LIMITE_POOL_CANDIDATOS;
+  const tetoPool = semLimite
+    ? Math.max(
+        LIMITE_POOL_CANDIDATOS_ILIMITADO,
+        Math.min(LIMITE_POOL_CANDIDATOS_MAX, limitePoolAmostrado ?? LIMITE_POOL_CANDIDATOS_ILIMITADO),
+      )
+    : LIMITE_POOL_CANDIDATOS;
   // Com filtro, o pool precisa ser maior: parte dos candidatos é descartada.
   const poolDesejado = aceitarBloco ? Math.max(candidatosPool, 1500) : candidatosPool;
   const limitePool = aceitarBloco
@@ -513,16 +524,26 @@ export function construirFechamentoGulosoAmostrado(opts: ConstruirFechamentoOpti
 
   const apostas: number[][] = [];
   const restantes = pool.map((_, i) => i);
+  // Posição de cada candidato em `restantes`, para remoção O(1) (swap-remove).
+  const posRestantes = new Int32Array(pool.length);
+  for (let i = 0; i < restantes.length; i++) posRestantes[restantes[i]] = i;
 
   while (cobertos < totalT && restantes.length > 0 && apostas.length < limiteApostas) {
     if (limiteTempoMs > 0 && Date.now() - inicio > limiteTempoMs) break;
     const amostraSize = Math.min(amostraPorPasso, restantes.length);
     const amostra: number[] = [];
-    const temp = [...restantes];
+    // Amostra parcial in-place O(amostraSize), sem copiar o pool inteiro.
     for (let i = 0; i < amostraSize; i++) {
-      const j = Math.floor(rng.next() * temp.length);
-      amostra.push(temp[j]);
-      temp.splice(j, 1);
+      const j = i + Math.floor(rng.next() * (restantes.length - i));
+      if (j !== i) {
+        const a = restantes[i];
+        const b = restantes[j];
+        restantes[i] = b;
+        restantes[j] = a;
+        posRestantes[b] = i;
+        posRestantes[a] = j;
+      }
+      amostra.push(restantes[i]);
     }
 
     let melhorIdx = -1;
@@ -551,7 +572,11 @@ export function construirFechamentoGulosoAmostrado(opts: ConstruirFechamentoOpti
         cobertos++;
       }
     }
-    restantes.splice(restantes.indexOf(ci), 1);
+    const pos = posRestantes[ci];
+    const ultimo = restantes[restantes.length - 1];
+    restantes[pos] = ultimo;
+    posRestantes[ultimo] = pos;
+    restantes.pop();
   }
 
   return apostas;
@@ -955,6 +980,7 @@ export function fechamentoLotofacil25Otimizado(opts: {
   candidatosPool?: number;
   amostraPorPasso?: number;
   aceitarBloco?: (aposta: number[]) => boolean;
+  limitePoolAmostrado?: number;
   limiteTempoMs?: number;
 } = {}): number[][] {
   const universo = opts.universo ?? Array.from({ length: 25 }, (_, i) => i + 1);
@@ -967,6 +993,7 @@ export function fechamentoLotofacil25Otimizado(opts: {
     candidatosPool: opts.candidatosPool,
     amostraPorPasso: opts.amostraPorPasso,
     aceitarBloco: opts.aceitarBloco,
+    limitePoolAmostrado: opts.limitePoolAmostrado,
     limiteTempoMs: opts.limiteTempoMs,
   });
 
@@ -998,6 +1025,8 @@ export interface GerarFechamentoComRestricoesOptions {
   buscaSeed?: number;
   candidatosPool?: number;
   amostraPorPasso?: number;
+  /** Teto de candidatos quando maxApostas=0 (modo forçado). */
+  limitePoolAmostrado?: number;
   filtrosCategorias?: FiltroCategoria[];
   /** Filtros da tela: colunas, linhas, comparativo e repetidos dos 3 sorteios. */
   filtrosExtras?: FiltrosExtras;
@@ -1037,6 +1066,7 @@ export function gerarFechamentoComRestricoes(opts: GerarFechamentoComRestricoesO
     buscaSeed,
     candidatosPool = 400,
     amostraPorPasso = t <= 3 ? 2000 : t === 4 ? 500 : t <= 8 ? 60 : 25,
+    limitePoolAmostrado,
     filtrosCategorias: filtrosInformados = [],
     filtrosExtras,
     removerRedundantes = false,
@@ -1088,6 +1118,7 @@ export function gerarFechamentoComRestricoes(opts: GerarFechamentoComRestricoesO
         candidatosPool,
         amostraPorPasso,
         aceitarBloco,
+        limitePoolAmostrado,
         limiteTempoMs,
       })
     : construirFechamentoGulosoAmostrado({
@@ -1099,6 +1130,7 @@ export function gerarFechamentoComRestricoes(opts: GerarFechamentoComRestricoesO
         candidatosPool,
         amostraPorPasso,
         aceitarBloco,
+        limitePoolAmostrado,
         limiteTempoMs,
       });
 

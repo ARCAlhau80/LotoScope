@@ -28,6 +28,7 @@ import {
   gerarApostasCandidatas,
   custoPorAposta,
   LIMITE_POOL_CANDIDATOS_ILIMITADO,
+  LIMITE_POOL_CANDIDATOS_MAX,
   type FiltrosExtras,
   type BacktestFechamentoResult,
 } from '@/lib/fechamento-combinatorio';
@@ -498,6 +499,7 @@ export async function POST(request: NextRequest) {
     // possível atinge >= t acertos em algum bloco".
     const usarLottoDesign = parseBoolean(body.usarLottoDesign, false);
     const coberturaCompleta = parseBoolean(body.coberturaCompleta, false);
+    const forcarLimitePratico = parseBoolean(body.forcarLimitePratico, false);
     const candidatosPool = parseNumero(body.candidatosPool, 400);
     const amostraPorPasso = parseNumero(body.amostraPorPasso, tEfetivo <= 3 ? 2000 : tEfetivo === 4 ? 500 : tEfetivo <= 8 ? 60 : 25);
     const maxIteracoes = parseNumero(body.maxIteracoes, 40);
@@ -683,7 +685,7 @@ export async function POST(request: NextRequest) {
       : [];
 
     // Cache só quando não há backtest/multi-seed/filtro de repetidas/condicional.
-    const podeCache = usarCache && !incluirBacktest && !priorizarPremios && seeds === 1 && !filtroRepetidas && !garantiaCondicional && !filtrosCategorias.length && !usarLottoDesign;
+    const podeCache = usarCache && !incluirBacktest && !priorizarPremios && seeds === 1 && !filtroRepetidas && !garantiaCondicional && !filtrosCategorias.length && !usarLottoDesign && !forcarLimitePratico;
     const chaveCache = podeCache
       ? `${loteria}_${gerarChaveCache({ v: universoEfetivo.length, k, t: tEfetivo, maxApostas, seed, otimizado, fixos, excluidos })}_r${removerRedundantes ? 1 : 0}`
       : null;
@@ -926,37 +928,62 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Sem cover/lotto conhecido, o guloso depende do pool e da verificação
-    // exaustiva. Recusa cedo os casos inviáveis (ex.: Quina v=40, k=5, t=4/5)
-    // em vez de bloquear a API por minutos e devolver cobertura parcial.
+    // Sem cover/lotto conhecido, o guloso depende do pool e da verificação.
+    // A verificação é feita marcando os t-subconjuntos de cada bloco (custo
+    // O(apostas × C(k,t) + C(v,t))), então o antigo estimador O(apostas × C(v,t))
+    // bloqueava casos perfeitamente viáveis (ex.: Lotofácil 23,15,14).
+    let limitePoolForcado: number | undefined;
+    const vGuard = universoRestante.length;
+    const kGuard = k - fixos.length;
+    let minimoGuard = 0;
+    let alvosGuard = 0;
+    let custoVerificacaoGuard = 0;
+    if (vGuard >= tEfetivo && kGuard >= tEfetivo) {
+      minimoGuard = limiteInferiorCobertura(vGuard, kGuard, tEfetivo);
+      alvosGuard = nCombinacoes(vGuard, tEfetivo);
+      custoVerificacaoGuard = minimoGuard * nCombinacoes(kGuard, tEfetivo) + alvosGuard;
+    }
     if (!wheelApostas && !coverApostas && !lottoApostas) {
-      const vGuard = universoRestante.length;
-      const kGuard = k - fixos.length;
-      if (vGuard >= tEfetivo && kGuard >= tEfetivo) {
-        const minimo = limiteInferiorCobertura(vGuard, kGuard, tEfetivo);
-        const alvos = nCombinacoes(vGuard, tEfetivo);
-        const custoVerificacao = minimo * alvos;
-        if (minimo > LIMITE_APOSTAS_PRATICO || custoVerificacao > LIMITE_VERIFICACAO_PRATICA) {
-          const custoMinimo = minimo * custoPorAposta(k, fcfg.dezenasPorAposta, fcfg.precoBase);
-          return NextResponse.json(
-            {
-              sucesso: false,
-              error:
-                `Garantia de ${tEfetivo} acerto(s) com ${vGuard} dezena(s) e apostas de ${kGuard} exigiria ` +
-                `pelo menos ${minimo.toLocaleString('pt-BR')} apostas ` +
-                `(R$ ${custoMinimo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}) e uma verificação ` +
-                `de ~${custoVerificacao.toLocaleString('pt-BR')} operações, acima do limite prático. ` +
-                'Reduza o universo (mais exclusões/fixos) ou o alvo t. ' +
-                (tEfetivo === kGuard
-                  ? 'Para t=k, use "Cobertura completa" se o total couber no limite de 200.000 apostas.'
-                  : ''),
-            },
-            { status: 400 },
+      if (!forcarLimitePratico && (minimoGuard > LIMITE_APOSTAS_PRATICO || custoVerificacaoGuard > LIMITE_VERIFICACAO_PRATICA)) {
+        const custoMinimo = minimoGuard * custoPorAposta(k, fcfg.dezenasPorAposta, fcfg.precoBase);
+        const motivos: string[] = [];
+        if (minimoGuard > LIMITE_APOSTAS_PRATICO) {
+          motivos.push(
+            `o mínimo de ${minimoGuard.toLocaleString('pt-BR')} apostas supera o limite prático de ` +
+            `${LIMITE_APOSTAS_PRATICO.toLocaleString('pt-BR')}`,
           );
         }
+        if (custoVerificacaoGuard > LIMITE_VERIFICACAO_PRATICA) {
+          motivos.push(
+            `a verificação estimada (~${custoVerificacaoGuard.toLocaleString('pt-BR')} operações) supera o limite`,
+          );
+        }
+        return NextResponse.json(
+          {
+            sucesso: false,
+            error:
+              `Garantia de ${tEfetivo} acerto(s) com ${vGuard} dezena(s) e apostas de ${kGuard} exigiria ` +
+              `pelo menos ${minimoGuard.toLocaleString('pt-BR')} apostas ` +
+              `(R$ ${custoMinimo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}). ` +
+              `Trava: ${motivos.join(' e ')}. ` +
+              'Reduza o universo (mais exclusões/fixos) ou o alvo t. ' +
+              'Para gerar mesmo assim, marque "Forçar geração acima do limite prático".' +
+              (tEfetivo === kGuard
+                ? ' Para t=k, use também "Cobertura completa" se o total couber no limite de 200.000 apostas.'
+                : ''),
+          },
+          { status: 400 },
+        );
+      }
+      if (forcarLimitePratico && maxApostasIlimitado(maxApostas) && minimoGuard > 0) {
+        limitePoolForcado = Math.min(
+          LIMITE_POOL_CANDIDATOS_MAX,
+          Math.max(LIMITE_POOL_CANDIDATOS_ILIMITADO, minimoGuard * 3),
+        );
       }
     }
 
+    const otimizadoEfetivo = forcarLimitePratico && minimoGuard > 20_000 ? false : otimizado;
     const seedsEfetivas = (wheelApostas || coverApostas || lottoApostas) ? 1 : seeds;
     // Cover verificado e sem filtros: a remoção de redundantes e a verificação
     // exaustiva são desnecessárias (e caras para t=11/12).
@@ -1009,11 +1036,12 @@ export async function POST(request: NextRequest) {
           filtrosExtras: filtrosExtrasNorm,
           k, t: tEfetivo, maxApostas,
           seed: seedAtual,
-          otimizado,
+          otimizado: otimizadoEfetivo,
           maxIteracoes,
           buscaSeed: buscaSeedAtual,
           candidatosPool,
           amostraPorPasso,
+          limitePoolAmostrado: limitePoolForcado,
           removerRedundantes: false,
           limiteTempoMs: limitePorSeedEfetivo,
         });
@@ -1295,7 +1323,7 @@ export async function POST(request: NextRequest) {
         ? 'cover_conhecido'
         : wheelApostas
           ? modoWheel
-          : (otimizado ? 'guloso_amostrado + busca_local' : 'guloso_amostrado');
+          : (otimizadoEfetivo ? 'guloso_amostrado + busca_local' : 'guloso_amostrado');
     if (removerRedundantes && !lottoApostas) modo += ' + remocao_redundantes';
     if (!wheelApostas && seedsEfetivas > 1) modo += ' + multi_seed';
     if (filtroRepetidas) modo += ' + filtro_repetidas';
@@ -1350,6 +1378,12 @@ export async function POST(request: NextRequest) {
     }
 
     const avisos: string[] = [];
+    if (forcarLimitePratico) {
+      avisos.push(
+        'Modo forçado: os limites práticos de apostas/verificação foram ignorados; ' +
+        'a geração pode demorar e a cobertura pode ficar parcial. Use "Baixar .txt" para exportar.',
+      );
+    }
     if (avisoHistorico) avisos.push(avisoHistorico);
     if (garantiaCondicional) {
       avisos.push(`Garantia CONDICIONAL: ${t} acertos valem apenas se os ${fixos.length} fixos forem sorteados. A cobertura verifica C(${universoRestante.length},${k - fixos.length},${tEfetivo}) = ${coberturaRestante?.tSubsetsTotal ?? 0} alvos. Se algum fixo não sair, não há garantia.`);
