@@ -188,8 +188,10 @@ function HomePage() {
               <JanelaAlvoSection
                 loteria={loteria}
                 concursoAtual={data.ultimo_sorteio.concurso}
+                concursoUltimo={concursosDisponiveis[concursosDisponiveis.length - 1]}
                 concursoBase={data.ultimo_sorteio.concurso}
                 numerosBase={data.ultimo_sorteio.numeros}
+                onConcursoAlvoChange={setConcurso}
               />
             </div>
             {data.supersete && (

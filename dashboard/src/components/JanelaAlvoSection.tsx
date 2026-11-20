@@ -7,10 +7,14 @@ import { LOTERIAS } from '@/lib/lottery-config';
 interface Props {
   loteria: string;
   concursoAtual?: number;
+  /** Último concurso disponível na loteria (para o botão "Usar último"). */
+  concursoUltimo?: number;
   /** Concurso base selecionado no topo do dashboard (para marcar os sorteados). */
   concursoBase?: number;
   /** Números sorteados no concurso base. */
   numerosBase?: number[];
+  /** Aplica o alvo analisado como concurso base exibido no topo do dashboard. */
+  onConcursoAlvoChange?: (concurso: number) => void;
 }
 
 const JANELA_PADRAO = 7;
@@ -44,8 +48,14 @@ function fmtNumero(n: number): string {
   return String(n).padStart(2, '0');
 }
 
-export default function JanelaAlvoSection({ loteria, concursoAtual, concursoBase, numerosBase }: Props) {
-  const baseSet = new Set(numerosBase ?? []);
+export default function JanelaAlvoSection({
+  loteria,
+  concursoAtual,
+  concursoUltimo,
+  concursoBase,
+  numerosBase,
+  onConcursoAlvoChange,
+}: Props) {
   const [concursoInput, setConcursoInput] = useState<string>(
     concursoAtual ? String(concursoAtual) : '',
   );
@@ -55,9 +65,27 @@ export default function JanelaAlvoSection({ loteria, concursoAtual, concursoBase
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const loteriaRef = useRef<string>(loteria);
+  /** Alvo que já foi aplicado como concurso base (evita recarregar/resetar a janela). */
+  const baseAplicadaRef = useRef<number | null>(null);
+  const concursoBaseRef = useRef<number | undefined>(concursoBase);
+
+  useEffect(() => {
+    concursoBaseRef.current = concursoBase;
+  }, [concursoBase]);
+
+  // Marca o sorteio do próprio alvo; o concurso base é apenas fallback quando
+  // o alvo ainda não existe (ex.: próximo concurso).
+  const marcadosNumeros = data?.alvo?.numeros ?? numerosBase ?? [];
+  const marcadosSet = new Set(marcadosNumeros);
+  const concursoMarcado = data?.alvo?.concurso ?? concursoBase;
 
   const carregar = useCallback(
-    (concurso?: number, janelaAlvo: number = JANELA_PADRAO, silencioso: boolean = false) => {
+    (
+      concurso?: number,
+      janelaAlvo: number = JANELA_PADRAO,
+      silencioso: boolean = false,
+      aplicarBase: boolean = false,
+    ) => {
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
@@ -67,6 +95,10 @@ export default function JanelaAlvoSection({ loteria, concursoAtual, concursoBase
         .then(res => {
           setData(res);
           setConcursoInput(String(res.concursoAlvo));
+          if (aplicarBase && res.alvo && res.concursoAlvo !== concursoBaseRef.current) {
+            baseAplicadaRef.current = res.concursoAlvo;
+            onConcursoAlvoChange?.(res.concursoAlvo);
+          }
         })
         .catch(err => {
           if ((err as any)?.name === 'AbortError') return;
@@ -81,7 +113,7 @@ export default function JanelaAlvoSection({ loteria, concursoAtual, concursoBase
           }
         });
     },
-    [loteria],
+    [loteria, onConcursoAlvoChange],
   );
 
   // Carrega automaticamente ao entrar/trocar de loteria (último concurso, janela 7).
@@ -89,8 +121,15 @@ export default function JanelaAlvoSection({ loteria, concursoAtual, concursoBase
     const trocouLoteria = loteriaRef.current !== loteria;
     loteriaRef.current = loteria;
     if (trocouLoteria) {
+      baseAplicadaRef.current = null;
       setData(null);
       setError(null);
+    }
+    // A mudança do concurso base veio do alvo que acabou de ser analisado:
+    // mantém a janela escolhida e não refaz a análise.
+    if (!trocouLoteria && concursoAtual !== undefined && concursoAtual === baseAplicadaRef.current) {
+      baseAplicadaRef.current = null;
+      return;
     }
     setConcursoInput(trocouLoteria ? '' : concursoAtual ? String(concursoAtual) : '');
     setJanela(JANELA_PADRAO);
@@ -108,9 +147,10 @@ export default function JanelaAlvoSection({ loteria, concursoAtual, concursoBase
     }
     const janelaEfetiva = Number.isFinite(janela) ? Math.max(1, Math.min(JANELA_MAX, Math.trunc(janela))) : JANELA_PADRAO;
     setJanela(janelaEfetiva);
-    carregar(concurso, janelaEfetiva);
+    carregar(concurso, janelaEfetiva, false, concurso !== undefined);
   };
 
+  const ultimoConcurso = concursoUltimo ?? concursoAtual;
   const top10 = data?.numeros.slice(0, 10) ?? [];
   const nomeLoteria = LOTERIAS[loteria]?.nome_jogo ?? 'Loteria';
 
@@ -167,25 +207,30 @@ export default function JanelaAlvoSection({ loteria, concursoAtual, concursoBase
         >
           {loading ? 'Calculando...' : 'Analisar'}
         </button>
-        {concursoAtual && (
+        {ultimoConcurso && (
           <button
             type="button"
             onClick={() => {
-              setConcursoInput(String(concursoAtual));
-              carregar(concursoAtual, janela);
+              setConcursoInput(String(ultimoConcurso));
+              carregar(ultimoConcurso, janela, false, true);
             }}
             className="px-3 py-2 rounded-lg text-xs text-muted border border-white/10 hover:text-fg hover:bg-white/5 transition-colors"
           >
-            Usar último ({concursoAtual})
+            Usar último ({ultimoConcurso})
           </button>
         )}
       </div>
 
-      {numerosBase && numerosBase.length > 0 && (
+      <p className="-mt-1 mb-4 text-[11px] text-muted">
+        Ao analisar, o concurso base exibido acima também passa a ser o alvo — assim os números sorteados no alvo
+        ficam marcados em verde sobre a janela.
+      </p>
+
+      {marcadosNumeros.length > 0 && (
         <div className="mb-3 flex items-center gap-2 text-[11px] text-muted">
           <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
-          Verde = número sorteado no concurso base
-          {concursoBase ? ` ${concursoBase}` : ''}
+          Verde = número sorteado no concurso alvo
+          {concursoMarcado ? ` ${concursoMarcado}` : ''}
         </div>
       )}
 
@@ -217,21 +262,21 @@ export default function JanelaAlvoSection({ loteria, concursoAtual, concursoBase
               <div className="text-xs font-semibold text-fg mb-2">Todos os números</div>
               <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-5 gap-2">
                 {data.numeros.map(item => {
-                  const isBase = baseSet.has(item.numero);
+                  const isAlvo = marcadosSet.has(item.numero);
                   return (
                     <div
                       key={item.numero}
                       className={`relative rounded-lg p-2 text-center border ${classeNumero(item)} ${
-                        isBase ? 'ring-1 ring-emerald-400/60' : ''
+                        isAlvo ? 'ring-1 ring-emerald-400/60' : ''
                       }`}
                       title={`${item.numero}: ${item.ocorrencias} de ${data.janelaEfetiva} concursos (${item.percentual.toFixed(1)}%)${
-                        isBase ? ' · sorteado no concurso base' : ''
+                        isAlvo ? ' · sorteado no concurso alvo' : ''
                       }`}
                     >
-                      {isBase && (
+                      {isAlvo && (
                         <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.9)]" />
                       )}
-                      <div className={`text-sm font-bold leading-tight ${isBase ? 'text-emerald-300' : ''}`}>
+                      <div className={`text-sm font-bold leading-tight ${isAlvo ? 'text-emerald-300' : ''}`}>
                         {fmtNumero(item.numero)}
                       </div>
                       <div className="text-[10px] leading-tight">{item.ocorrencias}x</div>
@@ -247,16 +292,16 @@ export default function JanelaAlvoSection({ loteria, concursoAtual, concursoBase
               <div className="text-xs font-semibold text-fg mb-2">Mais sorteados na janela</div>
               <div className="space-y-2">
                 {top10.map((item, idx) => {
-                  const isBase = baseSet.has(item.numero);
+                  const isAlvo = marcadosSet.has(item.numero);
                   return (
                     <div key={item.numero} className="flex items-center gap-2">
                       <span className="w-5 text-[10px] text-muted text-right">{idx + 1}.</span>
-                      <span className={`w-8 text-xs font-semibold text-center ${isBase ? 'text-emerald-300' : 'text-fg'}`}>
+                      <span className={`w-8 text-xs font-semibold text-center ${isAlvo ? 'text-emerald-300' : 'text-fg'}`}>
                         {fmtNumero(item.numero)}
                       </span>
                       <span className="w-2 flex justify-center">
-                        {isBase && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.9)]" title="Sorteado no concurso base" />
+                        {isAlvo && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.9)]" title="Sorteado no concurso alvo" />
                         )}
                       </span>
                       <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
