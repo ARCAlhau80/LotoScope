@@ -151,7 +151,7 @@ export default function JanelaAlvoSection({
   };
 
   const ultimoConcurso = concursoUltimo ?? concursoAtual;
-  const top10 = data?.numeros.slice(0, 10) ?? [];
+  const numerosOrdenados = data?.numeros ?? [];
   const nomeLoteria = LOTERIAS[loteria]?.nome_jogo ?? 'Loteria';
 
   return (
@@ -287,11 +287,13 @@ export default function JanelaAlvoSection({
               </div>
             </div>
 
-            {/* Top 10 com barras */}
+            {/* Todos os números, do mais sorteado ao menos sorteado */}
             <div>
-              <div className="text-xs font-semibold text-fg mb-2">Mais sorteados na janela</div>
-              <div className="space-y-2">
-                {top10.map((item, idx) => {
+              <div className="text-xs font-semibold text-fg mb-2">
+                Mais sorteados na janela <span className="font-normal text-muted">(todos)</span>
+              </div>
+              <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
+                {numerosOrdenados.map((item, idx) => {
                   const isAlvo = marcadosSet.has(item.numero);
                   return (
                     <div key={item.numero} className="flex items-center gap-2">
