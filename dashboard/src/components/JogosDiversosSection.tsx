@@ -75,6 +75,14 @@ interface CicloAtual {
   media_frequencia: number;
 }
 
+interface GarantiaMulticenario {
+  fixosSorteados: number;
+  garantia: number | null;
+  piso: number | null;
+  alvos: number;
+  verificado: boolean;
+}
+
 interface JogosDiversosSectionProps {
   loteria?: string;
   concursoBase?: number;
@@ -632,6 +640,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [fechamentoCoberturaCompleta, setFechamentoCoberturaCompleta] = useState<boolean>(false);
   const [fechamentoForcarLimite, setFechamentoForcarLimite] = useState<boolean>(false);
   const [fechamentoOrdenacaoApostas, setFechamentoOrdenacaoApostas] = useState<OrdenacaoApostas>('geracao');
+  const [fechamentoMulticenario, setFechamentoMulticenario] = useState<boolean>(false);
+  const [multicenarioInfo, setMulticenarioInfo] = useState<GarantiaMulticenario[] | null>(null);
   const [lottoDesignInfo, setLottoDesignInfo] = useState<{
     v: number; k: number; m: number; t: number; blocos: number;
     piso: number; pisoTotal: number; alvos: number; limiteInferior: number;
@@ -796,6 +806,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setFechamentoCoberturaCompleta(false);
     setFechamentoForcarLimite(false);
     setFechamentoOrdenacaoApostas('geracao');
+    setFechamentoMulticenario(false);
+    setMulticenarioInfo(null);
     setFechamentoTInfo(null);
     setModoFechamento(false);
     setOtimizacaoInfo(null);
@@ -1403,10 +1415,12 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     otimizarSeeds?: boolean;
     quantidadeSeeds?: number;
     criterioOtimizacao?: 'custo' | 'diversidade' | 'backtest' | 'equilibrado';
+    t?: number;
   }) => {
     abortFechamentoRef.current?.abort();
     const controller = new AbortController();
     abortFechamentoRef.current = controller;
+    const tParaGerar = opcoes?.t ?? fechamentoT;
 
     setGerandoFechamento(true);
     setError(null);
@@ -1490,7 +1504,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           filtrosCategorias,
           filtrosExtras,
           k: fechamentoK,
-          t: fechamentoT,
+          t: tParaGerar,
           garantiaCondicional: fechamentoGarantiaCondicional && fixosSelecionados.length > 0,
           maxApostas: fechamentoMax,
           seed: fechamentoSeed,
@@ -1499,6 +1513,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           coberturaCompleta: fechamentoCoberturaCompleta,
           forcarLimitePratico: fechamentoForcarLimite,
           ordenacaoApostas: fechamentoOrdenacaoApostas,
+          multicenario: fechamentoMulticenario,
           ...(fechamentoAmostra > 0 ? { amostraPorPasso: fechamentoAmostra } : {}),
           buscarMelhorSeed: fechamentoSeeds,
           priorizarPremios: fechamentoPriorizarPremios,
@@ -1540,6 +1555,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       setCoverConhecidoInfo(data.coverConhecido ?? null);
       setLottoDesignInfo(data.lottoDesign ?? null);
       setLottoIgnoradoInfo(data.lottoIgnorado ?? null);
+      setMulticenarioInfo(data.multicenario ?? null);
       setOtimizacaoInfo(data.otimizacao ?? null);
       setFechamentoTInfo({
         garantiaCondicional: Boolean(data.garantiaCondicional),
@@ -1556,7 +1572,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       if (abortFechamentoRef.current === controller) abortFechamentoRef.current = null;
       setGerandoFechamento(false);
     }
-  }, [estados, categoriasDefs, categoriasInputs, aplicarFiltrosCategorias, fechamentoK, fechamentoT, fechamentoMax, fechamentoSeed, fechamentoOtimizado, fechamentoUsarLottoDesign, fechamentoCoberturaCompleta, fechamentoForcarLimite, fechamentoOrdenacaoApostas, fechamentoSeeds, fechamentoAmostra, fechamentoUsarCpSat, fechamentoSolver, fechamentoCpSatTime, fechamentoPriorizarPremios, fechamentoRemoverRedundantes, fechamentoGarantiaCondicional, fechamentoFiltroRepetidasAtivo, fechamentoRepetidasFaixa, numerosSorteadosAtual, loteria]);
+  }, [estados, categoriasDefs, categoriasInputs, aplicarFiltrosCategorias, fechamentoK, fechamentoT, fechamentoMax, fechamentoSeed, fechamentoOtimizado, fechamentoUsarLottoDesign, fechamentoCoberturaCompleta, fechamentoForcarLimite, fechamentoOrdenacaoApostas, fechamentoMulticenario, fechamentoSeeds, fechamentoAmostra, fechamentoUsarCpSat, fechamentoSolver, fechamentoCpSatTime, fechamentoPriorizarPremios, fechamentoRemoverRedundantes, fechamentoGarantiaCondicional, fechamentoFiltroRepetidasAtivo, fechamentoRepetidasFaixa, numerosSorteadosAtual, loteria]);
 
   const cancelarFechamento = useCallback(() => {
     abortFechamentoRef.current?.abort();
@@ -2715,6 +2731,26 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             </span>
           </label>
 
+          <label className={`mb-4 flex items-start gap-2 rounded-xl border p-3 cursor-pointer select-none ${
+            fechamentoMulticenario
+              ? 'border-emerald-400/40 bg-emerald-500/[0.06]'
+              : 'border-white/10 bg-white/[0.02]'
+          }`}>
+            <input
+              type="checkbox"
+              checked={fechamentoMulticenario}
+              onChange={e => setFechamentoMulticenario(e.target.checked)}
+              className="mt-0.5 accent-emerald-500"
+            />
+            <span className="text-xs">
+              <strong className="text-fg">Validar garantia multicenário</strong>
+              <span className="block text-muted mt-0.5">
+                Mostra a garantia para X fixos sorteados, X−1, X−2... sem alterar a geração nem a cobertura.
+                Ex.: 10 fixos → 15 acertos; 9 → 14; 8 → 13.
+              </span>
+            </span>
+          </label>
+
           {fechamentoT === fechamentoK && (
             <div className={`mb-4 rounded-xl border p-3 ${
               fechamentoCoberturaCompleta
@@ -2975,6 +3011,19 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               >
                 {gerandoFechamento ? 'Otimizando...' : 'Otimizar seeds'}
               </button>
+              <button
+                onClick={() => {
+                  const novoT = Math.max(1, fechamentoT - 1);
+                  if (novoT === fechamentoT) return;
+                  setFechamentoT(novoT);
+                  void gerarFechamento({ t: novoT });
+                }}
+                disabled={gerandoFechamento || fechamentoT <= 1 || fechamentoCoberturaCompleta}
+                title={`Gera novamente com t=${Math.max(1, fechamentoT - 1)} (um acerto a menos). Não altera o gerador; apenas refaz o fechamento com o alvo menor.`}
+                className="px-3 py-2 rounded-lg text-xs font-semibold text-amber-200 border border-amber-400/40 hover:bg-amber-500/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Relaxar garantia (t={Math.max(1, fechamentoT - 1)})
+              </button>
             <div className="relative group">
               <button
                 onClick={() => gerarFechamento()}
@@ -3210,6 +3259,28 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                       piso real não calculado (universo grande demais para enumerar).
                     </>
                   )}
+                </div>
+              )}
+
+              {multicenarioInfo && multicenarioInfo.length > 0 && (
+                <div className="mb-2 rounded-lg border border-emerald/20 bg-emerald/[0.04] p-2 text-xs">
+                  <div className="font-semibold text-emerald mb-1">Garantia multicenário (mínimos verificados)</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {multicenarioInfo.map(linha => (
+                      <span
+                        key={linha.fixosSorteados}
+                        className="px-2 py-0.5 rounded bg-emerald/15 text-emerald border border-emerald/25"
+                        title={linha.verificado
+                          ? `Verificado em ${linha.alvos.toLocaleString('pt-BR')} sorteio(s) possíveis`
+                          : `C(${totalNumeros},${linha.fixosSorteados}) acima do limite de verificação`}
+                      >
+                        {linha.fixosSorteados} fixo(s) → {linha.garantia !== null ? `${linha.garantia} acerto(s)` : '—'}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="text-[10px] text-muted mt-1">
+                    Calculado sobre o fechamento atual; não altera a geração.
+                  </div>
                 </div>
               )}
 

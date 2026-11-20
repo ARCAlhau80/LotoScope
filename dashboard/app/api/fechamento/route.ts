@@ -51,6 +51,9 @@ export const maxDuration = 180;
  */
 const LIMITE_ALVOS_LOTTO = 800_000;
 
+/** Teto de alvos por cenário na validação multicenário (proteção de tempo). */
+const LIMITE_MULTICENARIO = 500_000;
+
 /**
  * Teto de sorteios que o piso condicional enumera. Acima disso a UI mostra só o
  * alvo nominal (a enumeração aloca um Int32Array de C(n,m) posições).
@@ -262,6 +265,71 @@ function calcularPisoCondicional(
   return { piso, pisoTotal: fixos.length + piso, alvos, universoEfetivo: n, m, completo };
 }
 
+interface GarantiaMulticenario {
+  fixosSorteados: number;
+  garantia: number | null;
+  piso: number | null;
+  alvos: number;
+  verificado: boolean;
+}
+
+/**
+ * Valida, sem alterar a geração, a garantia de cada cenário:
+ * X fixos sorteados -> alvo; X-1 -> alvo-1; etc.
+ *
+ * Para cada quantidade f de fixos sorteados, o sorteio tem (dezenasSorteadas-f)
+ * dezenas livres. A garantia total é f + piso, onde piso é a menor interseção
+ * entre as apostas livres e qualquer subconjunto de tamanho m do universo livre.
+ */
+function calcularGarantiasMulticenario(args: {
+  apostas: number[][];
+  universo: number[];
+  fixos: number[];
+  excluidos: number[];
+  k: number;
+  dezenasSorteadas: number;
+}): GarantiaMulticenario[] | null {
+  const { apostas, universo, fixos, excluidos, k, dezenasSorteadas } = args;
+  if (fixos.length === 0) return null;
+
+  const fixosSet = new Set(fixos);
+  const excluidosSet = new Set(excluidos);
+  const universoRestante = universo.filter(n => !fixosSet.has(n) && !excluidosSet.has(n));
+  if (universoRestante.length > 30) return null; // máscaras de 30 bits
+
+  const kRestante = k - fixos.length;
+  if (kRestante <= 0) return null;
+
+  const livres = apostas
+    .map(a => a.filter(n => !fixosSet.has(n) && !excluidosSet.has(n)))
+    .filter(a => a.length === kRestante);
+  if (livres.length === 0) return null;
+
+  const linhas: GarantiaMulticenario[] = [];
+  for (let f = fixos.length; f >= 0; f--) {
+    const m = dezenasSorteadas - f;
+    if (m < 0 || m > universoRestante.length) continue;
+    if (m === 0) {
+      linhas.push({ fixosSorteados: f, garantia: f, piso: 0, alvos: 1, verificado: true });
+      continue;
+    }
+    const alvos = nCombinacoes(universoRestante.length, m);
+    if (alvos > LIMITE_MULTICENARIO) {
+      linhas.push({ fixosSorteados: f, garantia: null, piso: null, alvos, verificado: false });
+      continue;
+    }
+    const { piso } = verificarLottoDesign(livres, universoRestante, kRestante, m, 0);
+    linhas.push({
+      fixosSorteados: f,
+      garantia: Math.min(dezenasSorteadas, f + piso),
+      piso,
+      alvos,
+      verificado: true,
+    });
+  }
+  return linhas;
+}
+
 function calcularLimiteInferior(
   loteria: string,
   universo: number[],
@@ -294,6 +362,8 @@ function montarRespostaFinal(args: {
   tEfetivo?: number;
   /** Ordem de apresentação/exportação das apostas (não altera cobertura). */
   ordenacaoApostas?: OrdenacaoApostas;
+  /** Valida a garantia para X, X-1, X-2... fixos sorteados (não altera a geração). */
+  multicenario?: boolean;
   modo: string;
   wheelUsado: boolean;
   apostas: number[][];
@@ -367,6 +437,16 @@ function montarRespostaFinal(args: {
     garantiaCondicional: args.garantiaCondicional ?? false,
     tEfetivo: args.tEfetivo ?? args.t,
     pisoCondicional,
+    multicenario: args.multicenario
+      ? calcularGarantiasMulticenario({
+          apostas: args.apostas,
+          universo: args.universo,
+          fixos: args.fixos,
+          excluidos: args.excluidos,
+          k: args.k,
+          dezenasSorteadas: args.dezenasSorteadas,
+        })
+      : null,
     modo: args.modo,
     wheelUsado: args.wheelUsado,
     totalApostas: apostasOrdenadas.length,
@@ -515,6 +595,7 @@ export async function POST(request: NextRequest) {
     const coberturaCompleta = parseBoolean(body.coberturaCompleta, false);
     const forcarLimitePratico = parseBoolean(body.forcarLimitePratico, false);
     const ordenacaoApostas = parseOrdenacaoApostas(body.ordenacaoApostas);
+    const multicenario = parseBoolean(body.multicenario, false);
     const candidatosPool = parseNumero(body.candidatosPool, 400);
     const amostraPorPasso = parseNumero(body.amostraPorPasso, tEfetivo <= 3 ? 2000 : tEfetivo === 4 ? 500 : tEfetivo <= 8 ? 60 : 25);
     const maxIteracoes = parseNumero(body.maxIteracoes, 40);
@@ -644,6 +725,7 @@ export async function POST(request: NextRequest) {
         garantiaCondicional: garantiaCondicional && fixos.length > 0,
         tEfetivo,
         ordenacaoApostas,
+        multicenario,
         pisoCondicional: excluidos.length > 0
           ? {
               piso: tEfetivo,
@@ -722,6 +804,7 @@ export async function POST(request: NextRequest) {
           garantiaCondicional,
           tEfetivo,
           ordenacaoApostas,
+          multicenario,
           modo: 'cache',
           wheelUsado: false,
           apostas: cacheado.apostas,
@@ -1588,6 +1671,7 @@ export async function POST(request: NextRequest) {
       garantiaCondicional,
       tEfetivo,
       ordenacaoApostas,
+      multicenario,
       modo,
       wheelUsado: Boolean(wheelApostas),
       apostas,
