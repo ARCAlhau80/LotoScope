@@ -378,8 +378,8 @@ function calcularScoresNumeros(
   return scores;
 }
 
-/** Unidade do sorteio em lote: dezenas soltas, ou a casa inteira da grade. */
-type LoteUnidade = 'dezena' | 'coluna' | 'linha';
+/** Unidade do sorteio em lote: dezenas soltas, casa inteira da grade ou faixas parciais. */
+type LoteUnidade = 'dezena' | 'coluna' | 'linha' | 'faixa';
 
 /** Colunas da grade de dezenas — mesma geometria usada no render. */
 function colunasDaGrade(total: number): 5 | 8 | 10 {
@@ -480,6 +480,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [loteOtimizado, setLoteOtimizado] = useState<boolean>(false);
   // Unidade do lote: dezena solta, ou a casa inteira da grade (coluna/linha).
   const [loteUnidade, setLoteUnidade] = useState<LoteUnidade>('dezena');
+  /** Quantidade por faixa (linha da grade), quando loteUnidade === 'faixa'. */
+  const [loteFaixas, setLoteFaixas] = useState<Record<number, string>>({});
   const [loteFeedback, setLoteFeedback] = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null);
 
   // Seletor compacto de concurso junto à grade: o resultado do concurso escolhido
@@ -799,6 +801,9 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setEstrategiasFiltro([]);
     setCategoriasInputs({});
     setRepetidosInputs(['', '', '']);
+    setLoteQuantidade('');
+    setLoteFaixas({});
+    setLoteFeedback(null);
     setOrdenacao('aleatorio');
     setFechamentoK(fechamentoCfg.kPadrao);
     setFechamentoT(fechamentoCfg.tPadrao);
@@ -1158,6 +1163,65 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       return;
     }
 
+    // --- Faixas parciais: quantidade configurável por linha da grade ----------
+    if (loteUnidade === 'faixa') {
+      const grupos = gruposDaGrade(todos, colunasDaGrade(total), 'linha');
+      const porFaixa: {
+        id: number;
+        faixa: string;
+        quantidade: number;
+        disponiveis: number[];
+      }[] = [];
+      let totalEscolhido = 0;
+
+      for (const g of grupos) {
+        const primeira = g.numeros[0];
+        const ultima = g.numeros[g.numeros.length - 1];
+        const disponiveisFaixa = g.numeros.filter(n => !bloqueados.has(n));
+        const maxFaixa = Math.max(0, Math.min(disponiveisFaixa.length, g.numeros.length - 1));
+        const brutoFaixa = (loteFaixas[g.id] ?? '').trim();
+        const quantidadeFaixa = brutoFaixa === '' ? 0 : Number(brutoFaixa);
+        if (!Number.isInteger(quantidadeFaixa) || quantidadeFaixa < 0 || quantidadeFaixa > maxFaixa) {
+          setLoteFeedback({
+            tipo: 'erro',
+            texto: `Faixa L${g.id} (${primeira}–${ultima}): informe um inteiro de 0 a ${maxFaixa}.`,
+          });
+          return;
+        }
+        porFaixa.push({
+          id: g.id,
+          faixa: `${primeira}–${ultima}`,
+          quantidade: quantidadeFaixa,
+          disponiveis: disponiveisFaixa,
+        });
+        totalEscolhido += quantidadeFaixa;
+      }
+
+      if (totalEscolhido > limite) {
+        setLoteFeedback({
+          tipo: 'erro',
+          texto: `Total de ${totalEscolhido} dezena(s) passa do máximo de ${limite} para ${acao}.`,
+        });
+        return;
+      }
+
+      const escolhidos = porFaixa
+        .flatMap(f => selecionarNumerosLote(f.disponiveis, f.quantidade, loteOtimizado, scores, loteModo))
+        .sort((a, b) => a - b);
+      aplicarSelecao(escolhidos);
+      const resumo = porFaixa
+        .filter(f => f.quantidade > 0)
+        .map(f => `L${f.id} ${f.faixa}: ${f.quantidade}`)
+        .join(' · ');
+      setLoteFeedback({
+        tipo: 'ok',
+        texto: escolhidos.length === 0
+          ? `Seleção de ${rotulo} limpa.`
+          : `${escolhidos.length} ${rotulo} ${modoTexto} por faixa — ${resumo}.`,
+      });
+      return;
+    }
+
     // --- Colunas ou linhas inteiras da grade --------------------------------
     const nomeUnidade = loteUnidade === 'coluna' ? 'coluna' : 'linha';
     const prefixo = loteUnidade === 'coluna' ? 'C' : 'L';
@@ -1213,7 +1277,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         : `${n} ${nomePlural} ${verbo}: ${escolhidosGrupos.map(g => `${prefixo}${g.id}`).join(', ')} · ${escolhidos.length} dezenas.`,
     });
     // Mantém o valor digitado no box para que o usuário possa reaplicar ou ajustar.
-  }, [loteQuantidade, loteModo, loteOtimizado, loteUnidade, estados, dezenas, cfg, numerosQuentes, numerosMornos, numerosFrios, ciclos, previsaoPosicional, numerosSorteadosAtual]);
+  }, [loteQuantidade, loteFaixas, loteModo, loteOtimizado, loteUnidade, estados, dezenas, cfg, numerosQuentes, numerosMornos, numerosFrios, ciclos, previsaoPosicional, numerosSorteadosAtual]);
 
   const toggleEstrategia = useCallback((e: string) => {
     setEstrategiasFiltro(prev => {
@@ -1633,9 +1697,11 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
 
   // Geometria do lote por coluna/linha: quantas dezenas cada casa carrega e
   // quantas casas cabem dentro do limite de dezenas (o limite real é numérico).
+  const gruposFaixa = gruposDaGrade(numeros, colunasGrade, 'linha');
+  const maxPorFaixa = gruposFaixa.reduce((maior, g) => Math.max(maior, g.numeros.length - 1), 0);
   const gruposLote = loteUnidade === 'dezena'
     ? []
-    : gruposDaGrade(numeros, colunasDaGrade(totalNumeros), loteUnidade);
+    : gruposDaGrade(numeros, colunasGrade, loteUnidade === 'coluna' ? 'coluna' : 'linha');
   const tamanhosGrupo = [...new Set(gruposLote.map(g => g.numeros.length))].sort((a, b) => a - b);
   const tamanhoGrupoTexto = tamanhosGrupo.length === 0
     ? ''
@@ -1643,14 +1709,16 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       ? String(tamanhosGrupo[0])
       : `${tamanhosGrupo[0]}–${tamanhosGrupo[tamanhosGrupo.length - 1]}`;
   const limiteNumerosLote = loteModo === 'fixo' ? limiteLoteFixo : limiteLoteExcluido;
-  const limiteLoteExibido = loteUnidade === 'dezena'
+  const limiteLoteExibido = loteUnidade === 'dezena' || loteUnidade === 'faixa'
     ? limiteNumerosLote
     : Math.floor(limiteNumerosLote / Math.max(1, tamanhosGrupo[tamanhosGrupo.length - 1] ?? 1));
   const labelUnidade = loteUnidade === 'dezena'
     ? 'dezena(s)'
     : loteUnidade === 'coluna'
       ? 'coluna(s)'
-      : 'linha(s)';
+      : loteUnidade === 'linha'
+        ? 'linha(s)'
+        : 'faixa(s)';
   const precoUnit = calcularPrecoAposta(loteria, dezenas);
   const coberturaCompletaV = Math.max(0, cfg.total_numeros - fixos.length - excluidos.length);
   const coberturaCompletaK = fechamentoK - fixos.length;
@@ -2207,12 +2275,13 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             className="flex rounded-lg overflow-hidden border border-white/10"
             role="group"
             aria-label="Unidade do sorteio em lote"
-            title="Escolha o que o sorteio em lote move: dezenas soltas, ou a casa inteira da grade (coluna/linha)"
+            title="Escolha o que o sorteio em lote move: dezenas soltas, a casa inteira da grade (coluna/linha) ou quantidades parciais por faixa (linha)"
           >
             {([
               ['dezena', 'Dezenas'],
               ['coluna', 'Colunas'],
               ['linha', 'Linhas'],
+              ['faixa', 'Faixas'],
             ] as const).map(([id, label]) => (
               <button
                 key={id}
@@ -2232,24 +2301,60 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               </button>
             ))}
           </div>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={loteQuantidade}
-            onChange={e => {
-              setLoteQuantidade(e.target.value.replace(/[^0-9]/g, ''));
-              setLoteFeedback(null);
-            }}
-            onKeyDown={e => {
-              if (e.key === 'Enter') aplicarLote();
-            }}
-            placeholder={`0 a ${limiteLoteExibido}`}
-            aria-label={`Quantidade de ${labelUnidade} para sortear em lote`}
-            title={loteUnidade === 'dezena'
-              ? 'Digite só a quantidade — as dezenas são sorteadas entre as disponíveis'
-              : `Digite quantas ${labelUnidade} inteiras — cada uma carrega ${tamanhoGrupoTexto} dezenas`}
-            className="w-20 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-fg text-center placeholder:text-muted/60 focus:outline-none focus:border-accent/60"
-          />
+          {loteUnidade === 'faixa' ? (
+            <div className="flex flex-wrap items-end gap-1.5">
+              {gruposFaixa.map(g => {
+                const primeira = g.numeros[0];
+                const ultima = g.numeros[g.numeros.length - 1];
+                const maxLinha = Math.max(0, g.numeros.length - 1);
+                return (
+                  <label
+                    key={g.id}
+                    className="flex flex-col items-center gap-0.5"
+                    title={`Linha ${g.id}: ${primeira}–${ultima} · até ${maxLinha} dezena(s) para ${loteModo === 'fixo' ? 'fixar' : 'excluir'}`}
+                  >
+                    <span className="text-[9px] text-muted leading-none">
+                      L{g.id} <span className="text-muted/70">({primeira}–{ultima})</span>
+                    </span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={loteFaixas[g.id] ?? ''}
+                      onChange={e => {
+                        setLoteFaixas(prev => ({ ...prev, [g.id]: e.target.value.replace(/[^0-9]/g, '') }));
+                        setLoteFeedback(null);
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') aplicarLote();
+                      }}
+                      placeholder="0"
+                      aria-label={`Quantidade de dezenas para ${loteModo === 'fixo' ? 'fixar' : 'excluir'} na faixa ${primeira} a ${ultima}`}
+                      className="w-12 px-1.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-fg text-center text-xs placeholder:text-muted/60 focus:outline-none focus:border-accent/60"
+                    />
+                  </label>
+                );
+              })}
+            </div>
+          ) : (
+            <input
+              type="text"
+              inputMode="numeric"
+              value={loteQuantidade}
+              onChange={e => {
+                setLoteQuantidade(e.target.value.replace(/[^0-9]/g, ''));
+                setLoteFeedback(null);
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') aplicarLote();
+              }}
+              placeholder={`0 a ${limiteLoteExibido}`}
+              aria-label={`Quantidade de ${labelUnidade} para sortear em lote`}
+              title={loteUnidade === 'dezena'
+                ? 'Digite só a quantidade — as dezenas são sorteadas entre as disponíveis'
+                : `Digite quantas ${labelUnidade} inteiras — cada uma carrega ${tamanhoGrupoTexto} dezenas`}
+              className="w-20 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-fg text-center placeholder:text-muted/60 focus:outline-none focus:border-accent/60"
+            />
+          )}
           <div className="flex rounded-lg overflow-hidden border border-white/10" role="group" aria-label="Sortear números em lote para fixar ou excluir">
             <button
               type="button"
@@ -2286,7 +2391,9 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             className="flex items-center gap-1 cursor-pointer select-none bg-white/5 px-2 py-1.5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
             title={loteUnidade === 'dezena'
               ? 'Quando ativo, escolhe os melhores números (fixar) ou piores (excluir) com base em frequência, ciclo, previsão posicional e repetição recente. Desativado, sorteia aleatoriamente.'
-              : `Quando ativo, ranqueia as ${labelUnidade} pelo score médio das dezenas de cada uma (melhores para fixar, piores para excluir). Desativado, sorteia ${labelUnidade} aleatórias.`}
+              : loteUnidade === 'faixa'
+                ? 'Quando ativo, escolhe as melhores (fixar) ou piores (excluir) dezenas dentro de cada faixa. Desativado, sorteia aleatoriamente dentro de cada faixa.'
+                : `Quando ativo, ranqueia as ${labelUnidade} pelo score médio das dezenas de cada uma (melhores para fixar, piores para excluir). Desativado, sorteia ${labelUnidade} aleatórias.`}
           >
             <input
               type="checkbox"
@@ -2304,16 +2411,29 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             onClick={aplicarLote}
             className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110"
             style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
-            title={loteOtimizado
-              ? `Escolhe as melhores/piores ${labelUnidade} por score e marca${loteUnidade === 'dezena' ? ' os números' : ' as dezenas da casa'}`
-              : `Sorteia ${loteUnidade === 'dezena' ? 'a quantidade informada' : `as ${labelUnidade} informadas`} e marca`}
+            title={loteUnidade === 'faixa'
+              ? (loteOtimizado
+                  ? 'Escolhe as melhores/piores dezenas de cada faixa por score e marca'
+                  : 'Sorteia a quantidade informada em cada faixa e marca')
+              : loteOtimizado
+                ? `Escolhe as melhores/piores ${labelUnidade} por score e marca${loteUnidade === 'dezena' ? ' os números' : ' as dezenas da casa'}`
+                : `Sorteia ${loteUnidade === 'dezena' ? 'a quantidade informada' : `as ${labelUnidade} informadas`} e marca`}
           >
             {loteOtimizado ? '✨ Aplicar' : '🎲 Sortear'}
           </button>
           <span className="text-[11px] text-muted">
-            até {limiteLoteExibido} {labelUnidade}
-            {loteUnidade !== 'dezena' && ` (${tamanhoGrupoTexto} dezenas cada)`} ·
-            {loteOtimizado ? ' por score (melhor → pior)' : ' aleatório entre os disponíveis'} · 0 limpa
+            {loteUnidade === 'faixa' ? (
+              <>
+                0 a {maxPorFaixa} por faixa · total até {limiteNumerosLote} dezenas ·{' '}
+                {loteOtimizado ? 'score dentro de cada faixa' : 'aleatório dentro de cada faixa'} · 0 limpa
+              </>
+            ) : (
+              <>
+                até {limiteLoteExibido} {labelUnidade}
+                {loteUnidade !== 'dezena' && ` (${tamanhoGrupoTexto} dezenas cada)`} ·{' '}
+                {loteOtimizado ? ' por score (melhor → pior)' : ' aleatório entre os disponíveis'} · 0 limpa
+              </>
+            )}
           </span>
           {loteFeedback && (
             <span
