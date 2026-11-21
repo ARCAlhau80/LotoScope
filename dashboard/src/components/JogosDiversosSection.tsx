@@ -306,73 +306,82 @@ function sortearSubconjunto<T>(itens: T[], quantidade: number): T[] {
 }
 
 /**
- * Calcula um score de atratividade para cada número disponível, combinando:
- *  - frequência (quentes/mornos/frios)
- *  - ciclo (aquecendo/esfriando/estável) e diferença vs esperada
- *  - previsão posicional (máxima probabilidade em qualquer posição)
- *  - repetição recente (saiu no concurso atual)
+ * Score de atratividade usando exclusivamente a janela selecionada na seção:
+ *  - frequência observada na janela vs esperado;
+ *  - momento (metade recente vs metade antiga da janela);
+ *  - posição empírica na janela (N1..Nk);
+ *  - repetição do sorteio de referência (alvo, ou último da janela).
  *
- * Números com score mais alto são melhores candidatos a fixar; os de menor
- * score são candidatos a excluir. Quando não há dados de previsão, o score
- * cai de volta para 0 (neutro) e o sorteio aleatório continua valendo.
+ * Números com score mais alto são candidatos a fixar; os de menor score são
+ * candidatos a excluir. Não usa frequência de 30 dias nem previsão posicional
+ * global — essas não respeitariam a janela escolhida.
  */
-function calcularScoresNumeros(
+function calcularScoresJanela(
   numeros: number[],
-  {
-    numerosQuentes,
-    numerosMornos,
-    numerosFrios,
-    ciclos,
-    previsaoPosicional,
-    numerosSorteadosAtual,
-  }: {
-    numerosQuentes?: [number, number][];
-    numerosMornos?: [number, number][];
-    numerosFrios?: [number, number][];
-    ciclos?: Record<string, CicloInfo>;
-    previsaoPosicional?: Record<string, PrevisaoItem[]> | null;
-    numerosSorteadosAtual?: number[];
-  },
+  janela: JanelaAlvoData,
+  numerosPorJogo: number,
+  totalNumeros: number,
+  referencia?: number[],
 ): Record<number, number> {
-  const quentesMap = new Map(numerosQuentes?.map(([n, v]) => [n, v]) ?? []);
-  const mornosMap = new Map(numerosMornos?.map(([n, v]) => [n, v]) ?? []);
-  const friosMap = new Map(numerosFrios?.map(([n, v]) => [n, v]) ?? []);
-  const sorteadosSet = new Set(numerosSorteadosAtual ?? []);
+  const nDraws = Math.max(1, janela.janelaEfetiva);
+  const esperado = (nDraws * numerosPorJogo) / Math.max(1, totalNumeros);
+  const freq = new Map<number, number>();
+  for (const item of janela.numeros) freq.set(item.numero, item.ocorrencias);
 
+  // Momento: compara a metade antiga com a metade recente da janela.
+  const metade = Math.floor(nDraws / 2);
+  const antigos = metade > 0 ? janela.concursos.slice(0, metade) : [];
+  const recentes = metade > 0 ? janela.concursos.slice(-metade) : [];
+  const contar = (draws: JanelaAlvoData['concursos']) => {
+    const mapa = new Map<number, number>();
+    for (const c of draws) {
+      for (const n of c.numeros) mapa.set(n, (mapa.get(n) ?? 0) + 1);
+    }
+    return mapa;
+  };
+  const freqAntiga = contar(antigos);
+  const freqRecente = contar(recentes);
+  const esperadoMetade = metade > 0 ? (metade * numerosPorJogo) / Math.max(1, totalNumeros) : 0;
+
+  // Posição empírica: melhor probabilidade da dezena em qualquer posição N1..Nk.
+  const posicoes = new Map<string, number>();
+  for (const c of janela.concursos) {
+    const ordenados = [...c.numeros].sort((a, b) => a - b);
+    for (let p = 0; p < ordenados.length; p++) {
+      const chave = `${p}:${ordenados[p]}`;
+      posicoes.set(chave, (posicoes.get(chave) ?? 0) + 1);
+    }
+  }
+  const maxPos = new Map<number, number>();
+  for (const [chave, count] of posicoes) {
+    const [, nStr] = chave.split(':');
+    const numero = Number(nStr);
+    const prob = count / nDraws;
+    if (prob > (maxPos.get(numero) ?? 0)) maxPos.set(numero, prob);
+  }
+
+  const refSet = new Set(referencia ?? []);
   const scores: Record<number, number> = {};
   for (const n of numeros) {
-    let score = 0;
+    const observado = freq.get(n) ?? 0;
+    const zFreq = Math.max(
+      -3,
+      Math.min(3, (observado - esperado) / Math.sqrt(Math.max(esperado, 0.25))),
+    );
+    let score = zFreq * 10;
 
-    // Frequência: quentes somam, frios subtraem, mornos neutro leve.
-    const q = quentesMap.get(n) ?? 0;
-    const m = mornosMap.get(n) ?? 0;
-    const f = friosMap.get(n) ?? 0;
-    const freqMax = Math.max(q, m, f, 1);
-    score += (q / freqMax) * 30;      // quente: até +30
-    score -= (f / freqMax) * 30;      // frio: até -30
-    score += (m / freqMax) * 5;       // morno: até +5
-
-    // Ciclo: aquecendo bônus, esfriando penalidade, proporcional à diferença.
-    const ciclo = ciclos?.[String(n)];
-    if (ciclo) {
-      if (ciclo.estado === 'aquecendo') score += 20 + Math.min(10, ciclo.diferenca);
-      else if (ciclo.estado === 'esfriando') score -= 20 + Math.min(10, -ciclo.diferenca);
+    if (metade > 0) {
+      const antigo = freqAntiga.get(n) ?? 0;
+      const recente = freqRecente.get(n) ?? 0;
+      const zMomento = Math.max(
+        -3,
+        Math.min(3, (recente - antigo) / Math.sqrt(Math.max(2 * esperadoMetade, 0.5))),
+      );
+      score += zMomento * 6;
     }
 
-    // Previsão posicional: melhor probabilidade em qualquer posição.
-    if (previsaoPosicional) {
-      let melhorProb = 0;
-      for (const pos of Object.keys(previsaoPosicional)) {
-        const item = previsaoPosicional[pos].find(x => x.numero === n);
-        if (item && item.prob > melhorProb) melhorProb = item.prob;
-      }
-      score += melhorProb * 40; // até +40 se tiver 100% de prob em alguma posição
-    }
-
-    // Repetição imediata: saiu no concurso atual → leve penalidade (evita
-    // apostar tudo no que já saiu; ainda assim não zera o número).
-    if (sorteadosSet.has(n)) score -= 10;
-
+    score += (maxPos.get(n) ?? 0) * 20;
+    if (refSet.has(n)) score -= 10;
     scores[n] = score;
   }
   return scores;
@@ -569,7 +578,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   }, [janelaDados]);
 
   useEffect(() => {
-    if (!mostrarJanela || concursoAlvoJanela === undefined) {
+    if (concursoAlvoJanela === undefined) {
       setJanelaDados(null);
       setJanelaErro(null);
       setJanelaCarregando(false);
@@ -598,7 +607,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       clearTimeout(timer);
       controller.abort();
     };
-  }, [mostrarJanela, loteria, concursoAlvoJanela, janelaTamanho]);
+  }, [loteria, concursoAlvoJanela, janelaTamanho]);
 
   useEffect(() => {
     // Pré-carrega os concursos vizinhos do base: o próximo −/+ sai do cache.
@@ -1108,15 +1117,34 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       return;
     }
 
-    const scores = loteOtimizado
-      ? calcularScoresNumeros(todos, {
-          numerosQuentes,
-          numerosMornos,
-          numerosFrios,
-          ciclos,
-          previsaoPosicional,
-          numerosSorteadosAtual,
-        })
+    if (loteOtimizado) {
+      if (!janelaDados) {
+        setLoteFeedback({
+          tipo: 'erro',
+          texto: 'Janela indisponível para o score. Aguarde o cálculo da janela ou desative Otimizado.',
+        });
+        return;
+      }
+      if (
+        janelaCarregando
+        || janelaDados.janelaSolicitada !== janelaTamanho
+        || (concursoAlvoJanela !== undefined && janelaDados.concursoAlvo !== concursoAlvoJanela)
+      ) {
+        setLoteFeedback({
+          tipo: 'erro',
+          texto: `Aguarde o cálculo da janela de ${janelaTamanho} concurso(s) para aplicar o score.`,
+        });
+        return;
+      }
+    }
+
+    const referencia = janelaDados?.alvo?.numeros
+      ?? (janelaDados?.concursos.length
+        ? janelaDados.concursos[janelaDados.concursos.length - 1].numeros
+        : undefined)
+      ?? numerosSorteadosAtual;
+    const scores = loteOtimizado && janelaDados
+      ? calcularScoresJanela(todos, janelaDados, cfg.numeros_por_jogo, total, referencia)
       : {};
 
     // Aplica a seleção final (dezenas já resolvidas), venha ela de dezenas
@@ -1277,7 +1305,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         : `${n} ${nomePlural} ${verbo}: ${escolhidosGrupos.map(g => `${prefixo}${g.id}`).join(', ')} · ${escolhidos.length} dezenas.`,
     });
     // Mantém o valor digitado no box para que o usuário possa reaplicar ou ajustar.
-  }, [loteQuantidade, loteFaixas, loteModo, loteOtimizado, loteUnidade, estados, dezenas, cfg, numerosQuentes, numerosMornos, numerosFrios, ciclos, previsaoPosicional, numerosSorteadosAtual]);
+  }, [loteQuantidade, loteFaixas, loteModo, loteOtimizado, loteUnidade, estados, dezenas, cfg, janelaDados, janelaCarregando, janelaTamanho, concursoAlvoJanela, numerosSorteadosAtual]);
 
   const toggleEstrategia = useCallback((e: string) => {
     setEstrategiasFiltro(prev => {
@@ -2177,7 +2205,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                   ? 'bg-accent/20 text-accent-2 border-accent-2/40'
                   : 'bg-white/5 text-muted border-white/10 hover:text-fg hover:bg-white/10'
               }`}
-              title="Mostra na grade quantas vezes cada dezena saiu na janela anterior ao concurso alvo"
+              title="Mostra na grade quantas vezes cada dezena saiu na janela anterior ao concurso alvo; a janela também alimenta o modo Otimizado"
             >
               Janela {mostrarJanela ? '✓' : ''}
             </button>
@@ -2193,7 +2221,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                     setJanelaTamanho(Number.isFinite(valor) ? Math.max(1, Math.min(500, valor)) : 7);
                   }}
                   className="w-14 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-fg text-center focus:outline-none focus:border-[#818cf8]"
-                  title="Quantidade de concursos na janela"
+                  title="Quantidade de concursos na janela (também usada pelo modo Otimizado)"
                   aria-label="Tamanho da janela em concursos"
                 />
                 <span className="text-[11px] text-muted">
@@ -2390,10 +2418,10 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           <label
             className="flex items-center gap-1 cursor-pointer select-none bg-white/5 px-2 py-1.5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
             title={loteUnidade === 'dezena'
-              ? 'Quando ativo, escolhe os melhores números (fixar) ou piores (excluir) com base em frequência, ciclo, previsão posicional e repetição recente. Desativado, sorteia aleatoriamente.'
+              ? `Usa a janela de ${janelaTamanho} concurso(s) selecionada acima: frequência, momento e posição na janela, com penalidade para repetição do alvo. Desativado, sorteia aleatoriamente.`
               : loteUnidade === 'faixa'
-                ? 'Quando ativo, escolhe as melhores (fixar) ou piores (excluir) dezenas dentro de cada faixa. Desativado, sorteia aleatoriamente dentro de cada faixa.'
-                : `Quando ativo, ranqueia as ${labelUnidade} pelo score médio das dezenas de cada uma (melhores para fixar, piores para excluir). Desativado, sorteia ${labelUnidade} aleatórias.`}
+                ? `Usa a janela de ${janelaTamanho} concurso(s): escolhe as melhores (fixar) ou piores (excluir) dezenas de cada faixa por frequência, momento e posição na janela, com penalidade para repetição do alvo.`
+                : `Usa a janela de ${janelaTamanho} concurso(s): ranqueia as ${labelUnidade} pelo score das dezenas (frequência, momento e posição na janela + repetição do alvo).`}
           >
             <input
               type="checkbox"
@@ -2413,10 +2441,10 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}
             title={loteUnidade === 'faixa'
               ? (loteOtimizado
-                  ? 'Escolhe as melhores/piores dezenas de cada faixa por score e marca'
+                  ? `Escolhe as melhores/piores dezenas de cada faixa pelo score da janela de ${janelaTamanho} e marca`
                   : 'Sorteia a quantidade informada em cada faixa e marca')
               : loteOtimizado
-                ? `Escolhe as melhores/piores ${labelUnidade} por score e marca${loteUnidade === 'dezena' ? ' os números' : ' as dezenas da casa'}`
+                ? `Escolhe as melhores/piores ${labelUnidade} pelo score da janela de ${janelaTamanho} e marca${loteUnidade === 'dezena' ? ' os números' : ' as dezenas da casa'}`
                 : `Sorteia ${loteUnidade === 'dezena' ? 'a quantidade informada' : `as ${labelUnidade} informadas`} e marca`}
           >
             {loteOtimizado ? '✨ Aplicar' : '🎲 Sortear'}
@@ -2425,13 +2453,19 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             {loteUnidade === 'faixa' ? (
               <>
                 0 a {maxPorFaixa} por faixa · total até {limiteNumerosLote} dezenas ·{' '}
-                {loteOtimizado ? 'score dentro de cada faixa' : 'aleatório dentro de cada faixa'} · 0 limpa
+                {loteOtimizado
+                  ? `score da janela de ${janelaTamanho} dentro de cada faixa`
+                  : 'aleatório dentro de cada faixa'}{' '}
+                · 0 limpa
               </>
             ) : (
               <>
                 até {limiteLoteExibido} {labelUnidade}
                 {loteUnidade !== 'dezena' && ` (${tamanhoGrupoTexto} dezenas cada)`} ·{' '}
-                {loteOtimizado ? ' por score (melhor → pior)' : ' aleatório entre os disponíveis'} · 0 limpa
+                {loteOtimizado
+                  ? `por score da janela de ${janelaTamanho}`
+                  : 'aleatório entre os disponíveis'}{' '}
+                · 0 limpa
               </>
             )}
           </span>
