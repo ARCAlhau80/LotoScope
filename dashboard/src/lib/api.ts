@@ -1,5 +1,6 @@
 import type { DashboardData, RankingCombinacaoItem } from '@/types';
 import type { AnaliseGruposData } from '@/lib/analise-grupos';
+import type { ValidadorEstatisticoData } from '@/lib/validador-tipos';
 
 export async function getDashboardData(janela?: number, signal?: AbortSignal, loteria?: string, concurso?: number, poissonJanela?: number): Promise<DashboardData> {
   const params = new URLSearchParams();
@@ -60,6 +61,28 @@ export async function getJanelaAlvo(
   if (concurso !== undefined) params.set('concurso', String(concurso));
   params.set('janela', String(janela));
   const res = await fetch(`/api/janela-alvo?${params.toString()}`, { signal });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
+export async function getValidadorEstatistico(
+  loteria: string,
+  janela: number,
+  badgeJanela: number,
+  concurso?: number,
+  signal?: AbortSignal,
+): Promise<ValidadorEstatisticoData> {
+  const params = new URLSearchParams();
+  params.set('loteria', loteria);
+  if (janela > 0) params.set('janela', String(janela));
+  params.set('badge_janela', String(badgeJanela));
+  if (concurso !== undefined) params.set('concurso', String(concurso));
+  const res = await fetch(`/api/validador-estatistico?${params.toString()}`, { signal });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || `HTTP ${res.status}`);

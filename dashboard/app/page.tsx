@@ -32,6 +32,7 @@ import AiAnalysis from '@/components/AiAnalysis';
 import RankingCombinacoesSection from '@/components/RankingCombinacoesSection';
 import ApostadorSection from '@/components/ApostadorSection';
 import JanelaAlvoSection from '@/components/JanelaAlvoSection';
+import ValidadorEstatisticoSection from '@/components/ValidadorEstatisticoSection';
 
 function LoadingSkeleton() {
   return (
@@ -194,6 +195,11 @@ function HomePage() {
                 onConcursoAlvoChange={setConcurso}
               />
             </div>
+            {!LOTERIAS[loteria]?.is_positional && (
+              <div className="animate-slide-up stagger-1 mb-6">
+                <ValidadorEstatisticoSection loteria={loteria} concursoBase={concurso} />
+              </div>
+            )}
             {data.supersete && (
               <div className="animate-slide-up stagger-1 mt-6">
                 <SuperSeteSection data={data.supersete} />
