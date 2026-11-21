@@ -288,39 +288,41 @@ export default function JanelaAlvoSection({
             </div>
 
             {/* Todos os números, do mais sorteado ao menos sorteado */}
-            <div>
-              <div className="text-xs font-semibold text-fg mb-2">
-                Mais sorteados na janela <span className="font-normal text-muted">(todos)</span>
-              </div>
-              <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
-                {numerosOrdenados.map((item, idx) => {
-                  const isAlvo = marcadosSet.has(item.numero);
-                  return (
-                    <div key={item.numero} className="flex items-center gap-2">
-                      <span className="w-5 text-[10px] text-muted text-right">{idx + 1}.</span>
-                      <span className={`w-8 text-xs font-semibold text-center ${isAlvo ? 'text-emerald-300' : 'text-fg'}`}>
-                        {fmtNumero(item.numero)}
-                      </span>
-                      <span className="w-2 flex justify-center">
-                        {isAlvo && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.9)]" title="Sorteado no concurso alvo" />
-                        )}
-                      </span>
-                      <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{
-                            width: `${Math.max(2, item.percentual)}%`,
-                            background: corBarra(item),
-                          }}
-                        />
+            <div className="relative min-h-0">
+              <div className="flex flex-col lg:absolute lg:inset-0">
+                <div className="text-xs font-semibold text-fg mb-2">
+                  Mais sorteados na janela <span className="font-normal text-muted">(todos)</span>
+                </div>
+                <div className="space-y-2 overflow-y-auto pr-1 max-h-[32rem] lg:max-h-none lg:min-h-0 lg:flex-1">
+                  {numerosOrdenados.map((item, idx) => {
+                    const isAlvo = marcadosSet.has(item.numero);
+                    return (
+                      <div key={item.numero} className="flex items-center gap-2">
+                        <span className="w-5 text-[10px] text-muted text-right">{idx + 1}.</span>
+                        <span className={`w-8 text-xs font-semibold text-center ${isAlvo ? 'text-emerald-300' : 'text-fg'}`}>
+                          {fmtNumero(item.numero)}
+                        </span>
+                        <span className="w-2 flex justify-center">
+                          {isAlvo && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.9)]" title="Sorteado no concurso alvo" />
+                          )}
+                        </span>
+                        <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{
+                              width: `${Math.max(2, item.percentual)}%`,
+                              background: corBarra(item),
+                            }}
+                          />
+                        </div>
+                        <span className="w-14 text-[10px] text-muted text-right">
+                          {item.ocorrencias}x · {item.percentual.toFixed(0)}%
+                        </span>
                       </div>
-                      <span className="w-14 text-[10px] text-muted text-right">
-                        {item.ocorrencias}x · {item.percentual.toFixed(0)}%
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
