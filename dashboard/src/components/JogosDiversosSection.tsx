@@ -498,6 +498,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [concursoPreview, setConcursoPreview] = useState<{ concurso: number; numeros: number[] } | null>(null);
   const [carregandoConcurso, setCarregandoConcurso] = useState(false);
   const concursoPreviewReq = useRef(0);
+  /** Input oculto acionado pelo botão "Importar exclusões (.txt)". */
+  const arquivoExclusoesRef = useRef<HTMLInputElement | null>(null);
   // Resultados já visitados: navegar de volta é instantâneo, sem ida ao servidor.
   const resultadoCache = useRef(new Map<number, number[]>());
   const resultadosEmVoo = useRef(new Map<number, Promise<number[] | null>>());
@@ -673,7 +675,9 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [coverConhecidoInfo, setCoverConhecidoInfo] = useState<{ v: number; k: number; t: number; blocos: number; fonte: string; limiteInferior?: number; verificado?: boolean } | null>(null);
   const [fechamentoPriorizarPremios, setFechamentoPriorizarPremios] = useState<boolean>(false);
   const [fechamentoRemoverRedundantes, setFechamentoRemoverRedundantes] = useState<boolean>(true);
-  const [fechamentoGarantiaCondicional, setFechamentoGarantiaCondicional] = useState<boolean>(false);
+  // Ligada por padrão: com fixos, a garantia naturalmente é condicional a eles
+  // (t acertos SE os fixos saírem). Sem fixos, a rota ignora a flag.
+  const [fechamentoGarantiaCondicional, setFechamentoGarantiaCondicional] = useState<boolean>(true);
   const [fechamentoTInfo, setFechamentoTInfo] = useState<{ garantiaCondicional: boolean; tEfetivo: number; t: number } | null>(null);
   const [fechamentoOtimizarQtd, setFechamentoOtimizarQtd] = useState<number>(20);
   const [fechamentoCriterioOtimizacao, setFechamentoCriterioOtimizacao] = useState<'custo' | 'diversidade' | 'backtest' | 'equilibrado'>('custo');
@@ -1073,6 +1077,65 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setExcluidosPosicoes({});
     setLoteFeedback(null);
   }, []);
+
+  /**
+   * Importa exclusões de um arquivo .txt. Aceita dezenas separadas por espaço,
+   * vírgula, ponto e vírgula, tabulação ou quebra de linha (ex.: "1 3 7 12").
+   * Substitui as exclusões atuais, mantém os fixos e respeita o limite
+   * (total de dezenas - dezenas da aposta). Números já fixos são ignorados.
+   */
+  const importarExclusoes = useCallback(async (file: File) => {
+    const total = cfg.total_numeros;
+    const min = cfg.numero_minimo;
+    const max = cfg.numero_maximo;
+    try {
+      const texto = await file.text();
+      const brutos = (texto.match(/\d+/g) ?? []).map(Number);
+      const validos = Array.from(new Set(brutos.filter(n => n >= min && n <= max))).sort((a, b) => a - b);
+      const foraIntervalo = brutos.filter(n => n < min || n > max).length;
+
+      if (validos.length === 0) {
+        setLoteFeedback({
+          tipo: 'erro',
+          texto: `Nenhuma dezena entre ${min} e ${max} encontrada em "${file.name}".`,
+        });
+        return;
+      }
+
+      const maxExcluidos = Math.max(0, total - dezenas);
+      const fixosAtuais = new Set(
+        Object.entries(estados).filter(([, e]) => e === 'fixo').map(([k]) => Number(k)),
+      );
+      const conflitos = validos.filter(n => fixosAtuais.has(n));
+      const elegiveis = validos.filter(n => !fixosAtuais.has(n));
+      const aplicados = elegiveis.slice(0, maxExcluidos);
+      const excedentes = elegiveis.length - aplicados.length;
+
+      setEstados(prev => {
+        const proximo: Record<number, NumeroEstado> = {};
+        for (const [chave, valor] of Object.entries(prev)) {
+          if (valor !== 'excluido') proximo[Number(chave)] = valor;
+        }
+        for (const n of aplicados) proximo[n] = 'excluido';
+        return proximo;
+      });
+      setExcluidosPosicoes({});
+
+      const partes: string[] = [];
+      partes.push(aplicados.length > 0
+        ? `${aplicados.length} dezena(s) excluída(s)`
+        : 'Nenhuma dezena pôde ser excluída');
+      if (conflitos.length > 0) partes.push(`${conflitos.length} já fixa(s) ignorada(s)`);
+      if (excedentes > 0) partes.push(`${excedentes} acima do limite de ${maxExcluidos}`);
+      if (foraIntervalo > 0) partes.push(`${foraIntervalo} fora de ${min}–${max}`);
+      setLoteFeedback({
+        tipo: aplicados.length > 0 ? 'ok' : 'erro',
+        texto: `${partes.join(' · ')} (arquivo "${file.name}").`,
+      });
+    } catch {
+      setLoteFeedback({ tipo: 'erro', texto: `Não foi possível ler "${file.name}".` });
+    }
+  }, [cfg.total_numeros, cfg.numero_minimo, cfg.numero_maximo, dezenas, estados]);
 
   /**
    * Aplica uma quantidade de números de uma vez: sorteia N números entre os
@@ -2236,6 +2299,27 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               </>
             )}
             <button
+              type="button"
+              onClick={() => arquivoExclusoesRef.current?.click()}
+              className="text-xs px-3 py-1 rounded-lg bg-hot/15 text-hot border border-hot/30 hover:bg-hot/25 transition-colors"
+              title="Importa um arquivo .txt com dezenas para excluir (separadas por espaço, vírgula, ponto e vírgula ou linha). Substitui as exclusões atuais e mantém os fixos."
+            >
+              📄 Importar exclusões (.txt)
+            </button>
+            <input
+              ref={arquivoExclusoesRef}
+              type="file"
+              accept=".txt,text/plain"
+              className="hidden"
+              aria-hidden="true"
+              tabIndex={-1}
+              onChange={e => {
+                const file = e.target.files?.[0];
+                e.target.value = '';
+                if (file) void importarExclusoes(file);
+              }}
+            />
+            <button
               onClick={limparSelecao}
               className="text-xs px-3 py-1 rounded-lg bg-white/5 text-muted hover:text-fg hover:bg-white/10 transition-colors">
               Limpar seleção
@@ -3173,10 +3257,10 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                   void gerarFechamento({ t: novoT });
                 }}
                 disabled={gerandoFechamento || fechamentoT <= 1 || fechamentoCoberturaCompleta}
-                title={`Gera novamente com t=${Math.max(1, fechamentoT - 1)} (um acerto a menos). Não altera o gerador; apenas refaz o fechamento com o alvo menor.`}
+                title={`Gera novamente com alvo de ${Math.max(1, fechamentoT - 1)} acerto(s) no total (um a menos). Não altera o gerador; apenas refaz o fechamento com o alvo menor.`}
                 className="px-3 py-2 rounded-lg text-xs font-semibold text-amber-200 border border-amber-400/40 hover:bg-amber-500/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Relaxar garantia (t={Math.max(1, fechamentoT - 1)})
+                Relaxar para {Math.max(1, fechamentoT - 1)} acerto(s)
               </button>
             <div className="relative group">
               <button

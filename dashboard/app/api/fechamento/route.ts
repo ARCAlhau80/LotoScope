@@ -960,7 +960,7 @@ export async function POST(request: NextRequest) {
           const blocos = mapearLottoDesign(conhecido, universoRestante);
           lottoApostas = blocos.map(b => [...fixos, ...b].sort((x, y) => x - y));
           lottoInfo = {
-            v: vL, k: kL, m: mL, t: tL,
+            v: vL, k: kL, m: mL, t: conhecido.t,
             blocos: lottoApostas.length,
             piso: conhecido.t,
             pisoTotal: fixos.length + conhecido.t,
@@ -976,20 +976,25 @@ export async function POST(request: NextRequest) {
               `(a garantia de ${tL} acertos exigiria cobrir ${alvosL.toLocaleString('pt-BR')} sorteios)`,
           };
         } else if (alvosL > LIMITE_ALVOS_LOTTO) {
-          // Quando k' > m a formulação dos complementos (bloco Aᶜ de v−k,
+          // Quando k' >= m a formulação dos complementos (bloco Aᶜ de v−k,
           // alvo Dᶜ de v−m, limiar t − (k+m−v)) resolve por bitset casos que o
-          // construtor direto não enumera. É o caminho da Lotofácil k=16..20.
-          const alvosComplemento = kL > mL ? nCombinacoes(vL, vL - mL) : Number.POSITIVE_INFINITY;
-          if (kL > mL && alvosComplemento <= LIMITE_ALVOS_LOTTO_COMPLEMENTO) {
+          // construtor direto não enumera. Cobre o k=16..20 e também k=m
+          // (ex.: 1 fixo, k=15, t=11 -> v=24, k=m=14, C(24,14)=1,96M alvos).
+          const alvosComplemento = kL >= mL ? nCombinacoes(vL, vL - mL) : Number.POSITIVE_INFINITY;
+          if (kL >= mL && alvosComplemento <= LIMITE_ALVOS_LOTTO_COMPLEMENTO) {
             const construido = construirLottoDesignComplemento({
               universo: universoRestante,
               k: kL,
               m: mL,
               t: tL,
               seed,
-              limiteTempoMs: forcarLimitePratico
-                ? Math.max(5_000, Math.min(120_000, limitePorSeedEfetivo))
-                : Math.max(2_000, Math.min(5_000, limitePorSeedEfetivo)),
+              // O teto antigo de 5 s (sem forçar) impedia o complemento de fechar
+              // v=25/k=m=15, que leva ~13 s. Usa o orçamento por seed (até 120 s):
+              // com 5 seeds são 24 s por design; com 1 seed chega a 120 s.
+              limiteTempoMs: Math.max(
+                2_000,
+                Math.min(120_000, Math.max(5_000, limitePorSeedEfetivo)),
+              ),
             });
             if (construido.completo && construido.blocos.length > 0) {
               lottoApostas = construido.blocos.map(b => [...fixos, ...b].sort((x, y) => x - y));
@@ -1528,7 +1533,15 @@ export async function POST(request: NextRequest) {
     }
     if (avisoHistorico) avisos.push(avisoHistorico);
     if (garantiaCondicional) {
-      avisos.push(`Garantia CONDICIONAL: ${t} acertos valem apenas se os ${fixos.length} fixos forem sorteados. A cobertura verifica C(${universoRestante.length},${k - fixos.length},${tEfetivo}) = ${coberturaRestante?.tSubsetsTotal ?? 0} alvos. Se algum fixo não sair, não há garantia.`);
+      if (lottoInfo) {
+        avisos.push(
+          `Garantia CONDICIONAL: ${lottoInfo.pisoTotal} acertos valem apenas se os ${fixos.length} fixos forem sorteados. ` +
+          `O design verifica C(${lottoInfo.v},${lottoInfo.m}) = ${lottoInfo.alvos.toLocaleString('pt-BR')} sorteios do universo restante. ` +
+          'Se algum fixo não sair, não há garantia.',
+        );
+      } else {
+        avisos.push(`Garantia CONDICIONAL: ${t} acertos valem apenas se os ${fixos.length} fixos forem sorteados. A cobertura verifica C(${universoRestante.length},${k - fixos.length},${tEfetivo}) = ${coberturaRestante?.tSubsetsTotal ?? 0} alvos. Se algum fixo não sair, não há garantia.`);
+      }
       if (fixos.length >= t) {
         avisos.push(`Com ${fixos.length} fixos ≥ t=${t}, os próprios fixos já garantem ${t} acertos se todos saírem; o cover reduzido cobre ${tEfetivo} acerto(s) adicional(is) por segurança.`);
       }
@@ -1552,13 +1565,15 @@ export async function POST(request: NextRequest) {
       avisos.push(`Cobertura ${tipo}${coverInfo.permutado ? ' (permutada para os filtros)' : ''}: ${coverInfo.blocos} blocos para C(${coverInfo.v},${coverInfo.k},${coverInfo.t}) · ${coverInfo.fonte}.`);
     }
     if (lottoInfo) {
+      const designMaisForte = lottoInfo.t > tEfetivo;
       avisos.push(
         `Lotto design L(${lottoInfo.v},${lottoInfo.k},${lottoInfo.m},${lottoInfo.t}): ${lottoInfo.blocos} apostas. ` +
         `Piso garantido de ${lottoInfo.pisoTotal} acerto(s)${fixos.length ? ` (${fixos.length} fixos + ${lottoInfo.piso})` : ''} ` +
         `para qualquer um dos ${lottoInfo.alvos.toLocaleString('pt-BR')} sorteios possíveis` +
         `${excluidos.length > 0 ? ` do universo sem os ${excluidos.length} excluído(s) — garantia condicional: se alguma excluída sair, não há garantia` : ''}` +
         `${lottoInfo.verificado ? ', verificado exaustivamente' : ''}. ` +
-        `O cover equivalente C(${lottoInfo.v},${lottoInfo.k},${lottoInfo.t}) exigiria a cobertura de todo t-subconjunto, que é uma exigência mais forte que o sorteio real.`,
+        `O cover equivalente C(${lottoInfo.v},${lottoInfo.k},${lottoInfo.t}) exigiria a cobertura de todo t-subconjunto, que é uma exigência mais forte que o sorteio real.` +
+        `${designMaisForte ? ` Design mais forte reaproveitado: garante ${lottoInfo.pisoTotal} acerto(s) mesmo com alvo t=${t}; reduzir o alvo não aumenta o custo.` : ''}`,
       );
     }
     if (usarLottoDesign && lottoIgnorado) {

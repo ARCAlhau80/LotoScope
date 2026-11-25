@@ -120,6 +120,98 @@ export interface CoverConhecido {
  * Pontos são 1..v; o caller mapeia para o universo real.
  */
 export const COVERS_CONHECIDOS: CoverConhecido[] = [
+  // t=1 e t=2: ótimos provados por CP-SAT (m-1 é infactível).
+  // Sem eles, o app caía no wheel defeituoso de t=2 (90,33%) ou no guloso.
+  {
+    v: 25, k: 15, t: 1,
+    fonte: 'LotoScope CP-SAT (C(25,15,1)=2, ótimo provado)',
+    limiteInferior: 2,
+    verificado: true,
+    blocos: [
+      [1,12,13,14,15,16,17,18,19,20,21,22,23,24,25],
+      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+    ],
+  },
+  {
+    v: 25, k: 15, t: 2,
+    fonte: 'LotoScope CP-SAT (C(25,15,2)=4, ótimo provado: 3 blocos não bastam)',
+    limiteInferior: 4,
+    verificado: true,
+    blocos: [
+      [2,3,4,7,11,12,14,15,16,19,20,21,22,23,25],
+      [1,3,4,5,6,8,9,10,11,13,15,16,17,18,24],
+      [1,2,5,6,7,8,9,10,12,13,17,18,20,23,24],
+      [1,5,6,8,9,10,13,14,17,18,19,21,22,24,25],
+    ],
+  },
+  {
+    v: 24, k: 14, t: 2,
+    fonte: 'LotoScope CP-SAT (C(24,14,2)=5, ótimo provado)',
+    limiteInferior: 5,
+    verificado: true,
+    blocos: [
+      [1,3,4,7,8,10,11,12,14,16,18,20,21,23],
+      [2,4,5,6,8,9,11,13,15,17,18,19,22,24],
+      [1,2,4,6,7,10,12,13,15,16,20,22,23,24],
+      [1,2,3,5,7,9,12,14,17,19,20,21,22,24],
+      [3,5,6,8,9,10,13,14,15,16,17,19,21,23],
+    ],
+  },
+  {
+    v: 23, k: 13, t: 2,
+    fonte: 'LotoScope CP-SAT (C(23,13,2)=5, ótimo provado)',
+    limiteInferior: 5,
+    verificado: true,
+    blocos: [
+      [2,3,4,5,6,7,9,16,17,18,19,21,22],
+      [2,3,4,7,10,14,15,18,19,20,21,22,23],
+      [3,5,6,8,9,11,13,14,15,16,17,20,23],
+      [1,2,4,7,8,10,11,12,13,18,19,21,22],
+      [1,3,5,6,9,10,12,14,15,16,17,20,23],
+    ],
+  },
+  {
+    v: 22, k: 12, t: 2,
+    fonte: 'LotoScope CP-SAT (C(22,12,2)=6, ótimo provado)',
+    limiteInferior: 6,
+    verificado: true,
+    blocos: [
+      [1,3,6,7,8,10,11,12,17,18,19,21],
+      [2,4,5,10,11,12,14,15,16,18,19,20],
+      [1,2,3,4,5,7,11,13,14,18,19,22],
+      [1,2,3,5,7,9,13,15,16,18,19,20],
+      [1,2,4,5,6,8,9,11,14,15,17,21],
+      [6,8,9,10,12,13,15,16,17,20,21,22],
+    ],
+  },
+  {
+    v: 21, k: 11, t: 2,
+    fonte: 'LotoScope CP-SAT (C(21,11,2)=6, ótimo provado)',
+    limiteInferior: 6,
+    verificado: true,
+    blocos: [
+      [1,3,5,7,9,12,13,14,15,16,19],
+      [1,2,4,11,12,14,15,16,18,19,20],
+      [1,5,6,7,8,10,11,16,17,19,21],
+      [2,3,4,5,6,7,8,14,18,20,21],
+      [3,4,7,9,10,11,13,14,17,20,21],
+      [2,6,8,9,10,12,13,15,17,18,21],
+    ],
+  },
+  {
+    v: 20, k: 10, t: 2,
+    fonte: 'LotoScope CP-SAT (C(20,10,2)=6, ótimo provado)',
+    limiteInferior: 6,
+    verificado: true,
+    blocos: [
+      [2,3,4,6,9,10,12,13,14,15],
+      [1,5,6,7,9,10,11,13,18,20],
+      [1,3,4,8,11,12,14,16,17,18],
+      [2,3,4,5,7,14,15,18,19,20],
+      [1,2,8,9,10,11,15,16,17,19],
+      [5,6,7,8,12,13,16,17,19,20],
+    ],
+  },
   {
     v: 25, k: 15, t: 3,
     fonte: 'La Jolla Covering Repository / JCD article (C(25,15,3)=10)',
@@ -1552,41 +1644,17 @@ export interface WheelConhecido {
  */
 export const WHEELS_LOTOFACIL: WheelConhecido[] = [
   {
-    id: 'lf-25-15-2-30',
-    descricao: 'C(25,15,2) - Garante 2 acertos se as 2 dezenas saírem entre as 25',
+    id: 'lf-25-15-2-4',
+    descricao: 'C(25,15,2) ótimo — 4 apostas (3 não bastam)',
     v: 25, k: 15, t: 2,
-    totalApostas: 30,
+    totalApostas: 4,
     apostas: [
-      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
-      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,16],
-      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,17],
-      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,18],
-      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,19],
-      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,20],
-      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,21],
-      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,22],
-      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,23],
-      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,24],
-      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,25],
-      [15,16,17,18,19,20,21,22,23,24,25,1,2,3,4],
-      [15,16,17,18,19,20,21,22,23,24,25,5,6,7,8],
-      [15,16,17,18,19,20,21,22,23,24,25,9,10,11,12],
-      [1,2,3,4,5,15,16,17,18,19,20,21,22,23,24],
-      [1,2,3,4,5,15,16,17,18,19,20,21,22,23,25],
-      [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
-      [6,7,8,9,10,11,12,13,14,15,16,17,18,19,21],
-      [6,7,8,9,10,11,12,13,14,15,16,17,18,19,22],
-      [6,7,8,9,10,11,12,13,14,15,16,17,18,19,23],
-      [6,7,8,9,10,11,12,13,14,15,16,17,18,19,24],
-      [6,7,8,9,10,11,12,13,14,15,16,17,18,19,25],
-      [20,21,22,23,24,25,1,2,3,4,5,6,7,8,9],
-      [20,21,22,23,24,25,10,11,12,13,14,15,16,17],
-      [20,21,22,23,24,25,18,19,1,2,3,4,5,6,7],
-      [20,21,22,23,24,25,8,9,10,11,12,13,14,15],
-      [1,16,17,18,19,20,21,22,23,24,25,2,3,4,5],
-      [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
+      [2,3,4,7,11,12,14,15,16,19,20,21,22,23,25],
+      [1,3,4,5,6,8,9,10,11,13,15,16,17,18,24],
+      [1,2,5,6,7,8,9,10,12,13,17,18,20,23,24],
+      [1,5,6,8,9,10,13,14,17,18,19,21,22,24,25],
     ],
-    fonte: 'Construtivo heurístico LotoScope',
+    fonte: 'LotoScope CP-SAT (ótimo provado: 3 blocos não bastam)',
   },
 ];
 
@@ -1594,7 +1662,16 @@ export const WHEELS_LOTOFACIL: WheelConhecido[] = [
  * Busca um wheel pré-computado compatível com (v, k, t).
  */
 export function buscarWheel(v: number, k: number, t: number): WheelConhecido | undefined {
-  return WHEELS_LOTOFACIL.find(w => w.v === v && w.k === k && w.t === t);
+  const wheel = WHEELS_LOTOFACIL.find(w => w.v === v && w.k === k && w.t === t);
+  if (!wheel) return undefined;
+  // Guarda-corpo: um único bloco com tamanho errado invalida o wheel inteiro.
+  // (O wheel antigo de t=2 tinha um bloco de 14 dezenas e caía para 90,33%.)
+  const valido = wheel.apostas.every(b =>
+    b.length === k
+    && new Set(b).size === k
+    && b.every(n => n >= 1 && n <= v),
+  );
+  return valido ? wheel : undefined;
 }
 
 /**
@@ -2079,7 +2156,7 @@ export function gerarChaveCache(opts: { v: number; k: number; t: number; maxApos
  *
  * Efeito prático (Lotofácil, k=15, 5 fixos, alvo 11 acertos):
  *   cover  C(20,10,6) = 343 apostas
- *   lotto  L(20,10,10,6) = 11 apostas
+ *   lotto  L(20,10,10,6) = 10 apostas (registro verificado por força bruta)
  * com o MESMO piso de acertos, condicionado aos 5 fixos saírem.
  * ==========================================================================*/
 
@@ -2483,18 +2560,19 @@ export interface ConstruirLottoComplementoOptions {
 }
 
 /**
- * Constrói L(v,k,m,t) pela formulação dos COMPLEMENTOS, para k > m.
+ * Constrói L(v,k,m,t) pela formulação dos COMPLEMENTOS, para k >= m.
  *
  * Com A (aposta) e D (sorteio) de tamanhos k e m num universo de v dezenas vale
  * sempre
  *     |A ∩ D| = k + m − v + |Aᶜ ∩ Dᶜ|.
  * Basta então achar blocos B = Aᶜ de tamanho v−k que atinjam
  *     |B ∩ S| >= t* = t − (k + m − v)
- * em todo S = Dᶜ de tamanho v−m. Como k > m, o alvo S é maior que o bloco B e o
- * limiar t* é baixo: o guloso por bitset fecha rápido. Foi assim que a Lotofácil
- * com k=16..20 saiu de 200 apostas com cobertura parcial para 4–28 apostas com
- * garantia total, mesmo com C(25,15) = 3.268.760 alvos (acima do teto do
- * construtor direto).
+ * em todo S = Dᶜ de tamanho v−m. Como k >= m, o alvo S tem tamanho >= o do bloco
+ * B e o limiar t* costuma ser baixo: o guloso por bitset fecha rápido. Foi assim
+ * que a Lotofácil com k=16..20 saiu de 200 apostas com cobertura parcial para
+ * 4–28 apostas com garantia total, mesmo com C(25,15) = 3.268.760 alvos (acima
+ * do teto do construtor direto). Em k = m a formulação é equivalente, mas resolve
+ * casos como 1 fixo, k=15, t=11 (v=24, k=m=14, C(24,14)=1,96M alvos).
  *
  * Se t* <= 0, uma única aposta qualquer já garante t acertos.
  */
@@ -2515,8 +2593,10 @@ export function construirLottoDesignComplemento(
     verificado: false,
     tempoMs: 0,
   };
-  // Máscaras de 30 bits e k > m (fora disso a formulação dual não reduz nada).
-  if (v <= 0 || v > 30 || k > v || k <= m || t < 1 || m < t || m > v) return vazio;
+  // Máscaras de 30 bits. k >= m: em k = m a formulação dual é equivalente, mas
+  // resolve por bitset casos que o construtor direto não enumera (ex.: Lotofácil
+  // com 1 fixo, k=15, t=11 -> C(24,14) acima do teto de 800k).
+  if (v <= 0 || v > 30 || k > v || k < m || t < 1 || m < t || m > v) return vazio;
 
   const alvoTam = v - m;
   const blocoTam = v - k;
@@ -2550,9 +2630,11 @@ export function construirLottoDesignComplemento(
   const alvos = mascarasSubconjuntos(v, alvoTam);
   const words = (alvos.length + 31) >> 5;
   // Pool limitado pela memória dos bitsets (pool × words × 4 bytes).
+  // 1,2e9 bytes permite ~120 candidatos mesmo em v=25 (C(25,10) = 3,27M alvos);
+  // com o teto antigo (2,4e8) o pool caía para 73 e o guloso não fechava k=m=15.
   const pool = Math.max(
     60,
-    Math.min(opts.candidatosPool ?? 120, Math.floor(2.4e8 / Math.max(1, alvos.length))),
+    Math.min(opts.candidatosPool ?? 120, Math.floor(1.2e9 / Math.max(1, alvos.length))),
   );
   const restarts = Math.max(1, opts.restarts ?? 4);
   const topK = Math.max(1, opts.topK ?? 3);

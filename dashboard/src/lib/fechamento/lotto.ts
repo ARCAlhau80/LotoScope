@@ -29,7 +29,31 @@ export function buscarLottoDesign(
   m: number,
   t: number,
 ): LottoDesignConhecido | null {
-  return REGISTRY[loteriaId]?.[`${v},${k},${m},${t}`] ?? null;
+  const registry = REGISTRY[loteriaId];
+  if (!registry) return null;
+
+  const exato = registry[`${v},${k},${m},${t}`];
+  if (exato) return exato;
+
+  // Um design L(v,k,m,t') com t' > t é mais forte e, portanto, também garante
+  // t acertos. Reaproveitá-lo evita o efeito perverso de "relaxar o alvo e
+  // receber MAIS apostas": sem isto, ao baixar t o registro exato some e o
+  // código cai num cover C(v,k,t) genérico (ex.: 2 fixos, t=7 -> 319 apostas)
+  // mesmo existindo L(23,13,13,9) com 33 apostas, que já garante 11 acertos.
+  // Escolhe o de menor custo (blocos); em empate, o t' mais próximo do pedido.
+  let melhor: LottoDesignConhecido | null = null;
+  for (const [chave, design] of Object.entries(registry)) {
+    const [dv, dk, dm, dt] = chave.split(',').map(Number);
+    if (dv !== v || dk !== k || dm !== m || dt < t) continue;
+    if (
+      !melhor
+      || design.blocos.length < melhor.blocos.length
+      || (design.blocos.length === melhor.blocos.length && dt < melhor.t)
+    ) {
+      melhor = design;
+    }
+  }
+  return melhor;
 }
 
 export function temLottoDesigns(loteriaId: string): boolean {

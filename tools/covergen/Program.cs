@@ -11,8 +11,9 @@ namespace CoverGen;
 /// e buckets por ganho. Complexidade ~ O(P * C(k,t)), com P = tamanho do pool.
 ///
 /// Uso:
-///   dotnet run -c Release -- --t 9 --pool 15000 --out ..\..\c9.json
+///   dotnet run -c Release -- --t 9 --pool 79000 --improve 60 --out ..\..\c9.json
 ///   dotnet run -c Release -- --t 14 --pool 0 --out ..\..\c14.json   (pool 0 = todos)
+///   --improve N roda um LNS (ruin & recreate) por N segundos após o greedy.
 /// </summary>
 internal static class Program
 {
@@ -97,6 +98,8 @@ internal static class Program
         var covered = new bool[nMask];
         long cobertos = 0;
         var solucao = new List<uint>();
+        // Índices de candidatos escolhidos pelo greedy (para o LNS poder removê-los).
+        var solucaoIdx = new List<int>();
 
         void Cobrir(uint m)
         {
@@ -136,6 +139,8 @@ internal static class Program
             }
             Console.WriteLine($"warm start: {solucao.Count:N0} blocos, {cobertos:N0}/{totalTargets:N0} cobertos");
         }
+        // Blocos do warm start são fixos: o LNS só mexe nos escolhidos pelo greedy.
+        int warmCount = solucao.Count;
 
         int atual = maxGain;
         while (cobertos < totalTargets)
@@ -147,6 +152,7 @@ internal static class Program
             Remover(c, atual);
             selecionado[c] = true;
             solucao.Add(candMask[c]);
+            solucaoIdx.Add(c);
 
             int n = Combos(candPos.AsSpan(c * k, k), t, buf);
             for (int i = 0; i < n; i++) Cobrir(buf[i]);
@@ -190,6 +196,318 @@ internal static class Program
             return 1;
         }
 
+        // ---------- LNS / --improve ----------
+        // Ruin & recreate: remove alguns blocos, repara com o candidato de maior
+        // ganho (buckets incrementais) e aceita se o total diminuiu (ou empatou,
+        // com 25% de chance, para diversificar). Custo por iteração é proporcional
+        // aos alvos afetados, não ao pool inteiro.
+        int lnsIteracoes = 0, lnsMelhorias = 0;
+        if (o.ImproveSeconds > 0 && extras.Count == 0 && solucaoIdx.Count > 0)
+        {
+            var fixosLns = new List<uint>(solucao.Take(warmCount));
+            var bestList = new List<int>(solucaoIdx);
+            var atualList = new List<int>(solucaoIdx.Count);
+            var covCount = new int[nMask];
+            var uncovered = new Stack<int>();
+            var removidos = new List<int>();
+            var adicionados = new List<int>();
+            // Tabu: impede re-adicionar os blocos removidos nesta iteração, forçando
+            // o reparo a usar combinações diferentes (senão ele reconstrói o mesmo).
+            // Array bool (indexado por candidato) é muito mais rápido que HashSet no laço.
+            var proibidos = new bool[p];
+            var rng = new Random(o.Seed + 909090);
+            var tgt = new uint[maxGain];
+            var posBuf = new byte[v];
+
+            int EnumerarBloco(uint mask)
+            {
+                int np = Posicoes(mask, v, posBuf);
+                return Combos(posBuf.AsSpan(0, np), t, tgt);
+            }
+
+            foreach (var mask in fixosLns)
+            {
+                int n = EnumerarBloco(mask);
+                for (int i = 0; i < n; i++) covCount[(int)tgt[i]]++;
+            }
+            foreach (var c in bestList)
+            {
+                int n = EnumerarBloco(candMask[c]);
+                for (int i = 0; i < n; i++) covCount[(int)tgt[i]]++;
+            }
+
+            // Ganho = quantos alvos ainda descobertos cada candidato cobre.
+            // Não usamos mais os buckets do greedy: o reparo é direcionado ao alvo.
+            Array.Fill(gain, 0);
+
+            void AjustarGanho(int c, int delta)
+            {
+                gain[c] += delta;
+            }
+
+            void Descoberto(int tm)
+            {
+                covered[tm] = false;
+                uncovered.Push(tm);
+                int ini = tm == 0 ? 0 : end[tm - 1];
+                int fim = end[tm];
+                for (int j = ini; j < fim; j++)
+                {
+                    int d = rev[j];
+                    if (selecionado[d]) continue;
+                    AjustarGanho(d, +1);
+                }
+            }
+
+            void Coberto(int tm)
+            {
+                if (covered[tm]) return;
+                covered[tm] = true;
+                int ini = tm == 0 ? 0 : end[tm - 1];
+                int fim = end[tm];
+                for (int j = ini; j < fim; j++)
+                {
+                    int d = rev[j];
+                    if (selecionado[d]) continue;
+                    AjustarGanho(d, -1);
+                }
+            }
+
+            void RemoverSolucao(int c)
+            {
+                selecionado[c] = false;
+                gain[c] = 0;
+                int n = EnumerarBloco(candMask[c]);
+                for (int i = 0; i < n; i++)
+                {
+                    int tm = (int)tgt[i];
+                    if (--covCount[tm] == 0) Descoberto(tm);
+                }
+            }
+
+            void AdicionarSolucao(int c)
+            {
+                selecionado[c] = true;
+                int g = gain[c];
+                if (g > 0) Remover(c, g);
+                gain[c] = 0;
+                int n = EnumerarBloco(candMask[c]);
+                for (int i = 0; i < n; i++)
+                {
+                    int tm = (int)tgt[i];
+                    if (covCount[tm]++ == 0) Coberto(tm);
+                }
+            }
+
+            // Escolhe, entre os candidatos que cobrem `tm`, o de maior ganho.
+            // Garante que o alvo retirado da pilha é efetivamente coberto.
+            int MelhorParaAlvo(int tm)
+            {
+                int ini = tm == 0 ? 0 : end[tm - 1];
+                int fim = end[tm];
+                int melhor = -1, melhorG = 0, segundo = -1, segundoG = 0;
+                for (int j = ini; j < fim; j++)
+                {
+                    int c = rev[j];
+                    if (selecionado[c] || proibidos[c]) continue;
+                    int g = gain[c];
+                    if (g > melhorG)
+                    {
+                        segundo = melhor; segundoG = melhorG;
+                        melhor = c; melhorG = g;
+                    }
+                    else if (g > segundoG)
+                    {
+                        segundo = c; segundoG = g;
+                    }
+                }
+                // 20% das vezes usa o segundo melhor: diversifica o reparo.
+                if (segundo >= 0 && rng.NextDouble() < 0.2) return segundo;
+                return melhor;
+            }
+
+            // Sorteia um t-subconjunto uniforme de 1..v (máscara de bits).
+            uint RandomMask()
+            {
+                Span<int> idx = stackalloc int[v];
+                for (int i = 0; i < v; i++) idx[i] = i;
+                for (int i = 0; i < t; i++)
+                {
+                    int j = rng.Next(i, v);
+                    (idx[i], idx[j]) = (idx[j], idx[i]);
+                }
+                uint m = 0;
+                for (int i = 0; i < t; i++) m |= 1u << idx[i];
+                return m;
+            }
+
+            var deadline = DateTime.UtcNow.AddSeconds(o.ImproveSeconds);
+            int iteracoes = 0, melhorias = 0, iguais = 0, piores = 0;
+            int maxRemover = Math.Max(2, Math.Min(32, bestList.Count / 4));
+            // Solução corrente (pode piorar para escapar de mínimos locais) e a melhor já vista.
+            var currentList = new List<int>(bestList);
+            double temperatura = 2.0;
+
+            while (DateTime.UtcNow < deadline)
+            {
+                iteracoes++;
+                int m = rng.Next(1, maxRemover + 1);
+
+                var escolhidos = new HashSet<int>();
+                // Dois destroys: alvo único (fino) e multi-alvo (grosso).
+                if (rng.NextDouble() < 0.5)
+                {
+                    for (int tent = 0; tent < 8 && escolhidos.Count == 0; tent++)
+                    {
+                        int tm = (int)RandomMask();
+                        int ini = tm == 0 ? 0 : end[tm - 1];
+                        int fim = end[tm];
+                        int qtd = 0;
+                        for (int j = ini; j < fim; j++)
+                            if (selecionado[rev[j]]) qtd++;
+                        if (qtd == 0 || qtd > 16) continue;
+                        for (int j = ini; j < fim; j++)
+                        {
+                            int c = rev[j];
+                            if (selecionado[c]) escolhidos.Add(c);
+                        }
+                    }
+                }
+                else
+                {
+                    // Multi-alvo: sorteia vários alvos e remove todos os blocos que
+                    // os cobrem. Força uma re-cobertura maior, permitindo trocar um
+                    // conjunto de blocos por outro menor.
+                    int qAlvos = Math.Max(2, Math.Min(16, currentList.Count / 100));
+                    for (int tq = 0; tq < qAlvos; tq++)
+                    {
+                        int tm = (int)RandomMask();
+                        int ini = tm == 0 ? 0 : end[tm - 1];
+                        int fim = end[tm];
+                        for (int j = ini; j < fim; j++)
+                        {
+                            int c = rev[j];
+                            if (selecionado[c]) escolhidos.Add(c);
+                        }
+                        if (escolhidos.Count > 256) break;
+                    }
+                }
+                if (escolhidos.Count == 0)
+                {
+                    while (escolhidos.Count < m && escolhidos.Count < currentList.Count)
+                        escolhidos.Add(currentList[rng.Next(currentList.Count)]);
+                }
+
+                removidos.Clear();
+                adicionados.Clear();
+                uncovered.Clear();
+
+                atualList.Clear();
+                for (int i = 0; i < currentList.Count; i++)
+                    if (!escolhidos.Contains(currentList[i])) atualList.Add(currentList[i]);
+
+                foreach (var c in escolhidos)
+                {
+                    RemoverSolucao(c);
+                    removidos.Add(c);
+                    proibidos[c] = true;
+                }
+
+                // Reparo guloso direcionado: cobre todos os alvos descobertos.
+                while (uncovered.Count > 0)
+                {
+                    int tm = uncovered.Pop();
+                    if (covered[tm]) continue;
+                    int c = MelhorParaAlvo(tm);
+                    if (c < 0) { uncovered.Push(tm); break; }
+                    AdicionarSolucao(c);
+                    atualList.Add(c);
+                    adicionados.Add(c);
+                }
+
+                bool completo = true;
+                foreach (var tm in uncovered)
+                {
+                    if (!covered[tm]) { completo = false; break; }
+                }
+
+                int delta = atualList.Count - currentList.Count;
+                bool aceitar = completo
+                    && (delta <= 0 || rng.NextDouble() < Math.Exp(-delta / temperatura));
+
+                if (aceitar)
+                {
+                    currentList = new List<int>(atualList);
+                    if (atualList.Count < bestList.Count)
+                    {
+                        bestList = new List<int>(atualList);
+                        melhorias++;
+                        Console.WriteLine(
+                            $"  LNS melhoria #{melhorias}: {bestList.Count:N0} blocos " +
+                            $"(iter {iteracoes:N0}, T={temperatura:F3})");
+                    }
+                    else if (delta == 0) iguais++;
+                    else piores++;
+                }
+                else
+                {
+                    // Reverte as mudanças líquidas: remove os novos, re-adiciona os removidos.
+                    var addSet = new HashSet<int>(adicionados);
+                    var remSet = new HashSet<int>(removidos);
+                    for (int i = adicionados.Count - 1; i >= 0; i--)
+                    {
+                        int c = adicionados[i];
+                        if (!remSet.Contains(c)) RemoverSolucao(c);
+                    }
+                    foreach (var c in removidos)
+                    {
+                        if (!addSet.Contains(c)) AdicionarSolucao(c);
+                    }
+                }
+
+                foreach (var c in removidos) proibidos[c] = false;
+
+                double restante = (deadline - DateTime.UtcNow).TotalSeconds;
+                temperatura = Math.Max(0.05, 2.0 * restante / Math.Max(1, o.ImproveSeconds));
+            }
+
+            // Verificação exaustiva final do LNS.
+            Array.Fill(covered, false);
+            foreach (var mask in fixosLns)
+            {
+                int n = EnumerarBloco(mask);
+                for (int i = 0; i < n; i++) covered[(int)tgt[i]] = true;
+            }
+            foreach (var c in bestList)
+            {
+                int n = EnumerarBloco(candMask[c]);
+                for (int i = 0; i < n; i++) covered[(int)tgt[i]] = true;
+            }
+            long ver = 0;
+            for (int mi = 0; mi < nMask; mi++) if (covered[mi]) ver++;
+            if (ver != totalTargets)
+            {
+                Console.Error.WriteLine($"FALHA LNS: cobertura {ver:N0}/{totalTargets:N0}");
+                int mostrados = 0;
+                for (int mi = 0; mi < nMask && mostrados < 12; mi++)
+                {
+                    if (BitOperations.PopCount((uint)mi) != t) continue;
+                    if (covered[mi]) continue;
+                    Console.Error.WriteLine($"  alvo faltando mask={mi} covCount={covCount[mi]}");
+                    mostrados++;
+                }
+                return 1;
+            }
+
+            solucao = fixosLns.Concat(bestList.Select(c => candMask[c])).ToList();
+            extras.Clear();
+            lnsIteracoes = iteracoes;
+            lnsMelhorias = melhorias;
+            Console.WriteLine(
+                $"LNS: {iteracoes:N0} iterações, {melhorias} melhoria(s), {iguais} empate(s) aceito(s) " +
+                $"-> {solucao.Count:N0} blocos ({sw.Elapsed.TotalSeconds:F1}s)");
+        }
+
         // ---------- saída ----------
         var blocos = new int[solucao.Count + extras.Count][];
         int w = 0;
@@ -207,10 +525,15 @@ internal static class Program
         {
             v, k, t,
             blocos,
-            fonte = "LotoScope covergen (.NET, greedy exato + CSR)",
+            fonte = o.ImproveSeconds > 0
+                ? "LotoScope covergen (.NET, greedy exato + CSR + LNS)"
+                : "LotoScope covergen (.NET, greedy exato + CSR)",
             limiteInferior = lb,
             verificado = true,
             pool,
+            improveSegundos = o.ImproveSeconds,
+            iteracoesLns = lnsIteracoes,
+            melhoriasLns = lnsMelhorias,
             tempoSegundos = Math.Round(sw.Elapsed.TotalSeconds, 1),
         };
         var json = JsonSerializer.Serialize(dto);
@@ -309,11 +632,11 @@ internal static class Program
         return (long)Math.Ceiling((double)v / k * LimiteInferior(v - 1, k - 1, t - 1));
     }
 
-    private sealed record Options(int V, int K, int T, int Pool, int Seed, string? Warm, string? Out)
+    private sealed record Options(int V, int K, int T, int Pool, int Seed, int ImproveSeconds, string? Warm, string? Out)
     {
         public static Options? Parse(string[] a)
         {
-            int v = 25, k = 15, t = 9, pool = 15000, seed = 1;
+            int v = 25, k = 15, t = 9, pool = 15000, seed = 1, improve = 0;
             string? warm = null, output = null;
             for (int i = 0; i < a.Length; i++)
             {
@@ -326,12 +649,13 @@ internal static class Program
                     case "--t": t = int.Parse(Next()); break;
                     case "--pool": pool = int.Parse(Next()); break;
                     case "--seed": seed = int.Parse(Next()); break;
+                    case "--improve": improve = Math.Max(0, int.Parse(Next())); break;
                     case "--warm": warm = Next(); break;
                     case "--out": output = Next(); break;
                     default: return null;
                 }
             }
-            return new Options(v, k, t, pool, seed, warm, output);
+            return new Options(v, k, t, pool, seed, improve, warm, output);
         }
     }
 }
