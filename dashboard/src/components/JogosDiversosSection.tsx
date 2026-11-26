@@ -7,6 +7,7 @@ import { getJanelaAlvo, type JanelaAlvoData, type JanelaAlvoNumero } from '@/lib
 import type { PrevisaoItem, PrevisaoTendenciaComparativo, PrevisaoColunaRange, QuarentenaPosicaoLF, CicloInfo, TransicaoQMF, Repeticao3Sorteios } from '@/types';
 import type { AnaliseGruposData } from '@/lib/analise-grupos';
 import { parseColunasPosicionais, parseExcluidosPosicoes, parseFiltroComparativo, parseFixosPosicoes } from '@/lib/colunas-posicionais';
+import { contarJogosComDominios } from '@/lib/dominios-posicionais';
 import type { VerificarCoberturaResult, RelatorioCustoResult, BacktestFechamentoResult, OrdenacaoApostas } from '@/lib/fechamento-combinatorio';
 import type { CpSatFechamentoResult } from '@/lib/cp-sat';
 import { getFechamentoConfig, textoPremios, LIMITE_COBERTURA_COMPLETA } from '@/lib/fechamento/config';
@@ -249,7 +250,8 @@ interface CategoriaDef {
   label: string;
   cor: string;
   set: number[];
-}const ESTRATEGIA_LABEL: Record<string, string> = {
+}
+const ESTRATEGIA_LABEL: Record<string, string> = {
   atraso: 'Atrasados',
   'hot7-9': 'Quentes',
   persistencia: 'Persistência',
@@ -257,6 +259,7 @@ interface CategoriaDef {
   ciclo: 'Ciclo',
   colunas: 'Colunas',
   comparativo: 'Comparativo',
+  grade: 'Grade posicional',
 };
 
 type NumeroEstado = 'normal' | 'fixo' | 'excluido';
@@ -476,6 +479,10 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const [error, setError] = useState<string | null>(null);
   const [colunasInputs, setColunasInputs] = useState<string[]>(['', '', '', '', '']);
   const [linhasFiltro, setLinhasFiltro] = useState<Record<string, number[]>>({});
+  /** Modo por posição: 'permitir' (marcados = permitidos) ou 'excluir' (marcados = proibidos). */
+  const [linhasModo, setLinhasModo] = useState<Record<string, 'permitir' | 'excluir'>>({});
+  /** Dezenas proibidas por posição quando o modo é 'excluir'. */
+  const [linhasExcluidas, setLinhasExcluidas] = useState<Record<string, number[]>>({});
   const [comparativoInputs, setComparativoInputs] = useState<string[]>(['', '', '']);
   const [fixosPosicoes, setFixosPosicoes] = useState<Record<number, number[]>>({});
   const [excluidosPosicoes, setExcluidosPosicoes] = useState<Record<number, number[]>>({});
@@ -745,7 +752,56 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     });
   }, [previsaoPosicional]);
 
+  /** Universo completo da loteria para a grade posicional (não só o top 5). */
+  const numerosUniverso = useMemo(
+    () => Array.from({ length: cfg.total_numeros }, (_, i) => i + cfg.numero_minimo),
+    [cfg.total_numeros, cfg.numero_minimo],
+  );
+
+  /**
+   * Números que podem matematicamente ocupar cada posição ordenada.
+   * N1 = menor do jogo: no máximo N-K+1 (Lotofácil: 11, nunca 25).
+   * N15 = maior: no mínimo K (Lotofácil: 15, nunca 1).
+   */
+  const numerosValidosPorPosicao = useMemo(() => {
+    const mapa = new Map<string, number[]>();
+    const K = Math.max(0, dezenas);
+    const min = cfg.numero_minimo;
+    const max = cfg.numero_minimo + cfg.total_numeros - 1;
+    posicoesLinhas.forEach((pos, idx) => {
+      if (idx >= K) {
+        mapa.set(pos, []);
+        return;
+      }
+      const lo = min + idx;
+      const hi = max - (K - 1 - idx);
+      mapa.set(pos, numerosUniverso.filter(n => n >= lo && n <= hi));
+    });
+    return mapa;
+  }, [posicoesLinhas, dezenas, cfg.numero_minimo, cfg.total_numeros, numerosUniverso]);
+
+  const modoLinha = useCallback(
+    (pos: string): 'permitir' | 'excluir' => linhasModo[pos] ?? 'permitir',
+    [linhasModo],
+  );
+
   const toggleLinha = (pos: string, numero: number) => {
+    if (modoLinha(pos) === 'excluir') {
+      const atuais = linhasExcluidas[pos] ?? [];
+      const validos = numerosValidosPorPosicao.get(pos) ?? [];
+      if (!atuais.includes(numero) && atuais.length + 1 >= validos.length) {
+        setError('Não é possível excluir todas as dezenas válidas de uma posição; ela ficaria sem candidato.');
+        return;
+      }
+      setLinhasExcluidas(prev => {
+        const atual = prev[pos] ?? [];
+        const proximo = atual.includes(numero)
+          ? atual.filter(n => n !== numero)
+          : [...atual, numero];
+        return { ...prev, [pos]: proximo };
+      });
+      return;
+    }
     setLinhasFiltro(prev => {
       const atual = prev[pos] ?? [];
       const proximo = atual.includes(numero)
@@ -754,6 +810,76 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       return { ...prev, [pos]: proximo };
     });
   };
+
+  const alternarModoLinha = useCallback((pos: string) => {
+    const validos = numerosValidosPorPosicao.get(pos) ?? [];
+    const modo = linhasModo[pos] ?? 'permitir';
+    if (modo === 'permitir') {
+      const permitidos = (linhasFiltro[pos] ?? []).filter(n => validos.includes(n));
+      if (permitidos.length > 0) {
+        const proibidos = validos.filter(n => !permitidos.includes(n));
+        setLinhasExcluidas(prev => ({ ...prev, [pos]: proibidos }));
+        setLinhasFiltro(prev => {
+          const copia = { ...prev };
+          delete copia[pos];
+          return copia;
+        });
+      }
+      setLinhasModo(prev => ({ ...prev, [pos]: 'excluir' }));
+      return;
+    }
+    const proibidos = (linhasExcluidas[pos] ?? []).filter(n => validos.includes(n));
+    if (proibidos.length > 0) {
+      const permitidos = validos.filter(n => !proibidos.includes(n));
+      setLinhasFiltro(prev => ({ ...prev, [pos]: permitidos }));
+      setLinhasExcluidas(prev => {
+        const copia = { ...prev };
+        delete copia[pos];
+        return copia;
+      });
+    }
+    setLinhasModo(prev => ({ ...prev, [pos]: 'permitir' }));
+  }, [linhasModo, linhasFiltro, linhasExcluidas, numerosValidosPorPosicao]);
+
+  const selecionarTodaLinha = useCallback((pos: string) => {
+    if (modoLinha(pos) === 'excluir') {
+      setLinhasExcluidas(prev => {
+        const copia = { ...prev };
+        delete copia[pos];
+        return copia;
+      });
+      return;
+    }
+    const validos = numerosValidosPorPosicao.get(pos) ?? [];
+    setLinhasFiltro(prev => ({ ...prev, [pos]: [...validos] }));
+  }, [modoLinha, numerosValidosPorPosicao]);
+
+  const limparLinha = useCallback((pos: string) => {
+    setLinhasFiltro(prev => {
+      const copia = { ...prev };
+      delete copia[pos];
+      return copia;
+    });
+    setLinhasExcluidas(prev => {
+      const copia = { ...prev };
+      delete copia[pos];
+      return copia;
+    });
+  }, []);
+
+  const selecionarTodasLinhas = useCallback(() => {
+    const next: Record<string, number[]> = {};
+    for (const pos of posicoesLinhas) next[pos] = [...(numerosValidosPorPosicao.get(pos) ?? [])];
+    setLinhasFiltro(next);
+    setLinhasExcluidas({});
+    setLinhasModo({});
+  }, [posicoesLinhas, numerosValidosPorPosicao]);
+
+  const limparTodasLinhas = useCallback(() => {
+    setLinhasFiltro({});
+    setLinhasExcluidas({});
+    setLinhasModo({});
+  }, []);
 
   const linhasMaisConcentradas = (limite: number) =>
     [...posicoesLinhas]
@@ -768,16 +894,23 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     if (!previsaoPosicional) return;
     const next: Record<string, number[]> = {};
     for (const pos of linhasMaisConcentradas(top)) {
-      next[pos] = (previsaoPosicional[pos] ?? []).slice(0, top).map(x => x.numero);
+      const validos = numerosValidosPorPosicao.get(pos) ?? [];
+      next[pos] = (previsaoPosicional[pos] ?? [])
+        .slice(0, top)
+        .map(x => x.numero)
+        .filter(n => validos.includes(n));
     }
     setLinhasFiltro(next);
+    setLinhasExcluidas({});
+    setLinhasModo({});
   };
 
   const aplicarCoberturaLinhas = (alvo: number) => {
     if (!previsaoPosicional) return;
     const next: Record<string, number[]> = {};
     for (const pos of posicoesLinhas) {
-      const preds = previsaoPosicional[pos] ?? [];
+      const validos = numerosValidosPorPosicao.get(pos) ?? [];
+      const preds = (previsaoPosicional[pos] ?? []).filter(x => validos.includes(x.numero));
       let acumulado = 0;
       const escolhidos: number[] = [];
       for (const item of preds) {
@@ -788,14 +921,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       next[pos] = escolhidos;
     }
     setLinhasFiltro(next);
-  };
-
-  const coberturaLinha = (pos: string) => {
-    const preds = previsaoPosicional?.[pos] ?? [];
-    const selecionados = linhasFiltro[pos] ?? [];
-    return preds
-      .filter(x => selecionados.includes(x.numero))
-      .reduce((acc, x) => acc + x.prob, 0);
+    setLinhasExcluidas({});
+    setLinhasModo({});
   };
 
   useEffect(() => {
@@ -808,6 +935,8 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setDezenas(novoCfg.numeros_por_aposta ?? novoCfg.numeros_por_jogo);
     setColunasInputs(['', '', '', '', '']);
     setLinhasFiltro({});
+    setLinhasModo({});
+    setLinhasExcluidas({});
     setComparativoInputs(['', '', '']);
     setFixosPosicoes({});
     setExcluidosPosicoes({});
@@ -862,12 +991,27 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const sorteadosAtualSet = new Set(
     concursoPreview && concursoPreview.numeros.length > 0 ? concursoPreview.numeros : numerosSorteadosAtual,
   );
+  // Sorteio de referência em ordem crescente: N1 = menor, N15 = maior.
+  const sorteioReferencia = concursoPreview && concursoPreview.numeros.length > 0
+    ? concursoPreview.numeros
+    : numerosSorteadosAtual;
+  const sorteioReferenciaOrdenado = useMemo(
+    () => [...new Set(sorteioReferencia)].sort((a, b) => a - b),
+    [sorteioReferencia],
+  );
 
   const colunasPosicionaisStr = colunasInputs.map(v => v.trim().replace(/\s+/g, '')).join(',');
   const colunasSetsStr = colunasSets ? colunasSets.map(s => s.join(',')).join(';') : '';
   const temColunas = colunasInputs.some(v => v.trim() !== '') && colunasSets !== null;
 
-  const linhasSetsArray = posicoesLinhas.map(pos => linhasFiltro[pos] ?? []);
+  const linhasSetsArray = posicoesLinhas.map(pos => {
+    const validos = numerosValidosPorPosicao.get(pos) ?? [];
+    if ((linhasModo[pos] ?? 'permitir') === 'excluir') {
+      const proibidos = new Set(linhasExcluidas[pos] ?? []);
+      return validos.filter(n => !proibidos.has(n));
+    }
+    return (linhasFiltro[pos] ?? []).filter(n => validos.includes(n));
+  });
   const linhasSetsStr = linhasSetsArray.map(s => s.join(',')).join(';');
   const temLinhas = linhasSetsArray.some(s => s.length > 0);
 
@@ -896,6 +1040,37 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     .map(([n, ps]) => `${n}:${ps.join(',')}`)
     .join(';');
   const excluidosCompletos = excluidos.filter(n => !(excluidosPosicoes[n] ?? []).length);
+  const fixosChave = fixos.join(',');
+  const excluidosChave = excluidosCompletos.join(',');
+  // Contador exato da grade posicional (antes de gerar). Ignora categorias,
+  // comparativo e repetidos; esses filtros só podem reduzir o total.
+  const estimativaGrade = useMemo(() => {
+    if (!previsaoPosicional || posicoesLinhas.length === 0) return null;
+    return contarJogosComDominios({
+      totalNumeros: cfg.total_numeros,
+      numerosPorJogo: dezenas,
+      numeroMinimo: cfg.numero_minimo,
+      fixos,
+      excluidos: excluidosCompletos,
+      dominios: temLinhas ? linhasSetsArray : undefined,
+      fixosPosicoes,
+      excluidosPosicoes,
+    });
+    // Chaves primitivas: evitam recalcular a cada render quando os arrays são recriados.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    previsaoPosicional,
+    posicoesLinhas.length,
+    temLinhas,
+    linhasSetsStr,
+    cfg.total_numeros,
+    cfg.numero_minimo,
+    dezenas,
+    fixosChave,
+    excluidosChave,
+    fixosPosicoes,
+    excluidosPosicoes,
+  ]);
   const excluidosPosicoesStr = Object.entries(excluidosPosicoes)
     .filter(([, ps]) => ps.length > 0)
     .map(([n, ps]) => `${n}:${ps.join(',')}`)
@@ -1075,6 +1250,9 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
     setEstados({});
     setFixosPosicoes({});
     setExcluidosPosicoes({});
+    setLinhasFiltro({});
+    setLinhasModo({});
+    setLinhasExcluidas({});
     setLoteFeedback(null);
   }, []);
 
@@ -1382,7 +1560,9 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
   const jogosFiltrados = useMemo(() => {
     if (!jogos) return null;
     if (estrategiasFiltro.length === 0) return jogos;
-    return jogos.filter(j => estrategiasFiltro.includes(j.estrategia));
+    // Com grade posicional ativa, o lote é amostrado uniformemente dentro dela
+    // e marcado como 'grade'; não deve ser escondido pelo filtro de estratégia.
+    return jogos.filter(j => estrategiasFiltro.includes(j.estrategia) || j.estrategia === 'grade');
   }, [jogos, estrategiasFiltro]);
 
   const gerar = useCallback(async () => {
@@ -1629,12 +1809,15 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
         }
       }
 
+      // Separação de responsabilidades: a grade posicional (colunas/linhas) é
+      // exclusiva do gerador diversificado. O fechamento/Lotto design só aceita
+      // fixos/excluídos globais; filtros posicionais quebrariam a garantia.
       const filtrosExtras = fechamentoAplicarFiltrosTela
         ? {
-            colunas: temColunas ? parseColunasPosicionais(colunasPosicionaisStr, colunasSetsStr) : undefined,
-            linhas: temLinhas ? linhasSetsArray : undefined,
             comparativo: temComparativo ? parseFiltroComparativo(comparativoStr) : undefined,
-            baseComparativo: numerosSorteadosAtual,
+            // baseComparativo só faz sentido junto do comparativo; sozinho ele
+            // marcaria "filtros ativos" e derrubaria o Lotto design à toa.
+            baseComparativo: temComparativo ? numerosSorteadosAtual : undefined,
             repetidos3: temRepetidos
               ? repetidosItens
                   .map((item, i) => ({ numeros: item.numeros, valor: (repetidosInputs[i] ?? '').trim() }))
@@ -1903,7 +2086,10 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           </select>
           <button
             onClick={gerar}
-            disabled={loading}
+            disabled={loading || estimativaGrade?.total === 0}
+            title={estimativaGrade?.total === 0
+              ? 'A grade posicional/fixos/exclusões não deixa nenhuma combinação válida. Relaxe uma restrição.'
+              : undefined}
             className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110 disabled:opacity-50"
             style={{ background: 'linear-gradient(135deg,#6366f1,#818cf8)' }}>
             {loading ? 'Gerando...' : 'Gerar'}
@@ -2016,10 +2202,22 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
       {previsaoPosicional && posicoesLinhas.length > 0 && (
         <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <div className="text-sm font-semibold text-ink">Linhas Posicionais (Domínio por Posição)</div>
-            <div className="text-xs text-muted">
-              <strong className="text-fg">N1</strong> = menor número do jogo, <strong className="text-fg">{posicoesLinhas[posicoesLinhas.length - 1]}</strong> = maior.
-              Clique nos números para definir quem pode ocupar cada posição.
+            <div className="text-sm font-semibold text-ink">Grade Posicional (Domínio por Posição)</div>
+            <div className="flex flex-col items-start sm:items-end gap-1 text-xs text-muted">
+              <span>
+                <strong className="text-fg">N1</strong> = menor número do jogo, <strong className="text-fg">{posicoesLinhas[posicoesLinhas.length - 1]}</strong> = maior.
+                Marque todos os números que podem ocupar cada posição.
+              </span>
+              <span className="flex items-center gap-1 text-[10px] text-emerald-300/80">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 border border-emerald-600/40" />
+                dezena sorteada nesta posição
+              </span>
+              {mostrarJanela && (
+                <span className="flex items-center gap-1 text-[10px] text-emerald-300/80">
+                  <span className="min-w-[14px] h-[14px] px-0.5 rounded-full border border-emerald-400/60 bg-emerald-500/40 text-emerald-50 text-[8px] font-bold flex items-center justify-center">3</span>
+                  saiu na janela
+                </span>
+              )}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -2043,44 +2241,151 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               </button>
             ))}
             <button
-              onClick={() => setLinhasFiltro({})}
+              onClick={selecionarTodasLinhas}
+              className="px-3 py-1.5 rounded-lg text-xs bg-indigo-500/20 border border-indigo-400/40 text-indigo-100 hover:bg-indigo-500/30 transition-colors"
+            >
+              Selecionar todos
+            </button>
+            <button
+              onClick={limparTodasLinhas}
               className="px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-muted hover:text-fg hover:bg-white/10 transition-colors"
             >
-              Limpar linhas
+              Limpar tudo
             </button>
             <span className={`text-[11px] ${temLinhas ? 'text-accent-2' : 'text-muted'}`}>
-              {temLinhas ? `${linhasSetsArray.reduce((a, s) => a + s.length, 0)} números fixados em ${linhasSetsArray.filter(s => s.length > 0).length} linhas` : 'Nenhuma linha restrita'}
+              {temLinhas ? `${linhasSetsArray.reduce((a, s) => a + s.length, 0)} números permitidos em ${linhasSetsArray.filter(s => s.length > 0).length} posições` : 'Nenhuma posição restrita'}
             </span>
+            {estimativaGrade && (
+              <span
+                className={`text-[11px] font-medium ${
+                  estimativaGrade.total === 0
+                    ? 'text-rose-300'
+                    : estimativaGrade.total < quantidade
+                      ? 'text-amber-300'
+                      : 'text-emerald-300'
+                }`}
+                title="Contagem exata das dezenas/fixos/exclusões e da grade posicional; filtros de categoria/comparativo/repetidos podem reduzir mais."
+              >
+                {estimativaGrade.total === 0
+                  ? estimativaGrade.detalhe
+                  : `${estimativaGrade.total.toLocaleString('pt-BR')} combinação(ões) válida(s)${
+                      estimativaGrade.total < quantidade ? ` · ${quantidade} solicitada(s)` : ''
+                    }`}
+              </span>
+            )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
-            {posicoesLinhas.map(pos => {
+            {posicoesLinhas.map((pos, idx) => {
               const preds = previsaoPosicional[pos] ?? [];
+              const probPorNumero = new Map(preds.map(item => [item.numero, item.prob]));
+              const sorteadoNaPosicao = sorteioReferenciaOrdenado[idx];
+              const modo = modoLinha(pos);
+              const validos = numerosValidosPorPosicao.get(pos) ?? [];
               const selecionados = linhasFiltro[pos] ?? [];
-              const cobertura = coberturaLinha(pos);
+              const selecionadosValidos = selecionados.filter(n => validos.includes(n));
+              const proibidos = linhasExcluidas[pos] ?? [];
+              const proibidosValidos = proibidos.filter(n => validos.includes(n));
+              const permitidosEfetivos = modo === 'excluir'
+                ? validos.length - proibidosValidos.length
+                : selecionadosValidos.length;
+              const restrito = permitidosEfetivos > 0 && permitidosEfetivos < validos.length;
+              const cobertura = modo === 'excluir'
+                ? preds
+                    .filter(x => validos.includes(x.numero) && !proibidosValidos.includes(x.numero))
+                    .reduce((acc, x) => acc + x.prob, 0)
+                : preds
+                    .filter(x => selecionadosValidos.includes(x.numero))
+                    .reduce((acc, x) => acc + x.prob, 0);
               return (
                 <div key={pos} className="p-2 rounded-lg bg-white/[0.03] border border-white/10">
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between gap-1 mb-1">
                     <span className="text-[11px] font-semibold text-fg">{pos}</span>
-                    <span className={`text-[10px] ${selecionados.length > 0 ? 'text-accent-2' : 'text-muted'}`}>
-                      {selecionados.length > 0 ? `cobertura ${(cobertura * 100).toFixed(1)}%` : 'livre'}
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => alternarModoLinha(pos)}
+                        title="Permitir: os marcados são os únicos permitidos. Excluir: os marcados ficam proibidos; os demais são permitidos."
+                        className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${
+                          modo === 'excluir'
+                            ? 'border-rose-400/50 bg-rose-500/20 text-rose-100 hover:bg-rose-500/30'
+                            : 'border-indigo-400/40 bg-indigo-500/15 text-indigo-100 hover:bg-indigo-500/25'
+                        }`}
+                      >
+                        {modo === 'excluir' ? 'Excluir' : 'Permitir'}
+                      </button>
+                      <button
+                        onClick={() => selecionarTodaLinha(pos)}
+                        className="text-[10px] px-1.5 py-0.5 rounded border border-indigo-400/40 bg-indigo-500/15 text-indigo-100 hover:bg-indigo-500/25 transition-colors"
+                      >
+                        {modo === 'excluir' ? 'Permitir todos' : 'Tudo'}
+                      </button>
+                      <button
+                        onClick={() => limparLinha(pos)}
+                        className="text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-muted hover:text-fg hover:bg-white/10 transition-colors"
+                      >
+                        Limpar
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={`text-[10px] ${restrito ? 'text-accent-2' : 'text-muted'}`}>
+                      {modo === 'excluir'
+                        ? `${proibidosValidos.length} excluído(s) · ${permitidosEfetivos} permitido(s)`
+                        : selecionadosValidos.length > 0
+                          ? `${selecionadosValidos.length} permitido(s)`
+                          : 'livre'}
+                    </span>
+                    <span className={`text-[10px] ${restrito ? 'text-accent-2' : 'text-muted'}`}>
+                      {restrito ? `cobertura ${(cobertura * 100).toFixed(1)}%` : ''}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-1">
-                    {preds.slice(0, 5).map(item => {
-                      const ativo = selecionados.includes(item.numero);
+                  <div className="flex flex-wrap gap-1 max-h-40 overflow-y-auto pr-1 pt-1 pb-2">
+                    {validos.length === 0 ? (
+                      <span className="text-[10px] text-amber-300">Nenhuma dezena válida nesta posição.</span>
+                    ) : validos.map(n => {
+                      const ativo = modo === 'excluir' ? proibidosValidos.includes(n) : selecionadosValidos.includes(n);
+                      const prob = probPorNumero.get(n);
+                      const sorteado = n === sorteadoNaPosicao;
+                      const janelaItem = janelaPorNumero.get(n);
+                      const titulo = [
+                        prob !== undefined
+                          ? `${(prob * 100).toFixed(1)}% de chance histórica nesta posição`
+                          : 'Sem previsão histórica nesta posição',
+                        sorteado ? 'dezena sorteada nesta posição no concurso base' : null,
+                        mostrarJanela && janelaItem
+                          ? `saiu ${janelaItem.ocorrencias}x na janela`
+                          : null,
+                      ].filter(Boolean).join(' · ');
                       return (
                         <button
-                          key={item.numero}
-                          onClick={() => toggleLinha(pos, item.numero)}
-                          title={`${(item.prob * 100).toFixed(1)}% de chance histórica nesta posição`}
-                          className={`px-1.5 py-1 rounded text-[10px] border transition-colors ${
+                          key={n}
+                          onClick={() => toggleLinha(pos, n)}
+                          title={titulo}
+                          className={`relative px-1.5 py-1 rounded text-[10px] border transition-colors ${
                             ativo
-                              ? 'bg-indigo-500/30 border-indigo-400/60 text-indigo-100'
+                              ? modo === 'excluir'
+                                ? 'bg-rose-500/30 border-rose-400/60 text-rose-100'
+                                : 'bg-indigo-500/30 border-indigo-400/60 text-indigo-100'
                               : 'bg-white/5 border-white/10 text-muted hover:text-fg hover:bg-white/10'
                           }`}
                         >
-                          <span className="font-semibold">{item.numero}</span>
-                          <span className="ml-1 opacity-70">{(item.prob * 100).toFixed(0)}%</span>
+                          {sorteado && (
+                            <span
+                              aria-hidden="true"
+                              className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400 border border-emerald-600/40"
+                            />
+                          )}
+                          {mostrarJanela && janelaItem && (
+                            <span
+                              className={`absolute -bottom-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full border text-[8px] font-bold leading-none flex items-center justify-center ${classeBadgeJanela(janelaItem)}`}
+                              title={`Saiu ${janelaItem.ocorrencias}x em ${janelaDados?.janelaEfetiva ?? janelaTamanho} concurso(s) da janela anterior ao alvo ${janelaDados?.concursoAlvo ?? concursoAlvoJanela ?? '—'} (${janelaItem.percentual.toFixed(0)}%)`}
+                            >
+                              {janelaItem.ocorrencias}
+                            </span>
+                          )}
+                          <span className="font-semibold">{n}</span>
+                          {prob !== undefined && (
+                            <span className="ml-0.5 opacity-60">{Math.round(prob * 100)}%</span>
+                          )}
                         </button>
                       );
                     })}
@@ -2090,9 +2395,12 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
             })}
           </div>
           <div className="mt-2 text-[11px] text-muted leading-relaxed">
-            Cada linha é uma posição ordenada. Restringir muitas linhas reduz drasticamente as combinações;
-            <strong className="text-fg"> Top 3/4/5</strong> aplica o preset às N linhas mais concentradas.
-            Linha sem seleção = sem restrição.
+            <strong className="text-fg">Para excluir uma dezena</strong>, mude a posição para <strong className="text-fg">Excluir</strong>
+            e marque-a em vermelho; as demais continuam permitidas. Em <strong className="text-fg">Permitir</strong>, os marcados
+            são os únicos permitidos. Nenhum marcado = posição livre. A grade é
+            <strong className="text-fg"> exclusiva do gerador diversificado</strong>; o fechamento/Lotto design usa apenas
+            fixos e excluídos globais. Restrições demais podem zerar as combinações — o contador avisa antes de gerar.
+            Com a grade ativa, os jogos são amostrados uniformemente dentro dela; o seletor de estratégias não altera a amostragem.
           </div>
         </div>
       )}
@@ -3153,7 +3461,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
               </label>
               <label
                 className="flex items-center gap-2 text-xs cursor-pointer select-none"
-                title="Aplica ao fechamento os filtros preenchidos na tela: Colunas Posicionais, Linhas Posicionais, Comparativo, Categorias e Repetidos dos 3 últimos sorteios. Filtros muito restritivos podem reduzir a cobertura; o sistema avisa no resultado."
+                title="Aplica ao fechamento apenas filtros não posicionais: Comparativo, Categorias e Repetidos dos 3 últimos sorteios. Colunas/Linhas posicionais são exclusivas do gerador diversificado e não entram no Lotto design. Filtros muito restritivos podem reduzir a cobertura; o sistema avisa no resultado."
               >
                 <input
                   type="checkbox"
@@ -3161,7 +3469,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
                   onChange={() => setFechamentoAplicarFiltrosTela(!fechamentoAplicarFiltrosTela)}
                   className="accent-[#818cf8]"
                 />
-                Aplicar filtros da tela ao fechamento
+                Aplicar filtros da tela (sem posicionais)
               </label>
               <label className="flex items-center gap-2 text-xs cursor-pointer select-none" title="Tenta reduzir o número de apostas com CP-SAT ou MIP (SCIP/CBC). Coberturas ótimas conhecidas são usadas automaticamente antes do solver.">
                 <input
@@ -3296,7 +3604,7 @@ export default function JogosDiversosSection({ loteria = 'lotofacil', concursoBa
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xs text-muted">
               {fixos.length > 0 || excluidos.length > 0 || aplicarFiltrosCategorias
-                ? `Aplicados: ${fixos.length} fixo(s) ${fixos.length > 0 ? `(${fixos.join(', ')})` : ''} ${excluidos.length > 0 ? `| ${excluidos.length} excluído(s) (${excluidos.join(', ')})` : ''} ${aplicarFiltrosCategorias || fechamentoAplicarFiltrosTela ? `| ${categoriasDefs.filter(c => (categoriasInputs[c.id] ?? '').trim() !== '').length} filtro(s) de categoria` : ''}${fechamentoAplicarFiltrosTela ? ' | filtros da tela (colunas/linhas/comparativo/repetidos)' : ''}`
+                ? `Aplicados: ${fixos.length} fixo(s) ${fixos.length > 0 ? `(${fixos.join(', ')})` : ''} ${excluidos.length > 0 ? `| ${excluidos.length} excluído(s) (${excluidos.join(', ')})` : ''} ${aplicarFiltrosCategorias || fechamentoAplicarFiltrosTela ? `| ${categoriasDefs.filter(c => (categoriasInputs[c.id] ?? '').trim() !== '').length} filtro(s) de categoria` : ''}${fechamentoAplicarFiltrosTela ? ' | filtros da tela (comparativo/categorias/repetidos; posicionais fora)' : ''}`
                 : 'Sem fixos/excluídos aplicados'}
             </span>
           </div>

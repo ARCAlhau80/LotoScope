@@ -1,3 +1,5 @@
+import { contarJogosComDominios, prepararDominios } from './dominios-posicionais';
+
 export interface GeradorDiversificadoOptions {
   resultados: number[][];
   cicloDados?: Record<number, number>;
@@ -199,7 +201,24 @@ export function calcularEstimativaCombinacoes(
   );
   const temDominios = dominiosNorm !== undefined;
 
+  // Contagem exata de todas as restrições posicionais (domínios + fixos/excluídos
+  // por posição). Custa O(k·N²) e substitui o Monte Carlo no caso de domínios.
+  const estDom = contarJogosComDominios({
+    totalNumeros,
+    numerosPorJogo,
+    numeroMinimo,
+    fixos: fixosNorm,
+    excluidos: excluidosNorm,
+    dominios: dominiosNorm,
+    fixosPosicoes,
+    excluidosPosicoes,
+  }).total;
+
   if (!temColunas && !temCmp && !temPos && !temExclPos && !temCats && !temDominios) return base;
+
+  if (!temColunas && !temCmp && !temCats && (temDominios || temPos || temExclPos)) {
+    return Math.min(estDom, base);
+  }
 
   if (temDominios) {
     const est = estimativaMonteCarlo(
@@ -215,7 +234,7 @@ export function calcularEstimativaCombinacoes(
       categoriasNorm,
       dominiosNorm
     );
-    return Math.min(Math.max(0, est), base);
+    return Math.min(estDom, Math.max(0, est), base);
   }
 
   if (temCats) {
@@ -231,20 +250,16 @@ export function calcularEstimativaCombinacoes(
       excluidosPosicoes,
       categoriasNorm
     );
-    return Math.min(Math.max(0, est), base);
-  }
-
-  if (temPos && !temColunas && !temCmp && !temExclPos) {
-    return contarCombinacoesComPosicoes(fixosNorm, fixosPosicoes, disponiveis, totalNumeros, numerosPorJogo, numeroMinimo);
+    return Math.min(estDom, Math.max(0, est), base);
   }
 
   if (temColunas && !temCmp && !temPos && !temExclPos) {
-    return contarCombinacoesComColunas(fixosNorm, excluidosNorm, disponiveis, totalNumeros, numerosPorJogo, numeroMinimo, colunasNorm!, base);
+    return Math.min(estDom, contarCombinacoesComColunas(fixosNorm, excluidosNorm, disponiveis, totalNumeros, numerosPorJogo, numeroMinimo, colunasNorm!, base), base);
   }
 
   if (!temColunas && temCmp && !temPos && !temExclPos) {
     const est = contarCombinacoesColunasComparativo(fixosNorm, excluidosNorm, totalNumeros, numerosPorJogo, numeroMinimo, undefined, filtroComparativo, baseComparativo);
-    return Math.min(est ?? base, base);
+    return Math.min(estDom, est ?? base, base);
   }
 
   // combinação de filtros (colunas e/ou comparativo e/ou posições e/ou exclusões por posição):
@@ -257,7 +272,7 @@ export function calcularEstimativaCombinacoes(
     fixosPosicoes,
     excluidosPosicoes
   );
-  if (est !== null) return Math.min(est, base);
+  if (est !== null) return Math.min(estDom, est, base);
 
   // orçamento da DP estourou: aproximação conservadora (menor dos limites individuais)
   const estCol = temColunas
@@ -272,9 +287,9 @@ export function calcularEstimativaCombinacoes(
 
   if (temColunas && temCmp) {
     const estMC = estimativaMonteCarlo(fixosNorm, excluidosNorm, totalNumeros, numerosPorJogo, numeroMinimo, colunasNorm!, filtroComparativo!, baseComparativo, totalDisp, escolher, 20260921, fixosPosicoes, excluidosPosicoes);
-    return Math.min(estMC, estCol, estCmp, estPos, base);
+    return Math.min(estDom, estMC, estCol, estCmp, estPos, base);
   }
-  return Math.min(estCol, estCmp, estPos, base);
+  return Math.min(estDom, estCol, estCmp, estPos, base);
 }
 
 function estimativaMonteCarlo(
@@ -1319,17 +1334,34 @@ export function gerarJogosDiversificados(options: GeradorDiversificadoOptions): 
   const baseComparativo = resultados.length > 0 ? resultados[resultados.length - 1] : [];
 
   const temFiltroEstrategias = estrategiasFiltro && estrategiasFiltro.length > 0;
+  // Domínios posicionais e restrições por posição trocam o rejection sampling
+  // por contagem + amostragem exata (ver dominios-posicionais.ts).
+  const temPosicional = dominiosNorm !== undefined
+    || fixosPosicoes !== undefined
+    || excluidosPosicoes !== undefined;
+  const contextoDominios = temPosicional
+    ? prepararDominios({
+        totalNumeros: lp.totalNumeros,
+        numerosPorJogo: lp.numerosPorJogo,
+        numeroMinimo: lp.numeroMinimo,
+        fixos: fixosNorm,
+        excluidos: excluidosNorm,
+        dominios: dominiosNorm,
+        fixosPosicoes,
+        excluidosPosicoes,
+      })
+    : null;
 
   if (nJogos === 0) {
-    if (temFiltroEstrategias) {
-      // "todas as combinações" não faz sentido com filtro de estratégia:
-      // gera um lote grande usando apenas as estratégias selecionadas
+    if (temFiltroEstrategias || temPosicional) {
+      // "todas as combinações" não faz sentido com filtro de estratégia/domínio:
+      // gera um lote grande usando apenas as estratégias selecionadas.
     } else {
       return gerarTodasAsCombinacoes(options);
     }
   }
 
-  const count = nJogos === 0 && temFiltroEstrategias ? 500 : nJogos;
+  const count = nJogos === 0 ? 500 : nJogos;
 
   const rankingAtivo = ordenacao !== 'aleatorio';
   // com ranking, gera um pool maior de candidatos e seleciona os melhores/piores/balanceados
@@ -1343,6 +1375,44 @@ export function gerarJogosDiversificados(options: GeradorDiversificadoOptions): 
     const sel = selecionarPorScore(arrJogos, arrNomes, scores, count, ordenacao);
     return sel.jogos.map((numeros, i) => buildJogo(numeros, sel.nomes[i] ?? 'aleatorio', lp, rand, sel.scores[i]));
   };
+
+  // Caminho construtivo: quando há domínios posicionais, amostra exatamente o
+  // conjunto válido em vez de tentar/descartar. Sem isso, grades apertadas
+  // podem retornar zero jogos mesmo existindo solução (ou nenhuma, e aí o
+  // diagnóstico explica qual posição ficou sem candidato).
+  if (contextoDominios) {
+    if (contextoDominios.total <= 0) return [];
+    const alvoGeracao = Math.min(genCount, Math.max(1, contextoDominios.total));
+    const jogos: number[][] = [];
+    const nomes: string[] = [];
+    // A grade posicional é a restrição dominante: amostra uniforme dentro dela.
+    // O seletor de estratégias não altera a amostragem (só o ranking por score).
+    const nomesEstrategia = ['grade'];
+    const maxTentativas = Math.max(alvoGeracao * 20, 500);
+    for (let i = 0; i < maxTentativas && jogos.length < alvoGeracao; i++) {
+      const jogo = contextoDominios.gerar(rand);
+      if (!jogo) break;
+      if (colunasNorm && !satisfazColunas(jogo, colunasNorm)) continue;
+      if (filtroComparativo && !satisfazComparativo(jogo, baseComparativo, filtroComparativo)) continue;
+      if (categoriasNorm && !satisfazCategorias(jogo, categoriasNorm)) continue;
+      if (jogos.some(ex => JSON.stringify(ex) === JSON.stringify(jogo))) continue;
+      jogos.push(jogo);
+      nomes.push(nomesEstrategia[jogos.length % nomesEstrategia.length]);
+    }
+    let jogosFinais = jogos;
+    if (jogos.length >= 3) {
+      jogosFinais = garantirCobertura(jogos, rand, lp, fixosNorm, excluidosNorm, {
+        colunas: colunasNorm,
+        dominios: dominiosNorm,
+        fixosPosicoes,
+        excluidosPosicoes,
+        baseComparativo,
+        filtroComparativo,
+        categorias: categoriasNorm,
+      });
+    }
+    return finalizar(jogosFinais, jogosFinais.map((_, i) => nomes[i] ?? 'dominios'));
+  }
 
   if (resultados.length === 0) {
     const jogos: number[][] = [];

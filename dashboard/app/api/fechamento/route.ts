@@ -576,7 +576,20 @@ export async function POST(request: NextRequest) {
     const loteria = typeof body.loteria === 'string' && body.loteria ? body.loteria : 'lotofacil';
     const fcfg = getFechamentoConfig(loteria);
     const filtrosCategorias = parseFiltrosCategorias(body.filtrosCategorias);
-    const filtrosExtras = parseFiltrosExtras(body.filtrosExtras);
+    // Separação de responsabilidades: a grade posicional (colunas/linhas) é
+    // exclusiva do gerador diversificado. Aplicá-la a um design verificado
+    // quebraria a garantia; o fechamento usa apenas fixos/excluídos globais.
+    const filtrosExtrasRaw = parseFiltrosExtras(body.filtrosExtras);
+    let filtrosExtras = filtrosExtrasRaw;
+    let avisoFiltrosPosicionaisIgnorados: string | null = null;
+    if (filtrosExtrasRaw?.linhas || filtrosExtrasRaw?.colunas) {
+      const resto = { ...filtrosExtrasRaw };
+      delete resto.linhas;
+      delete resto.colunas;
+      filtrosExtras = Object.keys(resto).length > 0 ? resto : undefined;
+      avisoFiltrosPosicionaisIgnorados =
+        'Filtros posicionais (colunas/linhas) são exclusivos do gerador diversificado e foram ignorados no fechamento para preservar a garantia do Lotto design.';
+    }
     const kSolicitado = parseNumero(body.k, fcfg.kPadrao);
     const tSolicitado = parseNumero(body.t, fcfg.tPadrao);
     const { k, t } = normalizarKt(fcfg, kSolicitado, tSolicitado);
@@ -1525,6 +1538,7 @@ export async function POST(request: NextRequest) {
     }
 
     const avisos: string[] = [];
+    if (avisoFiltrosPosicionaisIgnorados) avisos.push(avisoFiltrosPosicionaisIgnorados);
     if (forcarLimitePratico) {
       avisos.push(
         'Modo forçado: os limites práticos de apostas/verificação foram ignorados; ' +
